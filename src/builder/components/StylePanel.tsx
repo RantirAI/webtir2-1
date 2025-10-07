@@ -81,9 +81,9 @@ export const StylePanel: React.FC = () => {
           </div>
         </div>
 
-        <TabsContent value="style" className="flex-1 m-0 overflow-hidden">
-          <ScrollArea className="h-full">
-            <div className="divide-y divide-border">
+        <TabsContent value="style" className="flex-1 m-0">
+          <ScrollArea className="h-[calc(100vh-200px)]">
+            <div className="divide-y divide-border pb-20">
               <StyleSection id="layout" title="Layout">
                 <div className="space-y-2">
                   <Label className="text-xs text-muted-foreground">Display</Label>
@@ -167,88 +167,88 @@ export const StylePanel: React.FC = () => {
               </StyleSection>
 
               <StyleSection id="space" title="Space">
-                <div className="space-y-1.5">
-                  <Label className="text-[10px] text-muted-foreground uppercase tracking-wide">Margin</Label>
-                  <div className="grid grid-cols-3 gap-1">
-                    <div className="col-start-2">
-                      <Input
-                        value={selectedInstance.styles.marginTop || ''}
-                        onChange={(e) => updateStyle('marginTop', e.target.value)}
-                        placeholder="0"
-                        className="h-7 text-[11px] text-center"
-                      />
-                    </div>
-                    <Input
-                      value={selectedInstance.styles.marginLeft || ''}
-                      onChange={(e) => updateStyle('marginLeft', e.target.value)}
-                      placeholder="0"
-                      className="h-7 text-[11px] text-center col-start-1 row-start-2"
-                    />
-                    <div className="col-start-2 row-start-2 flex items-center justify-center">
-                      <div className="w-8 h-8 border border-dashed border-muted-foreground/30 rounded"></div>
-                    </div>
-                    <Input
-                      value={selectedInstance.styles.marginRight || ''}
-                      onChange={(e) => updateStyle('marginRight', e.target.value)}
-                      placeholder="0"
-                      className="h-7 text-[11px] text-center col-start-3 row-start-2"
-                    />
-                    <div className="col-start-2 row-start-3">
-                      <Input
-                        value={selectedInstance.styles.marginBottom || ''}
-                        onChange={(e) => updateStyle('marginBottom', e.target.value)}
-                        placeholder="0"
-                        className="h-7 text-[11px] text-center"
-                      />
+                <div className="space-y-3">
+                  <div className="p-3 bg-muted/30 rounded-lg border border-border">
+                    <div className="text-[9px] text-muted-foreground uppercase tracking-wider mb-2 font-semibold">Margin</div>
+                    <div className="flex flex-col gap-1">
+                      <div className="flex justify-center">
+                        <Input
+                          value={selectedInstance.styles.marginTop || ''}
+                          onChange={(e) => updateStyle('marginTop', e.target.value)}
+                          placeholder="0"
+                          className="h-6 w-12 text-[10px] text-center px-1"
+                        />
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Input
+                          value={selectedInstance.styles.marginLeft || ''}
+                          onChange={(e) => updateStyle('marginLeft', e.target.value)}
+                          placeholder="0"
+                          className="h-6 w-12 text-[10px] text-center px-1"
+                        />
+                        <div className="flex-1 p-2 bg-background rounded border border-border">
+                          <div className="text-[9px] text-muted-foreground uppercase tracking-wider mb-2 font-semibold text-center">Padding</div>
+                          <div className="flex flex-col gap-1">
+                            <div className="flex justify-center">
+                              <Input
+                                value={selectedInstance.styles.paddingTop || ''}
+                                onChange={(e) => updateStyle('paddingTop', e.target.value)}
+                                placeholder="0"
+                                className="h-6 w-12 text-[10px] text-center px-1"
+                              />
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Input
+                                value={selectedInstance.styles.paddingLeft || ''}
+                                onChange={(e) => updateStyle('paddingLeft', e.target.value)}
+                                placeholder="0"
+                                className="h-6 w-12 text-[10px] text-center px-1"
+                              />
+                              <div className="flex-1 h-12 bg-muted/20 rounded border border-dashed border-muted-foreground/30"></div>
+                              <Input
+                                value={selectedInstance.styles.paddingRight || ''}
+                                onChange={(e) => updateStyle('paddingRight', e.target.value)}
+                                placeholder="0"
+                                className="h-6 w-12 text-[10px] text-center px-1"
+                              />
+                            </div>
+                            <div className="flex justify-center">
+                              <Input
+                                value={selectedInstance.styles.paddingBottom || ''}
+                                onChange={(e) => updateStyle('paddingBottom', e.target.value)}
+                                placeholder="0"
+                                className="h-6 w-12 text-[10px] text-center px-1"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                        <Input
+                          value={selectedInstance.styles.marginRight || ''}
+                          onChange={(e) => updateStyle('marginRight', e.target.value)}
+                          placeholder="0"
+                          className="h-6 w-12 text-[10px] text-center px-1"
+                        />
+                      </div>
+                      <div className="flex justify-center">
+                        <Input
+                          value={selectedInstance.styles.marginBottom || ''}
+                          onChange={(e) => updateStyle('marginBottom', e.target.value)}
+                          placeholder="0"
+                          className="h-6 w-12 text-[10px] text-center px-1"
+                        />
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="space-y-1.5">
-                  <Label className="text-[10px] text-muted-foreground uppercase tracking-wide">Padding</Label>
-                  <div className="grid grid-cols-3 gap-1">
-                    <div className="col-start-2">
-                      <Input
-                        value={selectedInstance.styles.paddingTop || ''}
-                        onChange={(e) => updateStyle('paddingTop', e.target.value)}
-                        placeholder="0"
-                        className="h-7 text-[11px] text-center"
-                      />
-                    </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-[10px] text-muted-foreground uppercase tracking-wide">Gap</Label>
                     <Input
-                      value={selectedInstance.styles.paddingLeft || ''}
-                      onChange={(e) => updateStyle('paddingLeft', e.target.value)}
+                      value={selectedInstance.styles.gap || ''}
+                      onChange={(e) => updateStyle('gap', e.target.value)}
                       placeholder="0"
-                      className="h-7 text-[11px] text-center col-start-1 row-start-2"
+                      className="h-7 text-[11px]"
                     />
-                    <div className="col-start-2 row-start-2 flex items-center justify-center">
-                      <div className="w-8 h-8 border border-dashed border-muted-foreground/30 rounded"></div>
-                    </div>
-                    <Input
-                      value={selectedInstance.styles.paddingRight || ''}
-                      onChange={(e) => updateStyle('paddingRight', e.target.value)}
-                      placeholder="0"
-                      className="h-7 text-[11px] text-center col-start-3 row-start-2"
-                    />
-                    <div className="col-start-2 row-start-3">
-                      <Input
-                        value={selectedInstance.styles.paddingBottom || ''}
-                        onChange={(e) => updateStyle('paddingBottom', e.target.value)}
-                        placeholder="0"
-                        className="h-7 text-[11px] text-center"
-                      />
-                    </div>
                   </div>
-                </div>
-
-                <div className="space-y-1.5">
-                  <Label className="text-[10px] text-muted-foreground uppercase tracking-wide">Gap</Label>
-                  <Input
-                    value={selectedInstance.styles.gap || ''}
-                    onChange={(e) => updateStyle('gap', e.target.value)}
-                    placeholder="0"
-                    className="h-7 text-[11px]"
-                  />
                 </div>
               </StyleSection>
 
@@ -319,95 +319,95 @@ export const StylePanel: React.FC = () => {
 
               <StyleSection id="typography" title="Typography">
                 <div className="space-y-2">
-                  <Label className="text-xs text-muted-foreground">Font</Label>
+                  <Label className="text-[10px] text-muted-foreground uppercase tracking-wide">Font Family</Label>
                   <Input
                     value={selectedInstance.styles.fontFamily || ''}
                     onChange={(e) => updateStyle('fontFamily', e.target.value)}
-                    placeholder="Arial, Roboto..."
-                    className="h-8 text-xs"
+                    placeholder="inherit"
+                    className="h-7 text-[11px]"
                   />
                 </div>
 
-                <div className="grid grid-cols-3 gap-2">
-                  <div className="space-y-2">
-                    <Label className="text-xs text-muted-foreground">Size</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-1.5">
+                    <Label className="text-[10px] text-muted-foreground uppercase tracking-wide">Weight</Label>
+                    <Select
+                      value={selectedInstance.styles.fontWeight || '400'}
+                      onValueChange={(value) => updateStyle('fontWeight', value)}
+                    >
+                      <SelectTrigger className="h-7 text-[11px]">
+                        <SelectValue placeholder="400" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="100">100</SelectItem>
+                        <SelectItem value="200">200</SelectItem>
+                        <SelectItem value="300">300</SelectItem>
+                        <SelectItem value="400">400</SelectItem>
+                        <SelectItem value="500">500</SelectItem>
+                        <SelectItem value="600">600</SelectItem>
+                        <SelectItem value="700">700</SelectItem>
+                        <SelectItem value="800">800</SelectItem>
+                        <SelectItem value="900">900</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-[10px] text-muted-foreground uppercase tracking-wide">Size</Label>
                     <Input
                       value={selectedInstance.styles.fontSize || ''}
                       onChange={(e) => updateStyle('fontSize', e.target.value)}
                       placeholder="16px"
-                      className="h-8 text-xs"
+                      className="h-7 text-[11px]"
                     />
                   </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs text-muted-foreground">Height</Label>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-1.5">
+                    <Label className="text-[10px] text-muted-foreground uppercase tracking-wide">Line Height</Label>
                     <Input
                       value={selectedInstance.styles.lineHeight || ''}
                       onChange={(e) => updateStyle('lineHeight', e.target.value)}
-                      placeholder="1.5"
-                      className="h-8 text-xs"
+                      placeholder="normal"
+                      className="h-7 text-[11px]"
                     />
                   </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs text-muted-foreground">Spacing</Label>
+                  <div className="space-y-1.5">
+                    <Label className="text-[10px] text-muted-foreground uppercase tracking-wide">Letter Spacing</Label>
                     <Input
                       value={selectedInstance.styles.letterSpacing || ''}
                       onChange={(e) => updateStyle('letterSpacing', e.target.value)}
                       placeholder="0"
-                      className="h-8 text-xs"
+                      className="h-7 text-[11px]"
                     />
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label className="text-xs text-muted-foreground">Weight</Label>
-                  <Select
-                    value={selectedInstance.styles.fontWeight || '400'}
-                    onValueChange={(value) => updateStyle('fontWeight', value)}
-                  >
-                    <SelectTrigger className="h-8 text-xs">
-                      <SelectValue placeholder="Normal (400)" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="100">Thin (100)</SelectItem>
-                      <SelectItem value="200">Extra Light (200)</SelectItem>
-                      <SelectItem value="300">Light (300)</SelectItem>
-                      <SelectItem value="400">Normal (400)</SelectItem>
-                      <SelectItem value="500">Medium (500)</SelectItem>
-                      <SelectItem value="600">Semibold (600)</SelectItem>
-                      <SelectItem value="700">Bold (700)</SelectItem>
-                      <SelectItem value="800">Extra Bold (800)</SelectItem>
-                      <SelectItem value="900">Black (900)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-xs text-muted-foreground">Color</Label>
+                <div className="space-y-1.5">
+                  <Label className="text-[10px] text-muted-foreground uppercase tracking-wide">Color</Label>
                   <div className="flex gap-2">
-                    <div className="relative flex-1">
-                      <Input
-                        type="color"
-                        value={selectedInstance.styles.color?.includes('#') ? selectedInstance.styles.color : '#000000'}
-                        onChange={(e) => updateStyle('color', e.target.value)}
-                        className="h-8 w-12 p-1 cursor-pointer"
-                      />
-                    </div>
+                    <Input
+                      type="color"
+                      value={selectedInstance.styles.color?.includes('#') ? selectedInstance.styles.color : '#000000'}
+                      onChange={(e) => updateStyle('color', e.target.value)}
+                      className="h-7 w-14 p-1 cursor-pointer"
+                    />
                     <Input
                       value={selectedInstance.styles.color || ''}
                       onChange={(e) => updateStyle('color', e.target.value)}
-                      placeholder="black"
-                      className="h-8 text-xs flex-1"
+                      placeholder="inherit"
+                      className="h-7 text-[11px] flex-1"
                     />
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label className="text-xs text-muted-foreground">Text Align</Label>
+                <div className="space-y-1.5">
+                  <Label className="text-[10px] text-muted-foreground uppercase tracking-wide">Text Align</Label>
                   <Select
                     value={selectedInstance.styles.textAlign || 'left'}
                     onValueChange={(value) => updateStyle('textAlign', value)}
                   >
-                    <SelectTrigger className="h-8 text-xs">
+                    <SelectTrigger className="h-7 text-[11px]">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -421,45 +421,43 @@ export const StylePanel: React.FC = () => {
               </StyleSection>
 
               <StyleSection id="backgrounds" title="Backgrounds">
-                <div className="space-y-2">
-                  <Label className="text-xs text-muted-foreground">Background Color</Label>
+                <div className="space-y-1.5">
+                  <Label className="text-[10px] text-muted-foreground uppercase tracking-wide">Background</Label>
                   <div className="flex gap-2">
-                    <div className="relative">
-                      <Input
-                        type="color"
-                        value={selectedInstance.styles.backgroundColor?.includes('#') ? selectedInstance.styles.backgroundColor : '#ffffff'}
-                        onChange={(e) => updateStyle('backgroundColor', e.target.value)}
-                        className="h-8 w-12 p-1 cursor-pointer"
-                      />
-                    </div>
+                    <Input
+                      type="color"
+                      value={selectedInstance.styles.backgroundColor?.includes('#') ? selectedInstance.styles.backgroundColor : '#ffffff'}
+                      onChange={(e) => updateStyle('backgroundColor', e.target.value)}
+                      className="h-7 w-14 p-1 cursor-pointer"
+                    />
                     <Input
                       value={selectedInstance.styles.backgroundColor || ''}
                       onChange={(e) => updateStyle('backgroundColor', e.target.value)}
                       placeholder="transparent"
-                      className="h-8 text-xs flex-1"
+                      className="h-7 text-[11px] flex-1"
                     />
                   </div>
                 </div>
               </StyleSection>
 
               <StyleSection id="borders" title="Borders">
-                <div className="space-y-2">
-                  <Label className="text-xs text-muted-foreground">Border</Label>
+                <div className="space-y-1.5">
+                  <Label className="text-[10px] text-muted-foreground uppercase tracking-wide">Border</Label>
                   <Input
                     value={selectedInstance.styles.border || ''}
                     onChange={(e) => updateStyle('border', e.target.value)}
                     placeholder="none"
-                    className="h-8 text-xs"
+                    className="h-7 text-[11px]"
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label className="text-xs text-muted-foreground">Border Radius</Label>
+                <div className="space-y-1.5">
+                  <Label className="text-[10px] text-muted-foreground uppercase tracking-wide">Border Radius</Label>
                   <Input
                     value={selectedInstance.styles.borderRadius || ''}
                     onChange={(e) => updateStyle('borderRadius', e.target.value)}
-                    placeholder="0px"
-                    className="h-8 text-xs"
+                    placeholder="0"
+                    className="h-7 text-[11px]"
                   />
                 </div>
               </StyleSection>
