@@ -1,0 +1,60 @@
+import React from 'react';
+import { useBuilderStore } from '../store/useBuilderStore';
+import { ComponentInstance } from '../store/types';
+import { Box } from '../primitives/Box';
+import { Text } from '../primitives/Text';
+import { Heading } from '../primitives/Heading';
+import { ButtonPrimitive } from '../primitives/ButtonPrimitive';
+import { ImagePrimitive } from '../primitives/ImagePrimitive';
+import { LinkPrimitive } from '../primitives/LinkPrimitive';
+
+export const Canvas: React.FC = () => {
+  const rootInstance = useBuilderStore((state) => state.rootInstance);
+  const selectedInstanceId = useBuilderStore((state) => state.selectedInstanceId);
+  const hoveredInstanceId = useBuilderStore((state) => state.hoveredInstanceId);
+  const setSelectedInstanceId = useBuilderStore((state) => state.setSelectedInstanceId);
+  const setHoveredInstanceId = useBuilderStore((state) => state.setHoveredInstanceId);
+
+  const renderInstance = (instance: ComponentInstance): React.ReactNode => {
+    const isSelected = instance.id === selectedInstanceId;
+    const isHovered = instance.id === hoveredInstanceId;
+
+    const commonProps = {
+      instance,
+      isSelected,
+      isHovered,
+      onSelect: () => setSelectedInstanceId(instance.id),
+      onHover: () => setHoveredInstanceId(instance.id),
+      onHoverEnd: () => setHoveredInstanceId(null),
+    };
+
+    switch (instance.type) {
+      case 'Box':
+        return (
+          <Box key={instance.id} {...commonProps}>
+            {instance.children.map((child) => renderInstance(child))}
+          </Box>
+        );
+      case 'Text':
+        return <Text key={instance.id} {...commonProps} />;
+      case 'Heading':
+        return <Heading key={instance.id} {...commonProps} />;
+      case 'Button':
+        return <ButtonPrimitive key={instance.id} {...commonProps} />;
+      case 'Image':
+        return <ImagePrimitive key={instance.id} {...commonProps} />;
+      case 'Link':
+        return <LinkPrimitive key={instance.id} {...commonProps} />;
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="flex-1 overflow-auto bg-background">
+      <div className="min-h-full p-8">
+        {rootInstance && renderInstance(rootInstance)}
+      </div>
+    </div>
+  );
+};
