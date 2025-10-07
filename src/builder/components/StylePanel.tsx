@@ -1,17 +1,40 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useBuilderStore } from '../store/useBuilderStore';
 import { useStyleStore } from '../store/useStyleStore';
 import '../styles/style-panel.css';
+import { Plus } from 'lucide-react';
 
 export const StylePanel: React.FC = () => {
   const { getSelectedInstance, updateInstance } = useBuilderStore();
   const { setStyle, getComputedStyles, styleSources, createStyleSource, nextLocalClassName, renameStyleSource } = useStyleStore();
   const selectedInstance = getSelectedInstance();
 
+  const [openSections, setOpenSections] = useState({
+    layout: true,
+    space: false,
+    size: false,
+    position: false,
+    typography: false,
+    textShadows: false,
+    backgrounds: false,
+    borders: false,
+    boxShadows: false,
+    filters: false,
+    backdropFilters: false,
+    transitions: false,
+    transforms: false,
+    outline: false,
+    advanced: false,
+  });
+
+  const toggleSection = (section: keyof typeof openSections) => {
+    setOpenSections((prev) => ({ ...prev, [section]: !prev[section] }));
+  };
+
   if (!selectedInstance) {
     return (
       <div className="StylePanel">
-        <div className="Section" style={{ textAlign: 'center', color: 'var(--muted)' }}>
+        <div style={{ textAlign: 'center', color: 'var(--muted)', padding: 'var(--space-4)' }}>
           Select an element to edit its style
         </div>
       </div>
@@ -37,6 +60,11 @@ export const StylePanel: React.FC = () => {
     if (id) setStyle(id, property, value);
   };
 
+  const renameClass = (newName: string) => {
+    if (!styleSourceId) return;
+    renameStyleSource(styleSourceId, newName);
+  };
+
   const classes = selectedInstance.styleSourceIds
     ?.map((id) => ({
       id,
@@ -47,54 +75,77 @@ export const StylePanel: React.FC = () => {
 
   const isFlexDisplay = computedStyles.display === 'flex';
 
-  const renameClass = (newName: string) => {
-    if (!styleSourceId) return;
-    renameStyleSource(styleSourceId, newName);
-  };
+  const AccordionSection: React.FC<{
+    title: string;
+    section: keyof typeof openSections;
+    children?: React.ReactNode;
+    hasAddButton?: boolean;
+    indicator?: boolean;
+  }> = ({ title, section, children, hasAddButton, indicator }) => (
+    <div className="Section">
+      <div className="SectionHeader" onClick={() => toggleSection(section)}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+          <span className="SectionTitle">{title}</span>
+          {indicator && <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'hsl(30, 100%, 60%)' }} />}
+        </div>
+        {hasAddButton && <Plus className={`SectionIcon ${openSections[section] ? 'open' : ''}`} size={18} />}
+      </div>
+      {openSections[section] && children && <div className="SectionContent">{children}</div>}
+    </div>
+  );
 
   return (
     <div className="StylePanel">
-      {/* Element Type & Class Name */}
-      <section className="Section">
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--space-2)' }}>
+      {/* Element Type Header */}
+      <div style={{ 
+        padding: 'var(--space-3) 0',
+        borderBottom: '1px solid var(--panel-stroke)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+          <span style={{ fontSize: '14px' }}>🖼️</span>
           <span style={{ fontSize: '14px', fontWeight: 600 }}>{selectedInstance.type}</span>
-          <button style={{ 
-            background: 'transparent', 
-            border: 'none', 
-            color: 'var(--text)',
-            cursor: 'pointer',
-            fontSize: '18px',
-            padding: '4px'
-          }}>⋯</button>
         </div>
-        <div className="Col">
-          <label className="Label">Class Name</label>
-          <input
-            className="Input"
-            value={styleSource?.name || ''}
-            onChange={(e) => renameClass(e.target.value)}
-            placeholder="Enter class name"
-          />
-        </div>
-      </section>
+        <button style={{ 
+          background: 'transparent', 
+          border: 'none', 
+          color: 'var(--text)',
+          cursor: 'pointer',
+          fontSize: '18px',
+          padding: '4px'
+        }}>⋯</button>
+      </div>
 
       {/* Style Sources */}
-      <section className="Section">
-        <div className="SectionTitle">Style Sources</div>
+      <div style={{ padding: 'var(--space-3) 0', borderBottom: '1px solid var(--panel-stroke)' }}>
+        <div style={{ fontSize: '13px', fontWeight: 600, marginBottom: 'var(--space-2)' }}>Style Sources</div>
         <div className="Chips">
           {classes.map((c) => (
             <div key={c.id} className="Chip">
-              <span>{c.name}</span>
+              <input
+                className="Input"
+                value={c.name}
+                onChange={(e) => renameClass(e.target.value)}
+                style={{ 
+                  background: 'transparent',
+                  border: 'none',
+                  padding: 0,
+                  height: 'auto',
+                  color: 'var(--text)',
+                  fontSize: '12px',
+                  width: '120px'
+                }}
+              />
               {c.isActive && <span className="Dot" />}
             </div>
           ))}
         </div>
-      </section>
+      </div>
 
       {/* Layout */}
-      <section className="Section">
-        <div className="SectionTitle">Layout</div>
-
+      <AccordionSection title="Layout" section="layout">
         <div className="Col">
           <div className="Row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
             <label className="Label" style={{ color: 'hsl(12, 76%, 61%)', fontWeight: 600 }}>Display</label>
@@ -115,7 +166,6 @@ export const StylePanel: React.FC = () => {
 
           {isFlexDisplay && (
             <div className="FlexControls" style={{ marginTop: 'var(--space-3)' }}>
-              {/* Align Grid */}
               <div className="AlignGrid">
                 {Array.from({ length: 9 }).map((_, i) => {
                   const row = Math.floor(i / 3);
@@ -140,7 +190,6 @@ export const StylePanel: React.FC = () => {
                 })}
               </div>
 
-              {/* Flex Controls Column */}
               <div className="FlexControlsColumn">
                 <div className="Col">
                   <label className="Label">Direction</label>
@@ -150,9 +199,7 @@ export const StylePanel: React.FC = () => {
                     onChange={(e) => updateStyle('flexDirection', e.target.value)}
                   >
                     <option value="row">row</option>
-                    <option value="row-reverse">row-reverse</option>
                     <option value="column">column</option>
-                    <option value="column-reverse">column-reverse</option>
                   </select>
                 </div>
 
@@ -163,12 +210,10 @@ export const StylePanel: React.FC = () => {
                     value={computedStyles.justifyContent || 'flex-start'}
                     onChange={(e) => updateStyle('justifyContent', e.target.value)}
                   >
-                    <option value="flex-start">flex-start</option>
+                    <option value="flex-start">start</option>
                     <option value="center">center</option>
-                    <option value="flex-end">flex-end</option>
+                    <option value="flex-end">end</option>
                     <option value="space-between">space-between</option>
-                    <option value="space-around">space-around</option>
-                    <option value="space-evenly">space-evenly</option>
                   </select>
                 </div>
 
@@ -180,206 +225,121 @@ export const StylePanel: React.FC = () => {
                     onChange={(e) => updateStyle('alignItems', e.target.value)}
                   >
                     <option value="stretch">stretch</option>
-                    <option value="flex-start">flex-start</option>
+                    <option value="flex-start">start</option>
                     <option value="center">center</option>
-                    <option value="flex-end">flex-end</option>
-                    <option value="baseline">baseline</option>
+                    <option value="flex-end">end</option>
                   </select>
                 </div>
 
-                <div className="Col">
-                  <label className="Label">Gap</label>
-                  <div className="Row">
-                    <input
-                      className="Input"
-                      type="text"
-                      value={computedStyles.gap || ''}
-                      onChange={(e) => updateStyle('gap', e.target.value)}
-                      placeholder="0"
-                      style={{ flex: 1 }}
-                    />
-                    <span className="Label" style={{ minWidth: '40px' }}>REM</span>
-                  </div>
+                <div className="Row" style={{ gap: 'var(--space-2)' }}>
+                  <input
+                    className="Input SpaceInputSmall"
+                    type="text"
+                    value={computedStyles.gap?.replace(/[a-z%]/gi, '') || '0'}
+                    onChange={(e) => updateStyle('gap', e.target.value + 'px')}
+                  />
+                  <span className="Label">PX</span>
+                  <span style={{ fontSize: '18px', color: 'var(--subtle)' }}>🔗</span>
+                  <input
+                    className="Input SpaceInputSmall"
+                    type="text"
+                    value={computedStyles.gap?.replace(/[a-z%]/gi, '') || '0'}
+                    onChange={(e) => updateStyle('gap', e.target.value + 'px')}
+                  />
+                  <span className="Label">PX</span>
                 </div>
               </div>
             </div>
           )}
         </div>
-      </section>
+      </AccordionSection>
 
       {/* Space */}
-      <section className="Section">
-        <div className="SectionTitle">Space</div>
+      <AccordionSection title="Space" section="space">
         <div className="SpaceBox">
-          <div className="SpaceRing">
-            <div className="SpaceLabelCenter">PADDING</div>
-            {/* Padding values inside */}
-            <div style={{ 
-              position: 'absolute',
-              top: '12px',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              fontSize: '11px',
-              color: 'hsl(12, 76%, 61%)',
-              fontWeight: 600
-            }}>
-              {computedStyles.paddingTop || '0'}
-            </div>
-            <div style={{ 
-              position: 'absolute',
-              right: '12px',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              fontSize: '11px',
-              color: 'hsl(12, 76%, 61%)',
-              fontWeight: 600
-            }}>
-              {computedStyles.paddingRight || '0'}
-            </div>
-            <div style={{ 
-              position: 'absolute',
-              bottom: '12px',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              fontSize: '11px',
-              color: 'hsl(12, 76%, 61%)',
-              fontWeight: 600
-            }}>
-              {computedStyles.paddingBottom || '0'}
-            </div>
-            <div style={{ 
-              position: 'absolute',
-              left: '12px',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              fontSize: '11px',
-              color: 'hsl(12, 76%, 61%)',
-              fontWeight: 600
-            }}>
-              {computedStyles.paddingLeft || '0'}
-            </div>
-          </div>
-
-          {/* Margin label */}
-          <div style={{
-            position: 'absolute',
-            top: '8px',
-            left: '8px',
-            fontSize: '10px',
-            color: 'var(--muted)',
-            textTransform: 'uppercase',
-            letterSpacing: '0.05em'
-          }}>
-            MARGIN
-          </div>
-
-          {/* Margin fields with units */}
-          <div className="SpaceField" data-pos="top">
-            <div className="Row" style={{ gap: '2px' }}>
+          <div className="SpaceMarginLabel">MARGIN</div>
+          <div className="SpaceOuter">
+            {/* Top margin */}
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
               <input
-                className="Input"
+                className="Input SpaceInput"
                 placeholder="0"
                 value={computedStyles.marginTop?.replace(/[a-z%]/gi, '') || ''}
                 onChange={(e) => updateStyle('marginTop', e.target.value + 'px')}
-                style={{ flex: 1, minWidth: 0 }}
               />
-              <span className="Label" style={{ fontSize: '9px', minWidth: '24px', textAlign: 'center' }}>PX</span>
             </div>
-          </div>
-          <div className="SpaceField" data-pos="right">
-            <div className="Row" style={{ gap: '2px' }}>
+
+            {/* Middle row with left margin, padding box, right margin */}
+            <div className="SpaceRow">
               <input
-                className="Input"
-                placeholder="0"
-                value={computedStyles.marginRight?.replace(/[a-z%]/gi, '') || ''}
-                onChange={(e) => updateStyle('marginRight', e.target.value + 'px')}
-                style={{ flex: 1, minWidth: 0 }}
-              />
-              <span className="Label" style={{ fontSize: '9px', minWidth: '24px', textAlign: 'center' }}>PX</span>
-            </div>
-          </div>
-          <div className="SpaceField" data-pos="bottom">
-            <div className="Row" style={{ gap: '2px' }}>
-              <input
-                className="Input"
-                placeholder="0"
-                value={computedStyles.marginBottom?.replace(/[a-z%]/gi, '') || ''}
-                onChange={(e) => updateStyle('marginBottom', e.target.value + 'px')}
-                style={{ flex: 1, minWidth: 0 }}
-              />
-              <span className="Label" style={{ fontSize: '9px', minWidth: '24px', textAlign: 'center' }}>PX</span>
-            </div>
-          </div>
-          <div className="SpaceField" data-pos="left">
-            <div className="Row" style={{ gap: '2px' }}>
-              <input
-                className="Input"
+                className="Input SpaceInput"
                 placeholder="0"
                 value={computedStyles.marginLeft?.replace(/[a-z%]/gi, '') || ''}
                 onChange={(e) => updateStyle('marginLeft', e.target.value + 'px')}
-                style={{ flex: 1, minWidth: 0 }}
               />
-              <span className="Label" style={{ fontSize: '9px', minWidth: '24px', textAlign: 'center' }}>PX</span>
-            </div>
-          </div>
+              
+              <div className="SpaceRing">
+                <div className="SpacePaddingLabel">PADDING</div>
+                
+                {/* Top padding */}
+                <input
+                  className="Input SpaceInputSmall"
+                  placeholder="0"
+                  value={computedStyles.paddingTop?.replace(/[a-z%]/gi, '') || ''}
+                  onChange={(e) => updateStyle('paddingTop', e.target.value + 'px')}
+                  style={{ alignSelf: 'center' }}
+                />
+                
+                {/* Left and Right padding */}
+                <div className="SpacePaddingRow">
+                  <input
+                    className="Input SpaceInputSmall"
+                    placeholder="0"
+                    value={computedStyles.paddingLeft?.replace(/[a-z%]/gi, '') || ''}
+                    onChange={(e) => updateStyle('paddingLeft', e.target.value + 'px')}
+                  />
+                  <div style={{ flex: 1 }} />
+                  <input
+                    className="Input SpaceInputSmall"
+                    placeholder="0"
+                    value={computedStyles.paddingRight?.replace(/[a-z%]/gi, '') || ''}
+                    onChange={(e) => updateStyle('paddingRight', e.target.value + 'px')}
+                  />
+                </div>
+                
+                {/* Bottom padding */}
+                <input
+                  className="Input SpaceInputSmall"
+                  placeholder="0"
+                  value={computedStyles.paddingBottom?.replace(/[a-z%]/gi, '') || ''}
+                  onChange={(e) => updateStyle('paddingBottom', e.target.value + 'px')}
+                  style={{ alignSelf: 'center' }}
+                />
+              </div>
 
-          {/* Corner padding inputs with units */}
-          <div style={{
-            position: 'absolute',
-            bottom: '8px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            display: 'flex',
-            gap: '4px',
-            fontSize: '11px'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
               <input
-                className="Input"
+                className="Input SpaceInput"
                 placeholder="0"
-                value={computedStyles.paddingTop?.replace(/[a-z%]/gi, '') || ''}
-                onChange={(e) => updateStyle('paddingTop', e.target.value + 'px')}
-                style={{ width: '48px' }}
+                value={computedStyles.marginRight?.replace(/[a-z%]/gi, '') || ''}
+                onChange={(e) => updateStyle('marginRight', e.target.value + 'px')}
               />
-              <span className="Label" style={{ fontSize: '9px' }}>PX</span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+
+            {/* Bottom margin */}
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
               <input
-                className="Input"
+                className="Input SpaceInput"
                 placeholder="0"
-                value={computedStyles.paddingRight?.replace(/[a-z%]/gi, '') || ''}
-                onChange={(e) => updateStyle('paddingRight', e.target.value + 'px')}
-                style={{ width: '48px' }}
+                value={computedStyles.marginBottom?.replace(/[a-z%]/gi, '') || ''}
+                onChange={(e) => updateStyle('marginBottom', e.target.value + 'px')}
               />
-              <span className="Label" style={{ fontSize: '9px' }}>PX</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
-              <input
-                className="Input"
-                placeholder="0"
-                value={computedStyles.paddingBottom?.replace(/[a-z%]/gi, '') || ''}
-                onChange={(e) => updateStyle('paddingBottom', e.target.value + 'px')}
-                style={{ width: '48px' }}
-              />
-              <span className="Label" style={{ fontSize: '9px' }}>PX</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
-              <input
-                className="Input"
-                placeholder="0"
-                value={computedStyles.paddingLeft?.replace(/[a-z%]/gi, '') || ''}
-                onChange={(e) => updateStyle('paddingLeft', e.target.value + 'px')}
-                style={{ width: '48px' }}
-              />
-              <span className="Label" style={{ fontSize: '9px' }}>PX</span>
             </div>
           </div>
         </div>
-      </section>
+      </AccordionSection>
 
       {/* Size */}
-      <section className="Section">
-        <div className="SectionTitle">Size</div>
+      <AccordionSection title="Size" section="size">
         <div className="SizeGrid">
           <div className="Col">
             <label className="Label">Width</label>
@@ -418,11 +378,13 @@ export const StylePanel: React.FC = () => {
             />
           </div>
         </div>
-      </section>
+      </AccordionSection>
+
+      {/* Position */}
+      <AccordionSection title="Position" section="position" hasAddButton />
 
       {/* Typography */}
-      <section className="Section">
-        <div className="SectionTitle">Typography</div>
+      <AccordionSection title="Typography" section="typography" indicator>
         <div className="Col">
           <div className="SizeGrid">
             <div className="Col">
@@ -449,36 +411,14 @@ export const StylePanel: React.FC = () => {
               </select>
             </div>
           </div>
-
-          <div className="Col">
-            <label className="Label">Color</label>
-            <input
-              className="Input"
-              placeholder="hsl(var(--foreground))"
-              value={computedStyles.color || ''}
-              onChange={(e) => updateStyle('color', e.target.value)}
-            />
-          </div>
-
-          <div className="Col">
-            <label className="Label">Text Align</label>
-            <select
-              className="Select"
-              value={computedStyles.textAlign || 'left'}
-              onChange={(e) => updateStyle('textAlign', e.target.value)}
-            >
-              <option value="left">left</option>
-              <option value="center">center</option>
-              <option value="right">right</option>
-              <option value="justify">justify</option>
-            </select>
-          </div>
         </div>
-      </section>
+      </AccordionSection>
+
+      {/* Text Shadows */}
+      <AccordionSection title="Text Shadows" section="textShadows" hasAddButton />
 
       {/* Backgrounds */}
-      <section className="Section">
-        <div className="SectionTitle">Backgrounds</div>
+      <AccordionSection title="Backgrounds" section="backgrounds" hasAddButton>
         <div className="Col">
           <label className="Label">Background Color</label>
           <input
@@ -488,28 +428,48 @@ export const StylePanel: React.FC = () => {
             onChange={(e) => updateStyle('backgroundColor', e.target.value)}
           />
         </div>
-      </section>
+      </AccordionSection>
 
       {/* Borders */}
-      <section className="Section">
-        <div className="SectionTitle">Borders</div>
+      <AccordionSection title="Borders" section="borders">
         <div className="Col">
           <label className="Label">Border</label>
           <input
             className="Input"
-            placeholder="1px solid #000"
+            placeholder="none"
             value={computedStyles.border || ''}
             onChange={(e) => updateStyle('border', e.target.value)}
           />
           <label className="Label">Border Radius</label>
           <input
             className="Input"
-            placeholder="0px"
+            placeholder="0"
             value={computedStyles.borderRadius || ''}
             onChange={(e) => updateStyle('borderRadius', e.target.value)}
           />
         </div>
-      </section>
+      </AccordionSection>
+
+      {/* Box Shadows */}
+      <AccordionSection title="Box Shadows" section="boxShadows" hasAddButton />
+
+      {/* Filters */}
+      <AccordionSection title="Filters" section="filters" hasAddButton />
+
+      {/* Backdrop Filters */}
+      <AccordionSection title="Backdrop Filters" section="backdropFilters" hasAddButton />
+
+      {/* Transitions */}
+      <AccordionSection title="Transitions" section="transitions" hasAddButton />
+
+      {/* Transforms */}
+      <AccordionSection title="Transforms" section="transforms" hasAddButton />
+
+      {/* Outline */}
+      <AccordionSection title="Outline" section="outline" />
+
+      {/* Advanced */}
+      <AccordionSection title="Advanced" section="advanced" hasAddButton />
     </div>
   );
 };
