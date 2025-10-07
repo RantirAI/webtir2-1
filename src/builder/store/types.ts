@@ -9,7 +9,15 @@ export interface StyleDeclaration {
   alignItems?: string;
   gap?: string;
   padding?: string;
+  paddingTop?: string;
+  paddingRight?: string;
+  paddingBottom?: string;
+  paddingLeft?: string;
   margin?: string;
+  marginTop?: string;
+  marginRight?: string;
+  marginBottom?: string;
+  marginLeft?: string;
   width?: string;
   height?: string;
   minWidth?: string;

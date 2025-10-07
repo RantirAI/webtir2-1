@@ -45,15 +45,15 @@ export const StylePanel: React.FC = () => {
     children: React.ReactNode;
   }> = ({ id, title, children }) => (
     <Collapsible open={openSections[id]} onOpenChange={() => toggleSection(id)}>
-      <CollapsibleTrigger className="flex items-center justify-between w-full px-4 py-2 hover:bg-accent/50 text-sm font-medium">
+      <CollapsibleTrigger className="flex items-center justify-between w-full px-4 py-2 hover:bg-accent/50 text-xs font-semibold">
         <span>{title}</span>
         {openSections[id] ? (
-          <ChevronDown className="w-4 h-4" />
+          <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
         ) : (
-          <ChevronRight className="w-4 h-4" />
+          <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
         )}
       </CollapsibleTrigger>
-      <CollapsibleContent className="px-4 py-3 space-y-3 border-b border-border">
+      <CollapsibleContent className="px-4 py-2.5 space-y-2.5 border-b border-border">
         {children}
       </CollapsibleContent>
     </Collapsible>
@@ -67,18 +67,16 @@ export const StylePanel: React.FC = () => {
           <TabsTrigger value="settings">Settings</TabsTrigger>
         </TabsList>
 
-        <div className="p-4 border-b border-border space-y-3">
-          <div className="flex items-center justify-between">
-            <Label className="text-xs font-medium">
-              {selectedInstance.type}
-            </Label>
-          </div>
+        <div className="px-4 pt-4 pb-3 border-b border-border">
+          <Label className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-2 block">
+            {selectedInstance.type}
+          </Label>
           
-          <div>
-            <Label className="text-xs text-muted-foreground mb-2 block">Style Sources</Label>
-            <div className="flex gap-2">
-              <Badge variant="default" className="text-xs">Local</Badge>
-              <Badge variant="outline" className="text-xs">Pageset</Badge>
+          <div className="space-y-1.5">
+            <Label className="text-xs text-muted-foreground">Style Sources</Label>
+            <div className="flex gap-1.5">
+              <Badge variant="default" className="text-[10px] px-2 py-0.5 font-medium">Local</Badge>
+              <Badge variant="outline" className="text-[10px] px-2 py-0.5 font-medium">Pageset</Badge>
             </div>
           </div>
         </div>
@@ -169,33 +167,87 @@ export const StylePanel: React.FC = () => {
               </StyleSection>
 
               <StyleSection id="space" title="Space">
-                <div className="space-y-2">
-                  <Label className="text-xs text-muted-foreground">Gap</Label>
+                <div className="space-y-1.5">
+                  <Label className="text-[10px] text-muted-foreground uppercase tracking-wide">Margin</Label>
+                  <div className="grid grid-cols-3 gap-1">
+                    <div className="col-start-2">
+                      <Input
+                        value={selectedInstance.styles.marginTop || ''}
+                        onChange={(e) => updateStyle('marginTop', e.target.value)}
+                        placeholder="0"
+                        className="h-7 text-[11px] text-center"
+                      />
+                    </div>
+                    <Input
+                      value={selectedInstance.styles.marginLeft || ''}
+                      onChange={(e) => updateStyle('marginLeft', e.target.value)}
+                      placeholder="0"
+                      className="h-7 text-[11px] text-center col-start-1 row-start-2"
+                    />
+                    <div className="col-start-2 row-start-2 flex items-center justify-center">
+                      <div className="w-8 h-8 border border-dashed border-muted-foreground/30 rounded"></div>
+                    </div>
+                    <Input
+                      value={selectedInstance.styles.marginRight || ''}
+                      onChange={(e) => updateStyle('marginRight', e.target.value)}
+                      placeholder="0"
+                      className="h-7 text-[11px] text-center col-start-3 row-start-2"
+                    />
+                    <div className="col-start-2 row-start-3">
+                      <Input
+                        value={selectedInstance.styles.marginBottom || ''}
+                        onChange={(e) => updateStyle('marginBottom', e.target.value)}
+                        placeholder="0"
+                        className="h-7 text-[11px] text-center"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-[10px] text-muted-foreground uppercase tracking-wide">Padding</Label>
+                  <div className="grid grid-cols-3 gap-1">
+                    <div className="col-start-2">
+                      <Input
+                        value={selectedInstance.styles.paddingTop || ''}
+                        onChange={(e) => updateStyle('paddingTop', e.target.value)}
+                        placeholder="0"
+                        className="h-7 text-[11px] text-center"
+                      />
+                    </div>
+                    <Input
+                      value={selectedInstance.styles.paddingLeft || ''}
+                      onChange={(e) => updateStyle('paddingLeft', e.target.value)}
+                      placeholder="0"
+                      className="h-7 text-[11px] text-center col-start-1 row-start-2"
+                    />
+                    <div className="col-start-2 row-start-2 flex items-center justify-center">
+                      <div className="w-8 h-8 border border-dashed border-muted-foreground/30 rounded"></div>
+                    </div>
+                    <Input
+                      value={selectedInstance.styles.paddingRight || ''}
+                      onChange={(e) => updateStyle('paddingRight', e.target.value)}
+                      placeholder="0"
+                      className="h-7 text-[11px] text-center col-start-3 row-start-2"
+                    />
+                    <div className="col-start-2 row-start-3">
+                      <Input
+                        value={selectedInstance.styles.paddingBottom || ''}
+                        onChange={(e) => updateStyle('paddingBottom', e.target.value)}
+                        placeholder="0"
+                        className="h-7 text-[11px] text-center"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-[10px] text-muted-foreground uppercase tracking-wide">Gap</Label>
                   <Input
                     value={selectedInstance.styles.gap || ''}
                     onChange={(e) => updateStyle('gap', e.target.value)}
-                    placeholder="0px"
-                    className="h-8 text-xs"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-xs text-muted-foreground">Padding</Label>
-                  <Input
-                    value={selectedInstance.styles.padding || ''}
-                    onChange={(e) => updateStyle('padding', e.target.value)}
-                    placeholder="0px"
-                    className="h-8 text-xs"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-xs text-muted-foreground">Margin</Label>
-                  <Input
-                    value={selectedInstance.styles.margin || ''}
-                    onChange={(e) => updateStyle('margin', e.target.value)}
-                    placeholder="0px"
-                    className="h-8 text-xs"
+                    placeholder="0"
+                    className="h-7 text-[11px]"
                   />
                 </div>
               </StyleSection>

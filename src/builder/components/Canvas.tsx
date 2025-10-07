@@ -55,20 +55,21 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom }) => {
   };
 
   return (
-    <div className="absolute inset-0 overflow-auto">
+    <div className="absolute inset-0 overflow-auto bg-zinc-100 dark:bg-zinc-800">
       <div 
         className="min-h-full transition-transform origin-center"
         style={{
           transform: `scale(${zoom / 100})`,
           backgroundImage: `
-            radial-gradient(circle, hsl(var(--muted-foreground) / 0.2) 1px, transparent 1px)
+            radial-gradient(circle, hsl(240 5.9% 70%) 1px, transparent 1px)
           `,
           backgroundSize: '20px 20px',
-          backgroundColor: '#ffffff',
           padding: '8rem',
         }}
       >
-        {rootInstance && renderInstance(rootInstance)}
+        <div style={{ backgroundColor: rootInstance?.styles.backgroundColor || '#ffffff' }}>
+          {rootInstance && renderInstance(rootInstance)}
+        </div>
       </div>
     </div>
   );

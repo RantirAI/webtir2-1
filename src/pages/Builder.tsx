@@ -10,7 +10,7 @@ const Builder: React.FC = () => {
   const { theme } = useTheme();
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden" style={{ backgroundColor: '#ffffff' }}>
+    <div className="h-screen flex flex-col overflow-hidden bg-white">
       {/* Main content - Full screen canvas */}
       <div className="flex-1 relative overflow-hidden">
         {/* Canvas Background */}
