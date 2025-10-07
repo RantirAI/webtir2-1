@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { useBuilderStore } from '../store/useBuilderStore';
 import { useStyleStore } from '../store/useStyleStore';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Paintbrush, Settings, Zap, Plus } from 'lucide-react';
 import '../styles/style-panel.css';
-import { Plus } from 'lucide-react';
+import '../styles/tokens.css';
 
 export const StylePanel: React.FC = () => {
   const { getSelectedInstance, updateInstance } = useBuilderStore();
@@ -34,10 +36,34 @@ export const StylePanel: React.FC = () => {
 
   if (!selectedInstance) {
     return (
-      <div className="StylePanel">
-        <div style={{ textAlign: 'center', color: 'var(--muted)', padding: 'var(--space-4)' }}>
-          Select an element to edit its style
-        </div>
+      <div className="w-80 h-full bg-card border border-border rounded-lg shadow-xl flex flex-col overflow-hidden">
+        <Tabs defaultValue="styles" className="flex-1 flex flex-col">
+          <TabsList className="w-full grid grid-cols-3 rounded-none border-b bg-transparent h-9 p-0">
+            <TabsTrigger value="styles" className="gap-1 text-xs h-full data-[state=active]:bg-accent rounded-none">
+              <Paintbrush className="w-3 h-3" />
+              Styles
+            </TabsTrigger>
+            <TabsTrigger value="settings" className="gap-1 text-xs h-full data-[state=active]:bg-accent rounded-none">
+              <Settings className="w-3 h-3" />
+              Settings
+            </TabsTrigger>
+            <TabsTrigger value="actions" className="gap-1 text-xs h-full data-[state=active]:bg-accent rounded-none">
+              <Zap className="w-3 h-3" />
+              Actions
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent value="styles" className="flex-1 m-0 p-3 overflow-y-auto">
+            <div className="text-xs text-muted-foreground text-center">
+              Select an element to edit its style
+            </div>
+          </TabsContent>
+          <TabsContent value="settings" className="flex-1 m-0 p-3 overflow-y-auto">
+            <div className="text-xs text-muted-foreground">Settings panel coming soon</div>
+          </TabsContent>
+          <TabsContent value="actions" className="flex-1 m-0 p-3 overflow-y-auto">
+            <div className="text-xs text-muted-foreground">Actions panel coming soon</div>
+          </TabsContent>
+        </Tabs>
       </div>
     );
   }
@@ -103,53 +129,61 @@ export const StylePanel: React.FC = () => {
   );
 
   return (
-    <div className="StylePanel">
-      {/* Element Type Header */}
-      <div style={{ 
-        padding: 'var(--space-3) 0',
-        borderBottom: '1px solid var(--panel-stroke)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-          <span style={{ fontSize: '14px' }}>🖼️</span>
-          <span style={{ fontSize: '14px', fontWeight: 600 }}>{selectedInstance.type}</span>
-        </div>
-        <button style={{ 
-          background: 'transparent', 
-          border: 'none', 
-          color: 'var(--text)',
-          cursor: 'pointer',
-          fontSize: '18px',
-          padding: '4px'
-        }}>⋯</button>
-      </div>
+    <div className="w-80 h-full bg-card border border-border rounded-lg shadow-xl flex flex-col overflow-hidden">
+      <Tabs defaultValue="styles" className="flex-1 flex flex-col">
+        <TabsList className="w-full grid grid-cols-3 rounded-none border-b bg-transparent h-9 p-0">
+          <TabsTrigger value="styles" className="gap-1 text-xs h-full data-[state=active]:bg-accent rounded-none">
+            <Paintbrush className="w-3 h-3" />
+            Styles
+          </TabsTrigger>
+          <TabsTrigger value="settings" className="gap-1 text-xs h-full data-[state=active]:bg-accent rounded-none">
+            <Settings className="w-3 h-3" />
+            Settings
+          </TabsTrigger>
+          <TabsTrigger value="actions" className="gap-1 text-xs h-full data-[state=active]:bg-accent rounded-none">
+            <Zap className="w-3 h-3" />
+            Actions
+          </TabsTrigger>
+        </TabsList>
 
-      {/* Class Name Input */}
-      <div style={{ padding: 'var(--space-2) 0', borderBottom: '1px solid var(--panel-stroke)' }}>
-        <input
-          className="Input"
-          placeholder="Enter class names..."
-          value={classNameInput}
-          onChange={(e) => setClassNameInput(e.target.value)}
-          onBlur={(e) => {
-            if (e.target.value.trim()) {
-              renameClass(e.target.value.trim());
-            }
-          }}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              e.currentTarget.blur();
-            }
-          }}
-          style={{ 
-            fontSize: '11px',
-            height: '28px',
-            width: '100%'
-          }}
-        />
-      </div>
+        <TabsContent value="styles" className="flex-1 m-0 overflow-y-auto">
+          <div className="StylePanel">
+            {/* Element Type Header */}
+            <div style={{ 
+              padding: 'var(--space-2) var(--space-2)',
+              borderBottom: '1px solid hsl(var(--border))',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                <span style={{ fontSize: '12px' }}>🖼️</span>
+                <span style={{ fontSize: '12px', fontWeight: 600 }}>{selectedInstance.type}</span>
+              </div>
+            </div>
+
+            {/* Class Name Input */}
+            <div style={{ padding: 'var(--space-2)', borderBottom: '1px solid hsl(var(--border))' }}>
+              <input
+                className="Input"
+                placeholder="class-name another-class"
+                value={classNameInput}
+                onChange={(e) => setClassNameInput(e.target.value)}
+                onBlur={(e) => {
+                  if (e.target.value.trim()) {
+                    renameClass(e.target.value.trim());
+                  }
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.currentTarget.blur();
+                  }
+                }}
+                style={{ 
+                  width: '100%'
+                }}
+              />
+            </div>
 
       {/* Layout */}
       <AccordionSection title="Layout" section="layout">
@@ -477,6 +511,17 @@ export const StylePanel: React.FC = () => {
 
       {/* Advanced */}
       <AccordionSection title="Advanced" section="advanced" hasAddButton />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="settings" className="flex-1 m-0 p-3 overflow-y-auto">
+          <div className="text-xs text-muted-foreground">Settings panel coming soon</div>
+        </TabsContent>
+
+        <TabsContent value="actions" className="flex-1 m-0 p-3 overflow-y-auto">
+          <div className="text-xs text-muted-foreground">Actions panel coming soon</div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
