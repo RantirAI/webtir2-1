@@ -8,6 +8,7 @@ export const StylePanel: React.FC = () => {
   const { getSelectedInstance, updateInstance } = useBuilderStore();
   const { setStyle, getComputedStyles, styleSources, createStyleSource, nextLocalClassName, renameStyleSource } = useStyleStore();
   const selectedInstance = getSelectedInstance();
+  const [classNameInput, setClassNameInput] = useState('');
 
   const [openSections, setOpenSections] = useState({
     layout: true,
@@ -65,6 +66,13 @@ export const StylePanel: React.FC = () => {
     renameStyleSource(styleSourceId, newName);
   };
 
+  // Initialize class name input when selected instance changes
+  React.useEffect(() => {
+    if (styleSource) {
+      setClassNameInput(styleSource.name);
+    }
+  }, [styleSource?.name]);
+
   const classes = selectedInstance.styleSourceIds
     ?.map((id) => ({
       id,
@@ -118,30 +126,29 @@ export const StylePanel: React.FC = () => {
         }}>⋯</button>
       </div>
 
-      {/* Style Sources */}
-      <div style={{ padding: 'var(--space-3) 0', borderBottom: '1px solid var(--panel-stroke)' }}>
-        <div style={{ fontSize: '13px', fontWeight: 600, marginBottom: 'var(--space-2)' }}>Style Sources</div>
-        <div className="Chips">
-          {classes.map((c) => (
-            <div key={c.id} className="Chip">
-              <input
-                className="Input"
-                value={c.name}
-                onChange={(e) => renameClass(e.target.value)}
-                style={{ 
-                  background: 'transparent',
-                  border: 'none',
-                  padding: 0,
-                  height: 'auto',
-                  color: 'var(--text)',
-                  fontSize: '12px',
-                  width: '120px'
-                }}
-              />
-              {c.isActive && <span className="Dot" />}
-            </div>
-          ))}
-        </div>
+      {/* Class Name Input */}
+      <div style={{ padding: 'var(--space-2) 0', borderBottom: '1px solid var(--panel-stroke)' }}>
+        <input
+          className="Input"
+          placeholder="Enter class names..."
+          value={classNameInput}
+          onChange={(e) => setClassNameInput(e.target.value)}
+          onBlur={(e) => {
+            if (e.target.value.trim()) {
+              renameClass(e.target.value.trim());
+            }
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.currentTarget.blur();
+            }
+          }}
+          style={{ 
+            fontSize: '11px',
+            height: '28px',
+            width: '100%'
+          }}
+        />
       </div>
 
       {/* Layout */}

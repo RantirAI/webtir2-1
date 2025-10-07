@@ -19,7 +19,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--space-3) 0;
+  padding: var(--space-2) 0;
   cursor: pointer;
   user-select: none;
 }
@@ -29,7 +29,7 @@
 }
 
 .SectionContent {
-  padding: 0 0 var(--space-3) 0;
+  padding: 0 0 var(--space-2) 0;
 }
 
 .SectionTitle {
@@ -66,7 +66,7 @@
 /* compact "small form" controls */
 .Label {
   color: var(--subtle);
-  font-size: 11px;
+  font-size: 10px;
 }
 
 .Input,
@@ -74,11 +74,11 @@
 .Number {
   background: var(--input-bg);
   border: 1px solid var(--input-stroke);
-  height: 32px;
+  height: 28px;
   padding: 0 var(--space-2);
   border-radius: var(--radius-1);
   color: var(--text);
-  font-size: 12px;
+  font-size: 11px;
 }
 
 .Input:hover,
