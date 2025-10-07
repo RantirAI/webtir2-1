@@ -1,6 +1,5 @@
 import React from 'react';
 import { ComponentInstance } from '../store/types';
-import { stylesToObject } from '../utils/style';
 import { useStyleStore } from '../store/useStyleStore';
 
 interface BoxProps {
@@ -22,15 +21,13 @@ export const Box: React.FC<BoxProps> = ({
   onHover,
   onHoverEnd,
 }) => {
-  const { getComputedStyles } = useStyleStore();
-  const computedStyles = getComputedStyles(instance.styleSourceIds || []);
-  const style = stylesToObject(computedStyles);
+  
 
   return (
     <div
       data-instance-id={instance.id}
+      className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
       style={{
-        ...style,
         position: 'relative',
         outline: isSelected ? '2px solid hsl(var(--primary))' : isHovered ? '2px solid hsl(var(--primary) / 0.5)' : 'none',
         outlineOffset: '2px',

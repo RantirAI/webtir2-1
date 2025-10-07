@@ -17,8 +17,9 @@ export const ComponentsPanel: React.FC = () => {
     const meta = componentRegistry[type];
     if (!meta) return;
 
-    // Create a new style source for this component
-    const styleSourceId = createStyleSource('local', `${meta.type.toLowerCase()}-style`);
+    // Create a new style source for this component with human-readable unique name
+    const name = useStyleStore.getState().nextLocalClassName(meta.type);
+    const styleSourceId = createStyleSource('local', name);
     
     // Apply default styles to the style source
     Object.entries(meta.defaultStyles).forEach(([property, value]) => {

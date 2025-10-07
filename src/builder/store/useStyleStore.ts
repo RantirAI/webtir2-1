@@ -12,6 +12,14 @@ export const useStyleStore = create<StyleStore>((set, get) => ({
   styles: {},
   breakpoints: defaultBreakpoints,
   currentBreakpointId: 'base',
+  nameCounters: {},
+
+  nextLocalClassName: (componentType: string) => {
+    const base = componentType.toLowerCase();
+    const count = (get().nameCounters[base] || 0) + 1;
+    set((state) => ({ nameCounters: { ...state.nameCounters, [base]: count } }));
+    return `${base}-${count}`;
+  },
 
   createStyleSource: (type, name) => {
     const id = `${type}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -62,7 +70,7 @@ export const useStyleStore = create<StyleStore>((set, get) => ({
   getComputedStyles: (styleSourceIds, breakpointId) => {
     const { styles, breakpoints, currentBreakpointId } = get();
     const targetBreakpoint = breakpointId || currentBreakpointId;
-    const computed: StyleDeclaration = {};
+    const computed: StyleDeclaration = {} as any;
     
     // Get breakpoint cascade (base -> tablet -> mobile)
     const breakpointIndex = breakpoints.findIndex(bp => bp.id === targetBreakpoint);
@@ -77,7 +85,7 @@ export const useStyleStore = create<StyleStore>((set, get) => ({
           if (key.startsWith(prefix)) {
             const property = key.replace(prefix, '');
             if (value) {
-              computed[property] = value;
+              (computed as any)[property] = value;
             }
           }
         });

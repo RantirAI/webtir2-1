@@ -3,6 +3,7 @@ import { Canvas } from '@/builder/components/Canvas';
 import { LeftSidebar } from '@/builder/components/LeftSidebar';
 import { StylePanel } from '@/builder/components/StylePanel';
 import { TopNavigation } from '@/builder/components/TopNavigation';
+import { StyleSheetInjector } from '@/builder/components/StyleSheetInjector';
 import { useTheme } from 'next-themes';
 
 const Builder: React.FC = () => {
@@ -11,6 +12,8 @@ const Builder: React.FC = () => {
 
   return (
     <div className="h-screen flex flex-col overflow-hidden bg-white">
+      {/* Global stylesheet for builder classes */}
+      <StyleSheetInjector />
       {/* Main content - Full screen canvas */}
       <div className="flex-1 relative overflow-hidden">
         {/* Canvas Background */}

@@ -10,8 +10,8 @@ import { ChevronDown, ChevronRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 export const StylePanel: React.FC = () => {
-  const { getSelectedInstance } = useBuilderStore();
-  const { setStyle, getComputedStyles, styleSources } = useStyleStore();
+  const { getSelectedInstance, updateInstance } = useBuilderStore();
+  const { setStyle, getComputedStyles, styleSources, createStyleSource, nextLocalClassName } = useStyleStore();
   const selectedInstance = getSelectedInstance();
 
   const [openSections, setOpenSections] = useState({
@@ -31,14 +31,23 @@ export const StylePanel: React.FC = () => {
     );
   }
 
-  const styleSourceId = selectedInstance.styleSourceIds[0];
-  const styleSource = styleSources[styleSourceId];
-  const computedStyles = getComputedStyles(selectedInstance.styleSourceIds);
+  const styleSourceId = selectedInstance.styleSourceIds?.[0];
+  const styleSource = styleSourceId ? styleSources[styleSourceId] : undefined;
+  const computedStyles = getComputedStyles(selectedInstance.styleSourceIds || []);
+
+  const ensureLocalClass = () => {
+    if (!selectedInstance.styleSourceIds || selectedInstance.styleSourceIds.length === 0) {
+      const name = nextLocalClassName(selectedInstance.type);
+      const id = createStyleSource('local', name);
+      updateInstance(selectedInstance.id, { styleSourceIds: [id] });
+      return id;
+    }
+    return selectedInstance.styleSourceIds[0];
+  };
 
   const updateStyle = (property: string, value: string) => {
-    if (styleSourceId) {
-      setStyle(styleSourceId, property, value);
-    }
+    const id = styleSourceId || ensureLocalClass();
+    if (id) setStyle(id, property, value);
   };
 
   const toggleSection = (section: keyof typeof openSections) => {

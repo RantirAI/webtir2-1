@@ -93,6 +93,10 @@ export interface StyleStore {
   // Breakpoints
   breakpoints: Breakpoint[];
   currentBreakpointId: string;
+
+  // Naming helpers
+  nameCounters: Record<string, number>;
+  nextLocalClassName: (componentType: string) => string;
   
   // Actions
   createStyleSource: (type: StyleSourceType, name?: string) => string;

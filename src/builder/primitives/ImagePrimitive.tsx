@@ -27,10 +27,10 @@ export const ImagePrimitive: React.FC<ImagePrimitiveProps> = ({
   return (
     <img
       data-instance-id={instance.id}
+      className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
       src={instance.props.src || 'https://via.placeholder.com/400x300'}
       alt={instance.props.alt || 'Image'}
       style={{
-        ...style,
         position: 'relative',
         outline: isSelected ? '2px solid hsl(var(--primary))' : isHovered ? '2px solid hsl(var(--primary) / 0.5)' : 'none',
         outlineOffset: '2px',
