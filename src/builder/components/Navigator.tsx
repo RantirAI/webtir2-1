@@ -90,15 +90,10 @@ export const Navigator: React.FC = () => {
   };
 
   return (
-    <div className="w-64 border-r border-border bg-card flex flex-col">
-      <div className="p-4 border-b border-border">
-        <h2 className="text-sm font-semibold text-foreground">Navigator</h2>
+    <ScrollArea className="flex-1">
+      <div className="p-2">
+        {rootInstance && renderTreeNode(rootInstance)}
       </div>
-      <ScrollArea className="flex-1">
-        <div className="p-2">
-          {rootInstance && renderTreeNode(rootInstance)}
-        </div>
-      </ScrollArea>
-    </div>
+    </ScrollArea>
   );
 };

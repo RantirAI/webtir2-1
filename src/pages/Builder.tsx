@@ -1,8 +1,7 @@
 import React from 'react';
 import { Canvas } from '@/builder/components/Canvas';
-import { ComponentsPanel } from '@/builder/components/ComponentsPanel';
-import { Inspector } from '@/builder/components/Inspector';
-import { Navigator } from '@/builder/components/Navigator';
+import { LeftSidebar } from '@/builder/components/LeftSidebar';
+import { StylePanel } from '@/builder/components/StylePanel';
 import { Button } from '@/components/ui/button';
 import { Download, Save, Eye } from 'lucide-react';
 
@@ -36,17 +35,14 @@ const Builder: React.FC = () => {
 
       {/* Main content */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Left sidebar - Components */}
-        <ComponentsPanel />
-
-        {/* Left sidebar - Navigator */}
-        <Navigator />
+        {/* Left sidebar - Navigator & Components */}
+        <LeftSidebar />
 
         {/* Canvas */}
         <Canvas />
 
-        {/* Right sidebar - Inspector */}
-        <Inspector />
+        {/* Right sidebar - Style Panel */}
+        <StylePanel />
       </div>
     </div>
   );

@@ -51,8 +51,16 @@ export const Canvas: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 overflow-auto bg-background">
-      <div className="min-h-full p-8">
+    <div className="flex-1 overflow-auto bg-background relative">
+      <div 
+        className="min-h-full p-8"
+        style={{
+          backgroundImage: `
+            radial-gradient(circle, hsl(var(--muted-foreground) / 0.15) 1px, transparent 1px)
+          `,
+          backgroundSize: '20px 20px',
+        }}
+      >
         {rootInstance && renderInstance(rootInstance)}
       </div>
     </div>

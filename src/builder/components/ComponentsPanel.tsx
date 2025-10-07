@@ -32,28 +32,23 @@ export const ComponentsPanel: React.FC = () => {
   };
 
   return (
-    <div className="w-64 border-r border-border bg-card flex flex-col">
-      <div className="p-4 border-b border-border">
-        <h2 className="text-sm font-semibold text-foreground">Components</h2>
+    <ScrollArea className="flex-1">
+      <div className="p-2 space-y-1">
+        {Object.values(componentRegistry).map((component) => {
+          const IconComponent = Icons[component.icon as keyof typeof Icons] as any;
+          
+          return (
+            <button
+              key={component.type}
+              onClick={() => handleAddComponent(component.type)}
+              className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-accent hover:text-accent-foreground transition-colors text-left"
+            >
+              {IconComponent && <IconComponent className="w-4 h-4" />}
+              <span>{component.label}</span>
+            </button>
+          );
+        })}
       </div>
-      <ScrollArea className="flex-1">
-        <div className="p-2 space-y-1">
-          {Object.values(componentRegistry).map((component) => {
-            const IconComponent = Icons[component.icon as keyof typeof Icons] as any;
-            
-            return (
-              <button
-                key={component.type}
-                onClick={() => handleAddComponent(component.type)}
-                className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-accent hover:text-accent-foreground transition-colors text-left"
-              >
-                {IconComponent && <IconComponent className="w-4 h-4" />}
-                <span>{component.label}</span>
-              </button>
-            );
-          })}
-        </div>
-      </ScrollArea>
-    </div>
+    </ScrollArea>
   );
 };
