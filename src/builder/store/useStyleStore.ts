@@ -39,6 +39,18 @@ export const useStyleStore = create<StyleStore>((set, get) => ({
     return id;
   },
 
+  renameStyleSource: (id, newName) => {
+    set((state) => ({
+      styleSources: {
+        ...state.styleSources,
+        [id]: {
+          ...state.styleSources[id],
+          name: newName,
+        },
+      },
+    }));
+  },
+
   deleteStyleSource: (id) => {
     set((state) => {
       const { [id]: _, ...remainingStyleSources } = state.styleSources;

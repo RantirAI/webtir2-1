@@ -5,7 +5,7 @@ import '../styles/style-panel.css';
 
 export const StylePanel: React.FC = () => {
   const { getSelectedInstance, updateInstance } = useBuilderStore();
-  const { setStyle, getComputedStyles, styleSources, createStyleSource, nextLocalClassName } = useStyleStore();
+  const { setStyle, getComputedStyles, styleSources, createStyleSource, nextLocalClassName, renameStyleSource } = useStyleStore();
   const selectedInstance = getSelectedInstance();
 
   if (!selectedInstance) {
@@ -47,8 +47,37 @@ export const StylePanel: React.FC = () => {
 
   const isFlexDisplay = computedStyles.display === 'flex';
 
+  const renameClass = (newName: string) => {
+    if (!styleSourceId) return;
+    renameStyleSource(styleSourceId, newName);
+  };
+
   return (
     <div className="StylePanel">
+      {/* Element Type & Class Name */}
+      <section className="Section">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--space-2)' }}>
+          <span style={{ fontSize: '14px', fontWeight: 600 }}>{selectedInstance.type}</span>
+          <button style={{ 
+            background: 'transparent', 
+            border: 'none', 
+            color: 'var(--text)',
+            cursor: 'pointer',
+            fontSize: '18px',
+            padding: '4px'
+          }}>⋯</button>
+        </div>
+        <div className="Col">
+          <label className="Label">Class Name</label>
+          <input
+            className="Input"
+            value={styleSource?.name || ''}
+            onChange={(e) => renameClass(e.target.value)}
+            placeholder="Enter class name"
+          />
+        </div>
+      </section>
+
       {/* Style Sources */}
       <section className="Section">
         <div className="SectionTitle">Style Sources</div>
@@ -244,78 +273,106 @@ export const StylePanel: React.FC = () => {
             MARGIN
           </div>
 
-          {/* Margin fields */}
+          {/* Margin fields with units */}
           <div className="SpaceField" data-pos="top">
-            <input
-              className="Input"
-              placeholder="0"
-              value={computedStyles.marginTop || ''}
-              onChange={(e) => updateStyle('marginTop', e.target.value)}
-            />
+            <div className="Row" style={{ gap: '2px' }}>
+              <input
+                className="Input"
+                placeholder="0"
+                value={computedStyles.marginTop?.replace(/[a-z%]/gi, '') || ''}
+                onChange={(e) => updateStyle('marginTop', e.target.value + 'px')}
+                style={{ flex: 1, minWidth: 0 }}
+              />
+              <span className="Label" style={{ fontSize: '9px', minWidth: '24px', textAlign: 'center' }}>PX</span>
+            </div>
           </div>
           <div className="SpaceField" data-pos="right">
-            <input
-              className="Input"
-              placeholder="0"
-              value={computedStyles.marginRight || ''}
-              onChange={(e) => updateStyle('marginRight', e.target.value)}
-            />
+            <div className="Row" style={{ gap: '2px' }}>
+              <input
+                className="Input"
+                placeholder="0"
+                value={computedStyles.marginRight?.replace(/[a-z%]/gi, '') || ''}
+                onChange={(e) => updateStyle('marginRight', e.target.value + 'px')}
+                style={{ flex: 1, minWidth: 0 }}
+              />
+              <span className="Label" style={{ fontSize: '9px', minWidth: '24px', textAlign: 'center' }}>PX</span>
+            </div>
           </div>
           <div className="SpaceField" data-pos="bottom">
-            <input
-              className="Input"
-              placeholder="0"
-              value={computedStyles.marginBottom || ''}
-              onChange={(e) => updateStyle('marginBottom', e.target.value)}
-            />
+            <div className="Row" style={{ gap: '2px' }}>
+              <input
+                className="Input"
+                placeholder="0"
+                value={computedStyles.marginBottom?.replace(/[a-z%]/gi, '') || ''}
+                onChange={(e) => updateStyle('marginBottom', e.target.value + 'px')}
+                style={{ flex: 1, minWidth: 0 }}
+              />
+              <span className="Label" style={{ fontSize: '9px', minWidth: '24px', textAlign: 'center' }}>PX</span>
+            </div>
           </div>
           <div className="SpaceField" data-pos="left">
-            <input
-              className="Input"
-              placeholder="0"
-              value={computedStyles.marginLeft || ''}
-              onChange={(e) => updateStyle('marginLeft', e.target.value)}
-            />
+            <div className="Row" style={{ gap: '2px' }}>
+              <input
+                className="Input"
+                placeholder="0"
+                value={computedStyles.marginLeft?.replace(/[a-z%]/gi, '') || ''}
+                onChange={(e) => updateStyle('marginLeft', e.target.value + 'px')}
+                style={{ flex: 1, minWidth: 0 }}
+              />
+              <span className="Label" style={{ fontSize: '9px', minWidth: '24px', textAlign: 'center' }}>PX</span>
+            </div>
           </div>
 
-          {/* Corner padding inputs */}
+          {/* Corner padding inputs with units */}
           <div style={{
             position: 'absolute',
             bottom: '8px',
             left: '50%',
             transform: 'translateX(-50%)',
             display: 'flex',
-            gap: 'var(--space-1)',
+            gap: '4px',
             fontSize: '11px'
           }}>
-            <input
-              className="Input"
-              placeholder="0"
-              value={computedStyles.paddingTop || ''}
-              onChange={(e) => updateStyle('paddingTop', e.target.value)}
-              style={{ width: '64px' }}
-            />
-            <input
-              className="Input"
-              placeholder="0"
-              value={computedStyles.paddingRight || ''}
-              onChange={(e) => updateStyle('paddingRight', e.target.value)}
-              style={{ width: '64px' }}
-            />
-            <input
-              className="Input"
-              placeholder="0"
-              value={computedStyles.paddingBottom || ''}
-              onChange={(e) => updateStyle('paddingBottom', e.target.value)}
-              style={{ width: '64px' }}
-            />
-            <input
-              className="Input"
-              placeholder="0"
-              value={computedStyles.paddingLeft || ''}
-              onChange={(e) => updateStyle('paddingLeft', e.target.value)}
-              style={{ width: '64px' }}
-            />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+              <input
+                className="Input"
+                placeholder="0"
+                value={computedStyles.paddingTop?.replace(/[a-z%]/gi, '') || ''}
+                onChange={(e) => updateStyle('paddingTop', e.target.value + 'px')}
+                style={{ width: '48px' }}
+              />
+              <span className="Label" style={{ fontSize: '9px' }}>PX</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+              <input
+                className="Input"
+                placeholder="0"
+                value={computedStyles.paddingRight?.replace(/[a-z%]/gi, '') || ''}
+                onChange={(e) => updateStyle('paddingRight', e.target.value + 'px')}
+                style={{ width: '48px' }}
+              />
+              <span className="Label" style={{ fontSize: '9px' }}>PX</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+              <input
+                className="Input"
+                placeholder="0"
+                value={computedStyles.paddingBottom?.replace(/[a-z%]/gi, '') || ''}
+                onChange={(e) => updateStyle('paddingBottom', e.target.value + 'px')}
+                style={{ width: '48px' }}
+              />
+              <span className="Label" style={{ fontSize: '9px' }}>PX</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+              <input
+                className="Input"
+                placeholder="0"
+                value={computedStyles.paddingLeft?.replace(/[a-z%]/gi, '') || ''}
+                onChange={(e) => updateStyle('paddingLeft', e.target.value + 'px')}
+                style={{ width: '48px' }}
+              />
+              <span className="Label" style={{ fontSize: '9px' }}>PX</span>
+            </div>
           </div>
         </div>
       </section>
