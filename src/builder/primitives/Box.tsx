@@ -1,6 +1,7 @@
 import React from 'react';
 import { ComponentInstance } from '../store/types';
 import { stylesToObject } from '../utils/style';
+import { useStyleStore } from '../store/useStyleStore';
 
 interface BoxProps {
   instance: ComponentInstance;
@@ -21,7 +22,9 @@ export const Box: React.FC<BoxProps> = ({
   onHover,
   onHoverEnd,
 }) => {
-  const style = stylesToObject(instance.styles);
+  const { getComputedStyles } = useStyleStore();
+  const computedStyles = getComputedStyles(instance.styleSourceIds || []);
+  const style = stylesToObject(computedStyles);
 
   return (
     <div

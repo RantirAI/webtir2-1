@@ -1,6 +1,7 @@
 import React from 'react';
 import { componentRegistry } from '../primitives/registry';
 import { useBuilderStore } from '../store/useBuilderStore';
+import { useStyleStore } from '../store/useStyleStore';
 import { ComponentInstance } from '../store/types';
 import { generateId } from '../utils/instance';
 import * as Icons from 'lucide-react';
@@ -9,17 +10,29 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 export const ComponentsPanel: React.FC = () => {
   const addInstance = useBuilderStore((state) => state.addInstance);
   const selectedInstanceId = useBuilderStore((state) => state.selectedInstanceId);
+  const createStyleSource = useStyleStore((state) => state.createStyleSource);
+  const setStyle = useStyleStore((state) => state.setStyle);
 
   const handleAddComponent = (type: string) => {
     const meta = componentRegistry[type];
     if (!meta) return;
+
+    // Create a new style source for this component
+    const styleSourceId = createStyleSource('local', `${meta.type.toLowerCase()}-style`);
+    
+    // Apply default styles to the style source
+    Object.entries(meta.defaultStyles).forEach(([property, value]) => {
+      if (value) {
+        setStyle(styleSourceId, property, value);
+      }
+    });
 
     const newInstance: ComponentInstance = {
       id: generateId(),
       type: meta.type,
       label: meta.label,
       props: { ...meta.defaultProps },
-      styles: { ...meta.defaultStyles },
+      styleSourceIds: [styleSourceId],
       children: [],
     };
 

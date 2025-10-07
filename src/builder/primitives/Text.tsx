@@ -1,6 +1,7 @@
 import React from 'react';
 import { ComponentInstance } from '../store/types';
 import { stylesToObject } from '../utils/style';
+import { useStyleStore } from '../store/useStyleStore';
 
 interface TextProps {
   instance: ComponentInstance;
@@ -19,7 +20,9 @@ export const Text: React.FC<TextProps> = ({
   onHover,
   onHoverEnd,
 }) => {
-  const style = stylesToObject(instance.styles);
+  const { getComputedStyles } = useStyleStore();
+  const computedStyles = getComputedStyles(instance.styleSourceIds || []);
+  const style = stylesToObject(computedStyles);
 
   return (
     <p

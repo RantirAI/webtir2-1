@@ -2,6 +2,26 @@
 
 export type ComponentType = 'Box' | 'Text' | 'Heading' | 'Image' | 'Button' | 'Link';
 
+export type StyleSourceType = 'local' | 'token' | 'preset';
+
+export interface Breakpoint {
+  id: string;
+  label: string;
+  minWidth?: number;
+  maxWidth?: number;
+}
+
+export interface StyleSource {
+  id: string;
+  type: StyleSourceType;
+  name: string;
+}
+
+export interface StyleValue {
+  value: string;
+  breakpointId: string;
+}
+
 export interface StyleDeclaration {
   display?: string;
   flexDirection?: string;
@@ -42,7 +62,7 @@ export interface ComponentInstance {
   type: ComponentType;
   label?: string;
   props: Record<string, any>;
-  styles: StyleDeclaration;
+  styleSourceIds: string[];
   children: ComponentInstance[];
 }
 
@@ -61,6 +81,25 @@ export interface PropDefinition {
   control: 'text' | 'textarea' | 'select' | 'number' | 'checkbox';
   options?: string[];
   defaultValue?: any;
+}
+
+export interface StyleStore {
+  // Style sources (classes)
+  styleSources: Record<string, StyleSource>;
+  
+  // Styles (key: styleSourceId:breakpointId:property)
+  styles: Record<string, string>;
+  
+  // Breakpoints
+  breakpoints: Breakpoint[];
+  currentBreakpointId: string;
+  
+  // Actions
+  createStyleSource: (type: StyleSourceType, name?: string) => string;
+  deleteStyleSource: (id: string) => void;
+  setStyle: (styleSourceId: string, property: string, value: string, breakpointId?: string) => void;
+  getComputedStyles: (styleSourceIds: string[], breakpointId?: string) => StyleDeclaration;
+  setCurrentBreakpoint: (id: string) => void;
 }
 
 export interface BuilderState {

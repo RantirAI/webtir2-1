@@ -1,6 +1,7 @@
 import React from 'react';
 import { ComponentInstance } from '../store/types';
 import { stylesToObject } from '../utils/style';
+import { useStyleStore } from '../store/useStyleStore';
 
 interface HeadingProps {
   instance: ComponentInstance;
@@ -19,7 +20,9 @@ export const Heading: React.FC<HeadingProps> = ({
   onHover,
   onHoverEnd,
 }) => {
-  const style = stylesToObject(instance.styles);
+  const { getComputedStyles } = useStyleStore();
+  const computedStyles = getComputedStyles(instance.styleSourceIds || []);
+  const style = stylesToObject(computedStyles);
   const level = instance.props.level || 'h2';
   const Tag = level as keyof JSX.IntrinsicElements;
 

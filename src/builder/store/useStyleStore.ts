@@ -1,0 +1,93 @@
+import { create } from 'zustand';
+import { StyleStore, StyleSource, Breakpoint, StyleDeclaration } from './types';
+
+const defaultBreakpoints: Breakpoint[] = [
+  { id: 'base', label: 'Base' },
+  { id: 'tablet', label: 'Tablet', maxWidth: 991 },
+  { id: 'mobile', label: 'Mobile', maxWidth: 767 },
+];
+
+export const useStyleStore = create<StyleStore>((set, get) => ({
+  styleSources: {},
+  styles: {},
+  breakpoints: defaultBreakpoints,
+  currentBreakpointId: 'base',
+
+  createStyleSource: (type, name) => {
+    const id = `${type}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const styleSource: StyleSource = {
+      id,
+      type,
+      name: name || `${type}-class`,
+    };
+    
+    set((state) => ({
+      styleSources: {
+        ...state.styleSources,
+        [id]: styleSource,
+      },
+    }));
+    
+    return id;
+  },
+
+  deleteStyleSource: (id) => {
+    set((state) => {
+      const { [id]: _, ...remainingStyleSources } = state.styleSources;
+      
+      // Remove all styles associated with this style source
+      const remainingStyles = Object.fromEntries(
+        Object.entries(state.styles).filter(([key]) => !key.startsWith(`${id}:`))
+      );
+      
+      return {
+        styleSources: remainingStyleSources,
+        styles: remainingStyles,
+      };
+    });
+  },
+
+  setStyle: (styleSourceId, property, value, breakpointId) => {
+    const currentBreakpoint = breakpointId || get().currentBreakpointId;
+    const key = `${styleSourceId}:${currentBreakpoint}:${property}`;
+    
+    set((state) => ({
+      styles: {
+        ...state.styles,
+        [key]: value,
+      },
+    }));
+  },
+
+  getComputedStyles: (styleSourceIds, breakpointId) => {
+    const { styles, breakpoints, currentBreakpointId } = get();
+    const targetBreakpoint = breakpointId || currentBreakpointId;
+    const computed: StyleDeclaration = {};
+    
+    // Get breakpoint cascade (base -> tablet -> mobile)
+    const breakpointIndex = breakpoints.findIndex(bp => bp.id === targetBreakpoint);
+    const cascadeBreakpoints = breakpoints.slice(0, breakpointIndex + 1).map(bp => bp.id);
+    
+    // Apply styles from each style source in order
+    styleSourceIds.forEach(sourceId => {
+      // Apply styles from base to current breakpoint
+      cascadeBreakpoints.forEach(bpId => {
+        const prefix = `${sourceId}:${bpId}:`;
+        Object.entries(styles).forEach(([key, value]) => {
+          if (key.startsWith(prefix)) {
+            const property = key.replace(prefix, '');
+            if (value) {
+              computed[property] = value;
+            }
+          }
+        });
+      });
+    });
+    
+    return computed;
+  },
+
+  setCurrentBreakpoint: (id) => {
+    set({ currentBreakpointId: id });
+  },
+}));

@@ -1,5 +1,6 @@
 import React from 'react';
 import { useBuilderStore } from '../store/useBuilderStore';
+import { useStyleStore } from '../store/useStyleStore';
 import { ComponentInstance } from '../store/types';
 import { Box } from '../primitives/Box';
 import { Text } from '../primitives/Text';
@@ -18,6 +19,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom }) => {
   const hoveredInstanceId = useBuilderStore((state) => state.hoveredInstanceId);
   const setSelectedInstanceId = useBuilderStore((state) => state.setSelectedInstanceId);
   const setHoveredInstanceId = useBuilderStore((state) => state.setHoveredInstanceId);
+  const { getComputedStyles } = useStyleStore();
 
   const renderInstance = (instance: ComponentInstance): React.ReactNode => {
     const isSelected = instance.id === selectedInstanceId;
@@ -67,7 +69,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom }) => {
           padding: '8rem',
         }}
       >
-        <div style={{ backgroundColor: rootInstance?.styles.backgroundColor || '#ffffff' }}>
+        <div style={{ backgroundColor: '#ffffff' }}>
           {rootInstance && renderInstance(rootInstance)}
         </div>
       </div>

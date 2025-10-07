@@ -2,18 +2,40 @@ import { create } from 'zustand';
 import { BuilderState, ComponentInstance } from './types';
 import { generateId } from '../utils/instance';
 
+// Initialize root style source
+const initRootStyle = () => {
+  // Lazy import to avoid circular dependency
+  import('./useStyleStore').then(({ useStyleStore }) => {
+    const { createStyleSource, setStyle, styleSources } = useStyleStore.getState();
+    
+    if (!styleSources['root-style']) {
+      const id = createStyleSource('local', 'root-style');
+      // Ensure the ID is 'root-style'
+      if (id !== 'root-style') {
+        // Update to use the correct ID
+        const store = useStyleStore.getState();
+        store.styleSources['root-style'] = store.styleSources[id];
+        delete store.styleSources[id];
+      }
+      
+      setStyle('root-style', 'display', 'flex');
+      setStyle('root-style', 'flexDirection', 'column');
+      setStyle('root-style', 'minHeight', '100vh');
+      setStyle('root-style', 'backgroundColor', 'hsl(var(--background))');
+    }
+  });
+};
+
+// Call on module load
+setTimeout(initRootStyle, 0);
+
 export const useBuilderStore = create<BuilderState>((set, get) => ({
   rootInstance: {
     id: 'root',
     type: 'Box',
     label: 'Body',
     props: {},
-    styles: {
-      display: 'flex',
-      flexDirection: 'column',
-      minHeight: '100vh',
-      backgroundColor: 'hsl(var(--background))',
-    },
+    styleSourceIds: ['root-style'],
     children: [],
   },
   
