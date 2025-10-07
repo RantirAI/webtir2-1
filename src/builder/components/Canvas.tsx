@@ -59,17 +59,24 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom }) => {
   return (
     <div className="absolute inset-0 overflow-auto bg-zinc-100 dark:bg-zinc-800">
       <div 
-        className="min-h-full transition-transform origin-center"
+        className="transition-transform origin-center flex items-start justify-center"
         style={{
           transform: `scale(${zoom / 100})`,
           backgroundImage: `
             radial-gradient(circle, hsl(240 5.9% 70%) 1px, transparent 1px)
           `,
           backgroundSize: '20px 20px',
-          padding: '8rem',
+          padding: '4rem',
+          minHeight: '100%',
         }}
       >
-        <div style={{ backgroundColor: '#ffffff' }}>
+        <div 
+          style={{ 
+            backgroundColor: '#ffffff',
+            width: '1250px',
+            minHeight: '2000px',
+          }}
+        >
           {rootInstance && renderInstance(rootInstance)}
         </div>
       </div>

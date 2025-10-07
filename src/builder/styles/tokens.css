@@ -1,0 +1,28 @@
+:root {
+  /* spacing scale (Radix-ish) */
+  --space-0: 0;
+  --space-1: 0.25rem;   /* 4px  */
+  --space-2: 0.5rem;    /* 8px  */
+  --space-3: 0.75rem;   /* 12px */
+  --space-4: 1rem;      /* 16px */
+  --space-5: 1.5rem;    /* 24px */
+
+  /* radius */
+  --radius-1: 4px;      /* default controls */
+  --radius-2: 6px;
+  --radius-3: 8px;
+
+  /* neutrals (Radix Slate style) */
+  --panel-bg:      hsl(240 6% 10%);   /* very dark */
+  --panel-elev:    hsl(240 6% 12%);   /* section bg */
+  --panel-stroke:  hsl(240 5% 18%);
+  --subtle:        hsl(240 5% 70%);   /* labels */
+  --text:          hsl(0 0% 98%);     /* primary text */
+  --muted:         hsl(240 4% 50%);
+  --chip-bg:       hsl(240 6% 20%);
+  --chip-active:   hsl(258 90% 60%);  /* the small blue radio in your shot */
+  --input-bg:      hsl(240 6% 14%);
+  --input-stroke:  hsl(240 6% 22%);
+  --hover:         hsl(240 6% 18%);
+  --focus:         hsl(258 100% 64%);
+}

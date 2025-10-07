@@ -1,0 +1,282 @@
+.StylePanel {
+  width: 320px;
+  background: var(--panel-bg);
+  color: var(--text);
+  font: 500 12px/1.2 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue";
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  height: 100%;
+  overflow-y: auto;
+}
+
+.Section {
+  background: var(--panel-elev);
+  border: 1px solid var(--panel-stroke);
+  border-radius: var(--radius-2);
+  padding: var(--space-3);
+}
+
+.SectionTitle {
+  color: var(--subtle);
+  font-weight: 600;
+  letter-spacing: .02em;
+  margin-bottom: var(--space-2);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.Row {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.Col {
+  display: grid;
+  gap: var(--space-2);
+}
+
+/* compact "small form" controls */
+.Label {
+  color: var(--subtle);
+  font-size: 11px;
+}
+
+.Input,
+.Select,
+.Number {
+  background: var(--input-bg);
+  border: 1px solid var(--input-stroke);
+  height: 32px;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-1);
+  color: var(--text);
+  font-size: 12px;
+}
+
+.Input:hover,
+.Select:hover,
+.Number:hover {
+  background: var(--hover);
+}
+
+.Input:focus,
+.Select:focus,
+.Number:focus {
+  outline: 2px solid var(--focus);
+  outline-offset: 0;
+}
+
+/* style source chips */
+.Chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.Chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0 var(--space-3);
+  height: 32px;
+  border-radius: 6px;
+  background: var(--chip-bg);
+  color: var(--text);
+  border: 1px solid var(--panel-stroke);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.Chip:hover {
+  background: var(--hover);
+}
+
+.Chip .Dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--chip-active);
+}
+
+/* layout grid (3x3 align diagram) */
+.AlignGrid {
+  width: 92px;
+  height: 92px;
+  padding: var(--space-2);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 2px;
+  background: var(--panel-bg);
+  border: 2px solid var(--focus);
+  border-radius: var(--radius-1);
+}
+
+.AlignBtn {
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-1);
+  background: var(--input-bg);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.AlignBtn:hover {
+  background: var(--hover);
+}
+
+.AlignBtn[data-state="on"] {
+  background: var(--focus);
+}
+
+/* space control (margin/padding box) */
+.SpaceBox {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  aspect-ratio: 1.8 / 1;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-stroke);
+  border-radius: var(--radius-2);
+  display: grid;
+  place-items: center;
+  padding: var(--space-4);
+}
+
+.SpaceRing {
+  position: absolute;
+  inset: var(--space-5);
+  border: 1px dashed var(--panel-stroke);
+  border-radius: var(--radius-2);
+  display: grid;
+  place-items: center;
+}
+
+.SpaceLabelCenter {
+  position: absolute;
+  font-size: 10px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.SpaceField {
+  position: absolute;
+  width: 64px;
+}
+
+.SpaceField input {
+  text-align: center;
+  font-size: 11px;
+}
+
+/* positions */
+.SpaceField[data-pos="top"] {
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.SpaceField[data-pos="right"] {
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.SpaceField[data-pos="bottom"] {
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.SpaceField[data-pos="left"] {
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* size grid */
+.SizeGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+}
+
+/* Flex controls layout */
+.FlexControls {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+}
+
+.FlexControlsColumn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+/* Icon buttons for flex direction/align */
+.IconButton {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  background: var(--input-bg);
+  border: 1px solid var(--input-stroke);
+  border-radius: var(--radius-1);
+  cursor: pointer;
+  transition: all 0.2s;
+  color: var(--text);
+}
+
+.IconButton:hover {
+  background: var(--hover);
+}
+
+.IconButton[data-state="active"] {
+  background: var(--focus);
+  border-color: var(--focus);
+}
+
+/* Gap tokens */
+.GapTokens {
+  display: flex;
+  gap: var(--space-1);
+}
+
+.GapToken {
+  min-width: 48px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--input-bg);
+  border: 1px solid var(--input-stroke);
+  border-radius: var(--radius-1);
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s;
+}
+
+.GapToken:hover {
+  background: var(--hover);
+}
+
+.GapToken[data-state="active"] {
+  background: var(--focus);
+  border-color: var(--focus);
+}
+
+.GapUnit {
+  font-size: 10px;
+  color: var(--subtle);
+  margin-left: 2px;
+}

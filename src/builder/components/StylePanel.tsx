@@ -1,32 +1,19 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useBuilderStore } from '../store/useBuilderStore';
 import { useStyleStore } from '../store/useStyleStore';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ChevronDown, ChevronRight } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import '../styles/style-panel.css';
 
 export const StylePanel: React.FC = () => {
   const { getSelectedInstance, updateInstance } = useBuilderStore();
   const { setStyle, getComputedStyles, styleSources, createStyleSource, nextLocalClassName } = useStyleStore();
   const selectedInstance = getSelectedInstance();
 
-  const [openSections, setOpenSections] = useState({
-    layout: true,
-    space: true,
-    size: true,
-    typography: true,
-    backgrounds: false,
-    borders: false,
-  });
-
   if (!selectedInstance) {
     return (
-      <div className="w-80 bg-background border-l border-border flex items-center justify-center text-sm text-muted-foreground">
-        Select an element to edit its style
+      <div className="StylePanel">
+        <div className="Section" style={{ textAlign: 'center', color: 'var(--muted)' }}>
+          Select an element to edit its style
+        </div>
       </div>
     );
   }
@@ -50,443 +37,422 @@ export const StylePanel: React.FC = () => {
     if (id) setStyle(id, property, value);
   };
 
-  const toggleSection = (section: keyof typeof openSections) => {
-    setOpenSections((prev) => ({ ...prev, [section]: !prev[section] }));
-  };
+  const classes = selectedInstance.styleSourceIds
+    ?.map((id) => ({
+      id,
+      name: styleSources[id]?.name || id,
+      isActive: id === styleSourceId,
+    }))
+    .filter(Boolean) || [];
 
-  const StyleSection: React.FC<{
-    title: string;
-    section: keyof typeof openSections;
-    children: React.ReactNode;
-  }> = ({ title, section, children }) => (
-    <div className="border-b border-border">
-      <button
-        onClick={() => toggleSection(section)}
-        className="w-full flex items-center justify-between px-3 py-2 text-sm font-medium hover:bg-accent/50 transition-colors"
-      >
-        <span>{title}</span>
-        {openSections[section] ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-      </button>
-      {openSections[section] && <div className="p-3 space-y-3">{children}</div>}
-    </div>
-  );
+  const isFlexDisplay = computedStyles.display === 'flex';
 
   return (
-    <div className="w-80 bg-background border-l border-border flex flex-col">
-      <Tabs defaultValue="style" className="flex-1 flex flex-col">
-        <TabsList className="w-full rounded-none border-b border-border bg-transparent p-0">
-          <TabsTrigger value="style" className="flex-1 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary">
-            Style
-          </TabsTrigger>
-          <TabsTrigger value="settings" className="flex-1 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary">
-            Settings
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="style" className="flex-1 mt-0 overflow-hidden">
-          {/* Style Source Badge */}
-          <div className="p-3 border-b border-border">
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground">Style:</span>
-              <Badge variant="secondary" className="text-xs">
-                {styleSource?.name || styleSourceId}
-              </Badge>
+    <div className="StylePanel">
+      {/* Style Sources */}
+      <section className="Section">
+        <div className="SectionTitle">Style Sources</div>
+        <div className="Chips">
+          {classes.map((c) => (
+            <div key={c.id} className="Chip">
+              <span>{c.name}</span>
+              {c.isActive && <span className="Dot" />}
             </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Layout */}
+      <section className="Section">
+        <div className="SectionTitle">Layout</div>
+
+        <div className="Col">
+          <div className="Row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+            <label className="Label" style={{ color: 'hsl(12, 76%, 61%)', fontWeight: 600 }}>Display</label>
+            <select
+              className="Select"
+              value={computedStyles.display || 'block'}
+              onChange={(e) => updateStyle('display', e.target.value)}
+              style={{ flex: 1, marginLeft: 'var(--space-2)' }}
+            >
+              <option value="block">block</option>
+              <option value="flex">flex</option>
+              <option value="inline">inline</option>
+              <option value="inline-block">inline-block</option>
+              <option value="grid">grid</option>
+              <option value="none">none</option>
+            </select>
           </div>
 
-          <ScrollArea className="h-[calc(100vh-200px)]">
-            {/* Layout Section */}
-            <StyleSection title="Layout" section="layout">
-              <div className="space-y-2">
-                <Label className="text-xs text-muted-foreground">Display</Label>
-                <Select
-                  value={computedStyles.display || 'block'}
-                  onValueChange={(value) => updateStyle('display', value)}
-                >
-                  <SelectTrigger className="h-8 text-xs">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="block">Block</SelectItem>
-                    <SelectItem value="flex">Flex</SelectItem>
-                    <SelectItem value="inline">Inline</SelectItem>
-                    <SelectItem value="inline-block">Inline Block</SelectItem>
-                    <SelectItem value="none">None</SelectItem>
-                  </SelectContent>
-                </Select>
+          {isFlexDisplay && (
+            <div className="FlexControls" style={{ marginTop: 'var(--space-3)' }}>
+              {/* Align Grid */}
+              <div className="AlignGrid">
+                {Array.from({ length: 9 }).map((_, i) => {
+                  const row = Math.floor(i / 3);
+                  const col = i % 3;
+                  const isActive = 
+                    (computedStyles.justifyContent === 'flex-start' && col === 0) ||
+                    (computedStyles.justifyContent === 'center' && col === 1) ||
+                    (computedStyles.justifyContent === 'flex-end' && col === 2);
+                  
+                  return (
+                    <button 
+                      key={i} 
+                      className="AlignBtn"
+                      data-state={row === 1 && isActive ? "on" : "off"}
+                      onClick={() => {
+                        if (col === 0) updateStyle('justifyContent', 'flex-start');
+                        if (col === 1) updateStyle('justifyContent', 'center');
+                        if (col === 2) updateStyle('justifyContent', 'flex-end');
+                      }}
+                    />
+                  );
+                })}
               </div>
 
-              {computedStyles.display === 'flex' && (
-                <>
-                  <div className="space-y-2">
-                    <Label className="text-xs text-muted-foreground">Direction</Label>
-                    <Select
-                      value={computedStyles.flexDirection || 'row'}
-                      onValueChange={(value) => updateStyle('flexDirection', value)}
-                    >
-                      <SelectTrigger className="h-8 text-xs">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="row">Row</SelectItem>
-                        <SelectItem value="column">Column</SelectItem>
-                        <SelectItem value="row-reverse">Row Reverse</SelectItem>
-                        <SelectItem value="column-reverse">Column Reverse</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+              {/* Flex Controls Column */}
+              <div className="FlexControlsColumn">
+                <div className="Col">
+                  <label className="Label">Direction</label>
+                  <select
+                    className="Select"
+                    value={computedStyles.flexDirection || 'row'}
+                    onChange={(e) => updateStyle('flexDirection', e.target.value)}
+                  >
+                    <option value="row">row</option>
+                    <option value="row-reverse">row-reverse</option>
+                    <option value="column">column</option>
+                    <option value="column-reverse">column-reverse</option>
+                  </select>
+                </div>
 
-                  <div className="space-y-2">
-                    <Label className="text-xs text-muted-foreground">Justify</Label>
-                    <Select
-                      value={computedStyles.justifyContent || 'flex-start'}
-                      onValueChange={(value) => updateStyle('justifyContent', value)}
-                    >
-                      <SelectTrigger className="h-8 text-xs">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="flex-start">Start</SelectItem>
-                        <SelectItem value="center">Center</SelectItem>
-                        <SelectItem value="flex-end">End</SelectItem>
-                        <SelectItem value="space-between">Space Between</SelectItem>
-                        <SelectItem value="space-around">Space Around</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                <div className="Col">
+                  <label className="Label">Justify</label>
+                  <select
+                    className="Select"
+                    value={computedStyles.justifyContent || 'flex-start'}
+                    onChange={(e) => updateStyle('justifyContent', e.target.value)}
+                  >
+                    <option value="flex-start">flex-start</option>
+                    <option value="center">center</option>
+                    <option value="flex-end">flex-end</option>
+                    <option value="space-between">space-between</option>
+                    <option value="space-around">space-around</option>
+                    <option value="space-evenly">space-evenly</option>
+                  </select>
+                </div>
 
-                  <div className="space-y-2">
-                    <Label className="text-xs text-muted-foreground">Align</Label>
-                    <Select
-                      value={computedStyles.alignItems || 'flex-start'}
-                      onValueChange={(value) => updateStyle('alignItems', value)}
-                    >
-                      <SelectTrigger className="h-8 text-xs">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="flex-start">Start</SelectItem>
-                        <SelectItem value="center">Center</SelectItem>
-                        <SelectItem value="flex-end">End</SelectItem>
-                        <SelectItem value="stretch">Stretch</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                <div className="Col">
+                  <label className="Label">Align</label>
+                  <select
+                    className="Select"
+                    value={computedStyles.alignItems || 'stretch'}
+                    onChange={(e) => updateStyle('alignItems', e.target.value)}
+                  >
+                    <option value="stretch">stretch</option>
+                    <option value="flex-start">flex-start</option>
+                    <option value="center">center</option>
+                    <option value="flex-end">flex-end</option>
+                    <option value="baseline">baseline</option>
+                  </select>
+                </div>
 
-                  <div className="space-y-2">
-                    <Label className="text-xs text-muted-foreground">Gap</Label>
-                    <Input
+                <div className="Col">
+                  <label className="Label">Gap</label>
+                  <div className="Row">
+                    <input
+                      className="Input"
                       type="text"
                       value={computedStyles.gap || ''}
                       onChange={(e) => updateStyle('gap', e.target.value)}
-                      placeholder="e.g., 16px"
-                      className="h-8 text-xs"
-                    />
-                  </div>
-                </>
-              )}
-            </StyleSection>
-
-            {/* Space Section */}
-            <StyleSection title="Space" section="space">
-              <div className="space-y-3">
-                <div>
-                  <Label className="text-xs text-muted-foreground mb-2 block">Margin</Label>
-                  <div className="grid grid-cols-3 gap-1">
-                    <div />
-                    <Input
-                      type="text"
-                      value={computedStyles.marginTop || ''}
-                      onChange={(e) => updateStyle('marginTop', e.target.value)}
-                      placeholder="Top"
-                      className="h-8 text-xs text-center"
-                    />
-                    <div />
-                    <Input
-                      type="text"
-                      value={computedStyles.marginLeft || ''}
-                      onChange={(e) => updateStyle('marginLeft', e.target.value)}
-                      placeholder="Left"
-                      className="h-8 text-xs text-center"
-                    />
-                    <div className="flex items-center justify-center text-xs text-muted-foreground">M</div>
-                    <Input
-                      type="text"
-                      value={computedStyles.marginRight || ''}
-                      onChange={(e) => updateStyle('marginRight', e.target.value)}
-                      placeholder="Right"
-                      className="h-8 text-xs text-center"
-                    />
-                    <div />
-                    <Input
-                      type="text"
-                      value={computedStyles.marginBottom || ''}
-                      onChange={(e) => updateStyle('marginBottom', e.target.value)}
-                      placeholder="Bottom"
-                      className="h-8 text-xs text-center"
-                    />
-                    <div />
-                  </div>
-                </div>
-
-                <div>
-                  <Label className="text-xs text-muted-foreground mb-2 block">Padding</Label>
-                  <div className="grid grid-cols-3 gap-1">
-                    <div />
-                    <Input
-                      type="text"
-                      value={computedStyles.paddingTop || ''}
-                      onChange={(e) => updateStyle('paddingTop', e.target.value)}
-                      placeholder="Top"
-                      className="h-8 text-xs text-center"
-                    />
-                    <div />
-                    <Input
-                      type="text"
-                      value={computedStyles.paddingLeft || ''}
-                      onChange={(e) => updateStyle('paddingLeft', e.target.value)}
-                      placeholder="Left"
-                      className="h-8 text-xs text-center"
-                    />
-                    <div className="flex items-center justify-center text-xs text-muted-foreground">P</div>
-                    <Input
-                      type="text"
-                      value={computedStyles.paddingRight || ''}
-                      onChange={(e) => updateStyle('paddingRight', e.target.value)}
-                      placeholder="Right"
-                      className="h-8 text-xs text-center"
-                    />
-                    <div />
-                    <Input
-                      type="text"
-                      value={computedStyles.paddingBottom || ''}
-                      onChange={(e) => updateStyle('paddingBottom', e.target.value)}
-                      placeholder="Bottom"
-                      className="h-8 text-xs text-center"
-                    />
-                    <div />
-                  </div>
-                </div>
-              </div>
-            </StyleSection>
-
-            {/* Size Section */}
-            <StyleSection title="Size" section="size">
-              <div className="space-y-2">
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground">Width</Label>
-                    <Input
-                      type="text"
-                      value={computedStyles.width || ''}
-                      onChange={(e) => updateStyle('width', e.target.value)}
-                      placeholder="auto"
-                      className="h-8 text-xs"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground">Height</Label>
-                    <Input
-                      type="text"
-                      value={computedStyles.height || ''}
-                      onChange={(e) => updateStyle('height', e.target.value)}
-                      placeholder="auto"
-                      className="h-8 text-xs"
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground">Min W</Label>
-                    <Input
-                      type="text"
-                      value={computedStyles.minWidth || ''}
-                      onChange={(e) => updateStyle('minWidth', e.target.value)}
                       placeholder="0"
-                      className="h-8 text-xs"
+                      style={{ flex: 1 }}
                     />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground">Min H</Label>
-                    <Input
-                      type="text"
-                      value={computedStyles.minHeight || ''}
-                      onChange={(e) => updateStyle('minHeight', e.target.value)}
-                      placeholder="0"
-                      className="h-8 text-xs"
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground">Max W</Label>
-                    <Input
-                      type="text"
-                      value={computedStyles.maxWidth || ''}
-                      onChange={(e) => updateStyle('maxWidth', e.target.value)}
-                      placeholder="none"
-                      className="h-8 text-xs"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground">Max H</Label>
-                    <Input
-                      type="text"
-                      value={computedStyles.maxHeight || ''}
-                      onChange={(e) => updateStyle('maxHeight', e.target.value)}
-                      placeholder="none"
-                      className="h-8 text-xs"
-                    />
+                    <span className="Label" style={{ minWidth: '40px' }}>REM</span>
                   </div>
                 </div>
               </div>
-            </StyleSection>
+            </div>
+          )}
+        </div>
+      </section>
 
-            {/* Typography Section */}
-            <StyleSection title="Typography" section="typography">
-              <div className="space-y-2">
-                <div className="space-y-1">
-                  <Label className="text-xs text-muted-foreground">Font Family</Label>
-                  <Input
-                    type="text"
-                    value={computedStyles.fontFamily || ''}
-                    onChange={(e) => updateStyle('fontFamily', e.target.value)}
-                    placeholder="inherit"
-                    className="h-8 text-xs"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground">Size</Label>
-                    <Input
-                      type="text"
-                      value={computedStyles.fontSize || ''}
-                      onChange={(e) => updateStyle('fontSize', e.target.value)}
-                      placeholder="16px"
-                      className="h-8 text-xs"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground">Weight</Label>
-                    <Select
-                      value={computedStyles.fontWeight || '400'}
-                      onValueChange={(value) => updateStyle('fontWeight', value)}
-                    >
-                      <SelectTrigger className="h-8 text-xs">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="300">Light</SelectItem>
-                        <SelectItem value="400">Normal</SelectItem>
-                        <SelectItem value="500">Medium</SelectItem>
-                        <SelectItem value="600">Semibold</SelectItem>
-                        <SelectItem value="700">Bold</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground">Line Height</Label>
-                    <Input
-                      type="text"
-                      value={computedStyles.lineHeight || ''}
-                      onChange={(e) => updateStyle('lineHeight', e.target.value)}
-                      placeholder="1.5"
-                      className="h-8 text-xs"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground">Letter Spacing</Label>
-                    <Input
-                      type="text"
-                      value={computedStyles.letterSpacing || ''}
-                      onChange={(e) => updateStyle('letterSpacing', e.target.value)}
-                      placeholder="normal"
-                      className="h-8 text-xs"
-                    />
-                  </div>
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-xs text-muted-foreground">Color</Label>
-                  <Input
-                    type="text"
-                    value={computedStyles.color || ''}
-                    onChange={(e) => updateStyle('color', e.target.value)}
-                    placeholder="hsl(var(--foreground))"
-                    className="h-8 text-xs"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-xs text-muted-foreground">Align</Label>
-                  <Select
-                    value={computedStyles.textAlign || 'left'}
-                    onValueChange={(value) => updateStyle('textAlign', value)}
-                  >
-                    <SelectTrigger className="h-8 text-xs">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="left">Left</SelectItem>
-                      <SelectItem value="center">Center</SelectItem>
-                      <SelectItem value="right">Right</SelectItem>
-                      <SelectItem value="justify">Justify</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </StyleSection>
-
-            {/* Backgrounds Section */}
-            <StyleSection title="Backgrounds" section="backgrounds">
-              <div className="space-y-2">
-                <div className="space-y-1">
-                  <Label className="text-xs text-muted-foreground">Background Color</Label>
-                  <Input
-                    type="text"
-                    value={computedStyles.backgroundColor || ''}
-                    onChange={(e) => updateStyle('backgroundColor', e.target.value)}
-                    placeholder="transparent"
-                    className="h-8 text-xs"
-                  />
-                </div>
-              </div>
-            </StyleSection>
-
-            {/* Borders Section */}
-            <StyleSection title="Borders" section="borders">
-              <div className="space-y-2">
-                <div className="space-y-1">
-                  <Label className="text-xs text-muted-foreground">Border</Label>
-                  <Input
-                    type="text"
-                    value={computedStyles.border || ''}
-                    onChange={(e) => updateStyle('border', e.target.value)}
-                    placeholder="1px solid #000"
-                    className="h-8 text-xs"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-xs text-muted-foreground">Border Radius</Label>
-                  <Input
-                    type="text"
-                    value={computedStyles.borderRadius || ''}
-                    onChange={(e) => updateStyle('borderRadius', e.target.value)}
-                    placeholder="0px"
-                    className="h-8 text-xs"
-                  />
-                </div>
-              </div>
-            </StyleSection>
-          </ScrollArea>
-        </TabsContent>
-
-        <TabsContent value="settings" className="flex-1 mt-0">
-          <div className="p-3 text-sm text-muted-foreground">
-            Settings panel (coming soon)
+      {/* Space */}
+      <section className="Section">
+        <div className="SectionTitle">Space</div>
+        <div className="SpaceBox">
+          <div className="SpaceRing">
+            <div className="SpaceLabelCenter">PADDING</div>
+            {/* Padding values inside */}
+            <div style={{ 
+              position: 'absolute',
+              top: '12px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              fontSize: '11px',
+              color: 'hsl(12, 76%, 61%)',
+              fontWeight: 600
+            }}>
+              {computedStyles.paddingTop || '0'}
+            </div>
+            <div style={{ 
+              position: 'absolute',
+              right: '12px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              fontSize: '11px',
+              color: 'hsl(12, 76%, 61%)',
+              fontWeight: 600
+            }}>
+              {computedStyles.paddingRight || '0'}
+            </div>
+            <div style={{ 
+              position: 'absolute',
+              bottom: '12px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              fontSize: '11px',
+              color: 'hsl(12, 76%, 61%)',
+              fontWeight: 600
+            }}>
+              {computedStyles.paddingBottom || '0'}
+            </div>
+            <div style={{ 
+              position: 'absolute',
+              left: '12px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              fontSize: '11px',
+              color: 'hsl(12, 76%, 61%)',
+              fontWeight: 600
+            }}>
+              {computedStyles.paddingLeft || '0'}
+            </div>
           </div>
-        </TabsContent>
-      </Tabs>
+
+          {/* Margin label */}
+          <div style={{
+            position: 'absolute',
+            top: '8px',
+            left: '8px',
+            fontSize: '10px',
+            color: 'var(--muted)',
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em'
+          }}>
+            MARGIN
+          </div>
+
+          {/* Margin fields */}
+          <div className="SpaceField" data-pos="top">
+            <input
+              className="Input"
+              placeholder="0"
+              value={computedStyles.marginTop || ''}
+              onChange={(e) => updateStyle('marginTop', e.target.value)}
+            />
+          </div>
+          <div className="SpaceField" data-pos="right">
+            <input
+              className="Input"
+              placeholder="0"
+              value={computedStyles.marginRight || ''}
+              onChange={(e) => updateStyle('marginRight', e.target.value)}
+            />
+          </div>
+          <div className="SpaceField" data-pos="bottom">
+            <input
+              className="Input"
+              placeholder="0"
+              value={computedStyles.marginBottom || ''}
+              onChange={(e) => updateStyle('marginBottom', e.target.value)}
+            />
+          </div>
+          <div className="SpaceField" data-pos="left">
+            <input
+              className="Input"
+              placeholder="0"
+              value={computedStyles.marginLeft || ''}
+              onChange={(e) => updateStyle('marginLeft', e.target.value)}
+            />
+          </div>
+
+          {/* Corner padding inputs */}
+          <div style={{
+            position: 'absolute',
+            bottom: '8px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            display: 'flex',
+            gap: 'var(--space-1)',
+            fontSize: '11px'
+          }}>
+            <input
+              className="Input"
+              placeholder="0"
+              value={computedStyles.paddingTop || ''}
+              onChange={(e) => updateStyle('paddingTop', e.target.value)}
+              style={{ width: '64px' }}
+            />
+            <input
+              className="Input"
+              placeholder="0"
+              value={computedStyles.paddingRight || ''}
+              onChange={(e) => updateStyle('paddingRight', e.target.value)}
+              style={{ width: '64px' }}
+            />
+            <input
+              className="Input"
+              placeholder="0"
+              value={computedStyles.paddingBottom || ''}
+              onChange={(e) => updateStyle('paddingBottom', e.target.value)}
+              style={{ width: '64px' }}
+            />
+            <input
+              className="Input"
+              placeholder="0"
+              value={computedStyles.paddingLeft || ''}
+              onChange={(e) => updateStyle('paddingLeft', e.target.value)}
+              style={{ width: '64px' }}
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* Size */}
+      <section className="Section">
+        <div className="SectionTitle">Size</div>
+        <div className="SizeGrid">
+          <div className="Col">
+            <label className="Label">Width</label>
+            <input
+              className="Input"
+              placeholder="auto"
+              value={computedStyles.width || ''}
+              onChange={(e) => updateStyle('width', e.target.value)}
+            />
+          </div>
+          <div className="Col">
+            <label className="Label">Height</label>
+            <input
+              className="Input"
+              placeholder="auto"
+              value={computedStyles.height || ''}
+              onChange={(e) => updateStyle('height', e.target.value)}
+            />
+          </div>
+          <div className="Col">
+            <label className="Label">Min Width</label>
+            <input
+              className="Input"
+              placeholder="auto"
+              value={computedStyles.minWidth || ''}
+              onChange={(e) => updateStyle('minWidth', e.target.value)}
+            />
+          </div>
+          <div className="Col">
+            <label className="Label">Min Height</label>
+            <input
+              className="Input"
+              placeholder="auto"
+              value={computedStyles.minHeight || ''}
+              onChange={(e) => updateStyle('minHeight', e.target.value)}
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* Typography */}
+      <section className="Section">
+        <div className="SectionTitle">Typography</div>
+        <div className="Col">
+          <div className="SizeGrid">
+            <div className="Col">
+              <label className="Label">Font Size</label>
+              <input
+                className="Input"
+                placeholder="16px"
+                value={computedStyles.fontSize || ''}
+                onChange={(e) => updateStyle('fontSize', e.target.value)}
+              />
+            </div>
+            <div className="Col">
+              <label className="Label">Font Weight</label>
+              <select
+                className="Select"
+                value={computedStyles.fontWeight || '400'}
+                onChange={(e) => updateStyle('fontWeight', e.target.value)}
+              >
+                <option value="300">Light</option>
+                <option value="400">Normal</option>
+                <option value="500">Medium</option>
+                <option value="600">Semibold</option>
+                <option value="700">Bold</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="Col">
+            <label className="Label">Color</label>
+            <input
+              className="Input"
+              placeholder="hsl(var(--foreground))"
+              value={computedStyles.color || ''}
+              onChange={(e) => updateStyle('color', e.target.value)}
+            />
+          </div>
+
+          <div className="Col">
+            <label className="Label">Text Align</label>
+            <select
+              className="Select"
+              value={computedStyles.textAlign || 'left'}
+              onChange={(e) => updateStyle('textAlign', e.target.value)}
+            >
+              <option value="left">left</option>
+              <option value="center">center</option>
+              <option value="right">right</option>
+              <option value="justify">justify</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      {/* Backgrounds */}
+      <section className="Section">
+        <div className="SectionTitle">Backgrounds</div>
+        <div className="Col">
+          <label className="Label">Background Color</label>
+          <input
+            className="Input"
+            placeholder="transparent"
+            value={computedStyles.backgroundColor || ''}
+            onChange={(e) => updateStyle('backgroundColor', e.target.value)}
+          />
+        </div>
+      </section>
+
+      {/* Borders */}
+      <section className="Section">
+        <div className="SectionTitle">Borders</div>
+        <div className="Col">
+          <label className="Label">Border</label>
+          <input
+            className="Input"
+            placeholder="1px solid #000"
+            value={computedStyles.border || ''}
+            onChange={(e) => updateStyle('border', e.target.value)}
+          />
+          <label className="Label">Border Radius</label>
+          <input
+            className="Input"
+            placeholder="0px"
+            value={computedStyles.borderRadius || ''}
+            onChange={(e) => updateStyle('borderRadius', e.target.value)}
+          />
+        </div>
+      </section>
     </div>
   );
 };
