@@ -20,7 +20,9 @@ export interface StyleDeclaration {
   color?: string;
   fontSize?: string;
   fontWeight?: string;
+  fontFamily?: string;
   lineHeight?: string;
+  letterSpacing?: string;
   textAlign?: string;
   borderRadius?: string;
   border?: string;

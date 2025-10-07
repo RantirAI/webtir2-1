@@ -6,9 +6,9 @@ import { Layers, Plus } from 'lucide-react';
 
 export const LeftSidebar: React.FC = () => {
   return (
-    <div className="w-64 border-r border-border bg-card flex flex-col">
+    <div className="w-64 h-full bg-card/95 backdrop-blur-sm border border-border rounded-xl shadow-xl flex flex-col overflow-hidden">
       <Tabs defaultValue="navigator" className="flex-1 flex flex-col">
-        <TabsList className="w-full grid grid-cols-2 rounded-none border-b">
+        <TabsList className="w-full grid grid-cols-2 rounded-none border-b bg-transparent">
           <TabsTrigger value="navigator" className="gap-2">
             <Layers className="w-4 h-4" />
             Navigator

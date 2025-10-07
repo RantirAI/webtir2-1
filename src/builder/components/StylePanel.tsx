@@ -60,21 +60,26 @@ export const StylePanel: React.FC = () => {
   );
 
   return (
-    <div className="w-80 border-l border-border bg-card flex flex-col">
+    <div className="w-80 h-full bg-card/95 backdrop-blur-sm border border-border rounded-xl shadow-xl flex flex-col overflow-hidden">
       <Tabs defaultValue="style" className="flex-1 flex flex-col">
-        <TabsList className="w-full grid grid-cols-2 rounded-none border-b">
+        <TabsList className="w-full grid grid-cols-2 rounded-none border-b bg-transparent">
           <TabsTrigger value="style">Style</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
         </TabsList>
 
-        <div className="p-4 border-b border-border space-y-2">
+        <div className="p-4 border-b border-border space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-muted-foreground">
+            <Label className="text-xs font-medium">
               {selectedInstance.type}
-            </span>
+            </Label>
           </div>
-          <div className="flex gap-2">
-            <Badge variant="secondary" className="text-xs">Local</Badge>
+          
+          <div>
+            <Label className="text-xs text-muted-foreground mb-2 block">Style Sources</Label>
+            <div className="flex gap-2">
+              <Badge variant="default" className="text-xs">Local</Badge>
+              <Badge variant="outline" className="text-xs">Pageset</Badge>
+            </div>
           </div>
         </div>
 
@@ -262,23 +267,53 @@ export const StylePanel: React.FC = () => {
 
               <StyleSection id="typography" title="Typography">
                 <div className="space-y-2">
-                  <Label className="text-xs text-muted-foreground">Font Size</Label>
+                  <Label className="text-xs text-muted-foreground">Font</Label>
                   <Input
-                    value={selectedInstance.styles.fontSize || ''}
-                    onChange={(e) => updateStyle('fontSize', e.target.value)}
-                    placeholder="16px"
+                    value={selectedInstance.styles.fontFamily || ''}
+                    onChange={(e) => updateStyle('fontFamily', e.target.value)}
+                    placeholder="Arial, Roboto..."
                     className="h-8 text-xs"
                   />
                 </div>
 
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="space-y-2">
+                    <Label className="text-xs text-muted-foreground">Size</Label>
+                    <Input
+                      value={selectedInstance.styles.fontSize || ''}
+                      onChange={(e) => updateStyle('fontSize', e.target.value)}
+                      placeholder="16px"
+                      className="h-8 text-xs"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs text-muted-foreground">Height</Label>
+                    <Input
+                      value={selectedInstance.styles.lineHeight || ''}
+                      onChange={(e) => updateStyle('lineHeight', e.target.value)}
+                      placeholder="1.5"
+                      className="h-8 text-xs"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs text-muted-foreground">Spacing</Label>
+                    <Input
+                      value={selectedInstance.styles.letterSpacing || ''}
+                      onChange={(e) => updateStyle('letterSpacing', e.target.value)}
+                      placeholder="0"
+                      className="h-8 text-xs"
+                    />
+                  </div>
+                </div>
+
                 <div className="space-y-2">
-                  <Label className="text-xs text-muted-foreground">Font Weight</Label>
+                  <Label className="text-xs text-muted-foreground">Weight</Label>
                   <Select
                     value={selectedInstance.styles.fontWeight || '400'}
                     onValueChange={(value) => updateStyle('fontWeight', value)}
                   >
                     <SelectTrigger className="h-8 text-xs">
-                      <SelectValue />
+                      <SelectValue placeholder="Normal (400)" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="100">Thin (100)</SelectItem>
@@ -295,23 +330,23 @@ export const StylePanel: React.FC = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-xs text-muted-foreground">Line Height</Label>
-                  <Input
-                    value={selectedInstance.styles.lineHeight || ''}
-                    onChange={(e) => updateStyle('lineHeight', e.target.value)}
-                    placeholder="normal"
-                    className="h-8 text-xs"
-                  />
-                </div>
-
-                <div className="space-y-2">
                   <Label className="text-xs text-muted-foreground">Color</Label>
-                  <Input
-                    value={selectedInstance.styles.color || ''}
-                    onChange={(e) => updateStyle('color', e.target.value)}
-                    placeholder="hsl(var(--foreground))"
-                    className="h-8 text-xs"
-                  />
+                  <div className="flex gap-2">
+                    <div className="relative flex-1">
+                      <Input
+                        type="color"
+                        value={selectedInstance.styles.color?.includes('#') ? selectedInstance.styles.color : '#000000'}
+                        onChange={(e) => updateStyle('color', e.target.value)}
+                        className="h-8 w-12 p-1 cursor-pointer"
+                      />
+                    </div>
+                    <Input
+                      value={selectedInstance.styles.color || ''}
+                      onChange={(e) => updateStyle('color', e.target.value)}
+                      placeholder="black"
+                      className="h-8 text-xs flex-1"
+                    />
+                  </div>
                 </div>
 
                 <div className="space-y-2">
@@ -336,12 +371,22 @@ export const StylePanel: React.FC = () => {
               <StyleSection id="backgrounds" title="Backgrounds">
                 <div className="space-y-2">
                   <Label className="text-xs text-muted-foreground">Background Color</Label>
-                  <Input
-                    value={selectedInstance.styles.backgroundColor || ''}
-                    onChange={(e) => updateStyle('backgroundColor', e.target.value)}
-                    placeholder="transparent"
-                    className="h-8 text-xs"
-                  />
+                  <div className="flex gap-2">
+                    <div className="relative">
+                      <Input
+                        type="color"
+                        value={selectedInstance.styles.backgroundColor?.includes('#') ? selectedInstance.styles.backgroundColor : '#ffffff'}
+                        onChange={(e) => updateStyle('backgroundColor', e.target.value)}
+                        className="h-8 w-12 p-1 cursor-pointer"
+                      />
+                    </div>
+                    <Input
+                      value={selectedInstance.styles.backgroundColor || ''}
+                      onChange={(e) => updateStyle('backgroundColor', e.target.value)}
+                      placeholder="transparent"
+                      className="h-8 text-xs flex-1"
+                    />
+                  </div>
                 </div>
               </StyleSection>
 

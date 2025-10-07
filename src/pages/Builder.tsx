@@ -1,48 +1,35 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Canvas } from '@/builder/components/Canvas';
 import { LeftSidebar } from '@/builder/components/LeftSidebar';
 import { StylePanel } from '@/builder/components/StylePanel';
-import { Button } from '@/components/ui/button';
-import { Download, Save, Eye } from 'lucide-react';
+import { TopNavigation } from '@/builder/components/TopNavigation';
+import { useTheme } from 'next-themes';
 
 const Builder: React.FC = () => {
+  const [zoom, setZoom] = useState(100);
+  const { theme } = useTheme();
+
   return (
-    <div className="h-screen flex flex-col bg-background">
-      {/* Topbar */}
-      <header className="h-14 border-b border-border bg-card flex items-center justify-between px-4">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-primary rounded flex items-center justify-center">
-            <span className="text-primary-foreground font-bold text-sm">W</span>
-          </div>
-          <span className="font-semibold text-foreground">Builder</span>
+    <div className="h-screen flex flex-col overflow-hidden" style={{ backgroundColor: '#ffffff' }}>
+      {/* Main content - Full screen canvas */}
+      <div className="flex-1 relative overflow-hidden">
+        {/* Canvas Background */}
+        <Canvas zoom={zoom} />
+
+        {/* Floating Left Sidebar */}
+        <div className="absolute left-4 top-4 bottom-4 z-10">
+          <LeftSidebar />
         </div>
 
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm">
-            <Eye className="w-4 h-4 mr-2" />
-            Preview
-          </Button>
-          <Button variant="ghost" size="sm">
-            <Save className="w-4 h-4 mr-2" />
-            Save
-          </Button>
-          <Button variant="default" size="sm">
-            <Download className="w-4 h-4 mr-2" />
-            Export
-          </Button>
+        {/* Floating Top Navigation */}
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20">
+          <TopNavigation zoom={zoom} setZoom={setZoom} />
         </div>
-      </header>
 
-      {/* Main content */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Left sidebar - Navigator & Components */}
-        <LeftSidebar />
-
-        {/* Canvas */}
-        <Canvas />
-
-        {/* Right sidebar - Style Panel */}
-        <StylePanel />
+        {/* Floating Right Sidebar */}
+        <div className="absolute right-4 top-4 bottom-4 z-10">
+          <StylePanel />
+        </div>
       </div>
     </div>
   );

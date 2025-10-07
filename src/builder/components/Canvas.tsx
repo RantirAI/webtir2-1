@@ -8,7 +8,11 @@ import { ButtonPrimitive } from '../primitives/ButtonPrimitive';
 import { ImagePrimitive } from '../primitives/ImagePrimitive';
 import { LinkPrimitive } from '../primitives/LinkPrimitive';
 
-export const Canvas: React.FC = () => {
+interface CanvasProps {
+  zoom: number;
+}
+
+export const Canvas: React.FC<CanvasProps> = ({ zoom }) => {
   const rootInstance = useBuilderStore((state) => state.rootInstance);
   const selectedInstanceId = useBuilderStore((state) => state.selectedInstanceId);
   const hoveredInstanceId = useBuilderStore((state) => state.hoveredInstanceId);
@@ -51,14 +55,17 @@ export const Canvas: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 overflow-auto bg-background relative">
+    <div className="absolute inset-0 overflow-auto">
       <div 
-        className="min-h-full p-8"
+        className="min-h-full transition-transform origin-center"
         style={{
+          transform: `scale(${zoom / 100})`,
           backgroundImage: `
-            radial-gradient(circle, hsl(var(--muted-foreground) / 0.15) 1px, transparent 1px)
+            radial-gradient(circle, hsl(var(--muted-foreground) / 0.2) 1px, transparent 1px)
           `,
           backgroundSize: '20px 20px',
+          backgroundColor: '#ffffff',
+          padding: '8rem',
         }}
       >
         {rootInstance && renderInstance(rootInstance)}
