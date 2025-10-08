@@ -10,6 +10,7 @@ interface ImagePrimitiveProps {
   onSelect?: () => void;
   onHover?: () => void;
   onHoverEnd?: () => void;
+  onContextMenu?: (e: React.MouseEvent) => void;
 }
 
 export const ImagePrimitive: React.FC<ImagePrimitiveProps> = ({
@@ -19,6 +20,7 @@ export const ImagePrimitive: React.FC<ImagePrimitiveProps> = ({
   onSelect,
   onHover,
   onHoverEnd,
+  onContextMenu,
 }) => {
   const { getComputedStyles } = useStyleStore();
   const computedStyles = getComputedStyles(instance.styleSourceIds || []);
@@ -32,8 +34,6 @@ export const ImagePrimitive: React.FC<ImagePrimitiveProps> = ({
       alt={instance.props.alt || 'Image'}
       style={{
         position: 'relative',
-        outline: isSelected ? '3px solid #3b82f6' : isHovered ? '2px solid #60a5fa' : 'none',
-        outlineOffset: '2px',
       }}
       onClick={(e) => {
         e.stopPropagation();
@@ -47,6 +47,7 @@ export const ImagePrimitive: React.FC<ImagePrimitiveProps> = ({
         e.stopPropagation();
         onHoverEnd?.();
       }}
+      onContextMenu={onContextMenu}
     />
   );
 };

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useBuilderStore } from '../store/useBuilderStore';
 import { useStyleStore } from '../store/useStyleStore';
 import { ComponentInstance } from '../store/types';
@@ -9,6 +9,8 @@ import { ButtonPrimitive } from '../primitives/ButtonPrimitive';
 import { ImagePrimitive } from '../primitives/ImagePrimitive';
 import { LinkPrimitive } from '../primitives/LinkPrimitive';
 import { breakpoints } from './PageNavigation';
+import { ContextMenu } from './ContextMenu';
+import { SelectionOverlay } from './SelectionOverlay';
 
 interface CanvasProps {
   zoom: number;
@@ -26,12 +28,14 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
   const hoveredInstanceId = useBuilderStore((state) => state.hoveredInstanceId);
   const setSelectedInstanceId = useBuilderStore((state) => state.setSelectedInstanceId);
   const setHoveredInstanceId = useBuilderStore((state) => state.setHoveredInstanceId);
+  const { findInstance } = useBuilderStore();
   const { getComputedStyles } = useStyleStore();
-  const [editingPageId, setEditingPageId] = React.useState<string | null>(null);
-  const [isPanning, setIsPanning] = React.useState(false);
-  const [panStart, setPanStart] = React.useState({ x: 0, y: 0 });
-  const [panOffset, setPanOffset] = React.useState({ x: 0, y: 0 });
-  const canvasRef = React.useRef<HTMLDivElement>(null);
+  const [editingPageId, setEditingPageId] = useState<string | null>(null);
+  const [isPanning, setIsPanning] = useState(false);
+  const [panStart, setPanStart] = useState({ x: 0, y: 0 });
+  const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; instance: ComponentInstance } | null>(null);
+  const canvasRef = useRef<HTMLDivElement>(null);
 
   const currentBreakpointWidth = breakpoints.find(bp => bp.id === currentBreakpoint)?.width || 960;
 
@@ -55,6 +59,19 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
     setIsPanning(false);
   };
 
+  const handleContextMenu = (e: React.MouseEvent, instance: ComponentInstance) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setContextMenu({ x: e.clientX, y: e.clientY, instance });
+  };
+
+  // Get selected element for overlay
+  const selectedElement = selectedInstanceId 
+    ? document.querySelector(`[data-instance-id="${selectedInstanceId}"]`) as HTMLElement
+    : null;
+  
+  const selectedInstance = selectedInstanceId ? findInstance(selectedInstanceId) : null;
+
   const renderInstance = (instance: ComponentInstance): React.ReactNode => {
     const isSelected = instance.id === selectedInstanceId;
     const isHovered = instance.id === hoveredInstanceId;
@@ -66,6 +83,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
       onSelect: () => setSelectedInstanceId(instance.id),
       onHover: () => setHoveredInstanceId(instance.id),
       onHoverEnd: () => setHoveredInstanceId(null),
+      onContextMenu: (e: React.MouseEvent) => handleContextMenu(e, instance),
     };
 
     switch (instance.type) {
@@ -160,6 +178,21 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
           </div>
         ))}
       </div>
+      
+      {/* Selection Overlay */}
+      {selectedElement && selectedInstance && (
+        <SelectionOverlay instance={selectedInstance} element={selectedElement} />
+      )}
+      
+      {/* Context Menu */}
+      {contextMenu && (
+        <ContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          instance={contextMenu.instance}
+          onClose={() => setContextMenu(null)}
+        />
+      )}
     </div>
   );
 };

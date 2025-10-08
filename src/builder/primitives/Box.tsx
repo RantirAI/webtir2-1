@@ -10,6 +10,7 @@ interface BoxProps {
   onSelect?: () => void;
   onHover?: () => void;
   onHoverEnd?: () => void;
+  onContextMenu?: (e: React.MouseEvent) => void;
 }
 
 export const Box: React.FC<BoxProps> = ({
@@ -20,6 +21,7 @@ export const Box: React.FC<BoxProps> = ({
   onSelect,
   onHover,
   onHoverEnd,
+  onContextMenu,
 }) => {
   const isRoot = instance.id === 'root';
 
@@ -29,8 +31,6 @@ export const Box: React.FC<BoxProps> = ({
       className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
       style={{
         position: 'relative',
-        outline: isSelected ? '3px solid #3b82f6' : isHovered ? '2px solid #60a5fa' : 'none',
-        outlineOffset: '2px',
         backgroundColor: isRoot ? '#ffffff' : 'transparent',
       }}
       onClick={(e) => {
@@ -45,6 +45,7 @@ export const Box: React.FC<BoxProps> = ({
         e.stopPropagation();
         onHoverEnd?.();
       }}
+      onContextMenu={onContextMenu}
     >
       {children}
     </div>

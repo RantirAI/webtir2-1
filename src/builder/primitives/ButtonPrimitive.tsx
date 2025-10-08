@@ -10,6 +10,7 @@ interface ButtonPrimitiveProps {
   onSelect?: () => void;
   onHover?: () => void;
   onHoverEnd?: () => void;
+  onContextMenu?: (e: React.MouseEvent) => void;
 }
 
 export const ButtonPrimitive: React.FC<ButtonPrimitiveProps> = ({
@@ -19,6 +20,7 @@ export const ButtonPrimitive: React.FC<ButtonPrimitiveProps> = ({
   onSelect,
   onHover,
   onHoverEnd,
+  onContextMenu,
 }) => {
   const { getComputedStyles } = useStyleStore();
   const computedStyles = getComputedStyles(instance.styleSourceIds || []);
@@ -30,8 +32,6 @@ export const ButtonPrimitive: React.FC<ButtonPrimitiveProps> = ({
       className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
       style={{
         position: 'relative',
-        outline: isSelected ? '3px solid #3b82f6' : isHovered ? '2px solid #60a5fa' : 'none',
-        outlineOffset: '2px',
       }}
       onClick={(e) => {
         e.stopPropagation();
@@ -46,6 +46,7 @@ export const ButtonPrimitive: React.FC<ButtonPrimitiveProps> = ({
         e.stopPropagation();
         onHoverEnd?.();
       }}
+      onContextMenu={onContextMenu}
     >
       {instance.props.children || 'Button'}
     </button>

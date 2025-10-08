@@ -2,6 +2,8 @@ import React from 'react';
 import { ComponentInstance } from '../store/types';
 import { stylesToObject } from '../utils/style';
 import { useStyleStore } from '../store/useStyleStore';
+import { useBuilderStore } from '../store/useBuilderStore';
+import { EditableText } from '../components/EditableText';
 
 interface HeadingProps {
   instance: ComponentInstance;
@@ -10,6 +12,7 @@ interface HeadingProps {
   onSelect?: () => void;
   onHover?: () => void;
   onHoverEnd?: () => void;
+  onContextMenu?: (e: React.MouseEvent) => void;
 }
 
 export const Heading: React.FC<HeadingProps> = ({
@@ -19,21 +22,26 @@ export const Heading: React.FC<HeadingProps> = ({
   onSelect,
   onHover,
   onHoverEnd,
+  onContextMenu,
 }) => {
   const { getComputedStyles } = useStyleStore();
+  const { updateInstance } = useBuilderStore();
   const computedStyles = getComputedStyles(instance.styleSourceIds || []);
   const style = stylesToObject(computedStyles);
   const level = instance.props.level || 'h2';
-  const Tag = level as keyof JSX.IntrinsicElements;
+
+  const handleTextChange = (newText: string) => {
+    updateInstance(instance.id, {
+      props: { ...instance.props, children: newText },
+    });
+  };
 
   return (
-    <Tag
+    <div
       data-instance-id={instance.id}
       className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
       style={{
         position: 'relative',
-        outline: isSelected ? '3px solid #3b82f6' : isHovered ? '2px solid #60a5fa' : 'none',
-        outlineOffset: '2px',
       }}
       onClick={(e) => {
         e.stopPropagation();
@@ -47,8 +55,15 @@ export const Heading: React.FC<HeadingProps> = ({
         e.stopPropagation();
         onHoverEnd?.();
       }}
+      onContextMenu={onContextMenu}
     >
-      {instance.props.children || 'Heading'}
-    </Tag>
+      <EditableText
+        value={instance.props.children || 'Heading'}
+        onChange={handleTextChange}
+        as={level as any}
+        style={style}
+        isSelected={isSelected}
+      />
+    </div>
   );
 };

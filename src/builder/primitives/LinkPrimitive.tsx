@@ -10,6 +10,7 @@ interface LinkPrimitiveProps {
   onSelect?: () => void;
   onHover?: () => void;
   onHoverEnd?: () => void;
+  onContextMenu?: (e: React.MouseEvent) => void;
 }
 
 export const LinkPrimitive: React.FC<LinkPrimitiveProps> = ({
@@ -19,6 +20,7 @@ export const LinkPrimitive: React.FC<LinkPrimitiveProps> = ({
   onSelect,
   onHover,
   onHoverEnd,
+  onContextMenu,
 }) => {
   const { getComputedStyles } = useStyleStore();
   const computedStyles = getComputedStyles(instance.styleSourceIds || []);
@@ -31,8 +33,6 @@ export const LinkPrimitive: React.FC<LinkPrimitiveProps> = ({
       href={instance.props.href || '#'}
       style={{
         position: 'relative',
-        outline: isSelected ? '3px solid #3b82f6' : isHovered ? '2px solid #60a5fa' : 'none',
-        outlineOffset: '2px',
       }}
       onClick={(e) => {
         e.stopPropagation();
@@ -47,6 +47,7 @@ export const LinkPrimitive: React.FC<LinkPrimitiveProps> = ({
         e.stopPropagation();
         onHoverEnd?.();
       }}
+      onContextMenu={onContextMenu}
     >
       {instance.props.children || 'Link'}
     </a>

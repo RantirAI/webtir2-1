@@ -2,6 +2,8 @@ import React from 'react';
 import { ComponentInstance } from '../store/types';
 import { stylesToObject } from '../utils/style';
 import { useStyleStore } from '../store/useStyleStore';
+import { useBuilderStore } from '../store/useBuilderStore';
+import { EditableText } from '../components/EditableText';
 
 interface TextProps {
   instance: ComponentInstance;
@@ -10,6 +12,7 @@ interface TextProps {
   onSelect?: () => void;
   onHover?: () => void;
   onHoverEnd?: () => void;
+  onContextMenu?: (e: React.MouseEvent) => void;
 }
 
 export const Text: React.FC<TextProps> = ({
@@ -19,19 +22,25 @@ export const Text: React.FC<TextProps> = ({
   onSelect,
   onHover,
   onHoverEnd,
+  onContextMenu,
 }) => {
   const { getComputedStyles } = useStyleStore();
+  const { updateInstance } = useBuilderStore();
   const computedStyles = getComputedStyles(instance.styleSourceIds || []);
   const style = stylesToObject(computedStyles);
 
+  const handleTextChange = (newText: string) => {
+    updateInstance(instance.id, {
+      props: { ...instance.props, children: newText },
+    });
+  };
+
   return (
-    <p
+    <div
       data-instance-id={instance.id}
       className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
       style={{
         position: 'relative',
-        outline: isSelected ? '3px solid #3b82f6' : isHovered ? '2px solid #60a5fa' : 'none',
-        outlineOffset: '2px',
       }}
       onClick={(e) => {
         e.stopPropagation();
@@ -45,8 +54,15 @@ export const Text: React.FC<TextProps> = ({
         e.stopPropagation();
         onHoverEnd?.();
       }}
+      onContextMenu={onContextMenu}
     >
-      {instance.props.children || 'Text'}
-    </p>
+      <EditableText
+        value={instance.props.children || 'Text'}
+        onChange={handleTextChange}
+        as="p"
+        style={style}
+        isSelected={isSelected}
+      />
+    </div>
   );
 };
