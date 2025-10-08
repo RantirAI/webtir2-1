@@ -224,11 +224,13 @@
 .SpaceInput {
   width: 48px;
   text-align: center;
+  height: 24px !important;
 }
 
 .SpaceInputSmall {
   width: 40px;
   text-align: center;
+  height: 24px !important;
 }
 
 /* size grid */

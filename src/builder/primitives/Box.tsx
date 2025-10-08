@@ -29,7 +29,7 @@ export const Box: React.FC<BoxProps> = ({
       className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
       style={{
         position: 'relative',
-        outline: isSelected ? '2px solid hsl(var(--primary))' : isHovered ? '2px solid hsl(var(--primary) / 0.5)' : 'none',
+        outline: isSelected ? '3px solid #3b82f6' : isHovered ? '2px solid #60a5fa' : 'none',
         outlineOffset: '2px',
       }}
       onClick={(e) => {

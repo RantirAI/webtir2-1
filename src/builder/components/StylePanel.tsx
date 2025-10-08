@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Paintbrush, Settings, Zap, Plus, Square, Type, Heading as HeadingIcon, MousePointerClick, Image as ImageIcon, Link as LinkIcon, X, ChevronDown } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { componentRegistry } from '../primitives/registry';
+import { UnitInput } from './UnitInput';
 import '../styles/style-panel.css';
 import '../styles/tokens.css';
 
@@ -182,7 +183,6 @@ export const StylePanel: React.FC = () => {
 
         <TabsContent value="styles" className="flex-1 m-0 overflow-y-auto">
           <div className="StylePanel">
-            {/* Element Type Header */}
             <div style={{ 
               padding: 'var(--space-2) var(--space-2)',
               display: 'flex',
@@ -190,8 +190,8 @@ export const StylePanel: React.FC = () => {
               justifyContent: 'space-between'
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                {getComponentIcon(selectedInstance.type)}
-                <span style={{ fontSize: '12px', fontWeight: 600 }}>{selectedInstance.type}</span>
+                <span className="text-foreground">{getComponentIcon(selectedInstance.type)}</span>
+                <span style={{ fontSize: '12px', fontWeight: 600 }} className="text-foreground">{selectedInstance.type}</span>
               </div>
             </div>
 
@@ -372,77 +372,75 @@ export const StylePanel: React.FC = () => {
           <div className="SpaceOuter">
             {/* Top margin */}
             <div style={{ display: 'flex', justifyContent: 'center' }}>
-              <input
-                className="Input SpaceInput"
+              <UnitInput
+                value={computedStyles.marginTop || ''}
+                onChange={(val) => updateStyle('marginTop', val)}
                 placeholder="0"
-                value={computedStyles.marginTop?.replace(/[a-z%]/gi, '') || ''}
-                onChange={(e) => updateStyle('marginTop', e.target.value + 'px')}
+                className="SpaceInput"
               />
             </div>
 
             {/* Middle row with left margin, padding box, right margin */}
             <div className="SpaceRow">
-              <input
-                className="Input SpaceInput"
+              <UnitInput
+                value={computedStyles.marginLeft || ''}
+                onChange={(val) => updateStyle('marginLeft', val)}
                 placeholder="0"
-                value={computedStyles.marginLeft?.replace(/[a-z%]/gi, '') || ''}
-                onChange={(e) => updateStyle('marginLeft', e.target.value + 'px')}
+                className="SpaceInput"
               />
               
               <div className="SpaceRing">
                 <div className="SpacePaddingLabel">PADDING</div>
                 
                 {/* Top padding */}
-                <input
-                  className="Input SpaceInputSmall"
+                <UnitInput
+                  value={computedStyles.paddingTop || ''}
+                  onChange={(val) => updateStyle('paddingTop', val)}
                   placeholder="0"
-                  value={computedStyles.paddingTop?.replace(/[a-z%]/gi, '') || ''}
-                  onChange={(e) => updateStyle('paddingTop', e.target.value + 'px')}
-                  style={{ alignSelf: 'center' }}
+                  className="SpaceInputSmall"
                 />
                 
                 {/* Left and Right padding */}
                 <div className="SpacePaddingRow">
-                  <input
-                    className="Input SpaceInputSmall"
+                  <UnitInput
+                    value={computedStyles.paddingLeft || ''}
+                    onChange={(val) => updateStyle('paddingLeft', val)}
                     placeholder="0"
-                    value={computedStyles.paddingLeft?.replace(/[a-z%]/gi, '') || ''}
-                    onChange={(e) => updateStyle('paddingLeft', e.target.value + 'px')}
+                    className="SpaceInputSmall"
                   />
                   <div style={{ flex: 1 }} />
-                  <input
-                    className="Input SpaceInputSmall"
+                  <UnitInput
+                    value={computedStyles.paddingRight || ''}
+                    onChange={(val) => updateStyle('paddingRight', val)}
                     placeholder="0"
-                    value={computedStyles.paddingRight?.replace(/[a-z%]/gi, '') || ''}
-                    onChange={(e) => updateStyle('paddingRight', e.target.value + 'px')}
+                    className="SpaceInputSmall"
                   />
                 </div>
                 
                 {/* Bottom padding */}
-                <input
-                  className="Input SpaceInputSmall"
+                <UnitInput
+                  value={computedStyles.paddingBottom || ''}
+                  onChange={(val) => updateStyle('paddingBottom', val)}
                   placeholder="0"
-                  value={computedStyles.paddingBottom?.replace(/[a-z%]/gi, '') || ''}
-                  onChange={(e) => updateStyle('paddingBottom', e.target.value + 'px')}
-                  style={{ alignSelf: 'center' }}
+                  className="SpaceInputSmall"
                 />
               </div>
 
-              <input
-                className="Input SpaceInput"
+              <UnitInput
+                value={computedStyles.marginRight || ''}
+                onChange={(val) => updateStyle('marginRight', val)}
                 placeholder="0"
-                value={computedStyles.marginRight?.replace(/[a-z%]/gi, '') || ''}
-                onChange={(e) => updateStyle('marginRight', e.target.value + 'px')}
+                className="SpaceInput"
               />
             </div>
 
             {/* Bottom margin */}
             <div style={{ display: 'flex', justifyContent: 'center' }}>
-              <input
-                className="Input SpaceInput"
+              <UnitInput
+                value={computedStyles.marginBottom || ''}
+                onChange={(val) => updateStyle('marginBottom', val)}
                 placeholder="0"
-                value={computedStyles.marginBottom?.replace(/[a-z%]/gi, '') || ''}
-                onChange={(e) => updateStyle('marginBottom', e.target.value + 'px')}
+                className="SpaceInput"
               />
             </div>
           </div>
@@ -454,38 +452,34 @@ export const StylePanel: React.FC = () => {
         <div className="SizeGrid">
           <div className="Col">
             <label className="Label">Width</label>
-            <input
-              className="Input"
-              placeholder="auto"
+            <UnitInput
               value={computedStyles.width || ''}
-              onChange={(e) => updateStyle('width', e.target.value)}
+              onChange={(val) => updateStyle('width', val)}
+              placeholder="auto"
             />
           </div>
           <div className="Col">
             <label className="Label">Height</label>
-            <input
-              className="Input"
-              placeholder="auto"
+            <UnitInput
               value={computedStyles.height || ''}
-              onChange={(e) => updateStyle('height', e.target.value)}
+              onChange={(val) => updateStyle('height', val)}
+              placeholder="auto"
             />
           </div>
           <div className="Col">
             <label className="Label">Min Width</label>
-            <input
-              className="Input"
-              placeholder="auto"
+            <UnitInput
               value={computedStyles.minWidth || ''}
-              onChange={(e) => updateStyle('minWidth', e.target.value)}
+              onChange={(val) => updateStyle('minWidth', val)}
+              placeholder="auto"
             />
           </div>
           <div className="Col">
             <label className="Label">Min Height</label>
-            <input
-              className="Input"
-              placeholder="auto"
+            <UnitInput
               value={computedStyles.minHeight || ''}
-              onChange={(e) => updateStyle('minHeight', e.target.value)}
+              onChange={(val) => updateStyle('minHeight', val)}
+              placeholder="auto"
             />
           </div>
         </div>
@@ -500,11 +494,10 @@ export const StylePanel: React.FC = () => {
           <div className="SizeGrid">
             <div className="Col">
               <label className="Label">Font Size</label>
-              <input
-                className="Input"
-                placeholder="16px"
+              <UnitInput
                 value={computedStyles.fontSize || ''}
-                onChange={(e) => updateStyle('fontSize', e.target.value)}
+                onChange={(val) => updateStyle('fontSize', val)}
+                placeholder="16px"
               />
             </div>
             <div className="Col">

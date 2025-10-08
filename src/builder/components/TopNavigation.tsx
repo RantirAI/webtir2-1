@@ -17,7 +17,7 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({ zoom, setZoom }) =
   };
 
   const handleZoomOut = () => {
-    setZoom(Math.max(zoom - 10, 25));
+    setZoom(Math.max(zoom - 10, 10));
   };
 
   return (

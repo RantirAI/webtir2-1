@@ -32,7 +32,7 @@ export const ImagePrimitive: React.FC<ImagePrimitiveProps> = ({
       alt={instance.props.alt || 'Image'}
       style={{
         position: 'relative',
-        outline: isSelected ? '2px solid hsl(var(--primary))' : isHovered ? '2px solid hsl(var(--primary) / 0.5)' : 'none',
+        outline: isSelected ? '3px solid #3b82f6' : isHovered ? '2px solid #60a5fa' : 'none',
         outlineOffset: '2px',
       }}
       onClick={(e) => {

@@ -59,25 +59,45 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom }) => {
   return (
     <div className="absolute inset-0 overflow-auto bg-zinc-100 dark:bg-zinc-800">
       <div 
-        className="transition-transform origin-center flex items-start justify-center"
+        className="transition-transform origin-center flex items-start justify-center gap-8"
         style={{
           transform: `scale(${zoom / 100})`,
           backgroundImage: `
             radial-gradient(circle, hsl(240 5.9% 70%) 1px, transparent 1px)
           `,
           backgroundSize: '20px 20px',
+          backgroundAttachment: 'local',
           padding: '4rem',
-          minHeight: '100%',
+          minHeight: '100vh',
+          minWidth: '100%',
         }}
       >
+        {/* Page 1 */}
         <div 
           style={{ 
             backgroundColor: '#ffffff',
-            width: '1250px',
-            minHeight: '2000px',
+            width: '960px',
+            minHeight: '1200px',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
           }}
         >
           {rootInstance && renderInstance(rootInstance)}
+        </div>
+        
+        {/* Page 2 - Placeholder */}
+        <div 
+          style={{ 
+            backgroundColor: '#ffffff',
+            width: '960px',
+            minHeight: '1200px',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: '#999',
+          }}
+        >
+          <div>Page 2</div>
         </div>
       </div>
     </div>
