@@ -84,6 +84,13 @@ export const StylePanel: React.FC<StylePanelProps> = ({
     }
   }, [styleSource?.name]);
 
+  // Sync label input to selected instance (unconditional hook placement)
+  React.useEffect(() => {
+    if (selectedInstance) {
+      setLabelInput(selectedInstance.label || selectedInstance.type);
+    }
+  }, [selectedInstance?.id, selectedInstance?.label, selectedInstance?.type]);
+
   const handlePageClick = (page: string) => {
     setSelectedPageForSettings(page);
     setPageSettingsOpen(true);
@@ -266,12 +273,6 @@ export const StylePanel: React.FC<StylePanelProps> = ({
   const height = computedStyles.height || 'auto';
   const dimensionText = `${width} × ${height}`;
 
-  // Component label editing - update state when instance changes
-  React.useEffect(() => {
-    if (selectedInstance) {
-      setLabelInput(selectedInstance.label || selectedInstance.type);
-    }
-  }, [selectedInstance?.id, selectedInstance?.label, selectedInstance?.type]);
 
   const handleLabelSave = () => {
     if (labelInput.trim()) {
