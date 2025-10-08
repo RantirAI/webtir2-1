@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useBuilderStore } from '../store/useBuilderStore';
 import { useStyleStore } from '../store/useStyleStore';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Paintbrush, Plus, Square, Type, Heading as HeadingIcon, MousePointerClick, Image as ImageIcon, Link as LinkIcon, X, ChevronDown } from 'lucide-react';
+import { Paintbrush, Plus, Square, Type, Heading as HeadingIcon, MousePointerClick, Image as ImageIcon, Link as LinkIcon, X, ChevronDown, Settings, Zap, Database } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { componentRegistry } from '../primitives/registry';
 import { UnitInput } from './UnitInput';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Button } from '@/components/ui/button';
 import '../styles/style-panel.css';
 import '../styles/tokens.css';
 
@@ -198,24 +200,70 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
     renameClass(newClassNames.join(' '));
   };
 
+  const hasStylesInSection = (properties: string[]) => {
+    if (!styleSourceId) return false;
+    return properties.some(prop => {
+      const value = computedStyles[prop as keyof typeof computedStyles];
+      return value && value !== '' && value !== 'normal' && value !== 'none';
+    });
+  };
+
+  const clearSectionStyles = (properties: string[]) => {
+    if (!styleSourceId) return;
+    properties.forEach(prop => {
+      setStyle(styleSourceId, prop, '');
+    });
+  };
+
   const AccordionSection: React.FC<{
     title: string;
     section: keyof typeof openSections;
     children?: React.ReactNode;
     hasAddButton?: boolean;
     indicator?: boolean;
-  }> = ({ title, section, children, hasAddButton, indicator }) => (
-    <div className="Section">
-      <div className="SectionHeader" onClick={() => toggleSection(section)}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-          <span className="SectionTitle">{title}</span>
-          {indicator && <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'hsl(30, 100%, 60%)' }} />}
+    properties?: string[];
+  }> = ({ title, section, children, hasAddButton, indicator, properties }) => {
+    const hasStyles = properties ? hasStylesInSection(properties) : indicator;
+    
+    return (
+      <div className="Section">
+        <div className="SectionHeader" onClick={() => toggleSection(section)}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+            <span className={`SectionTitle ${hasStyles ? 'text-yellow-600' : ''}`}>{title}</span>
+            {hasStyles && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'hsl(217, 91%, 60%)' }} />
+                  </TooltipTrigger>
+                  <TooltipContent side="right" className="bg-popover border border-border">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs">Active styles</span>
+                      {properties && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-5 px-2 text-xs"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            clearSectionStyles(properties);
+                          }}
+                        >
+                          Clear
+                        </Button>
+                      )}
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+          </div>
+          {hasAddButton && <Plus className={`SectionIcon ${openSections[section] ? 'open' : ''}`} size={18} />}
         </div>
-        {hasAddButton && <Plus className={`SectionIcon ${openSections[section] ? 'open' : ''}`} size={18} />}
+        {openSections[section] && children && <div className="SectionContent">{children}</div>}
       </div>
-      {openSections[section] && children && <div className="SectionContent">{children}</div>}
-    </div>
-  );
+    );
+  };
 
   // If no instance is selected, show tabs for Settings, Actions, Data
   if (!selectedInstance) {
@@ -225,20 +273,23 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
           <TabsList className="w-full grid grid-cols-3 rounded-none border-b bg-transparent h-10 p-1 gap-1">
             <TabsTrigger 
               value="settings" 
-              className="text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none"
+              className="text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none flex items-center gap-1"
             >
+              <Settings className="w-3 h-3" />
               Settings
             </TabsTrigger>
             <TabsTrigger 
               value="actions" 
-              className="text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none"
+              className="text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none flex items-center gap-1"
             >
+              <Zap className="w-3 h-3" />
               Actions
             </TabsTrigger>
             <TabsTrigger 
               value="data" 
-              className="text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none"
+              className="text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none flex items-center gap-1"
             >
+              <Database className="w-3 h-3" />
               Data
             </TabsTrigger>
           </TabsList>
@@ -271,26 +322,30 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
         <TabsList className="w-full grid grid-cols-4 rounded-none border-b bg-transparent h-10 p-1 gap-1">
           <TabsTrigger 
             value="style" 
-            className="text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none"
+            className="text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none flex items-center gap-1"
           >
+            <Paintbrush className="w-3 h-3" />
             Style
           </TabsTrigger>
           <TabsTrigger 
             value="settings" 
-            className="text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none"
+            className="text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none flex items-center gap-1"
           >
+            <Settings className="w-3 h-3" />
             Settings
           </TabsTrigger>
           <TabsTrigger 
             value="actions" 
-            className="text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none"
+            className="text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none flex items-center gap-1"
           >
+            <Zap className="w-3 h-3" />
             Actions
           </TabsTrigger>
           <TabsTrigger 
             value="data" 
-            className="text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none"
+            className="text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none flex items-center gap-1"
           >
+            <Database className="w-3 h-3" />
             Data
           </TabsTrigger>
         </TabsList>
@@ -399,7 +454,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
             </div>
 
       {/* Layout */}
-      <AccordionSection title="Layout" section="layout">
+      <AccordionSection title="Layout" section="layout" properties={['display', 'flexDirection', 'justifyContent', 'alignItems', 'flexWrap', 'gap']}>
         <div className="Col">
           <div className="Row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
             <label className="Label" style={{ color: 'hsl(12, 76%, 61%)', fontWeight: 600 }}>Display</label>
@@ -509,7 +564,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
       </AccordionSection>
 
       {/* Space */}
-      <AccordionSection title="Space" section="space">
+      <AccordionSection title="Space" section="space" properties={['marginTop', 'marginRight', 'marginBottom', 'marginLeft', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft']}>
         <div className="SpaceBox">
           <div className="SpaceMarginLabel">MARGIN</div>
           <div className="SpaceOuter">
@@ -591,7 +646,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
       </AccordionSection>
 
       {/* Size */}
-      <AccordionSection title="Size" section="size">
+      <AccordionSection title="Size" section="size" properties={['width', 'height', 'minWidth', 'minHeight', 'maxWidth', 'maxHeight']}>
         <div className="SizeGrid">
           <div className="Col">
             <label className="Label">Width</label>
@@ -629,10 +684,10 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
       </AccordionSection>
 
       {/* Position */}
-      <AccordionSection title="Position" section="position" hasAddButton />
+      <AccordionSection title="Position" section="position" hasAddButton properties={['position', 'top', 'right', 'bottom', 'left', 'zIndex']} />
 
       {/* Typography */}
-      <AccordionSection title="Typography" section="typography" indicator>
+      <AccordionSection title="Typography" section="typography" properties={['fontFamily', 'fontSize', 'fontWeight', 'lineHeight', 'letterSpacing', 'textAlign', 'textDecoration', 'textTransform', 'color']}>
         <div className="Col">
           <div className="SizeGrid">
             <div className="Col">
@@ -665,7 +720,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
       <AccordionSection title="Text Shadows" section="textShadows" hasAddButton />
 
       {/* Backgrounds */}
-      <AccordionSection title="Backgrounds" section="backgrounds" hasAddButton>
+      <AccordionSection title="Backgrounds" section="backgrounds" hasAddButton properties={['backgroundColor', 'backgroundImage', 'backgroundSize', 'backgroundPosition', 'backgroundRepeat']}>
         <div className="Col">
           <label className="Label">Background Color</label>
           <input
@@ -678,7 +733,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
       </AccordionSection>
 
       {/* Borders */}
-      <AccordionSection title="Borders" section="borders">
+      <AccordionSection title="Borders" section="borders" properties={['borderWidth', 'borderStyle', 'borderColor', 'borderRadius']}>
         <div className="Col">
           <label className="Label">Border</label>
           <input

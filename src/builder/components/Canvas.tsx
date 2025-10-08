@@ -118,11 +118,15 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
             key={page}
             style={{ 
               backgroundColor: '#ffffff',
+              color: '#000000',
               width: `${currentBreakpointWidth}px`,
               minHeight: '1200px',
               boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
               transition: 'width 0.3s ease',
               position: 'relative',
+              resize: 'horizontal',
+              overflow: 'auto',
+              maxWidth: '100%',
             }}
           >
             {/* Page Name Label */}
