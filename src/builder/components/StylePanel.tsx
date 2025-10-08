@@ -48,16 +48,9 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
     size: false,
     position: false,
     typography: false,
-    textShadows: false,
     backgrounds: false,
     borders: false,
-    boxShadows: false,
-    filters: false,
-    backdropFilters: false,
-    transitions: false,
-    transforms: false,
-    outline: false,
-    advanced: false,
+    effects: false,
   });
 
   const toggleSection = (section: keyof typeof openSections) => {
@@ -672,14 +665,14 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
       <AccordionSection title="Size" section="size" properties={['width', 'height', 'minWidth', 'minHeight', 'maxWidth', 'maxHeight']}>
         <div className="Col" style={{ gap: '4px' }}>
           {/* Width and Height */}
-          <div style={{ display: 'grid', gridTemplateColumns: '48px 1fr 48px 1fr', gap: '4px', alignItems: 'center' }}>
-            <label className="Label">Width</label>
+          <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr 32px 1fr', gap: '4px', alignItems: 'center' }}>
+            <label className="Label" style={{ fontSize: '10px' }}>Width</label>
             <UnitInput
               value={computedStyles.width || ''}
               onChange={(val) => updateStyle('width', val)}
               placeholder="Auto"
             />
-            <label className="Label">Height</label>
+            <label className="Label" style={{ fontSize: '10px' }}>Height</label>
             <UnitInput
               value={computedStyles.height || ''}
               onChange={(val) => updateStyle('height', val)}
@@ -688,14 +681,14 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
           </div>
 
           {/* Min Width and Min Height */}
-          <div style={{ display: 'grid', gridTemplateColumns: '48px 1fr 48px 1fr', gap: '4px', alignItems: 'center' }}>
-            <label className="Label">Min W</label>
+          <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr 32px 1fr', gap: '4px', alignItems: 'center' }}>
+            <label className="Label" style={{ fontSize: '10px' }}>Min W</label>
             <UnitInput
               value={computedStyles.minWidth || ''}
               onChange={(val) => updateStyle('minWidth', val)}
               placeholder="auto"
             />
-            <label className="Label">Min H</label>
+            <label className="Label" style={{ fontSize: '10px' }}>Min H</label>
             <UnitInput
               value={computedStyles.minHeight || ''}
               onChange={(val) => updateStyle('minHeight', val)}
@@ -704,14 +697,14 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
           </div>
 
           {/* Max Width and Max Height */}
-          <div style={{ display: 'grid', gridTemplateColumns: '48px 1fr 48px 1fr', gap: '4px', alignItems: 'center' }}>
-            <label className="Label">Max W</label>
+          <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr 32px 1fr', gap: '4px', alignItems: 'center' }}>
+            <label className="Label" style={{ fontSize: '10px' }}>Max W</label>
             <UnitInput
               value={computedStyles.maxWidth || ''}
               onChange={(val) => updateStyle('maxWidth', val)}
               placeholder="none"
             />
-            <label className="Label">Max H</label>
+            <label className="Label" style={{ fontSize: '10px' }}>Max H</label>
             <UnitInput
               value={computedStyles.maxHeight || ''}
               onChange={(val) => updateStyle('maxHeight', val)}
@@ -720,8 +713,8 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
           </div>
 
           {/* Overflow */}
-          <div style={{ display: 'grid', gridTemplateColumns: '60px 1fr', gap: 'var(--space-2)', alignItems: 'center', marginTop: 'var(--space-1)' }}>
-            <label className="Label">Overflow</label>
+          <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr', gap: '4px', alignItems: 'center' }}>
+            <label className="Label" style={{ fontSize: '10px' }}>Overflow</label>
             <select
               className="Select"
               value={computedStyles.overflow || 'visible'}
@@ -738,10 +731,10 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
 
       {/* Position */}
       <AccordionSection title="Position" section="position" properties={['position', 'top', 'right', 'bottom', 'left', 'zIndex']}>
-        <div className="Col" style={{ gap: 'var(--space-3)' }}>
+        <div className="Col" style={{ gap: '4px' }}>
           {/* Position Type */}
-          <div className="Col" style={{ gap: 'var(--space-2)' }}>
-            <label className="Label">Position</label>
+          <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr', gap: '4px', alignItems: 'center' }}>
+            <label className="Label" style={{ fontSize: '10px' }}>Position</label>
             <select
               className="Select"
               value={computedStyles.position || 'static'}
@@ -810,15 +803,14 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
               </div>
 
               {/* Z-Index */}
-              <div className="Row" style={{ gap: 'var(--space-2)', alignItems: 'center' }}>
-                <label className="Label" style={{ minWidth: '50px' }}>Z-Index</label>
+              <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr', gap: '4px', alignItems: 'center' }}>
+                <label className="Label" style={{ fontSize: '10px' }}>Z-Index</label>
                 <input
                   className="Input"
                   type="number"
                   value={computedStyles.zIndex?.toString() || ''}
                   onChange={(e) => updateStyle('zIndex', e.target.value)}
                   placeholder="Auto"
-                  style={{ flex: 1 }}
                 />
               </div>
             </>
@@ -828,90 +820,131 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
 
       {/* Typography */}
       <AccordionSection title="Typography" section="typography" properties={['fontFamily', 'fontSize', 'fontWeight', 'lineHeight', 'letterSpacing', 'textAlign', 'textDecoration', 'textTransform', 'color']}>
-        <div className="Col">
-          <div className="SizeGrid">
-            <div className="Col">
-              <label className="Label">Font Size</label>
-              <UnitInput
-                value={computedStyles.fontSize || ''}
-                onChange={(val) => updateStyle('fontSize', val)}
-                placeholder="16px"
-              />
-            </div>
-            <div className="Col">
-              <label className="Label">Font Weight</label>
-              <select
-                className="Select"
-                value={computedStyles.fontWeight || '400'}
-                onChange={(e) => updateStyle('fontWeight', e.target.value)}
-              >
-                <option value="300">Light</option>
-                <option value="400">Normal</option>
-                <option value="500">Medium</option>
-                <option value="600">Semibold</option>
-                <option value="700">Bold</option>
-              </select>
-            </div>
+        <div className="Col" style={{ gap: '4px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr 32px 1fr', gap: '4px', alignItems: 'center' }}>
+            <label className="Label" style={{ fontSize: '10px' }}>Size</label>
+            <UnitInput
+              value={computedStyles.fontSize || ''}
+              onChange={(val) => updateStyle('fontSize', val)}
+              placeholder="16px"
+            />
+            <label className="Label" style={{ fontSize: '10px' }}>Weight</label>
+            <select
+              className="Select"
+              value={computedStyles.fontWeight || '400'}
+              onChange={(e) => updateStyle('fontWeight', e.target.value)}
+            >
+              <option value="300">Light</option>
+              <option value="400">Normal</option>
+              <option value="500">Medium</option>
+              <option value="600">Semibold</option>
+              <option value="700">Bold</option>
+            </select>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr', gap: '4px', alignItems: 'center' }}>
+            <label className="Label" style={{ fontSize: '10px' }}>Color</label>
+            <input
+              className="Input"
+              type="text"
+              placeholder="inherit"
+              value={computedStyles.color || ''}
+              onChange={(e) => updateStyle('color', e.target.value)}
+            />
           </div>
         </div>
       </AccordionSection>
 
-      {/* Text Shadows */}
-      <AccordionSection title="Text Shadows" section="textShadows" hasAddButton />
-
       {/* Backgrounds */}
-      <AccordionSection title="Backgrounds" section="backgrounds" hasAddButton properties={['backgroundColor', 'backgroundImage', 'backgroundSize', 'backgroundPosition', 'backgroundRepeat']}>
-        <div className="Col">
-          <label className="Label">Background Color</label>
-          <input
-            className="Input"
-            placeholder="transparent"
-            value={computedStyles.backgroundColor || ''}
-            onChange={(e) => updateStyle('backgroundColor', e.target.value)}
-          />
+      <AccordionSection title="Backgrounds" section="backgrounds" properties={['backgroundColor', 'backgroundImage', 'backgroundSize', 'backgroundPosition', 'backgroundRepeat']}>
+        <div className="Col" style={{ gap: '4px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr', gap: '4px', alignItems: 'center' }}>
+            <label className="Label" style={{ fontSize: '10px' }}>Color</label>
+            <input
+              className="Input"
+              type="text"
+              placeholder="transparent"
+              value={computedStyles.backgroundColor || ''}
+              onChange={(e) => updateStyle('backgroundColor', e.target.value)}
+            />
+          </div>
         </div>
       </AccordionSection>
 
       {/* Borders */}
       <AccordionSection title="Borders" section="borders" properties={['borderWidth', 'borderStyle', 'borderColor', 'borderRadius']}>
-        <div className="Col">
-          <label className="Label">Border</label>
-          <input
-            className="Input"
-            placeholder="none"
-            value={computedStyles.border || ''}
-            onChange={(e) => updateStyle('border', e.target.value)}
-          />
-          <label className="Label">Border Radius</label>
-          <input
-            className="Input"
-            placeholder="0"
-            value={computedStyles.borderRadius || ''}
-            onChange={(e) => updateStyle('borderRadius', e.target.value)}
-          />
+        <div className="Col" style={{ gap: '4px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr', gap: '4px', alignItems: 'center' }}>
+            <label className="Label" style={{ fontSize: '10px' }}>Radius</label>
+            <UnitInput
+              value={computedStyles.borderRadius || ''}
+              onChange={(val) => updateStyle('borderRadius', val)}
+              placeholder="0"
+            />
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr 32px 1fr', gap: '4px', alignItems: 'center' }}>
+            <label className="Label" style={{ fontSize: '10px' }}>Style</label>
+            <select
+              className="Select"
+              value={computedStyles.borderStyle || 'none'}
+              onChange={(e) => updateStyle('borderStyle', e.target.value)}
+            >
+              <option value="none">None</option>
+              <option value="solid">Solid</option>
+              <option value="dashed">Dashed</option>
+              <option value="dotted">Dotted</option>
+            </select>
+            <label className="Label" style={{ fontSize: '10px' }}>Width</label>
+            <UnitInput
+              value={computedStyles.borderWidth || ''}
+              onChange={(val) => updateStyle('borderWidth', val)}
+              placeholder="0"
+            />
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr', gap: '4px', alignItems: 'center' }}>
+            <label className="Label" style={{ fontSize: '10px' }}>Color</label>
+            <input
+              className="Input"
+              type="text"
+              placeholder="black"
+              value={computedStyles.borderColor || ''}
+              onChange={(e) => updateStyle('borderColor', e.target.value)}
+            />
+          </div>
         </div>
       </AccordionSection>
 
-      {/* Box Shadows */}
-      <AccordionSection title="Box Shadows" section="boxShadows" hasAddButton />
-
-      {/* Filters */}
-      <AccordionSection title="Filters" section="filters" hasAddButton />
-
-      {/* Backdrop Filters */}
-      <AccordionSection title="Backdrop Filters" section="backdropFilters" hasAddButton />
-
-      {/* Transitions */}
-      <AccordionSection title="Transitions" section="transitions" hasAddButton />
-
-      {/* Transforms */}
-      <AccordionSection title="Transforms" section="transforms" hasAddButton />
-
-      {/* Outline */}
-      <AccordionSection title="Outline" section="outline" />
-
-      {/* Advanced */}
-      <AccordionSection title="Advanced" section="advanced" hasAddButton />
+      {/* Effects */}
+      <AccordionSection title="Effects" section="effects" properties={['opacity', 'boxShadow', 'filter', 'backdropFilter', 'cursor']}>
+        <div className="Col" style={{ gap: '4px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr', gap: '4px', alignItems: 'center' }}>
+            <label className="Label" style={{ fontSize: '10px' }}>Opacity</label>
+            <input
+              className="Input"
+              type="number"
+              min="0"
+              max="1"
+              step="0.1"
+              placeholder="1"
+              value={computedStyles.opacity || ''}
+              onChange={(e) => updateStyle('opacity', e.target.value)}
+            />
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr', gap: '4px', alignItems: 'center' }}>
+            <label className="Label" style={{ fontSize: '10px' }}>Cursor</label>
+            <select
+              className="Select"
+              value={computedStyles.cursor || 'auto'}
+              onChange={(e) => updateStyle('cursor', e.target.value)}
+            >
+              <option value="auto">Auto</option>
+              <option value="pointer">Pointer</option>
+              <option value="text">Text</option>
+              <option value="move">Move</option>
+              <option value="not-allowed">Not Allowed</option>
+            </select>
+          </div>
+        </div>
+      </AccordionSection>
           </div>
         </TabsContent>
 
