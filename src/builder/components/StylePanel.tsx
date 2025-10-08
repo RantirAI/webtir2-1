@@ -187,30 +187,48 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
 
   const handleAddClass = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && classNameInput.trim()) {
-      const newClassNames = [...classNames, classNameInput.trim()];
-      setClassNames(newClassNames);
+      const input = classNameInput.trim();
+
+      // If no style source yet, create one and attach to the instance
+      if (!styleSourceId) {
+        const id = createStyleSource('local', input);
+        updateInstance(selectedInstance.id, { styleSourceIds: [id] });
+        setClassNames([input]);
+      } else {
+        const newClassNames = [...classNames, input];
+        setClassNames(newClassNames);
+        renameClass(newClassNames.join(' '));
+      }
+
       setClassNameInput('');
+    }
+  };
+  const handleRemoveClass = (index: number) => {
+    const newClassNames = classNames.filter((_, i) => i !== index);
+    setClassNames(newClassNames);
+
+    if (newClassNames.length === 0 && styleSourceId) {
+      // Detach and delete the style source when no class names remain
+      updateInstance(selectedInstance.id, { styleSourceIds: [] });
+      useStyleStore.getState().deleteStyleSource(styleSourceId);
+    } else {
       renameClass(newClassNames.join(' '));
     }
   };
 
-  const handleRemoveClass = (index: number) => {
-    const newClassNames = classNames.filter((_, i) => i !== index);
-    setClassNames(newClassNames);
-    renameClass(newClassNames.join(' '));
-  };
-
   const hasStylesInSection = (properties: string[]) => {
     if (!styleSourceId) return false;
-    const { styles, currentBreakpointId } = useStyleStore.getState();
+    const { styles, currentBreakpointId, styleSources } = useStyleStore.getState();
+    const name = styleSources[styleSourceId]?.name?.trim();
+    if (!name) return false; // if no class names, consider no active styles
     
-    // Check if any property has an actual value set in the store (not just computed defaults)
-    return properties.some(prop => {
+    // Check if any property has an explicit value set for this class at this breakpoint
+    return properties.some((prop) => {
       const key = `${styleSourceId}:${currentBreakpointId}:${prop}`;
-      return styles[key] && styles[key] !== '';
+      const val = styles[key];
+      return val !== undefined && val !== '' && val !== 'initial' && val !== 'inherit' && val !== 'normal' && val !== 'auto' && val !== 'none';
     });
   };
-
   const clearSectionStyles = (properties: string[]) => {
     if (!styleSourceId) return;
     properties.forEach(prop => {
@@ -652,9 +670,9 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
 
       {/* Size */}
       <AccordionSection title="Size" section="size" properties={['width', 'height', 'minWidth', 'minHeight', 'maxWidth', 'maxHeight']}>
-        <div className="Col" style={{ gap: 'var(--space-2)' }}>
+        <div className="Col" style={{ gap: '4px' }}>
           {/* Width and Height */}
-          <div style={{ display: 'grid', gridTemplateColumns: '60px 1fr 60px 1fr', gap: 'var(--space-2)', alignItems: 'center' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '48px 1fr 48px 1fr', gap: '4px', alignItems: 'center' }}>
             <label className="Label">Width</label>
             <UnitInput
               value={computedStyles.width || ''}
@@ -670,7 +688,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
           </div>
 
           {/* Min Width and Min Height */}
-          <div style={{ display: 'grid', gridTemplateColumns: '60px 1fr 60px 1fr', gap: 'var(--space-2)', alignItems: 'center' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '48px 1fr 48px 1fr', gap: '4px', alignItems: 'center' }}>
             <label className="Label">Min W</label>
             <UnitInput
               value={computedStyles.minWidth || ''}
@@ -686,7 +704,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
           </div>
 
           {/* Max Width and Max Height */}
-          <div style={{ display: 'grid', gridTemplateColumns: '60px 1fr 60px 1fr', gap: 'var(--space-2)', alignItems: 'center' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '48px 1fr 48px 1fr', gap: '4px', alignItems: 'center' }}>
             <label className="Label">Max W</label>
             <UnitInput
               value={computedStyles.maxWidth || ''}
