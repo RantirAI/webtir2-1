@@ -8,18 +8,24 @@ import { Heading } from '../primitives/Heading';
 import { ButtonPrimitive } from '../primitives/ButtonPrimitive';
 import { ImagePrimitive } from '../primitives/ImagePrimitive';
 import { LinkPrimitive } from '../primitives/LinkPrimitive';
+import { breakpoints } from './PageNavigation';
 
 interface CanvasProps {
   zoom: number;
+  currentBreakpoint: string;
+  pages: string[];
+  currentPage: string;
 }
 
-export const Canvas: React.FC<CanvasProps> = ({ zoom }) => {
+export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, currentPage }) => {
   const rootInstance = useBuilderStore((state) => state.rootInstance);
   const selectedInstanceId = useBuilderStore((state) => state.selectedInstanceId);
   const hoveredInstanceId = useBuilderStore((state) => state.hoveredInstanceId);
   const setSelectedInstanceId = useBuilderStore((state) => state.setSelectedInstanceId);
   const setHoveredInstanceId = useBuilderStore((state) => state.setHoveredInstanceId);
   const { getComputedStyles } = useStyleStore();
+
+  const currentBreakpointWidth = breakpoints.find(bp => bp.id === currentBreakpoint)?.width || 960;
 
   const renderInstance = (instance: ComponentInstance): React.ReactNode => {
     const isSelected = instance.id === selectedInstanceId;
@@ -72,35 +78,21 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom }) => {
           minWidth: '100%',
         }}
       >
-        {/* Page 1 */}
-        <div 
-          style={{ 
-            backgroundColor: '#ffffff',
-            width: '960px',
-            minHeight: '1200px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-          }}
-          className="dark:bg-zinc-900"
-        >
-          {rootInstance && renderInstance(rootInstance)}
-        </div>
-        
-        {/* Page 2 - Placeholder */}
-        <div 
-          style={{ 
-            backgroundColor: '#ffffff',
-            width: '960px',
-            minHeight: '1200px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: '#999',
-          }}
-          className="dark:bg-zinc-900"
-        >
-          <div>Page 2</div>
-        </div>
+        {pages.map((page, index) => (
+          <div 
+            key={page}
+            style={{ 
+              backgroundColor: '#ffffff',
+              width: `${currentBreakpointWidth}px`,
+              minHeight: '1200px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+              transition: 'width 0.3s ease',
+            }}
+            className="dark:bg-zinc-900"
+          >
+            {index === 0 && rootInstance && renderInstance(rootInstance)}
+          </div>
+        ))}
       </div>
     </div>
   );
