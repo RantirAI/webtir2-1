@@ -158,6 +158,9 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
   const width = computedStyles.width || 'auto';
   const height = computedStyles.height || 'auto';
   const dimensionText = `${width} × ${height}`;
+  
+  // Count children components
+  const childrenCount = selectedInstance?.children?.length || 0;
 
 
   const handleLabelSave = () => {
@@ -369,10 +372,10 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
         <TabsContent value="style" className="flex-1 m-0 overflow-y-auto">
           <div className="StylePanel">
             <div style={{ 
-              padding: 'var(--space-2) var(--space-2)',
+              padding: 'var(--space-1) var(--space-2)',
               borderBottom: '1px solid hsl(var(--border))'
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-1)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                 <span className="text-foreground">{getComponentIcon(selectedInstance.type)}</span>
                 {isEditingLabel ? (
                   <input
@@ -389,20 +392,26 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
                     }}
                     autoFocus
                     className="Input"
-                    style={{ fontSize: '12px', fontWeight: 600, padding: '2px 4px', width: '150px' }}
+                    style={{ fontSize: '11px', fontWeight: 600, padding: '2px 4px', flex: 1 }}
                   />
                 ) : (
                   <span 
-                    style={{ fontSize: '12px', fontWeight: 600, cursor: 'pointer' }} 
+                    style={{ fontSize: '11px', fontWeight: 600, cursor: 'pointer', flex: 1 }} 
                     className="text-foreground hover:text-primary"
                     onClick={() => setIsEditingLabel(true)}
                   >
                     {selectedInstance.label || selectedInstance.type}
                   </span>
                 )}
-              </div>
-              <div style={{ fontSize: '10px', color: 'hsl(var(--muted-foreground))', paddingLeft: '28px' }}>
-                {dimensionText}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', fontSize: '9px', color: 'hsl(var(--muted-foreground))' }}>
+                  <span>{dimensionText}</span>
+                  {childrenCount > 0 && (
+                    <>
+                      <span>•</span>
+                      <span>{childrenCount} {childrenCount === 1 ? 'child' : 'children'}</span>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
 
