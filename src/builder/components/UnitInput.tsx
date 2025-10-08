@@ -47,7 +47,8 @@ export const UnitInput: React.FC<UnitInputProps> = ({
         value={number}
         onChange={handleNumberChange}
         style={{ 
-          minWidth: '40px',
+          minWidth: '32px',
+          maxWidth: '60px',
           height: '24px',
           fontSize: '11px',
           padding: '0 4px',
@@ -56,7 +57,7 @@ export const UnitInput: React.FC<UnitInputProps> = ({
         }}
       />
       <Select value={unit} onValueChange={handleUnitChange}>
-        <SelectTrigger className="w-12 h-6 text-[10px] border-border px-1 bg-[#F5F5F5] dark:bg-input">
+        <SelectTrigger className="w-11 h-6 text-[10px] border-border px-1 bg-[#F5F5F5] dark:bg-input">
           <SelectValue />
         </SelectTrigger>
         <SelectContent className="min-w-[60px]">
