@@ -38,6 +38,19 @@ export const StylePanel: React.FC = () => {
     setOpenSections((prev) => ({ ...prev, [section]: !prev[section] }));
   };
 
+  const styleSourceId = selectedInstance?.styleSourceIds?.[0];
+  const styleSource = styleSourceId ? styleSources[styleSourceId] : undefined;
+  const computedStyles = selectedInstance ? getComputedStyles(selectedInstance.styleSourceIds || []) : {};
+
+  // Initialize class names - MUST be before early return to follow hooks rules
+  React.useEffect(() => {
+    if (styleSource) {
+      const names = styleSource.name.split(' ').filter(Boolean);
+      setClassNames(names);
+      setClassNameInput('');
+    }
+  }, [styleSource?.name]);
+
   if (!selectedInstance) {
     return (
       <div className="w-80 h-full bg-card border border-border rounded-lg shadow-xl flex flex-col overflow-hidden">
@@ -72,10 +85,6 @@ export const StylePanel: React.FC = () => {
     );
   }
 
-  const styleSourceId = selectedInstance.styleSourceIds?.[0];
-  const styleSource = styleSourceId ? styleSources[styleSourceId] : undefined;
-  const computedStyles = getComputedStyles(selectedInstance.styleSourceIds || []);
-
   const ensureLocalClass = () => {
     if (!selectedInstance.styleSourceIds || selectedInstance.styleSourceIds.length === 0) {
       const name = nextLocalClassName(selectedInstance.type);
@@ -95,15 +104,6 @@ export const StylePanel: React.FC = () => {
     if (!styleSourceId) return;
     renameStyleSource(styleSourceId, newName);
   };
-
-  // Initialize class name input when selected instance changes
-  React.useEffect(() => {
-    if (styleSource) {
-      const names = styleSource.name.split(' ').filter(Boolean);
-      setClassNames(names);
-      setClassNameInput('');
-    }
-  }, [styleSource?.name]);
 
   const classes = selectedInstance.styleSourceIds
     ?.map((id) => ({
