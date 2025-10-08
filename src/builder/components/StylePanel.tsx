@@ -652,75 +652,62 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
 
       {/* Size */}
       <AccordionSection title="Size" section="size" properties={['width', 'height', 'minWidth', 'minHeight', 'maxWidth', 'maxHeight']}>
-        <div className="Col" style={{ gap: 'var(--space-3)' }}>
+        <div className="Col" style={{ gap: 'var(--space-2)' }}>
           {/* Width and Height */}
-          <div className="Row" style={{ gap: 'var(--space-3)', alignItems: 'center' }}>
-            <label className="Label" style={{ minWidth: '50px' }}>Width</label>
+          <div style={{ display: 'grid', gridTemplateColumns: '60px 1fr 60px 1fr', gap: 'var(--space-2)', alignItems: 'center' }}>
+            <label className="Label">Width</label>
             <UnitInput
               value={computedStyles.width || ''}
               onChange={(val) => updateStyle('width', val)}
               placeholder="Auto"
-              className="Input"
-              style={{ flex: 1 }}
             />
-            <label className="Label" style={{ minWidth: '50px', marginLeft: 'var(--space-2)' }}>Height</label>
+            <label className="Label">Height</label>
             <UnitInput
               value={computedStyles.height || ''}
               onChange={(val) => updateStyle('height', val)}
               placeholder="Auto"
-              className="Input"
-              style={{ flex: 1 }}
             />
           </div>
 
           {/* Min Width and Min Height */}
-          <div className="Row" style={{ gap: 'var(--space-3)', alignItems: 'center' }}>
-            <label className="Label" style={{ minWidth: '50px' }}>Min W</label>
+          <div style={{ display: 'grid', gridTemplateColumns: '60px 1fr 60px 1fr', gap: 'var(--space-2)', alignItems: 'center' }}>
+            <label className="Label">Min W</label>
             <UnitInput
               value={computedStyles.minWidth || ''}
               onChange={(val) => updateStyle('minWidth', val)}
-              placeholder="0"
-              className="Input"
-              style={{ flex: 1 }}
+              placeholder="auto"
             />
-            <label className="Label" style={{ minWidth: '50px', marginLeft: 'var(--space-2)' }}>Min H</label>
+            <label className="Label">Min H</label>
             <UnitInput
               value={computedStyles.minHeight || ''}
               onChange={(val) => updateStyle('minHeight', val)}
-              placeholder="0"
-              className="Input"
-              style={{ flex: 1 }}
+              placeholder="auto"
             />
           </div>
 
           {/* Max Width and Max Height */}
-          <div className="Row" style={{ gap: 'var(--space-3)', alignItems: 'center' }}>
-            <label className="Label" style={{ minWidth: '50px' }}>Max W</label>
+          <div style={{ display: 'grid', gridTemplateColumns: '60px 1fr 60px 1fr', gap: 'var(--space-2)', alignItems: 'center' }}>
+            <label className="Label">Max W</label>
             <UnitInput
               value={computedStyles.maxWidth || ''}
               onChange={(val) => updateStyle('maxWidth', val)}
-              placeholder="None"
-              className="Input"
-              style={{ flex: 1 }}
+              placeholder="none"
             />
-            <label className="Label" style={{ minWidth: '50px', marginLeft: 'var(--space-2)' }}>Max H</label>
+            <label className="Label">Max H</label>
             <UnitInput
               value={computedStyles.maxHeight || ''}
               onChange={(val) => updateStyle('maxHeight', val)}
-              placeholder="None"
-              className="Input"
-              style={{ flex: 1 }}
+              placeholder="none"
             />
           </div>
 
           {/* Overflow */}
-          <div className="Row" style={{ gap: 'var(--space-2)', alignItems: 'center', marginTop: 'var(--space-2)' }}>
-            <label className="Label" style={{ minWidth: '50px' }}>Overflow</label>
+          <div style={{ display: 'grid', gridTemplateColumns: '60px 1fr', gap: 'var(--space-2)', alignItems: 'center', marginTop: 'var(--space-1)' }}>
+            <label className="Label">Overflow</label>
             <select
               className="Select"
               value={computedStyles.overflow || 'visible'}
               onChange={(e) => updateStyle('overflow', e.target.value)}
-              style={{ flex: 1 }}
             >
               <option value="visible">Visible</option>
               <option value="hidden">Hidden</option>
