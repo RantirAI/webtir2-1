@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import { useBuilderStore } from '../store/useBuilderStore';
 import { useStyleStore } from '../store/useStyleStore';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Paintbrush, Settings, Zap, Plus } from 'lucide-react';
+import { Paintbrush, Settings, Zap, Plus, Square, Type, Heading as HeadingIcon, MousePointerClick, Image as ImageIcon, Link as LinkIcon, X, ChevronDown } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
+import { componentRegistry } from '../primitives/registry';
 import '../styles/style-panel.css';
 import '../styles/tokens.css';
 
@@ -11,6 +13,8 @@ export const StylePanel: React.FC = () => {
   const { setStyle, getComputedStyles, styleSources, createStyleSource, nextLocalClassName, renameStyleSource } = useStyleStore();
   const selectedInstance = getSelectedInstance();
   const [classNameInput, setClassNameInput] = useState('');
+  const [classNames, setClassNames] = useState<string[]>([]);
+  const [currentState, setCurrentState] = useState<string>('base');
 
   const [openSections, setOpenSections] = useState({
     layout: true,
@@ -95,7 +99,9 @@ export const StylePanel: React.FC = () => {
   // Initialize class name input when selected instance changes
   React.useEffect(() => {
     if (styleSource) {
-      setClassNameInput(styleSource.name);
+      const names = styleSource.name.split(' ').filter(Boolean);
+      setClassNames(names);
+      setClassNameInput('');
     }
   }, [styleSource?.name]);
 
@@ -108,6 +114,34 @@ export const StylePanel: React.FC = () => {
     .filter(Boolean) || [];
 
   const isFlexDisplay = computedStyles.display === 'flex';
+
+  const getComponentIcon = (type: string) => {
+    const iconName = componentRegistry[type]?.icon;
+    const iconMap: Record<string, React.ReactNode> = {
+      Square: <Square className="w-4 h-4" />,
+      Type: <Type className="w-4 h-4" />,
+      Heading: <HeadingIcon className="w-4 h-4" />,
+      MousePointerClick: <MousePointerClick className="w-4 h-4" />,
+      Image: <ImageIcon className="w-4 h-4" />,
+      Link: <LinkIcon className="w-4 h-4" />,
+    };
+    return iconMap[iconName || ''] || <Square className="w-4 h-4" />;
+  };
+
+  const handleAddClass = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && classNameInput.trim()) {
+      const newClassNames = [...classNames, classNameInput.trim()];
+      setClassNames(newClassNames);
+      setClassNameInput('');
+      renameClass(newClassNames.join(' '));
+    }
+  };
+
+  const handleRemoveClass = (index: number) => {
+    const newClassNames = classNames.filter((_, i) => i !== index);
+    setClassNames(newClassNames);
+    renameClass(newClassNames.join(' '));
+  };
 
   const AccordionSection: React.FC<{
     title: string;
@@ -151,38 +185,74 @@ export const StylePanel: React.FC = () => {
             {/* Element Type Header */}
             <div style={{ 
               padding: 'var(--space-2) var(--space-2)',
-              borderBottom: '1px solid hsl(var(--border))',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between'
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                <span style={{ fontSize: '12px' }}>🖼️</span>
+                {getComponentIcon(selectedInstance.type)}
                 <span style={{ fontSize: '12px', fontWeight: 600 }}>{selectedInstance.type}</span>
               </div>
             </div>
 
-            {/* Class Name Input */}
+            {/* Class Name Input with States */}
             <div style={{ padding: 'var(--space-2)', borderBottom: '1px solid hsl(var(--border))' }}>
-              <input
-                className="Input"
-                placeholder="class-name another-class"
-                value={classNameInput}
-                onChange={(e) => setClassNameInput(e.target.value)}
-                onBlur={(e) => {
-                  if (e.target.value.trim()) {
-                    renameClass(e.target.value.trim());
-                  }
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.currentTarget.blur();
-                  }
-                }}
-                style={{ 
-                  width: '100%'
-                }}
-              />
+              <div style={{ display: 'flex', gap: 'var(--space-2)', marginBottom: 'var(--space-2)' }}>
+                <div style={{ flex: 1, display: 'flex', flexWrap: 'wrap', gap: 'var(--space-1)', alignItems: 'center', padding: 'var(--space-1)', background: 'hsl(var(--input))', border: '1px solid hsl(var(--border))', borderRadius: '4px', minHeight: '28px' }}>
+                  {classNames.map((className, index) => (
+                    <span key={index} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '2px 6px', background: 'hsl(var(--primary))', color: 'hsl(var(--primary-foreground))', borderRadius: '4px', fontSize: '11px' }}>
+                      {className}
+                      <X className="w-3 h-3 cursor-pointer" onClick={() => handleRemoveClass(index)} />
+                    </span>
+                  ))}
+                  <input
+                    className="Input"
+                    placeholder="Add class..."
+                    value={classNameInput}
+                    onChange={(e) => setClassNameInput(e.target.value)}
+                    onKeyDown={handleAddClass}
+                    style={{ 
+                      flex: 1,
+                      minWidth: '80px',
+                      border: 'none',
+                      background: 'transparent',
+                      outline: 'none',
+                      padding: '0',
+                      height: '20px'
+                    }}
+                  />
+                </div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="IconButton" style={{ width: '32px', height: '28px' }}>
+                      <ChevronDown className="w-4 h-4" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuItem onClick={() => setCurrentState('base')}>
+                      Base
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => setCurrentState('hover')}>
+                      Hover
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setCurrentState('focus')}>
+                      Focus Visible
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setCurrentState('focus-within')}>
+                      Focus Within
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setCurrentState('active')}>
+                      Active
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+              {currentState !== 'base' && (
+                <div style={{ fontSize: '10px', color: 'hsl(var(--muted-foreground))', padding: '2px 0' }}>
+                  State: {currentState}
+                </div>
+              )}
             </div>
 
       {/* Layout */}
