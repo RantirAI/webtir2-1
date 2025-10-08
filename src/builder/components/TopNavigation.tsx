@@ -21,7 +21,9 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({ zoom, setZoom }) =
   };
 
   return (
-    <div className="bg-card/95 backdrop-blur-sm border border-border rounded-full shadow-lg px-3 py-2 flex items-center gap-2">
+    <div 
+      className="backdrop-blur-md border border-border rounded-full shadow-lg px-3 py-2 flex items-center gap-2 bg-white/70 dark:bg-zinc-900/70"
+    >
       <div className="flex items-center gap-1">
         <Button
           variant="ghost"

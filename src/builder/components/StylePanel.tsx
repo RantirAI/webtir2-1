@@ -54,18 +54,27 @@ export const StylePanel: React.FC = () => {
 
   if (!selectedInstance) {
     return (
-      <div className="w-80 h-full bg-card border border-border rounded-lg shadow-xl flex flex-col overflow-hidden">
+      <div className="w-80 h-full bg-background border border-border rounded-lg shadow-xl flex flex-col overflow-hidden backdrop-blur-md" style={{ background: 'rgba(255, 255, 255, 0.7)' }}>
         <Tabs defaultValue="styles" className="flex-1 flex flex-col">
-          <TabsList className="w-full grid grid-cols-3 rounded-none border-b bg-transparent h-9 p-0">
-            <TabsTrigger value="styles" className="gap-1 text-xs h-full data-[state=active]:bg-accent rounded-none">
+          <TabsList className="w-full grid grid-cols-3 rounded-none border-b bg-transparent h-10 p-1 gap-1">
+            <TabsTrigger 
+              value="styles" 
+              className="gap-1 text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] data-[state=active]:shadow-none"
+            >
               <Paintbrush className="w-3 h-3" />
               Styles
             </TabsTrigger>
-            <TabsTrigger value="settings" className="gap-1 text-xs h-full data-[state=active]:bg-accent rounded-none">
+            <TabsTrigger 
+              value="settings" 
+              className="gap-1 text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] data-[state=active]:shadow-none"
+            >
               <Settings className="w-3 h-3" />
               Settings
             </TabsTrigger>
-            <TabsTrigger value="actions" className="gap-1 text-xs h-full data-[state=active]:bg-accent rounded-none">
+            <TabsTrigger 
+              value="actions" 
+              className="gap-1 text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] data-[state=active]:shadow-none"
+            >
               <Zap className="w-3 h-3" />
               Actions
             </TabsTrigger>
@@ -164,18 +173,27 @@ export const StylePanel: React.FC = () => {
   );
 
   return (
-    <div className="w-80 h-full bg-card border border-border rounded-lg shadow-xl flex flex-col overflow-hidden">
+    <div className="w-80 h-full bg-background border border-border rounded-lg shadow-xl flex flex-col overflow-hidden backdrop-blur-md bg-white/70 dark:bg-zinc-900/70">
       <Tabs defaultValue="styles" className="flex-1 flex flex-col">
-        <TabsList className="w-full grid grid-cols-3 rounded-none border-b bg-transparent h-9 p-0">
-          <TabsTrigger value="styles" className="gap-1 text-xs h-full data-[state=active]:bg-accent rounded-none">
+        <TabsList className="w-full grid grid-cols-3 rounded-none border-b bg-transparent h-10 p-1 gap-1">
+          <TabsTrigger 
+            value="styles" 
+            className="gap-1 text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none"
+          >
             <Paintbrush className="w-3 h-3" />
             Styles
           </TabsTrigger>
-          <TabsTrigger value="settings" className="gap-1 text-xs h-full data-[state=active]:bg-accent rounded-none">
+          <TabsTrigger 
+            value="settings" 
+            className="gap-1 text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none"
+          >
             <Settings className="w-3 h-3" />
             Settings
           </TabsTrigger>
-          <TabsTrigger value="actions" className="gap-1 text-xs h-full data-[state=active]:bg-accent rounded-none">
+          <TabsTrigger 
+            value="actions" 
+            className="gap-1 text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none"
+          >
             <Zap className="w-3 h-3" />
             Actions
           </TabsTrigger>
@@ -198,30 +216,33 @@ export const StylePanel: React.FC = () => {
             {/* Class Name Input with States */}
             <div style={{ padding: 'var(--space-2)', borderBottom: '1px solid hsl(var(--border))' }}>
               <div style={{ display: 'flex', gap: 'var(--space-2)', marginBottom: 'var(--space-2)' }}>
-                <div style={{ flex: 1, display: 'flex', flexWrap: 'wrap', gap: 'var(--space-1)', alignItems: 'center', padding: 'var(--space-1)', background: 'hsl(var(--input))', border: '1px solid hsl(var(--border))', borderRadius: '4px', minHeight: '28px' }}>
-                  {classNames.map((className, index) => (
-                    <span key={index} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '2px 6px', background: 'hsl(var(--primary))', color: 'hsl(var(--primary-foreground))', borderRadius: '4px', fontSize: '11px' }}>
-                      {className}
-                      <X className="w-3 h-3 cursor-pointer" onClick={() => handleRemoveClass(index)} />
-                    </span>
-                  ))}
-                  <input
-                    className="Input"
-                    placeholder="Add class..."
-                    value={classNameInput}
-                    onChange={(e) => setClassNameInput(e.target.value)}
-                    onKeyDown={handleAddClass}
-                    style={{ 
-                      flex: 1,
-                      minWidth: '80px',
-                      border: 'none',
-                      background: 'transparent',
-                      outline: 'none',
-                      padding: '0',
-                      height: '20px'
-                    }}
-                  />
-                </div>
+              <div 
+                className="bg-[#F5F5F5] dark:bg-zinc-800 border border-border rounded" 
+                style={{ flex: 1, display: 'flex', flexWrap: 'wrap', gap: 'var(--space-1)', alignItems: 'center', padding: 'var(--space-1)', minHeight: '28px' }}
+              >
+                {classNames.map((className, index) => (
+                  <span key={index} className="inline-flex items-center gap-1 px-2 py-0.5 bg-primary text-primary-foreground rounded text-[11px]">
+                    {className}
+                    <X className="w-3 h-3 cursor-pointer" onClick={() => handleRemoveClass(index)} />
+                  </span>
+                ))}
+                <input
+                  className="Input"
+                  placeholder="Add class..."
+                  value={classNameInput}
+                  onChange={(e) => setClassNameInput(e.target.value)}
+                  onKeyDown={handleAddClass}
+                  style={{ 
+                    flex: 1,
+                    minWidth: '80px',
+                    border: 'none',
+                    background: 'transparent',
+                    outline: 'none',
+                    padding: '0',
+                    height: '20px'
+                  }}
+                />
+              </div>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <button className="IconButton" style={{ width: '32px', height: '28px' }}>

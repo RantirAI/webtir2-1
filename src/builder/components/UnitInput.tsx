@@ -40,7 +40,7 @@ export const UnitInput: React.FC<UnitInputProps> = ({
     <div className={`flex gap-0.5 ${className}`} style={{ alignItems: 'center' }}>
       <input
         type="text"
-        className="Input flex-1"
+        className="Input flex-1 dark:bg-input"
         placeholder={placeholder}
         value={number}
         onChange={handleNumberChange}
@@ -50,10 +50,11 @@ export const UnitInput: React.FC<UnitInputProps> = ({
           fontSize: '11px',
           padding: '0 4px',
           textAlign: 'center',
+          background: '#F5F5F5',
         }}
       />
       <Select value={unit} onValueChange={handleUnitChange}>
-        <SelectTrigger className="w-12 h-6 text-[10px] bg-input border-border px-1">
+        <SelectTrigger className="w-12 h-6 text-[10px] border-border px-1 bg-[#F5F5F5] dark:bg-input">
           <SelectValue />
         </SelectTrigger>
         <SelectContent className="min-w-[60px]">

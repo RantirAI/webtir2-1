@@ -70,13 +70,19 @@
 .Input,
 .Select,
 .Number {
-  background: hsl(var(--input));
+  background: #F5F5F5;
   border: 1px solid hsl(var(--border));
   height: 24px;
   padding: 0 var(--space-2);
   border-radius: 4px;
   color: hsl(var(--foreground));
   font-size: 11px;
+}
+
+.dark .Input,
+.dark .Select,
+.dark .Number {
+  background: hsl(var(--input));
 }
 
 .Input:hover,
