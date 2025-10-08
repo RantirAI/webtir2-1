@@ -152,6 +152,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
     .filter(Boolean) || [];
 
   const isFlexDisplay = computedStyles.display === 'flex';
+  const isGridDisplay = computedStyles.display === 'grid';
   
   // Calculate dimensions
   const width = computedStyles.width || 'auto';
@@ -471,22 +472,22 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
             )}
 
       {/* Layout */}
-      <AccordionSection title="Layout" section="layout" properties={['display', 'flexDirection', 'justifyContent', 'alignItems', 'flexWrap', 'gap']}>
+      <AccordionSection title="Layout" section="layout" properties={['display', 'flexDirection', 'justifyContent', 'alignItems', 'flexWrap', 'gap', 'gridTemplateColumns', 'gridTemplateRows', 'gridAutoFlow', 'placeItems', 'placeContent']}>
         <div className="Col">
           <div className="Row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-            <label className="Label" style={{ color: 'hsl(12, 76%, 61%)', fontWeight: 600 }}>Display</label>
+            <label className="Label" style={{ fontWeight: 600 }}>Display</label>
             <select
               className="Select"
               value={computedStyles.display || 'block'}
               onChange={(e) => updateStyle('display', e.target.value)}
               style={{ flex: 1, marginLeft: 'var(--space-2)' }}
             >
-              <option value="block">block</option>
-              <option value="flex">flex</option>
-              <option value="inline">inline</option>
-              <option value="inline-block">inline-block</option>
-              <option value="grid">grid</option>
-              <option value="none">none</option>
+              <option value="block">Block</option>
+              <option value="flex">Flex</option>
+              <option value="grid">Grid</option>
+              <option value="inline">Inline</option>
+              <option value="inline-block">Inline Block</option>
+              <option value="none">None</option>
             </select>
           </div>
 
@@ -574,6 +575,136 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
                   />
                   <span className="Label">PX</span>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {isGridDisplay && (
+            <div style={{ marginTop: 'var(--space-3)', display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+              {/* Grid Columns and Rows */}
+              <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr 32px 1fr', gap: '4px', alignItems: 'center' }}>
+                <label className="Label" style={{ fontSize: '10px', color: 'hsl(217, 91%, 60%)' }}>Cols</label>
+                <input
+                  className="Input"
+                  type="number"
+                  min="1"
+                  value={computedStyles.gridTemplateColumns?.split(' ').length || 3}
+                  onChange={(e) => {
+                    const count = parseInt(e.target.value) || 1;
+                    updateStyle('gridTemplateColumns', `repeat(${count}, 1fr)`);
+                  }}
+                  style={{ textAlign: 'center' }}
+                />
+                <label className="Label" style={{ fontSize: '10px', color: 'hsl(217, 91%, 60%)' }}>Rows</label>
+                <input
+                  className="Input"
+                  type="number"
+                  min="1"
+                  value={computedStyles.gridTemplateRows?.split(' ').length || 2}
+                  onChange={(e) => {
+                    const count = parseInt(e.target.value) || 1;
+                    updateStyle('gridTemplateRows', `repeat(${count}, auto)`);
+                  }}
+                  style={{ textAlign: 'center' }}
+                />
+              </div>
+
+              {/* Grid Template Columns */}
+              <div className="Col">
+                <label className="Label" style={{ fontSize: '10px' }}>Template Cols</label>
+                <input
+                  className="Input"
+                  type="text"
+                  placeholder="repeat(3, 1fr)"
+                  value={computedStyles.gridTemplateColumns || ''}
+                  onChange={(e) => updateStyle('gridTemplateColumns', e.target.value)}
+                />
+              </div>
+
+              {/* Grid Template Rows */}
+              <div className="Col">
+                <label className="Label" style={{ fontSize: '10px' }}>Template Rows</label>
+                <input
+                  className="Input"
+                  type="text"
+                  placeholder="repeat(2, auto)"
+                  value={computedStyles.gridTemplateRows || ''}
+                  onChange={(e) => updateStyle('gridTemplateRows', e.target.value)}
+                />
+              </div>
+
+              {/* Grid Auto Flow */}
+              <div className="Col">
+                <label className="Label" style={{ fontSize: '10px' }}>Direction</label>
+                <select
+                  className="Select"
+                  value={computedStyles.gridAutoFlow || 'row'}
+                  onChange={(e) => updateStyle('gridAutoFlow', e.target.value)}
+                >
+                  <option value="row">Row</option>
+                  <option value="column">Column</option>
+                  <option value="dense">Dense</option>
+                  <option value="row dense">Row Dense</option>
+                  <option value="column dense">Column Dense</option>
+                </select>
+              </div>
+
+              {/* Place Items (align + justify items) */}
+              <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr', gap: '4px', alignItems: 'center' }}>
+                <label className="Label" style={{ fontSize: '10px' }}>Align</label>
+                <select
+                  className="Select"
+                  value={computedStyles.alignItems || 'stretch'}
+                  onChange={(e) => updateStyle('alignItems', e.target.value)}
+                >
+                  <option value="stretch">Stretch</option>
+                  <option value="start">Start</option>
+                  <option value="center">Center</option>
+                  <option value="end">End</option>
+                </select>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr', gap: '4px', alignItems: 'center' }}>
+                <label className="Label" style={{ fontSize: '10px' }}>Justify</label>
+                <select
+                  className="Select"
+                  value={computedStyles.justifyItems || 'stretch'}
+                  onChange={(e) => updateStyle('justifyItems', e.target.value)}
+                >
+                  <option value="stretch">Stretch</option>
+                  <option value="start">Start</option>
+                  <option value="center">Center</option>
+                  <option value="end">End</option>
+                </select>
+              </div>
+
+              {/* Gap */}
+              <div className="Col">
+                <label className="Label" style={{ fontSize: '10px' }}>Gap</label>
+                <UnitInput
+                  value={computedStyles.gap || ''}
+                  onChange={(val) => updateStyle('gap', val)}
+                  placeholder="16px"
+                />
+              </div>
+
+              {/* Place Content */}
+              <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr', gap: '4px', alignItems: 'center' }}>
+                <label className="Label" style={{ fontSize: '10px' }}>Place</label>
+                <select
+                  className="Select"
+                  value={computedStyles.placeContent || 'normal'}
+                  onChange={(e) => updateStyle('placeContent', e.target.value)}
+                >
+                  <option value="normal">Normal</option>
+                  <option value="start">Start</option>
+                  <option value="center">Center</option>
+                  <option value="end">End</option>
+                  <option value="space-between">Space Between</option>
+                  <option value="space-around">Space Around</option>
+                  <option value="space-evenly">Space Evenly</option>
+                  <option value="stretch">Stretch</option>
+                </select>
               </div>
             </div>
           )}
