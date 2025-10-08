@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { useStyleStore } from '../store/useStyleStore';
+import { compileMetadataToCSS } from '../utils/cssCompiler';
 
 function toCssProp(prop: string) {
   return prop.replace(/([A-Z])/g, '-$1').toLowerCase();
@@ -30,6 +31,15 @@ export const StyleSheetInjector: React.FC = () => {
           baseProps[toCssProp(prop)] = value;
         }
       });
+      
+      // Compile metadata to CSS
+      if (source.metadata) {
+        const metadataCSS = compileMetadataToCSS(source.metadata);
+        Object.entries(metadataCSS).forEach(([prop, value]) => {
+          baseProps[prop] = value;
+        });
+      }
+      
       const baseCss = Object.entries(baseProps)
         .map(([k, v]) => `${k}: ${v};`)
         .join(' ');

@@ -319,3 +319,31 @@
   color: hsl(var(--muted-foreground));
   margin-left: 2px;
 }
+
+/* Color picker checkerboard */
+.ColorPickerSwatch {
+  position: relative;
+  width: 32px;
+  height: 24px;
+  border: 1px solid hsl(var(--border));
+  border-radius: 4px;
+  overflow: hidden;
+  cursor: pointer;
+  background: 
+    linear-gradient(45deg, #ccc 25%, transparent 25%),
+    linear-gradient(-45deg, #ccc 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #ccc 75%),
+    linear-gradient(-45deg, transparent 75%, #ccc 75%);
+  background-size: 8px 8px;
+  background-position: 0 0, 0 4px, 4px -4px, -4px 0px;
+}
+
+.dark .ColorPickerSwatch {
+  background: 
+    linear-gradient(45deg, #666 25%, transparent 25%),
+    linear-gradient(-45deg, #666 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #666 75%),
+    linear-gradient(-45deg, transparent 75%, #666 75%);
+  background-size: 8px 8px;
+  background-position: 0 0, 0 4px, 4px -4px, -4px 0px;
+}

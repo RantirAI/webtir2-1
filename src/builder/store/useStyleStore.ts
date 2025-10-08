@@ -110,4 +110,23 @@ export const useStyleStore = create<StyleStore>((set, get) => ({
   setCurrentBreakpoint: (id) => {
     set({ currentBreakpointId: id });
   },
+
+  setStyleMetadata: (styleSourceId, metadata) => {
+    set((state) => ({
+      styleSources: {
+        ...state.styleSources,
+        [styleSourceId]: {
+          ...state.styleSources[styleSourceId],
+          metadata: {
+            ...state.styleSources[styleSourceId]?.metadata,
+            ...metadata,
+          },
+        },
+      },
+    }));
+  },
+
+  getStyleMetadata: (styleSourceId) => {
+    return get().styleSources[styleSourceId]?.metadata;
+  },
 }));

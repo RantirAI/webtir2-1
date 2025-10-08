@@ -11,10 +11,99 @@ export interface Breakpoint {
   maxWidth?: number;
 }
 
+// Color value with token support
+export interface ColorValue {
+  type: 'token' | 'hex' | 'rgb' | 'hsl';
+  value: string;
+  alpha?: number;
+  token?: string;
+}
+
+// Shadow item
+export interface ShadowItem {
+  id: string;
+  enabled: boolean;
+  inset: boolean;
+  x: string;
+  y: string;
+  blur: string;
+  spread: string;
+  color: string;
+}
+
+// Transform item
+export interface TransformItem {
+  id: string;
+  enabled: boolean;
+  type: 'translateX' | 'translateY' | 'translateZ' | 'scaleX' | 'scaleY' | 'scaleZ' | 'rotate' | 'rotateX' | 'rotateY' | 'rotateZ' | 'skewX' | 'skewY' | 'perspective';
+  value: string;
+  unit: string;
+}
+
+// Filter item
+export interface FilterItem {
+  id: string;
+  enabled: boolean;
+  type: 'blur' | 'brightness' | 'contrast' | 'grayscale' | 'hue-rotate' | 'invert' | 'saturate' | 'sepia';
+  value: string;
+  unit: string;
+}
+
+// Transition item
+export interface TransitionItem {
+  id: string;
+  enabled: boolean;
+  property: string;
+  duration: string;
+  easing: string;
+  delay: string;
+}
+
+// Gradient stop
+export interface GradientStop {
+  id: string;
+  position: number;
+  color: string;
+}
+
+// Gradient item
+export interface GradientItem {
+  id: string;
+  enabled: boolean;
+  type: 'linear' | 'radial';
+  angle?: string;
+  shape?: string;
+  stops: GradientStop[];
+}
+
+// Background layer
+export interface BackgroundLayer {
+  id: string;
+  enabled: boolean;
+  type: 'image' | 'gradient';
+  url?: string;
+  size?: string;
+  position?: string;
+  repeat?: string;
+  attachment?: string;
+  gradient?: GradientItem;
+}
+
+// Style metadata for complex properties
+export interface StyleMetadata {
+  shadows?: ShadowItem[];
+  transforms?: TransformItem[];
+  filters?: FilterItem[];
+  backdropFilters?: FilterItem[];
+  transitions?: TransitionItem[];
+  backgrounds?: BackgroundLayer[];
+}
+
 export interface StyleSource {
   id: string;
   type: StyleSourceType;
   name: string;
+  metadata?: StyleMetadata;
 }
 
 export interface StyleValue {
@@ -105,6 +194,10 @@ export interface StyleStore {
   setStyle: (styleSourceId: string, property: string, value: string, breakpointId?: string) => void;
   getComputedStyles: (styleSourceIds: string[], breakpointId?: string) => StyleDeclaration;
   setCurrentBreakpoint: (id: string) => void;
+  
+  // Metadata actions
+  setStyleMetadata: (styleSourceId: string, metadata: Partial<StyleMetadata>) => void;
+  getStyleMetadata: (styleSourceId: string) => StyleMetadata | undefined;
 }
 
 export interface BuilderState {
