@@ -124,6 +124,22 @@ export const StylePanel: React.FC = () => {
     .filter(Boolean) || [];
 
   const isFlexDisplay = computedStyles.display === 'flex';
+  
+  // Calculate dimensions
+  const width = computedStyles.width || 'auto';
+  const height = computedStyles.height || 'auto';
+  const dimensionText = `${width} × ${height}`;
+
+  // Component label editing
+  const [isEditingLabel, setIsEditingLabel] = useState(false);
+  const [labelInput, setLabelInput] = useState(selectedInstance.label || selectedInstance.type);
+
+  const handleLabelSave = () => {
+    if (labelInput.trim()) {
+      updateInstance(selectedInstance.id, { label: labelInput.trim() });
+    }
+    setIsEditingLabel(false);
+  };
 
   const getComponentIcon = (type: string) => {
     const iconName = componentRegistry[type]?.icon;
@@ -203,13 +219,39 @@ export const StylePanel: React.FC = () => {
           <div className="StylePanel">
             <div style={{ 
               padding: 'var(--space-2) var(--space-2)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between'
+              borderBottom: '1px solid hsl(var(--border))'
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-1)' }}>
                 <span className="text-foreground">{getComponentIcon(selectedInstance.type)}</span>
-                <span style={{ fontSize: '12px', fontWeight: 600 }} className="text-foreground">{selectedInstance.type}</span>
+                {isEditingLabel ? (
+                  <input
+                    type="text"
+                    value={labelInput}
+                    onChange={(e) => setLabelInput(e.target.value)}
+                    onBlur={handleLabelSave}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleLabelSave();
+                      if (e.key === 'Escape') {
+                        setLabelInput(selectedInstance.label || selectedInstance.type);
+                        setIsEditingLabel(false);
+                      }
+                    }}
+                    autoFocus
+                    className="Input"
+                    style={{ fontSize: '12px', fontWeight: 600, padding: '2px 4px', width: '150px' }}
+                  />
+                ) : (
+                  <span 
+                    style={{ fontSize: '12px', fontWeight: 600, cursor: 'pointer' }} 
+                    className="text-foreground hover:text-primary"
+                    onClick={() => setIsEditingLabel(true)}
+                  >
+                    {selectedInstance.label || selectedInstance.type}
+                  </span>
+                )}
+              </div>
+              <div style={{ fontSize: '10px', color: 'hsl(var(--muted-foreground))', paddingLeft: '28px' }}>
+                {dimensionText}
               </div>
             </div>
 

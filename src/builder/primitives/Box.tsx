@@ -21,7 +21,7 @@ export const Box: React.FC<BoxProps> = ({
   onHover,
   onHoverEnd,
 }) => {
-  
+  const isRoot = instance.id === 'root';
 
   return (
     <div
@@ -31,6 +31,7 @@ export const Box: React.FC<BoxProps> = ({
         position: 'relative',
         outline: isSelected ? '3px solid #3b82f6' : isHovered ? '2px solid #60a5fa' : 'none',
         outlineOffset: '2px',
+        backgroundColor: isRoot ? '#ffffff' : 'transparent',
       }}
       onClick={(e) => {
         e.stopPropagation();

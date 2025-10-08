@@ -12,6 +12,5 @@ export const initializeRootStyles = () => {
     setStyle('root-style', 'display', 'flex');
     setStyle('root-style', 'flexDirection', 'column');
     setStyle('root-style', 'minHeight', '100vh');
-    setStyle('root-style', 'backgroundColor', 'hsl(var(--background))');
   }
 };

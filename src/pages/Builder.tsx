@@ -10,12 +10,19 @@ const Builder: React.FC = () => {
   const [currentPage, setCurrentPage] = useState('Page 1');
   const [pages, setPages] = useState(['Page 1']);
   const [currentBreakpoint, setCurrentBreakpoint] = useState('desktop');
+  const [isPanMode, setIsPanMode] = useState(false);
+  const [pageNames, setPageNames] = useState<Record<string, string>>({ 'Page 1': 'Page 1' });
 
   const handleAddPage = () => {
     const newPageNum = pages.length + 1;
     const newPage = `Page ${newPageNum}`;
     setPages([...pages, newPage]);
+    setPageNames({ ...pageNames, [newPage]: newPage });
     setCurrentPage(newPage);
+  };
+
+  const handlePageNameChange = (pageId: string, newName: string) => {
+    setPageNames({ ...pageNames, [pageId]: newName });
   };
 
   return (
@@ -25,7 +32,15 @@ const Builder: React.FC = () => {
       {/* Main content - Full screen canvas */}
       <div className="flex-1 relative overflow-hidden">
         {/* Canvas Background */}
-        <Canvas zoom={zoom} currentBreakpoint={currentBreakpoint} pages={pages} currentPage={currentPage} />
+        <Canvas 
+          zoom={zoom} 
+          currentBreakpoint={currentBreakpoint} 
+          pages={pages} 
+          currentPage={currentPage}
+          pageNames={pageNames}
+          onPageNameChange={handlePageNameChange}
+          isPanMode={isPanMode}
+        />
 
         {/* Floating Left Sidebar */}
         <div className="absolute left-4 top-4 bottom-4 z-10">
@@ -43,6 +58,8 @@ const Builder: React.FC = () => {
             onBreakpointChange={setCurrentBreakpoint}
             zoom={zoom}
             setZoom={setZoom}
+            isPanMode={isPanMode}
+            onPanModeToggle={() => setIsPanMode(!isPanMode)}
           />
         </div>
 

@@ -15,15 +15,19 @@ interface CanvasProps {
   currentBreakpoint: string;
   pages: string[];
   currentPage: string;
+  pageNames: Record<string, string>;
+  onPageNameChange: (pageId: string, newName: string) => void;
+  isPanMode: boolean;
 }
 
-export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, currentPage }) => {
+export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, currentPage, pageNames, onPageNameChange, isPanMode }) => {
   const rootInstance = useBuilderStore((state) => state.rootInstance);
   const selectedInstanceId = useBuilderStore((state) => state.selectedInstanceId);
   const hoveredInstanceId = useBuilderStore((state) => state.hoveredInstanceId);
   const setSelectedInstanceId = useBuilderStore((state) => state.setSelectedInstanceId);
   const setHoveredInstanceId = useBuilderStore((state) => state.setHoveredInstanceId);
   const { getComputedStyles } = useStyleStore();
+  const [editingPageId, setEditingPageId] = React.useState<string | null>(null);
 
   const currentBreakpointWidth = breakpoints.find(bp => bp.id === currentBreakpoint)?.width || 960;
 
@@ -63,10 +67,12 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
   };
 
   return (
-    <div className="absolute inset-0 overflow-auto bg-[#e5e7eb] dark:bg-zinc-800" 
+    <div 
+      className="absolute inset-0 overflow-auto bg-[#e5e7eb] dark:bg-zinc-800" 
       style={{
         backgroundImage: `radial-gradient(circle, #9ca3af 1px, transparent 1px)`,
         backgroundSize: '20px 20px',
+        cursor: isPanMode ? 'grab' : 'default',
       }}
     >
       <div 
@@ -87,9 +93,36 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
               minHeight: '1200px',
               boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
               transition: 'width 0.3s ease',
+              position: 'relative',
             }}
-            className="dark:bg-zinc-900"
           >
+            {/* Page Name Label */}
+            <div 
+              className="absolute -top-8 left-0 flex items-center gap-2"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {editingPageId === page ? (
+                <input
+                  type="text"
+                  value={pageNames[page] || page}
+                  onChange={(e) => onPageNameChange(page, e.target.value)}
+                  onBlur={() => setEditingPageId(null)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') setEditingPageId(null);
+                  }}
+                  autoFocus
+                  className="text-xs px-2 py-1 rounded bg-white border border-border"
+                  style={{ minWidth: '80px' }}
+                />
+              ) : (
+                <div
+                  onClick={() => setEditingPageId(page)}
+                  className="text-xs px-2 py-1 rounded bg-white border border-border cursor-pointer hover:bg-[#F5F5F5]"
+                >
+                  {pageNames[page] || page}
+                </div>
+              )}
+            </div>
             {index === 0 && rootInstance && renderInstance(rootInstance)}
           </div>
         ))}

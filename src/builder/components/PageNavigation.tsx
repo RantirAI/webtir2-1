@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Plus, ChevronDown, Monitor, Tablet, Smartphone, Download, Save, Eye, ZoomIn, ZoomOut, Sun, Moon } from 'lucide-react';
+import { Plus, ChevronDown, Monitor, Tablet, Smartphone, Download, Save, Eye, ZoomIn, ZoomOut, Sun, Moon, Hand } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Separator } from '@/components/ui/separator';
 import { useTheme } from 'next-themes';
@@ -14,6 +14,8 @@ interface PageNavigationProps {
   onBreakpointChange: (breakpoint: string) => void;
   zoom: number;
   setZoom: (zoom: number) => void;
+  isPanMode: boolean;
+  onPanModeToggle: () => void;
 }
 
 export const breakpoints = [
@@ -32,6 +34,8 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
   onBreakpointChange,
   zoom,
   setZoom,
+  isPanMode,
+  onPanModeToggle,
 }) => {
   const { theme, setTheme } = useTheme();
 
@@ -69,6 +73,16 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
       </div>
 
       <Separator orientation="vertical" className="h-6" />
+
+      {/* Pan Tool */}
+      <Button
+        variant="ghost"
+        size="sm"
+        className={`h-8 px-2 ${isPanMode ? 'bg-[#F5F5F5] dark:bg-zinc-800' : ''}`}
+        onClick={onPanModeToggle}
+      >
+        <Hand className="w-4 h-4" />
+      </Button>
 
       {/* Theme Toggle */}
       <Button
