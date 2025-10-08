@@ -93,7 +93,7 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
               setNameInput(projectName);
               setIsEditingName(true);
             }}
-            className="text-sm font-medium cursor-pointer hover:text-primary"
+            className="text-sm font-medium cursor-pointer hover:text-primary whitespace-nowrap"
             title={projectName}
           >
             {truncatedName}

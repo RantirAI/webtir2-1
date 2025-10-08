@@ -98,143 +98,46 @@ export const StylePanel: React.FC<StylePanelProps> = ({
 
   if (!selectedInstance) {
     return (
-      <>
-        <div className="w-80 h-full bg-background border border-border rounded-lg shadow-xl flex flex-col overflow-hidden backdrop-blur-md bg-white/70 dark:bg-zinc-900/70">
-          <Tabs defaultValue="styles" className="flex-1 flex flex-col">
-            <TabsList className="w-full grid grid-cols-2 rounded-none border-b bg-transparent h-10 p-1 gap-1">
-              <TabsTrigger 
-                value="styles" 
-                className="gap-1 text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none"
-              >
-                <Paintbrush className="w-3 h-3" />
-                Styles
-              </TabsTrigger>
-              <TabsTrigger 
-                value="pages" 
-                className="gap-1 text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none"
-              >
-                <FileText className="w-3 h-3" />
-                Pages
-              </TabsTrigger>
-            </TabsList>
-            <TabsContent value="styles" className="flex-1 m-0 p-3 overflow-y-auto">
-              <div className="text-xs text-muted-foreground text-center">
-                Select an element to edit its style
-              </div>
-            </TabsContent>
-            <TabsContent value="pages" className="flex-1 m-0 p-0 overflow-y-auto">
-              <div className="p-2">
-                {pages.map((page) => (
-                  <div
-                    key={page}
-                    className={`flex items-center justify-between p-2 rounded cursor-pointer hover:bg-[#F5F5F5] dark:hover:bg-zinc-800 ${
-                      currentPage === page ? 'bg-[#F5F5F5] dark:bg-zinc-800' : ''
-                    }`}
-                    onClick={() => onPageChange(page)}
-                  >
-                    <div className="flex items-center gap-2">
-                      {homePage === page ? (
-                        <Home className="w-4 h-4 text-primary" />
-                      ) : (
-                        <FileText className="w-4 h-4" />
-                      )}
-                      <span className="text-xs">{pageNames[page] || page}</span>
-                    </div>
-                    <ChevronRight 
-                      className="w-4 h-4 text-muted-foreground hover:text-foreground" 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handlePageClick(page);
-                      }}
-                    />
-                  </div>
-                ))}
-              </div>
-            </TabsContent>
-          </Tabs>
-        </div>
-
-        {/* Page Settings Drawer */}
-        <Sheet open={pageSettingsOpen} onOpenChange={setPageSettingsOpen}>
-          <SheetContent side="right" className="w-[400px] sm:w-[540px] overflow-y-auto">
-            <SheetHeader>
-              <SheetTitle>Page Settings</SheetTitle>
-            </SheetHeader>
-            <div className="mt-6 space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="page-name">Page Name</Label>
-                <Input
-                  id="page-name"
-                  value={pageNames[selectedPageForSettings] || ''}
-                  onChange={(e) => onPageNameChange(selectedPageForSettings, e.target.value)}
-                />
-                <div className="flex items-center gap-2 mt-2">
-                  <Checkbox 
-                    id="home-page"
-                    checked={homePage === selectedPageForSettings}
-                    onCheckedChange={(checked) => {
-                      if (checked) onSetHomePage(selectedPageForSettings);
-                    }}
-                  />
-                  <Label htmlFor="home-page" className="text-sm font-normal">
-                    Make "{pageNames[selectedPageForSettings]}" the home page
-                  </Label>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="page-path">Path</Label>
-                <Input
-                  id="page-path"
-                  value={`/${pageNames[selectedPageForSettings]?.toLowerCase().replace(/\s+/g, '-') || ''}`}
-                  disabled
-                  className="bg-muted"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="page-title">Title</Label>
-                <Input
-                  id="page-title"
-                  placeholder="Page title for SEO"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="page-description">Description</Label>
-                <Input
-                  id="page-description"
-                  placeholder="Page description for SEO"
-                />
-              </div>
-
-              <div className="flex gap-2 pt-4 border-t">
-                <button
-                  className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-[#F5F5F5] dark:hover:bg-zinc-800 rounded"
-                  onClick={() => {
-                    onDuplicatePage(selectedPageForSettings);
-                    setPageSettingsOpen(false);
-                  }}
-                >
-                  <Copy className="w-4 h-4" />
-                  Duplicate
-                </button>
-                <button
-                  className="flex items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-destructive/10 rounded"
-                  onClick={() => {
-                    onDeletePage(selectedPageForSettings);
-                    setPageSettingsOpen(false);
-                  }}
-                  disabled={pages.length === 1}
-                >
-                  <Trash2 className="w-4 h-4" />
-                  Delete
-                </button>
-              </div>
+      <div className="w-80 h-full bg-background border border-border rounded-lg shadow-xl flex flex-col overflow-hidden backdrop-blur-md bg-white/70 dark:bg-zinc-900/70">
+        <Tabs defaultValue="styles" className="flex-1 flex flex-col">
+          <TabsList className="w-full grid grid-cols-3 rounded-none border-b bg-transparent h-10 p-1 gap-1">
+            <TabsTrigger 
+              value="styles" 
+              className="gap-1 text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none"
+            >
+              <Paintbrush className="w-3 h-3" />
+              Styles
+            </TabsTrigger>
+            <TabsTrigger 
+              value="settings" 
+              className="gap-1 text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none"
+            >
+              Settings
+            </TabsTrigger>
+            <TabsTrigger 
+              value="actions" 
+              className="gap-1 text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none"
+            >
+              Actions
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent value="styles" className="flex-1 m-0 p-3 overflow-y-auto">
+            <div className="text-xs text-muted-foreground text-center">
+              Select an element to edit its style
             </div>
-          </SheetContent>
-        </Sheet>
-      </>
+          </TabsContent>
+          <TabsContent value="settings" className="flex-1 m-0 p-3 overflow-y-auto">
+            <div className="text-xs text-muted-foreground text-center">
+              Select an element to configure settings
+            </div>
+          </TabsContent>
+          <TabsContent value="actions" className="flex-1 m-0 p-3 overflow-y-auto">
+            <div className="text-xs text-muted-foreground text-center">
+              Select an element to add actions
+            </div>
+          </TabsContent>
+        </Tabs>
+      </div>
     );
   }
 

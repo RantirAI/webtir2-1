@@ -74,7 +74,17 @@ const Builder: React.FC = () => {
 
         {/* Floating Left Sidebar */}
         <div className="absolute left-4 top-4 bottom-4 z-10">
-          <LeftSidebar />
+          <LeftSidebar
+            pages={pages}
+            currentPage={currentPage}
+            pageNames={pageNames}
+            onPageChange={setCurrentPage}
+            onPageNameChange={handlePageNameChange}
+            onDeletePage={handleDeletePage}
+            onDuplicatePage={handleDuplicatePage}
+            onSetHomePage={setHomePage}
+            homePage={homePage}
+          />
         </div>
 
         {/* Floating Combined Navigation */}
@@ -99,14 +109,14 @@ const Builder: React.FC = () => {
         {/* Floating Right Sidebar */}
         <div className="absolute right-4 top-4 bottom-4 z-10">
           <StylePanel
-            pages={pages}
+            pages={[]}
             currentPage={currentPage}
-            pageNames={pageNames}
-            onPageChange={setCurrentPage}
-            onPageNameChange={handlePageNameChange}
-            onDeletePage={handleDeletePage}
-            onDuplicatePage={handleDuplicatePage}
-            onSetHomePage={setHomePage}
+            pageNames={{}}
+            onPageChange={() => {}}
+            onPageNameChange={() => {}}
+            onDeletePage={() => {}}
+            onDuplicatePage={() => {}}
+            onSetHomePage={() => {}}
             homePage={homePage}
           />
         </div>
