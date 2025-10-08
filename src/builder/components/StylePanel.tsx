@@ -1,13 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useBuilderStore } from '../store/useBuilderStore';
 import { useStyleStore } from '../store/useStyleStore';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Paintbrush, Plus, Square, Type, Heading as HeadingIcon, MousePointerClick, Image as ImageIcon, Link as LinkIcon, X, ChevronDown, FileText, Trash2, Copy, ChevronRight, Home } from 'lucide-react';
+import { Paintbrush, Plus, Square, Type, Heading as HeadingIcon, MousePointerClick, Image as ImageIcon, Link as LinkIcon, X, ChevronDown } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
 import { componentRegistry } from '../primitives/registry';
 import { UnitInput } from './UnitInput';
 import '../styles/style-panel.css';
@@ -25,17 +21,7 @@ interface StylePanelProps {
   homePage: string;
 }
 
-export const StylePanel: React.FC<StylePanelProps> = ({
-  pages,
-  currentPage,
-  pageNames,
-  onPageChange,
-  onPageNameChange,
-  onDeletePage,
-  onDuplicatePage,
-  onSetHomePage,
-  homePage,
-}) => {
+export const StylePanel: React.FC<StylePanelProps> = ({}) => {
   const { getSelectedInstance, updateInstance } = useBuilderStore();
   const { setStyle, getComputedStyles, styleSources, createStyleSource, nextLocalClassName, renameStyleSource } = useStyleStore();
   const selectedInstance = getSelectedInstance();
@@ -44,10 +30,15 @@ export const StylePanel: React.FC<StylePanelProps> = ({
   const [classNameInput, setClassNameInput] = useState('');
   const [classNames, setClassNames] = useState<string[]>([]);
   const [currentState, setCurrentState] = useState<string>('base');
-  const [pageSettingsOpen, setPageSettingsOpen] = useState(false);
-  const [selectedPageForSettings, setSelectedPageForSettings] = useState<string>('');
   const [isEditingLabel, setIsEditingLabel] = useState(false);
   const [labelInput, setLabelInput] = useState('');
+  
+  // Initialize label input when selectedInstance changes
+  useEffect(() => {
+    if (selectedInstance) {
+      setLabelInput(selectedInstance.label || selectedInstance.type);
+    }
+  }, [selectedInstance]);
 
   const [openSections, setOpenSections] = useState({
     layout: true,
@@ -85,16 +76,11 @@ export const StylePanel: React.FC<StylePanelProps> = ({
   }, [styleSource?.name]);
 
   // Sync label input to selected instance (unconditional hook placement)
-  React.useEffect(() => {
+  useEffect(() => {
     if (selectedInstance) {
       setLabelInput(selectedInstance.label || selectedInstance.type);
     }
   }, [selectedInstance?.id, selectedInstance?.label, selectedInstance?.type]);
-
-  const handlePageClick = (page: string) => {
-    setSelectedPageForSettings(page);
-    setPageSettingsOpen(true);
-  };
 
   if (!selectedInstance) {
     return (
@@ -231,28 +217,85 @@ export const StylePanel: React.FC<StylePanelProps> = ({
     </div>
   );
 
-  return (
-    <>
+  // If no instance is selected, show tabs for Settings, Actions, Data
+  if (!selectedInstance) {
+    return (
       <div className="w-80 h-full bg-background border border-border rounded-lg shadow-xl flex flex-col overflow-hidden backdrop-blur-md bg-white/70 dark:bg-zinc-900/70">
-        <Tabs defaultValue="styles" className="flex-1 flex flex-col">
-          <TabsList className="w-full grid grid-cols-2 rounded-none border-b bg-transparent h-10 p-1 gap-1">
+        <Tabs defaultValue="settings" className="flex-1 flex flex-col">
+          <TabsList className="w-full grid grid-cols-3 rounded-none border-b bg-transparent h-10 p-1 gap-1">
             <TabsTrigger 
-              value="styles" 
-              className="gap-1 text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none"
+              value="settings" 
+              className="text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none"
             >
-              <Paintbrush className="w-3 h-3" />
-              Styles
+              Settings
             </TabsTrigger>
             <TabsTrigger 
-              value="pages" 
-              className="gap-1 text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none"
+              value="actions" 
+              className="text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none"
             >
-              <FileText className="w-3 h-3" />
-              Pages
+              Actions
+            </TabsTrigger>
+            <TabsTrigger 
+              value="data" 
+              className="text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none"
+            >
+              Data
             </TabsTrigger>
           </TabsList>
 
-        <TabsContent value="styles" className="flex-1 m-0 overflow-y-auto">
+          <TabsContent value="settings" className="flex-1 m-0 p-4">
+            <div className="text-sm text-muted-foreground text-center">
+              Select an element to edit its settings
+            </div>
+          </TabsContent>
+
+          <TabsContent value="actions" className="flex-1 m-0 p-4">
+            <div className="text-sm text-muted-foreground text-center">
+              Select an element to add actions
+            </div>
+          </TabsContent>
+
+          <TabsContent value="data" className="flex-1 m-0 p-4">
+            <div className="text-sm text-muted-foreground text-center">
+              Select an element to bind data
+            </div>
+          </TabsContent>
+        </Tabs>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-80 h-full bg-background border border-border rounded-lg shadow-xl flex flex-col overflow-hidden backdrop-blur-md bg-white/70 dark:bg-zinc-900/70">
+      <Tabs defaultValue="style" className="flex-1 flex flex-col">
+        <TabsList className="w-full grid grid-cols-4 rounded-none border-b bg-transparent h-10 p-1 gap-1">
+          <TabsTrigger 
+            value="style" 
+            className="text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none"
+          >
+            Style
+          </TabsTrigger>
+          <TabsTrigger 
+            value="settings" 
+            className="text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none"
+          >
+            Settings
+          </TabsTrigger>
+          <TabsTrigger 
+            value="actions" 
+            className="text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none"
+          >
+            Actions
+          </TabsTrigger>
+          <TabsTrigger 
+            value="data" 
+            className="text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none"
+          >
+            Data
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="style" className="flex-1 m-0 overflow-y-auto">
           <div className="StylePanel">
             <div style={{ 
               padding: 'var(--space-2) var(--space-2)',
@@ -677,118 +720,24 @@ export const StylePanel: React.FC<StylePanelProps> = ({
           </div>
         </TabsContent>
 
-        <TabsContent value="pages" className="flex-1 m-0 p-0 overflow-y-auto">
-          <div className="p-2">
-            {pages.map((page) => (
-              <div
-                key={page}
-                className={`flex items-center justify-between p-2 rounded cursor-pointer hover:bg-[#F5F5F5] dark:hover:bg-zinc-800 ${
-                  currentPage === page ? 'bg-[#F5F5F5] dark:bg-zinc-800' : ''
-                }`}
-                onClick={() => onPageChange(page)}
-              >
-                <div className="flex items-center gap-2">
-                  {homePage === page ? (
-                    <Home className="w-4 h-4 text-primary" />
-                  ) : (
-                    <FileText className="w-4 h-4" />
-                  )}
-                  <span className="text-xs">{pageNames[page] || page}</span>
-                </div>
-                <ChevronRight 
-                  className="w-4 h-4 text-muted-foreground hover:text-foreground" 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handlePageClick(page);
-                  }}
-                />
-              </div>
-            ))}
+        <TabsContent value="settings" className="flex-1 m-0 p-4">
+          <div className="text-sm text-muted-foreground text-center">
+            Settings panel coming soon
+          </div>
+        </TabsContent>
+
+        <TabsContent value="actions" className="flex-1 m-0 p-4">
+          <div className="text-sm text-muted-foreground text-center">
+            Actions panel coming soon
+          </div>
+        </TabsContent>
+
+        <TabsContent value="data" className="flex-1 m-0 p-4">
+          <div className="text-sm text-muted-foreground text-center">
+            Data binding coming soon
           </div>
         </TabsContent>
       </Tabs>
     </div>
-
-    {/* Page Settings Drawer */}
-    <Sheet open={pageSettingsOpen} onOpenChange={setPageSettingsOpen}>
-      <SheetContent side="right" className="w-[400px] sm:w-[540px] overflow-y-auto">
-        <SheetHeader>
-          <SheetTitle>Page Settings</SheetTitle>
-        </SheetHeader>
-        <div className="mt-6 space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="page-name">Page Name</Label>
-            <Input
-              id="page-name"
-              value={pageNames[selectedPageForSettings] || ''}
-              onChange={(e) => onPageNameChange(selectedPageForSettings, e.target.value)}
-            />
-            <div className="flex items-center gap-2 mt-2">
-              <Checkbox 
-                id="home-page"
-                checked={homePage === selectedPageForSettings}
-                onCheckedChange={(checked) => {
-                  if (checked) onSetHomePage(selectedPageForSettings);
-                }}
-              />
-              <Label htmlFor="home-page" className="text-sm font-normal">
-                Make "{pageNames[selectedPageForSettings]}" the home page
-              </Label>
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="page-path">Path</Label>
-            <Input
-              id="page-path"
-              value={`/${pageNames[selectedPageForSettings]?.toLowerCase().replace(/\s+/g, '-') || ''}`}
-              disabled
-              className="bg-muted"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="page-title">Title</Label>
-            <Input
-              id="page-title"
-              placeholder="Page title for SEO"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="page-description">Description</Label>
-            <Input
-              id="page-description"
-              placeholder="Page description for SEO"
-            />
-          </div>
-
-          <div className="flex gap-2 pt-4 border-t">
-            <button
-              className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-[#F5F5F5] dark:hover:bg-zinc-800 rounded"
-              onClick={() => {
-                onDuplicatePage(selectedPageForSettings);
-                setPageSettingsOpen(false);
-              }}
-            >
-              <Copy className="w-4 h-4" />
-              Duplicate
-            </button>
-            <button
-              className="flex items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-destructive/10 rounded"
-              onClick={() => {
-                onDeletePage(selectedPageForSettings);
-                setPageSettingsOpen(false);
-              }}
-              disabled={pages.length === 1}
-            >
-              <Trash2 className="w-4 h-4" />
-              Delete
-            </button>
-          </div>
-        </div>
-      </SheetContent>
-    </Sheet>
-  </>
   );
 };

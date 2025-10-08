@@ -28,8 +28,32 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
   const setHoveredInstanceId = useBuilderStore((state) => state.setHoveredInstanceId);
   const { getComputedStyles } = useStyleStore();
   const [editingPageId, setEditingPageId] = React.useState<string | null>(null);
+  const [isPanning, setIsPanning] = React.useState(false);
+  const [panStart, setPanStart] = React.useState({ x: 0, y: 0 });
+  const [panOffset, setPanOffset] = React.useState({ x: 0, y: 0 });
+  const canvasRef = React.useRef<HTMLDivElement>(null);
 
   const currentBreakpointWidth = breakpoints.find(bp => bp.id === currentBreakpoint)?.width || 960;
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (isPanMode) {
+      setIsPanning(true);
+      setPanStart({ x: e.clientX - panOffset.x, y: e.clientY - panOffset.y });
+    }
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (isPanning && isPanMode) {
+      setPanOffset({
+        x: e.clientX - panStart.x,
+        y: e.clientY - panStart.y,
+      });
+    }
+  };
+
+  const handleMouseUp = () => {
+    setIsPanning(false);
+  };
 
   const renderInstance = (instance: ComponentInstance): React.ReactNode => {
     const isSelected = instance.id === selectedInstanceId;
@@ -68,17 +92,22 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
 
   return (
     <div 
-      className="absolute inset-0 overflow-auto bg-[#e5e7eb] dark:bg-zinc-800" 
+      ref={canvasRef}
+      className="absolute inset-0 overflow-hidden bg-[#e5e7eb] dark:bg-zinc-800" 
       style={{
         backgroundImage: `radial-gradient(circle, #9ca3af 1px, transparent 1px)`,
         backgroundSize: '20px 20px',
-        cursor: isPanMode ? 'grab' : 'default',
+        cursor: isPanMode ? (isPanning ? 'grabbing' : 'grab') : 'default',
       }}
+      onMouseDown={handleMouseDown}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseUp}
     >
       <div 
         className="transition-transform origin-center flex items-start justify-center gap-8"
         style={{
-          transform: `scale(${zoom / 100})`,
+          transform: `scale(${zoom / 100}) translate(${panOffset.x / (zoom / 100)}px, ${panOffset.y / (zoom / 100)}px)`,
           padding: '4rem',
           minHeight: '100vh',
           minWidth: '100%',

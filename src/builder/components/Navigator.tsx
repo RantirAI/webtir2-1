@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useBuilderStore } from '../store/useBuilderStore';
+import { useStyleStore } from '../store/useStyleStore';
 import { ComponentInstance } from '../store/types';
 import { ChevronRight, ChevronDown, Trash2 } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -11,6 +12,7 @@ export const Navigator: React.FC = () => {
   const selectedInstanceId = useBuilderStore((state) => state.selectedInstanceId);
   const setSelectedInstanceId = useBuilderStore((state) => state.setSelectedInstanceId);
   const deleteInstance = useBuilderStore((state) => state.deleteInstance);
+  const { getComputedStyles } = useStyleStore();
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set(['root']));
 
   const toggleExpand = (id: string) => {
@@ -32,6 +34,11 @@ export const Navigator: React.FC = () => {
     
     const meta = componentRegistry[instance.type];
     const IconComponent = meta ? Icons[meta.icon as keyof typeof Icons] as any : null;
+
+    // Get computed dimensions
+    const computedStyles = getComputedStyles(instance.styleSourceIds);
+    const width = computedStyles.width || 'auto';
+    const height = computedStyles.height || 'auto';
 
     return (
       <div key={instance.id}>
@@ -61,10 +68,15 @@ export const Navigator: React.FC = () => {
           
           <div
             onClick={() => setSelectedInstanceId(instance.id)}
-            className="flex-1 flex items-center gap-2 min-w-0"
+            className="flex-1 flex items-center justify-between gap-2 min-w-0"
           >
-            {IconComponent && <IconComponent className="w-3 h-3 flex-shrink-0" />}
-            <span className="truncate">{instance.label || instance.type}</span>
+            <div className="flex items-center gap-2 min-w-0">
+              {IconComponent && <IconComponent className="w-3 h-3 flex-shrink-0" />}
+              <span className="truncate">{instance.label || instance.type}</span>
+            </div>
+            <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+              {width} × {height}
+            </span>
           </div>
 
           {instance.id !== 'root' && (
