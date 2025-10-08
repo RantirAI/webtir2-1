@@ -39,11 +39,15 @@ export const StylePanel: React.FC<StylePanelProps> = ({
   const { getSelectedInstance, updateInstance } = useBuilderStore();
   const { setStyle, getComputedStyles, styleSources, createStyleSource, nextLocalClassName, renameStyleSource } = useStyleStore();
   const selectedInstance = getSelectedInstance();
+  
+  // ALL useState hooks MUST be at the top, before any conditional logic
   const [classNameInput, setClassNameInput] = useState('');
   const [classNames, setClassNames] = useState<string[]>([]);
   const [currentState, setCurrentState] = useState<string>('base');
   const [pageSettingsOpen, setPageSettingsOpen] = useState(false);
   const [selectedPageForSettings, setSelectedPageForSettings] = useState<string>('');
+  const [isEditingLabel, setIsEditingLabel] = useState(false);
+  const [labelInput, setLabelInput] = useState('');
 
   const [openSections, setOpenSections] = useState({
     layout: true,
@@ -262,9 +266,12 @@ export const StylePanel: React.FC<StylePanelProps> = ({
   const height = computedStyles.height || 'auto';
   const dimensionText = `${width} × ${height}`;
 
-  // Component label editing
-  const [isEditingLabel, setIsEditingLabel] = useState(false);
-  const [labelInput, setLabelInput] = useState(selectedInstance.label || selectedInstance.type);
+  // Component label editing - update state when instance changes
+  React.useEffect(() => {
+    if (selectedInstance) {
+      setLabelInput(selectedInstance.label || selectedInstance.type);
+    }
+  }, [selectedInstance?.id, selectedInstance?.label, selectedInstance?.type]);
 
   const handleLabelSave = () => {
     if (labelInput.trim()) {
