@@ -132,7 +132,7 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange, class
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <button
-          className={`relative w-8 h-8 rounded border border-border cursor-pointer overflow-hidden ${className || ''}`}
+          className={`relative w-5 h-5 rounded border border-border cursor-pointer overflow-hidden ${className || ''}`}
           style={{
             background: `
               linear-gradient(45deg, #ccc 25%, transparent 25%),

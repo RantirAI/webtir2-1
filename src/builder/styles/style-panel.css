@@ -84,7 +84,8 @@
 .dark .Input,
 .dark .Select,
 .dark .Number {
-  background: hsl(var(--input));
+  background: #09090b;
+  color: #ffffff;
 }
 
 .Input:hover,
