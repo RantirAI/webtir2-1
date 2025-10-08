@@ -7,6 +7,7 @@ interface UnitInputProps {
   placeholder?: string;
   className?: string;
   units?: string[];
+  style?: React.CSSProperties;
 }
 
 export const UnitInput: React.FC<UnitInputProps> = ({
@@ -15,6 +16,7 @@ export const UnitInput: React.FC<UnitInputProps> = ({
   placeholder = '0',
   className = '',
   units = ['px', 'rem', 'em', '%', 'vw', 'vh'],
+  style,
 }) => {
   // Extract numeric value and unit from input
   const parseValue = (val: string) => {
@@ -37,7 +39,7 @@ export const UnitInput: React.FC<UnitInputProps> = ({
   };
 
   return (
-    <div className={`flex gap-0.5 ${className}`} style={{ alignItems: 'center' }}>
+    <div className={`flex gap-0.5 ${className}`} style={{ alignItems: 'center', ...style }}>
       <input
         type="text"
         className="Input flex-1 dark:bg-input"

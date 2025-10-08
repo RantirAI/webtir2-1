@@ -202,9 +202,12 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
 
   const hasStylesInSection = (properties: string[]) => {
     if (!styleSourceId) return false;
+    const { styles, currentBreakpointId } = useStyleStore.getState();
+    
+    // Check if any property has an actual value set in the store (not just computed defaults)
     return properties.some(prop => {
-      const value = computedStyles[prop as keyof typeof computedStyles];
-      return value && value !== '' && value !== 'normal' && value !== 'none';
+      const key = `${styleSourceId}:${currentBreakpointId}:${prop}`;
+      return styles[key] && styles[key] !== '';
     });
   };
 
@@ -647,44 +650,174 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
 
       {/* Size */}
       <AccordionSection title="Size" section="size" properties={['width', 'height', 'minWidth', 'minHeight', 'maxWidth', 'maxHeight']}>
-        <div className="SizeGrid">
-          <div className="Col">
-            <label className="Label">Width</label>
+        <div className="Col" style={{ gap: 'var(--space-3)' }}>
+          {/* Width and Height */}
+          <div className="Row" style={{ gap: 'var(--space-3)', alignItems: 'center' }}>
+            <label className="Label" style={{ minWidth: '50px' }}>Width</label>
             <UnitInput
               value={computedStyles.width || ''}
               onChange={(val) => updateStyle('width', val)}
-              placeholder="auto"
+              placeholder="Auto"
+              className="Input"
+              style={{ flex: 1 }}
             />
-          </div>
-          <div className="Col">
-            <label className="Label">Height</label>
+            <label className="Label" style={{ minWidth: '50px', marginLeft: 'var(--space-2)' }}>Height</label>
             <UnitInput
               value={computedStyles.height || ''}
               onChange={(val) => updateStyle('height', val)}
-              placeholder="auto"
+              placeholder="Auto"
+              className="Input"
+              style={{ flex: 1 }}
             />
           </div>
-          <div className="Col">
-            <label className="Label">Min Width</label>
+
+          {/* Min Width and Min Height */}
+          <div className="Row" style={{ gap: 'var(--space-3)', alignItems: 'center' }}>
+            <label className="Label" style={{ minWidth: '50px' }}>Min W</label>
             <UnitInput
               value={computedStyles.minWidth || ''}
               onChange={(val) => updateStyle('minWidth', val)}
-              placeholder="auto"
+              placeholder="0"
+              className="Input"
+              style={{ flex: 1 }}
             />
-          </div>
-          <div className="Col">
-            <label className="Label">Min Height</label>
+            <label className="Label" style={{ minWidth: '50px', marginLeft: 'var(--space-2)' }}>Min H</label>
             <UnitInput
               value={computedStyles.minHeight || ''}
               onChange={(val) => updateStyle('minHeight', val)}
-              placeholder="auto"
+              placeholder="0"
+              className="Input"
+              style={{ flex: 1 }}
             />
+          </div>
+
+          {/* Max Width and Max Height */}
+          <div className="Row" style={{ gap: 'var(--space-3)', alignItems: 'center' }}>
+            <label className="Label" style={{ minWidth: '50px' }}>Max W</label>
+            <UnitInput
+              value={computedStyles.maxWidth || ''}
+              onChange={(val) => updateStyle('maxWidth', val)}
+              placeholder="None"
+              className="Input"
+              style={{ flex: 1 }}
+            />
+            <label className="Label" style={{ minWidth: '50px', marginLeft: 'var(--space-2)' }}>Max H</label>
+            <UnitInput
+              value={computedStyles.maxHeight || ''}
+              onChange={(val) => updateStyle('maxHeight', val)}
+              placeholder="None"
+              className="Input"
+              style={{ flex: 1 }}
+            />
+          </div>
+
+          {/* Overflow */}
+          <div className="Row" style={{ gap: 'var(--space-2)', alignItems: 'center', marginTop: 'var(--space-2)' }}>
+            <label className="Label" style={{ minWidth: '50px' }}>Overflow</label>
+            <select
+              className="Select"
+              value={computedStyles.overflow || 'visible'}
+              onChange={(e) => updateStyle('overflow', e.target.value)}
+              style={{ flex: 1 }}
+            >
+              <option value="visible">Visible</option>
+              <option value="hidden">Hidden</option>
+              <option value="scroll">Scroll</option>
+              <option value="auto">Auto</option>
+            </select>
           </div>
         </div>
       </AccordionSection>
 
       {/* Position */}
-      <AccordionSection title="Position" section="position" hasAddButton properties={['position', 'top', 'right', 'bottom', 'left', 'zIndex']} />
+      <AccordionSection title="Position" section="position" properties={['position', 'top', 'right', 'bottom', 'left', 'zIndex']}>
+        <div className="Col" style={{ gap: 'var(--space-3)' }}>
+          {/* Position Type */}
+          <div className="Col" style={{ gap: 'var(--space-2)' }}>
+            <label className="Label">Position</label>
+            <select
+              className="Select"
+              value={computedStyles.position || 'static'}
+              onChange={(e) => updateStyle('position', e.target.value)}
+            >
+              <option value="static">Static</option>
+              <option value="relative">Relative</option>
+              <option value="absolute">Absolute</option>
+              <option value="fixed">Fixed</option>
+              <option value="sticky">Sticky</option>
+            </select>
+          </div>
+
+          {(computedStyles.position === 'absolute' || computedStyles.position === 'relative' || computedStyles.position === 'fixed' || computedStyles.position === 'sticky') && (
+            <>
+              {/* Position Grid - Top/Right/Bottom/Left */}
+              <div style={{ 
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr 1fr',
+                gridTemplateRows: '1fr 1fr 1fr',
+                gap: '4px',
+                padding: 'var(--space-2)',
+                border: '1px solid hsl(var(--border))',
+                borderRadius: '4px',
+                background: 'hsl(var(--muted) / 0.3)'
+              }}>
+                <div style={{ gridColumn: '2' }}>
+                  <UnitInput
+                    value={computedStyles.top || ''}
+                    onChange={(val) => updateStyle('top', val)}
+                    placeholder="Auto"
+                    className="SpaceInputSmall"
+                    style={{ textAlign: 'center' }}
+                  />
+                </div>
+                <div style={{ gridColumn: '1', gridRow: '2' }}>
+                  <UnitInput
+                    value={computedStyles.left || ''}
+                    onChange={(val) => updateStyle('left', val)}
+                    placeholder="Auto"
+                    className="SpaceInputSmall"
+                    style={{ textAlign: 'center' }}
+                  />
+                </div>
+                <div style={{ gridColumn: '2', gridRow: '2', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <span className="Label" style={{ fontSize: '9px', color: 'hsl(var(--muted-foreground))' }}>Auto</span>
+                </div>
+                <div style={{ gridColumn: '3', gridRow: '2' }}>
+                  <UnitInput
+                    value={computedStyles.right || ''}
+                    onChange={(val) => updateStyle('right', val)}
+                    placeholder="Auto"
+                    className="SpaceInputSmall"
+                    style={{ textAlign: 'center' }}
+                  />
+                </div>
+                <div style={{ gridColumn: '2', gridRow: '3' }}>
+                  <UnitInput
+                    value={computedStyles.bottom || ''}
+                    onChange={(val) => updateStyle('bottom', val)}
+                    placeholder="Auto"
+                    className="SpaceInputSmall"
+                    style={{ textAlign: 'center' }}
+                  />
+                </div>
+              </div>
+
+              {/* Z-Index */}
+              <div className="Row" style={{ gap: 'var(--space-2)', alignItems: 'center' }}>
+                <label className="Label" style={{ minWidth: '50px' }}>Z-Index</label>
+                <input
+                  className="Input"
+                  type="number"
+                  value={computedStyles.zIndex?.toString() || ''}
+                  onChange={(e) => updateStyle('zIndex', e.target.value)}
+                  placeholder="Auto"
+                  style={{ flex: 1 }}
+                />
+              </div>
+            </>
+          )}
+        </div>
+      </AccordionSection>
 
       {/* Typography */}
       <AccordionSection title="Typography" section="typography" properties={['fontFamily', 'fontSize', 'fontWeight', 'lineHeight', 'letterSpacing', 'textAlign', 'textDecoration', 'textTransform', 'color']}>
