@@ -21,6 +21,6 @@ export function getInstancePath(tree: any, targetId: string, path: string[] = []
 
 export function canDropInside(instanceType: string): boolean {
   // Determine which components can have children
-  const containerTypes = ['Box', 'Container'];
+  const containerTypes = ['Box', 'Container', 'Section'];
   return containerTypes.includes(instanceType);
 }

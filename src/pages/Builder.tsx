@@ -71,7 +71,7 @@ const Builder: React.FC = () => {
     } else if (over.id === 'canvas-drop-zone') {
       // Dropped on canvas - use selected instance if it's a container
       const selectedType = useBuilderStore.getState().getSelectedInstance()?.type;
-      if (selectedInstanceId && (selectedType === 'Box' || selectedType === 'Container')) {
+      if (selectedInstanceId && (selectedType === 'Box' || selectedType === 'Container' || selectedType === 'Section')) {
         parentId = selectedInstanceId;
       }
     }

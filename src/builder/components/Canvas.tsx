@@ -4,6 +4,7 @@ import { useStyleStore } from '../store/useStyleStore';
 import { ComponentInstance } from '../store/types';
 import { Box } from '../primitives/Box';
 import { Container } from '../primitives/Container';
+import { Section } from '../primitives/Section';
 import { Text } from '../primitives/Text';
 import { Heading } from '../primitives/Heading';
 import { ButtonPrimitive } from '../primitives/ButtonPrimitive';
@@ -111,6 +112,14 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
             <Container {...commonProps}>
               {instance.children.map((child) => renderInstance(child))}
             </Container>
+          </DroppableContainer>
+        );
+      case 'Section':
+        return (
+          <DroppableContainer key={instance.id} instance={instance} {...commonProps}>
+            <Section {...commonProps}>
+              {instance.children.map((child) => renderInstance(child))}
+            </Section>
           </DroppableContainer>
         );
       case 'Text':

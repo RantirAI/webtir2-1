@@ -1,6 +1,19 @@
 import { ComponentMeta } from '../store/types';
 
 export const componentRegistry: Record<string, ComponentMeta> = {
+  Section: {
+    type: 'Section',
+    label: 'Section',
+    icon: 'Layout',
+    defaultProps: {},
+    defaultStyles: {
+      display: 'block',
+      width: '100%',
+      paddingTop: '5%',
+      paddingBottom: '5%',
+    },
+    propsDefinition: {},
+  },
   Box: {
     type: 'Box',
     label: 'Box',

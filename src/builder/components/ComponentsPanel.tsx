@@ -52,9 +52,9 @@ export const ComponentsPanel: React.FC = () => {
       children: [],
     };
 
-    // Add to selected instance if it's a Box or Container, otherwise add to root
+    // Add to selected instance if it's a container type, otherwise add to root
     const selectedType = useBuilderStore.getState().getSelectedInstance()?.type;
-    const parentId = selectedInstanceId && (selectedType === 'Box' || selectedType === 'Container')
+    const parentId = selectedInstanceId && (selectedType === 'Box' || selectedType === 'Container' || selectedType === 'Section')
       ? selectedInstanceId 
       : 'root';
     
