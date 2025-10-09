@@ -49,15 +49,13 @@ export const Navigator: React.FC = () => {
         instanceType: instance.type,
         label: instance.label
       },
-      disabled: instance.id === 'root', // Don't allow dragging the root
+      disabled: instance.id === 'root',
     });
 
     return (
       <div key={instance.id}>
         <div
           ref={setNodeRef}
-          {...attributes}
-          {...listeners}
           className={`flex items-center gap-1 px-2 py-1 text-sm cursor-pointer hover:bg-accent rounded-md group ${
             isSelected ? 'bg-accent text-accent-foreground' : ''
           }`}
@@ -85,6 +83,7 @@ export const Navigator: React.FC = () => {
           </button>
           
           <div
+            {...listeners}
             onClick={() => setSelectedInstanceId(instance.id)}
             className="flex-1 flex items-center justify-between gap-2 min-w-0"
           >

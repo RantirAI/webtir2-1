@@ -103,11 +103,9 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
     return (
       <div 
         ref={setNodeRef}
-        {...attributes}
         {...listeners}
         style={{
           opacity: isDragging ? 0.5 : 1,
-          cursor: 'grab',
         }}
       >
         {children}

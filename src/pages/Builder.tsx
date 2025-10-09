@@ -5,7 +5,7 @@ import { StylePanel } from '@/builder/components/StylePanel';
 import { PageNavigation } from '@/builder/components/PageNavigation';
 import { StyleSheetInjector } from '@/builder/components/StyleSheetInjector';
 import { ProjectSettingsModal } from '@/builder/components/ProjectSettingsModal';
-import { DndContext, DragEndEvent, DragOverlay, DragStartEvent } from '@dnd-kit/core';
+import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { useBuilderStore } from '@/builder/store/useBuilderStore';
 import { componentRegistry } from '@/builder/primitives/registry';
 import { ComponentInstance } from '@/builder/store/types';
@@ -31,6 +31,15 @@ const Builder: React.FC = () => {
   const addInstance = useBuilderStore((state) => state.addInstance);
   const moveInstance = useBuilderStore((state) => state.moveInstance);
   const selectedInstanceId = useBuilderStore((state) => state.selectedInstanceId);
+
+  // Configure drag sensors to require a 5px movement before dragging starts
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8, // Require 8px of movement before drag starts
+      },
+    })
+  );
 
   const handleDragStart = (event: DragStartEvent) => {
     const dragData = event.active.data.current;
@@ -171,7 +180,12 @@ const Builder: React.FC = () => {
   };
 
   return (
-    <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+    <DndContext 
+      sensors={sensors}
+      onDragStart={handleDragStart} 
+      onDragEnd={handleDragEnd}
+      autoScroll={false}
+    >
       <div className="h-screen flex flex-col overflow-hidden bg-white">
         {/* Global stylesheet for builder classes */}
         <StyleSheetInjector />
