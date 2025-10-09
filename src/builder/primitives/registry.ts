@@ -36,7 +36,6 @@ export const componentRegistry: Record<string, ComponentMeta> = {
     icon: 'Container',
     defaultProps: {
       containerType: 'container',
-      columnLayout: 'none',
     },
     defaultStyles: {
       display: 'flex',
@@ -52,36 +51,6 @@ export const componentRegistry: Record<string, ComponentMeta> = {
         control: 'select',
         options: ['container', 'container-sm', 'container-md', 'container-lg', 'container-xl', 'container-xxl', 'container-fluid'],
         defaultValue: 'container',
-      },
-      columnLayout: {
-        type: 'select',
-        label: 'Column Layout',
-        control: 'select',
-        options: ['none', 'single', 'two-equal', 'three-equal', 'three-unequal', 'two-nested'],
-        defaultValue: 'none',
-      },
-    },
-  },
-  Column: {
-    type: 'Column',
-    label: 'Column',
-    icon: 'Columns',
-    defaultProps: {
-      columnWidth: 'auto',
-    },
-    defaultStyles: {
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '8px',
-      padding: '8px',
-      minHeight: '50px',
-    },
-    propsDefinition: {
-      columnWidth: {
-        type: 'string',
-        label: 'Width',
-        control: 'text',
-        defaultValue: 'auto',
       },
     },
   },

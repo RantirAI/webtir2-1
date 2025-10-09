@@ -1146,55 +1146,8 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
         </TabsContent>
 
         <TabsContent value="settings" className="flex-1 m-0 p-4">
-          <div className="space-y-4">
-            <h3 className="text-sm font-semibold">Component Settings</h3>
-            {selectedInstance.type === 'Container' && (
-              <div className="space-y-3">
-                <div>
-                  <label className="text-xs font-medium block mb-1">Container Type</label>
-                  <select
-                    className="w-full border rounded px-2 py-1 text-sm"
-                    value={selectedInstance.props.containerType || 'container'}
-                    onChange={(e) => updateInstance(selectedInstance.id, {
-                      props: { ...selectedInstance.props, containerType: e.target.value }
-                    })}
-                  >
-                    <option value="container">Container</option>
-                    <option value="container-sm">Container SM</option>
-                    <option value="container-md">Container MD</option>
-                    <option value="container-lg">Container LG</option>
-                    <option value="container-xl">Container XL</option>
-                    <option value="container-xxl">Container XXL</option>
-                    <option value="container-fluid">Container Fluid</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="text-xs font-medium block mb-1">Column Layout</label>
-                  <select
-                    className="w-full border rounded px-2 py-1 text-sm"
-                    value={selectedInstance.props.columnLayout || 'none'}
-                    onChange={(e) => updateInstance(selectedInstance.id, {
-                      props: { ...selectedInstance.props, columnLayout: e.target.value }
-                    })}
-                  >
-                    <option value="none">No Columns</option>
-                    <option value="single">Single Column</option>
-                    <option value="two-equal">Two Equal Columns</option>
-                    <option value="three-equal">Three Equal Columns</option>
-                    <option value="three-unequal">Three Unequal Columns (4-4-4)</option>
-                    <option value="two-nested">Two Columns with Nested</option>
-                  </select>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Columns stack on mobile and expand on desktop
-                  </p>
-                </div>
-              </div>
-            )}
-            {selectedInstance.type !== 'Container' && (
-              <div className="text-sm text-muted-foreground text-center py-8">
-                No settings available for this component
-              </div>
-            )}
+          <div className="text-sm text-muted-foreground text-center">
+            Settings panel coming soon
           </div>
         </TabsContent>
 
