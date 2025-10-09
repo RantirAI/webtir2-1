@@ -8,6 +8,7 @@ import { componentRegistry } from '../primitives/registry';
 import { UnitInput } from './UnitInput';
 import { ColorPicker } from './ColorPicker';
 import { SpacingControl } from './SpacingControl';
+import { FontPicker } from './FontPicker';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
 import '../styles/style-panel.css';
@@ -897,27 +898,26 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
 
       {/* Typography */}
       <AccordionSection title="Typography" section="typography" properties={['fontFamily', 'fontSize', 'fontWeight', 'lineHeight', 'letterSpacing', 'textAlign', 'textDecoration', 'textTransform', 'color']}>
-        <div className="Col" style={{ gap: '4px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr 32px 1fr', gap: '4px', alignItems: 'center' }}>
+        <div className="Col" style={{ gap: '8px' }}>
+          <div>
+            <label className="Label" style={{ fontSize: '10px', marginBottom: '4px', display: 'block' }}>Font Family</label>
+            <FontPicker
+              value={computedStyles.fontFamily || ''}
+              weight={computedStyles.fontWeight || '400'}
+              onChange={(val) => updateStyle('fontFamily', val)}
+              onWeightChange={(val) => updateStyle('fontWeight', val)}
+            />
+          </div>
+          
+          <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr', gap: '4px', alignItems: 'center' }}>
             <label className="Label" style={{ fontSize: '10px' }}>Size</label>
             <UnitInput
               value={computedStyles.fontSize || ''}
               onChange={(val) => updateStyle('fontSize', val)}
               placeholder="16px"
             />
-            <label className="Label" style={{ fontSize: '10px' }}>Weight</label>
-            <select
-              className="Select"
-              value={computedStyles.fontWeight || '400'}
-              onChange={(e) => updateStyle('fontWeight', e.target.value)}
-            >
-              <option value="300">Light</option>
-              <option value="400">Normal</option>
-              <option value="500">Medium</option>
-              <option value="600">Semibold</option>
-              <option value="700">Bold</option>
-            </select>
           </div>
+          
           <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr', gap: '4px', alignItems: 'center' }}>
             <label className="Label" style={{ fontSize: '10px' }}>Color</label>
             <ColorPicker
