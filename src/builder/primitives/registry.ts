@@ -17,6 +17,30 @@ export const componentRegistry: Record<string, ComponentMeta> = {
     },
     propsDefinition: {},
   },
+  Container: {
+    type: 'Container',
+    label: 'Container',
+    icon: 'Container',
+    defaultProps: {
+      containerType: 'container',
+    },
+    defaultStyles: {
+      display: 'flex',
+      flexDirection: 'column',
+      padding: '16px',
+      gap: '8px',
+      minHeight: '100px',
+    },
+    propsDefinition: {
+      containerType: {
+        type: 'select',
+        label: 'Container Type',
+        control: 'select',
+        options: ['container', 'container-sm', 'container-md', 'container-lg', 'container-xl', 'container-xxl', 'container-fluid'],
+        defaultValue: 'container',
+      },
+    },
+  },
   Text: {
     type: 'Text',
     label: 'Text',

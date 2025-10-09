@@ -105,3 +105,111 @@ All colors MUST be HSL.
     @apply bg-background text-foreground font-sans;
   }
 }
+
+@layer components {
+  /* Container utilities with responsive breakpoints */
+  .container,
+  .container-sm,
+  .container-md,
+  .container-lg,
+  .container-xl,
+  .container-xxl,
+  .container-fluid {
+    @apply w-full mx-auto px-4;
+  }
+
+  /* Default container - fixed widths at breakpoints */
+  .container {
+    @apply w-full;
+  }
+  @media (min-width: 576px) {
+    .container { max-width: 540px; }
+  }
+  @media (min-width: 768px) {
+    .container { max-width: 720px; }
+  }
+  @media (min-width: 992px) {
+    .container { max-width: 960px; }
+  }
+  @media (min-width: 1200px) {
+    .container { max-width: 1140px; }
+  }
+  @media (min-width: 1400px) {
+    .container { max-width: 1320px; }
+  }
+
+  /* Small container */
+  .container-sm {
+    @apply w-full;
+  }
+  @media (min-width: 576px) {
+    .container-sm { max-width: 540px; }
+  }
+  @media (min-width: 768px) {
+    .container-sm { max-width: 720px; }
+  }
+  @media (min-width: 992px) {
+    .container-sm { max-width: 960px; }
+  }
+  @media (min-width: 1200px) {
+    .container-sm { max-width: 1140px; }
+  }
+  @media (min-width: 1400px) {
+    .container-sm { max-width: 1320px; }
+  }
+
+  /* Medium container */
+  .container-md {
+    @apply w-full;
+  }
+  @media (min-width: 768px) {
+    .container-md { max-width: 720px; }
+  }
+  @media (min-width: 992px) {
+    .container-md { max-width: 960px; }
+  }
+  @media (min-width: 1200px) {
+    .container-md { max-width: 1140px; }
+  }
+  @media (min-width: 1400px) {
+    .container-md { max-width: 1320px; }
+  }
+
+  /* Large container */
+  .container-lg {
+    @apply w-full;
+  }
+  @media (min-width: 992px) {
+    .container-lg { max-width: 960px; }
+  }
+  @media (min-width: 1200px) {
+    .container-lg { max-width: 1140px; }
+  }
+  @media (min-width: 1400px) {
+    .container-lg { max-width: 1320px; }
+  }
+
+  /* X-Large container */
+  .container-xl {
+    @apply w-full;
+  }
+  @media (min-width: 1200px) {
+    .container-xl { max-width: 1140px; }
+  }
+  @media (min-width: 1400px) {
+    .container-xl { max-width: 1320px; }
+  }
+
+  /* XX-Large container */
+  .container-xxl {
+    @apply w-full;
+  }
+  @media (min-width: 1400px) {
+    .container-xxl { max-width: 1320px; }
+  }
+
+  /* Fluid container - always 100% width */
+  .container-fluid {
+    @apply w-full max-w-full;
+  }
+}

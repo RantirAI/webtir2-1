@@ -3,6 +3,7 @@ import { useBuilderStore } from '../store/useBuilderStore';
 import { useStyleStore } from '../store/useStyleStore';
 import { ComponentInstance } from '../store/types';
 import { Box } from '../primitives/Box';
+import { Container } from '../primitives/Container';
 import { Text } from '../primitives/Text';
 import { Heading } from '../primitives/Heading';
 import { ButtonPrimitive } from '../primitives/ButtonPrimitive';
@@ -100,6 +101,12 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
           <Box key={instance.id} {...commonProps}>
             {instance.children.map((child) => renderInstance(child))}
           </Box>
+        );
+      case 'Container':
+        return (
+          <Container key={instance.id} {...commonProps}>
+            {instance.children.map((child) => renderInstance(child))}
+          </Container>
         );
       case 'Text':
         return <Text key={instance.id} {...commonProps} />;
