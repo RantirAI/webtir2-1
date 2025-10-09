@@ -38,8 +38,11 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
     const handleMouseMove = (e: MouseEvent) => {
       if (!dragState) return;
       
+      // Calculate change based on vertical mouse movement
+      // Moving up (negative clientY change) increases value
+      // Moving down (positive clientY change) decreases value
       const deltaY = dragState.startY - e.clientY;
-      const change = Math.round(deltaY / 2);
+      const change = Math.round(deltaY);
       const newValue = Math.max(0, dragState.startValue + change);
       
       onUpdate(dragState.property, `${newValue}${dragState.unit}`);
@@ -51,10 +54,16 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
 
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
+    
+    // Prevent text selection during drag
+    document.body.style.userSelect = 'none';
+    document.body.style.cursor = 'ns-resize';
 
     return () => {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
+      document.body.style.userSelect = '';
+      document.body.style.cursor = '';
     };
   }, [dragState, onUpdate]);
 
