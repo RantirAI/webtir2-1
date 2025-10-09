@@ -26,3 +26,9 @@
   --hover:         hsl(240 6% 18%);
   --focus:         hsl(258 100% 64%);
 }
+
+/* Builder column styles */
+.builder-column {
+  display: flex;
+  flex-direction: column;
+}

@@ -1,6 +1,6 @@
 // Core types inspired by Webtir's component system
 
-export type ComponentType = 'Box' | 'Container' | 'Section' | 'Text' | 'Heading' | 'Image' | 'Button' | 'Link';
+export type ComponentType = 'Box' | 'Container' | 'Column' | 'Section' | 'Text' | 'Heading' | 'Image' | 'Button' | 'Link';
 
 export type StyleSourceType = 'local' | 'token' | 'preset';
 
