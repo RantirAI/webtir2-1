@@ -6,7 +6,6 @@ import { ChevronRight, ChevronDown, Trash2 } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import * as Icons from 'lucide-react';
 import { componentRegistry } from '../primitives/registry';
-import { useDraggable } from '@dnd-kit/core';
 
 export const Navigator: React.FC = () => {
   const rootInstance = useBuilderStore((state) => state.rootInstance);
@@ -41,28 +40,13 @@ export const Navigator: React.FC = () => {
     const width = computedStyles.width || 'auto';
     const height = computedStyles.height || 'auto';
 
-    const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
-      id: `draggable-nav-${instance.id}`,
-      data: { 
-        instanceId: instance.id,
-        type: 'existing-instance',
-        instanceType: instance.type,
-        label: instance.label
-      },
-      disabled: instance.id === 'root',
-    });
-
     return (
       <div key={instance.id}>
         <div
-          ref={setNodeRef}
           className={`flex items-center gap-1 px-2 py-1 text-sm cursor-pointer hover:bg-accent rounded-md group ${
             isSelected ? 'bg-accent text-accent-foreground' : ''
           }`}
-          style={{ 
-            paddingLeft: `${level * 16 + 8}px`,
-            opacity: isDragging ? 0.5 : 1,
-          }}
+          style={{ paddingLeft: `${level * 16 + 8}px` }}
         >
           <button
             onClick={(e) => {
@@ -83,7 +67,6 @@ export const Navigator: React.FC = () => {
           </button>
           
           <div
-            {...listeners}
             onClick={() => setSelectedInstanceId(instance.id)}
             className="flex-1 flex items-center justify-between gap-2 min-w-0"
           >

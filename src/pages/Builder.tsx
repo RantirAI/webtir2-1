@@ -5,7 +5,7 @@ import { StylePanel } from '@/builder/components/StylePanel';
 import { PageNavigation } from '@/builder/components/PageNavigation';
 import { StyleSheetInjector } from '@/builder/components/StyleSheetInjector';
 import { ProjectSettingsModal } from '@/builder/components/ProjectSettingsModal';
-import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { DndContext, DragEndEvent, DragOverlay, DragStartEvent } from '@dnd-kit/core';
 import { useBuilderStore } from '@/builder/store/useBuilderStore';
 import { componentRegistry } from '@/builder/primitives/registry';
 import { ComponentInstance } from '@/builder/store/types';
@@ -29,37 +29,15 @@ const Builder: React.FC = () => {
   const [draggedComponent, setDraggedComponent] = useState<{ type: string; label: string; icon: string } | null>(null);
   
   const addInstance = useBuilderStore((state) => state.addInstance);
-  const moveInstance = useBuilderStore((state) => state.moveInstance);
   const selectedInstanceId = useBuilderStore((state) => state.selectedInstanceId);
 
-  // Configure drag sensors to require a 5px movement before dragging starts
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8, // Require 8px of movement before drag starts
-      },
-    })
-  );
-
   const handleDragStart = (event: DragStartEvent) => {
-    const dragData = event.active.data.current;
+    const componentType = event.active.data.current?.type;
+    const componentLabel = event.active.data.current?.label;
+    const meta = componentRegistry[componentType];
     
-    if (dragData?.type === 'existing-instance') {
-      // Dragging an existing instance
-      setDraggedComponent({ 
-        type: dragData.instanceType, 
-        label: dragData.label, 
-        icon: componentRegistry[dragData.instanceType]?.icon || 'Box'
-      });
-    } else {
-      // Dragging a new component from the registry
-      const componentType = dragData?.type;
-      const componentLabel = dragData?.label;
-      const meta = componentRegistry[componentType];
-      
-      if (meta) {
-        setDraggedComponent({ type: componentType, label: componentLabel, icon: meta.icon });
-      }
+    if (meta) {
+      setDraggedComponent({ type: componentType, label: componentLabel, icon: meta.icon });
     }
   };
 
@@ -70,35 +48,7 @@ const Builder: React.FC = () => {
     
     if (!over) return;
     
-    const dragData = active.data.current;
-    
-    // Check if we're moving an existing instance
-    if (dragData?.type === 'existing-instance') {
-      const instanceId = dragData.instanceId;
-      
-      // Determine target parent
-      let targetParentId = 'root';
-      let targetIndex: number | undefined;
-      
-      if (over.id.toString().startsWith('droppable-')) {
-        targetParentId = over.data.current?.instanceId || 'root';
-      } else if (over.id === 'canvas-drop-zone') {
-        const selectedType = useBuilderStore.getState().getSelectedInstance()?.type;
-        if (selectedInstanceId && (selectedType === 'Box' || selectedType === 'Container' || selectedType === 'Section')) {
-          targetParentId = selectedInstanceId;
-        }
-      }
-      
-      // Don't allow dropping an instance into itself
-      if (instanceId === targetParentId) return;
-      
-      // Move the instance
-      moveInstance(instanceId, targetParentId, targetIndex ?? 0);
-      return;
-    }
-    
-    // Handle new component from registry
-    const componentType = dragData?.type;
+    const componentType = active.data.current?.type;
     if (!componentType) return;
     
     const meta = componentRegistry[componentType];
@@ -180,12 +130,7 @@ const Builder: React.FC = () => {
   };
 
   return (
-    <DndContext 
-      sensors={sensors}
-      onDragStart={handleDragStart} 
-      onDragEnd={handleDragEnd}
-      autoScroll={false}
-    >
+    <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
       <div className="h-screen flex flex-col overflow-hidden bg-white">
         {/* Global stylesheet for builder classes */}
         <StyleSheetInjector />
