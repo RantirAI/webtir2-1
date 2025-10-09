@@ -96,9 +96,7 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
     });
   };
 
-  const handleInputChange = (property: string, value: string) => {
-    onUpdate(property, value);
-  };
+  // Removed - input changes are now handled only through popover or drag
 
   const handleInputClick = (e: React.MouseEvent, property: string, currentValue: string) => {
     e.stopPropagation();
@@ -157,7 +155,7 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
           <input
             type="text"
             value={value || '0'}
-            onChange={(e) => handleInputChange(property, e.target.value)}
+            readOnly
             onMouseDown={(e) => handleMouseDown(e, property, value)}
             onClick={(e) => handleInputClick(e, property, value)}
             style={{ ...inputStyle, ...customStyle }}
