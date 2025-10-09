@@ -483,6 +483,61 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
       {/* Layout */}
       <AccordionSection title="Layout" section="layout" properties={['display', 'flexDirection', 'justifyContent', 'alignItems', 'flexWrap', 'gap', 'gridTemplateColumns', 'gridTemplateRows', 'gridAutoFlow', 'placeItems', 'placeContent']}>
         <div className="Col">
+          {/* Container Column Layout */}
+          {selectedInstance.type === 'Container' && (
+            <div style={{ marginBottom: 'var(--space-3)', paddingBottom: 'var(--space-3)', borderBottom: '1px solid hsl(var(--border))' }}>
+              <div className="Row" style={{ justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-2)' }}>
+                <label className="Label" style={{ fontWeight: 600, fontSize: '11px' }}>Column Layout</label>
+              </div>
+              <select
+                className="Select"
+                value={selectedInstance.props.columnLayout || 'none'}
+                onChange={(e) => updateInstance(selectedInstance.id, {
+                  props: { ...selectedInstance.props, columnLayout: e.target.value }
+                })}
+                style={{ width: '100%', marginBottom: 'var(--space-2)' }}
+              >
+                <option value="none">No Columns</option>
+                <option value="single">Single Column</option>
+                <option value="two-equal">Two Equal Columns</option>
+                <option value="three-equal">Three Equal Columns</option>
+                <option value="three-unequal">Three Unequal (25-50-25)</option>
+                <option value="two-nested">Two Columns (Nested)</option>
+              </select>
+              <div style={{ fontSize: '9px', color: 'hsl(var(--muted-foreground))' }}>
+                Responsive grid that stacks on mobile
+              </div>
+            </div>
+          )}
+
+          {/* Container Type */}
+          {selectedInstance.type === 'Container' && (
+            <div style={{ marginBottom: 'var(--space-3)', paddingBottom: 'var(--space-3)', borderBottom: '1px solid hsl(var(--border))' }}>
+              <div className="Row" style={{ justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-2)' }}>
+                <label className="Label" style={{ fontWeight: 600, fontSize: '11px' }}>Container Type</label>
+              </div>
+              <select
+                className="Select"
+                value={selectedInstance.props.containerType || 'container'}
+                onChange={(e) => updateInstance(selectedInstance.id, {
+                  props: { ...selectedInstance.props, containerType: e.target.value }
+                })}
+                style={{ width: '100%', marginBottom: 'var(--space-2)' }}
+              >
+                <option value="container">Container</option>
+                <option value="container-sm">Container SM</option>
+                <option value="container-md">Container MD</option>
+                <option value="container-lg">Container LG</option>
+                <option value="container-xl">Container XL</option>
+                <option value="container-xxl">Container XXL</option>
+                <option value="container-fluid">Container Fluid</option>
+              </select>
+              <div style={{ fontSize: '9px', color: 'hsl(var(--muted-foreground))' }}>
+                Max-width breakpoints for responsive design
+              </div>
+            </div>
+          )}
+
           <div className="Row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
             <label className="Label" style={{ fontWeight: 600 }}>Display</label>
             <select
