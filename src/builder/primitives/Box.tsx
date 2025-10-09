@@ -32,10 +32,6 @@ export const Box: React.FC<BoxProps> = ({
       style={{
         position: 'relative',
         backgroundColor: isRoot ? '#ffffff' : 'transparent',
-        display: 'flex',
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        alignItems: 'flex-start',
       }}
       onClick={(e) => {
         e.stopPropagation();
