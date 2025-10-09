@@ -10,6 +10,7 @@ import { useBuilderStore } from '@/builder/store/useBuilderStore';
 import { componentRegistry } from '@/builder/primitives/registry';
 import { ComponentInstance } from '@/builder/store/types';
 import { generateId } from '@/builder/utils/instance';
+import { useStyleStore } from '@/builder/store/useStyleStore';
 import * as Icons from 'lucide-react';
 
 const Builder: React.FC = () => {
@@ -53,12 +54,26 @@ const Builder: React.FC = () => {
     const meta = componentRegistry[componentType];
     if (!meta) return;
 
+    const newId = generateId();
+    
+    // Create style source with default styles
+    let styleSourceId: string | undefined;
+    if (meta.defaultStyles && Object.keys(meta.defaultStyles).length > 0) {
+      const { createStyleSource, setStyle } = useStyleStore.getState();
+      styleSourceId = createStyleSource('local', `${newId}-style`);
+      
+      // Apply default styles
+      Object.entries(meta.defaultStyles).forEach(([property, value]) => {
+        setStyle(styleSourceId!, property, value);
+      });
+    }
+
     const newInstance: ComponentInstance = {
-      id: generateId(),
+      id: newId,
       type: meta.type,
       label: meta.label,
       props: { ...meta.defaultProps },
-      styleSourceIds: [],
+      styleSourceIds: styleSourceId ? [styleSourceId] : [],
       children: [],
     };
 

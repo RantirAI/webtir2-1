@@ -1,6 +1,7 @@
 import React from 'react';
 import { componentRegistry } from '../primitives/registry';
 import { useBuilderStore } from '../store/useBuilderStore';
+import { useStyleStore } from '../store/useStyleStore';
 import { ComponentInstance } from '../store/types';
 import { generateId } from '../utils/instance';
 import * as Icons from 'lucide-react';
@@ -43,12 +44,26 @@ export const ComponentsPanel: React.FC = () => {
     const meta = componentRegistry[type];
     if (!meta) return;
 
+    const newId = generateId();
+    
+    // Create style source with default styles
+    let styleSourceId: string | undefined;
+    if (meta.defaultStyles && Object.keys(meta.defaultStyles).length > 0) {
+      const { createStyleSource, setStyle } = useStyleStore.getState();
+      styleSourceId = createStyleSource('local', `${newId}-style`);
+      
+      // Apply default styles
+      Object.entries(meta.defaultStyles).forEach(([property, value]) => {
+        setStyle(styleSourceId!, property, value);
+      });
+    }
+
     const newInstance: ComponentInstance = {
-      id: generateId(),
+      id: newId,
       type: meta.type,
       label: meta.label,
       props: { ...meta.defaultProps },
-      styleSourceIds: [], // No default classes - created only when styles are set
+      styleSourceIds: styleSourceId ? [styleSourceId] : [],
       children: [],
     };
 
