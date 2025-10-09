@@ -5,6 +5,11 @@ import { StylePanel } from '@/builder/components/StylePanel';
 import { PageNavigation } from '@/builder/components/PageNavigation';
 import { StyleSheetInjector } from '@/builder/components/StyleSheetInjector';
 import { ProjectSettingsModal } from '@/builder/components/ProjectSettingsModal';
+import { DndContext, DragEndEvent } from '@dnd-kit/core';
+import { useBuilderStore } from '@/builder/store/useBuilderStore';
+import { componentRegistry } from '@/builder/primitives/registry';
+import { ComponentInstance } from '@/builder/store/types';
+import { generateId } from '@/builder/utils/instance';
 
 const Builder: React.FC = () => {
   const [zoom, setZoom] = useState(100);
@@ -19,6 +24,37 @@ const Builder: React.FC = () => {
   const [faviconUrl, setFaviconUrl] = useState('/favicon.ico');
   const [metaTitle, setMetaTitle] = useState('');
   const [metaDescription, setMetaDescription] = useState('');
+  
+  const addInstance = useBuilderStore((state) => state.addInstance);
+  const selectedInstanceId = useBuilderStore((state) => state.selectedInstanceId);
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    
+    if (!over || over.id !== 'canvas-drop-zone') return;
+    
+    const componentType = active.data.current?.type;
+    if (!componentType) return;
+    
+    const meta = componentRegistry[componentType];
+    if (!meta) return;
+
+    const newInstance: ComponentInstance = {
+      id: generateId(),
+      type: meta.type,
+      label: meta.label,
+      props: { ...meta.defaultProps },
+      styleSourceIds: [],
+      children: [],
+    };
+
+    // Add to selected instance if it's a Box, otherwise add to root
+    const parentId = selectedInstanceId && useBuilderStore.getState().getSelectedInstance()?.type === 'Box' 
+      ? selectedInstanceId 
+      : 'root';
+    
+    addInstance(newInstance, parentId);
+  };
 
   const handleAddPage = () => {
     const newPageNum = pages.length + 1;
@@ -56,11 +92,12 @@ const Builder: React.FC = () => {
   };
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden bg-white">
-      {/* Global stylesheet for builder classes */}
-      <StyleSheetInjector />
-      {/* Main content - Full screen canvas */}
-      <div className="flex-1 relative overflow-hidden">
+    <DndContext onDragEnd={handleDragEnd}>
+      <div className="h-screen flex flex-col overflow-hidden bg-white">
+        {/* Global stylesheet for builder classes */}
+        <StyleSheetInjector />
+        {/* Main content - Full screen canvas */}
+        <div className="flex-1 relative overflow-hidden">
         {/* Canvas Background */}
         <Canvas 
           zoom={zoom} 
@@ -134,7 +171,8 @@ const Builder: React.FC = () => {
         metaDescription={metaDescription}
         onMetaDescriptionChange={setMetaDescription}
       />
-    </div>
+      </div>
+    </DndContext>
   );
 };
 

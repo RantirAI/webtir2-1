@@ -11,6 +11,9 @@ import { LinkPrimitive } from '../primitives/LinkPrimitive';
 import { breakpoints } from './PageNavigation';
 import { ContextMenu } from './ContextMenu';
 import { SelectionOverlay } from './SelectionOverlay';
+import { useDroppable } from '@dnd-kit/core';
+import { componentRegistry } from '../primitives/registry';
+import { generateId } from '../utils/instance';
 
 interface CanvasProps {
   zoom: number;
@@ -28,6 +31,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
   const hoveredInstanceId = useBuilderStore((state) => state.hoveredInstanceId);
   const setSelectedInstanceId = useBuilderStore((state) => state.setSelectedInstanceId);
   const setHoveredInstanceId = useBuilderStore((state) => state.setHoveredInstanceId);
+  const addInstance = useBuilderStore((state) => state.addInstance);
   const { findInstance } = useBuilderStore();
   const { getComputedStyles } = useStyleStore();
   const [editingPageId, setEditingPageId] = useState<string | null>(null);
@@ -36,6 +40,10 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; instance: ComponentInstance } | null>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
+
+  const { setNodeRef } = useDroppable({
+    id: 'canvas-drop-zone',
+  });
 
   const currentBreakpointWidth = breakpoints.find(bp => bp.id === currentBreakpoint)?.width || 960;
 
@@ -110,8 +118,11 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
 
   return (
     <div 
-      ref={canvasRef}
-      className="absolute inset-0 overflow-hidden bg-[#e5e7eb] dark:bg-zinc-800" 
+      ref={(node) => {
+        canvasRef.current = node;
+        setNodeRef(node);
+      }}
+      className="absolute inset-0 overflow-hidden bg-[#e5e7eb] dark:bg-zinc-800"
       style={{
         backgroundImage: `radial-gradient(circle, #9ca3af 1px, transparent 1px)`,
         backgroundSize: '20px 20px',
