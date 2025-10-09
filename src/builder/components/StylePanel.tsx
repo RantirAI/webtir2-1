@@ -7,6 +7,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { componentRegistry } from '../primitives/registry';
 import { UnitInput } from './UnitInput';
 import { ColorPicker } from './ColorPicker';
+import { SpacingControl } from './SpacingControl';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
 import '../styles/style-panel.css';
@@ -722,84 +723,17 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
 
       {/* Space */}
       <AccordionSection title="Space" section="space" properties={['marginTop', 'marginRight', 'marginBottom', 'marginLeft', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft']}>
-        <div className="SpaceBox">
-          <div className="SpaceMarginLabel">MARGIN</div>
-          <div className="SpaceOuter">
-            {/* Top margin */}
-            <div style={{ display: 'flex', justifyContent: 'center' }}>
-              <UnitInput
-                value={computedStyles.marginTop || ''}
-                onChange={(val) => updateStyle('marginTop', val)}
-                placeholder="0"
-                className="SpaceInput"
-              />
-            </div>
-
-            {/* Middle row with left margin, padding box, right margin */}
-            <div className="SpaceRow">
-              <UnitInput
-                value={computedStyles.marginLeft || ''}
-                onChange={(val) => updateStyle('marginLeft', val)}
-                placeholder="0"
-                className="SpaceInput"
-              />
-              
-              <div className="SpaceRing">
-                <div className="SpacePaddingLabel">PADDING</div>
-                
-                {/* Top padding */}
-                <UnitInput
-                  value={computedStyles.paddingTop || ''}
-                  onChange={(val) => updateStyle('paddingTop', val)}
-                  placeholder="0"
-                  className="SpaceInputSmall"
-                />
-                
-                {/* Left and Right padding */}
-                <div className="SpacePaddingRow">
-                  <UnitInput
-                    value={computedStyles.paddingLeft || ''}
-                    onChange={(val) => updateStyle('paddingLeft', val)}
-                    placeholder="0"
-                    className="SpaceInputSmall"
-                  />
-                  <div style={{ flex: 1 }} />
-                  <UnitInput
-                    value={computedStyles.paddingRight || ''}
-                    onChange={(val) => updateStyle('paddingRight', val)}
-                    placeholder="0"
-                    className="SpaceInputSmall"
-                  />
-                </div>
-                
-                {/* Bottom padding */}
-                <UnitInput
-                  value={computedStyles.paddingBottom || ''}
-                  onChange={(val) => updateStyle('paddingBottom', val)}
-                  placeholder="0"
-                  className="SpaceInputSmall"
-                />
-              </div>
-
-              <UnitInput
-                value={computedStyles.marginRight || ''}
-                onChange={(val) => updateStyle('marginRight', val)}
-                placeholder="0"
-                className="SpaceInput"
-              />
-            </div>
-
-            {/* Bottom margin */}
-            <div style={{ display: 'flex', justifyContent: 'center' }}>
-              <UnitInput
-                value={computedStyles.marginBottom || ''}
-                onChange={(val) => updateStyle('marginBottom', val)}
-                placeholder="0"
-                className="SpaceInput"
-              />
-            </div>
-          </div>
-        </div>
+        <SpacingControl
+          marginTop={computedStyles.marginTop}
+          marginRight={computedStyles.marginRight}
+          marginBottom={computedStyles.marginBottom}
+          marginLeft={computedStyles.marginLeft}
+          paddingTop={computedStyles.paddingTop}
+          paddingRight={computedStyles.paddingRight}
+          paddingBottom={computedStyles.paddingBottom}
+          paddingLeft={computedStyles.paddingLeft}
+          onUpdate={updateStyle}
+        />
       </AccordionSection>
 
       {/* Size */}
