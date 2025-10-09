@@ -128,6 +128,13 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && editingProperty) {
+      onUpdate(editingProperty.property, `${editingProperty.value}${editingProperty.unit}`);
+      setEditingProperty(null);
+    }
+  };
+
   const getPropertyLabel = (property: string): string => {
     const labels: Record<string, string> = {
       marginTop: 'Margin Top',
@@ -170,6 +177,7 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
                 type="number"
                 value={editingProperty?.value || '0'}
                 onChange={(e) => handlePopoverValueChange(e.target.value)}
+                onKeyDown={handleKeyDown}
                 className="flex-1"
                 autoFocus
               />
