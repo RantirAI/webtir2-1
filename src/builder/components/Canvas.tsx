@@ -13,6 +13,7 @@ import { LinkPrimitive } from '../primitives/LinkPrimitive';
 import { breakpoints } from './PageNavigation';
 import { ContextMenu } from './ContextMenu';
 import { SelectionOverlay } from './SelectionOverlay';
+import { HoverOverlay } from './HoverOverlay';
 import { useDroppable } from '@dnd-kit/core';
 import { componentRegistry } from '../primitives/registry';
 import { generateId } from '../utils/instance';
@@ -82,6 +83,11 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
     : null;
   
   const selectedInstance = selectedInstanceId ? findInstance(selectedInstanceId) : null;
+
+  // Get hovered element for overlay
+  const hoveredElement = hoveredInstanceId && hoveredInstanceId !== selectedInstanceId
+    ? document.querySelector(`[data-instance-id="${hoveredInstanceId}"]`) as HTMLElement
+    : null;
 
   const renderInstance = (instance: ComponentInstance): React.ReactNode => {
     const isSelected = instance.id === selectedInstanceId;
@@ -210,6 +216,11 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
           </div>
         ))}
       </div>
+      
+      {/* Hover Overlay */}
+      {hoveredElement && (
+        <HoverOverlay element={hoveredElement} />
+      )}
       
       {/* Selection Overlay */}
       {selectedElement && selectedInstance && (
