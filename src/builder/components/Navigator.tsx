@@ -6,6 +6,7 @@ import { ChevronRight, ChevronDown, Trash2 } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import * as Icons from 'lucide-react';
 import { componentRegistry } from '../primitives/registry';
+import { useDraggable } from '@dnd-kit/core';
 
 export const Navigator: React.FC = () => {
   const rootInstance = useBuilderStore((state) => state.rootInstance);
@@ -40,13 +41,30 @@ export const Navigator: React.FC = () => {
     const width = computedStyles.width || 'auto';
     const height = computedStyles.height || 'auto';
 
+    const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+      id: `draggable-nav-${instance.id}`,
+      data: { 
+        instanceId: instance.id,
+        type: 'existing-instance',
+        instanceType: instance.type,
+        label: instance.label
+      },
+      disabled: instance.id === 'root', // Don't allow dragging the root
+    });
+
     return (
       <div key={instance.id}>
         <div
+          ref={setNodeRef}
+          {...attributes}
+          {...listeners}
           className={`flex items-center gap-1 px-2 py-1 text-sm cursor-pointer hover:bg-accent rounded-md group ${
             isSelected ? 'bg-accent text-accent-foreground' : ''
           }`}
-          style={{ paddingLeft: `${level * 16 + 8}px` }}
+          style={{ 
+            paddingLeft: `${level * 16 + 8}px`,
+            opacity: isDragging ? 0.5 : 1,
+          }}
         >
           <button
             onClick={(e) => {

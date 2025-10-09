@@ -29,15 +29,28 @@ const Builder: React.FC = () => {
   const [draggedComponent, setDraggedComponent] = useState<{ type: string; label: string; icon: string } | null>(null);
   
   const addInstance = useBuilderStore((state) => state.addInstance);
+  const moveInstance = useBuilderStore((state) => state.moveInstance);
   const selectedInstanceId = useBuilderStore((state) => state.selectedInstanceId);
 
   const handleDragStart = (event: DragStartEvent) => {
-    const componentType = event.active.data.current?.type;
-    const componentLabel = event.active.data.current?.label;
-    const meta = componentRegistry[componentType];
+    const dragData = event.active.data.current;
     
-    if (meta) {
-      setDraggedComponent({ type: componentType, label: componentLabel, icon: meta.icon });
+    if (dragData?.type === 'existing-instance') {
+      // Dragging an existing instance
+      setDraggedComponent({ 
+        type: dragData.instanceType, 
+        label: dragData.label, 
+        icon: componentRegistry[dragData.instanceType]?.icon || 'Box'
+      });
+    } else {
+      // Dragging a new component from the registry
+      const componentType = dragData?.type;
+      const componentLabel = dragData?.label;
+      const meta = componentRegistry[componentType];
+      
+      if (meta) {
+        setDraggedComponent({ type: componentType, label: componentLabel, icon: meta.icon });
+      }
     }
   };
 
@@ -48,7 +61,35 @@ const Builder: React.FC = () => {
     
     if (!over) return;
     
-    const componentType = active.data.current?.type;
+    const dragData = active.data.current;
+    
+    // Check if we're moving an existing instance
+    if (dragData?.type === 'existing-instance') {
+      const instanceId = dragData.instanceId;
+      
+      // Determine target parent
+      let targetParentId = 'root';
+      let targetIndex: number | undefined;
+      
+      if (over.id.toString().startsWith('droppable-')) {
+        targetParentId = over.data.current?.instanceId || 'root';
+      } else if (over.id === 'canvas-drop-zone') {
+        const selectedType = useBuilderStore.getState().getSelectedInstance()?.type;
+        if (selectedInstanceId && (selectedType === 'Box' || selectedType === 'Container' || selectedType === 'Section')) {
+          targetParentId = selectedInstanceId;
+        }
+      }
+      
+      // Don't allow dropping an instance into itself
+      if (instanceId === targetParentId) return;
+      
+      // Move the instance
+      moveInstance(instanceId, targetParentId, targetIndex ?? 0);
+      return;
+    }
+    
+    // Handle new component from registry
+    const componentType = dragData?.type;
     if (!componentType) return;
     
     const meta = componentRegistry[componentType];

@@ -14,7 +14,7 @@ import { breakpoints } from './PageNavigation';
 import { ContextMenu } from './ContextMenu';
 import { SelectionOverlay } from './SelectionOverlay';
 import { HoverOverlay } from './HoverOverlay';
-import { useDroppable } from '@dnd-kit/core';
+import { useDroppable, useDraggable } from '@dnd-kit/core';
 import { componentRegistry } from '../primitives/registry';
 import { generateId } from '../utils/instance';
 import { DroppableContainer } from './DroppableContainer';
@@ -89,6 +89,32 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
     ? document.querySelector(`[data-instance-id="${hoveredInstanceId}"]`) as HTMLElement
     : null;
 
+  const DraggableWrapper: React.FC<{ instance: ComponentInstance; children: React.ReactNode }> = ({ instance, children }) => {
+    const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+      id: `draggable-instance-${instance.id}`,
+      data: { 
+        instanceId: instance.id,
+        type: 'existing-instance',
+        instanceType: instance.type,
+        label: instance.label
+      },
+    });
+
+    return (
+      <div 
+        ref={setNodeRef}
+        {...attributes}
+        {...listeners}
+        style={{
+          opacity: isDragging ? 0.5 : 1,
+          cursor: 'grab',
+        }}
+      >
+        {children}
+      </div>
+    );
+  };
+
   const renderInstance = (instance: ComponentInstance): React.ReactNode => {
     const isSelected = instance.id === selectedInstanceId;
     const isHovered = instance.id === hoveredInstanceId;
@@ -106,38 +132,64 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
     switch (instance.type) {
       case 'Box':
         return (
-          <DroppableContainer key={instance.id} instance={instance} {...commonProps}>
-            <Box {...commonProps}>
-              {instance.children.map((child) => renderInstance(child))}
-            </Box>
-          </DroppableContainer>
+          <DraggableWrapper key={instance.id} instance={instance}>
+            <DroppableContainer instance={instance} {...commonProps}>
+              <Box {...commonProps}>
+                {instance.children.map((child) => renderInstance(child))}
+              </Box>
+            </DroppableContainer>
+          </DraggableWrapper>
         );
       case 'Container':
         return (
-          <DroppableContainer key={instance.id} instance={instance} {...commonProps}>
-            <Container {...commonProps}>
-              {instance.children.map((child) => renderInstance(child))}
-            </Container>
-          </DroppableContainer>
+          <DraggableWrapper key={instance.id} instance={instance}>
+            <DroppableContainer instance={instance} {...commonProps}>
+              <Container {...commonProps}>
+                {instance.children.map((child) => renderInstance(child))}
+              </Container>
+            </DroppableContainer>
+          </DraggableWrapper>
         );
       case 'Section':
         return (
-          <DroppableContainer key={instance.id} instance={instance} {...commonProps}>
-            <Section {...commonProps}>
-              {instance.children.map((child) => renderInstance(child))}
-            </Section>
-          </DroppableContainer>
+          <DraggableWrapper key={instance.id} instance={instance}>
+            <DroppableContainer instance={instance} {...commonProps}>
+              <Section {...commonProps}>
+                {instance.children.map((child) => renderInstance(child))}
+              </Section>
+            </DroppableContainer>
+          </DraggableWrapper>
         );
       case 'Text':
-        return <Text key={instance.id} {...commonProps} />;
+        return (
+          <DraggableWrapper key={instance.id} instance={instance}>
+            <Text {...commonProps} />
+          </DraggableWrapper>
+        );
       case 'Heading':
-        return <Heading key={instance.id} {...commonProps} />;
+        return (
+          <DraggableWrapper key={instance.id} instance={instance}>
+            <Heading {...commonProps} />
+          </DraggableWrapper>
+        );
       case 'Button':
-        return <ButtonPrimitive key={instance.id} {...commonProps} />;
+        return (
+          <DraggableWrapper key={instance.id} instance={instance}>
+            <ButtonPrimitive {...commonProps} />
+          </DraggableWrapper>
+        );
       case 'Image':
-        return <ImagePrimitive key={instance.id} {...commonProps} />;
+        return (
+          <DraggableWrapper key={instance.id} instance={instance}>
+            <ImagePrimitive {...commonProps} />
+          </DraggableWrapper>
+        );
       case 'Link':
-        return <LinkPrimitive key={instance.id} {...commonProps} />;
+        return (
+          <DraggableWrapper key={instance.id} instance={instance}>
+            <LinkPrimitive {...commonProps} />
+          </DraggableWrapper>
+        );
       default:
         return null;
     }
