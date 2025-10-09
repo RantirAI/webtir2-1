@@ -15,6 +15,7 @@ import { SelectionOverlay } from './SelectionOverlay';
 import { useDroppable } from '@dnd-kit/core';
 import { componentRegistry } from '../primitives/registry';
 import { generateId } from '../utils/instance';
+import { DroppableContainer } from './DroppableContainer';
 
 interface CanvasProps {
   zoom: number;
@@ -98,15 +99,19 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
     switch (instance.type) {
       case 'Box':
         return (
-          <Box key={instance.id} {...commonProps}>
-            {instance.children.map((child) => renderInstance(child))}
-          </Box>
+          <DroppableContainer key={instance.id} instance={instance} {...commonProps}>
+            <Box {...commonProps}>
+              {instance.children.map((child) => renderInstance(child))}
+            </Box>
+          </DroppableContainer>
         );
       case 'Container':
         return (
-          <Container key={instance.id} {...commonProps}>
-            {instance.children.map((child) => renderInstance(child))}
-          </Container>
+          <DroppableContainer key={instance.id} instance={instance} {...commonProps}>
+            <Container {...commonProps}>
+              {instance.children.map((child) => renderInstance(child))}
+            </Container>
+          </DroppableContainer>
         );
       case 'Text':
         return <Text key={instance.id} {...commonProps} />;

@@ -5,11 +5,12 @@ import { StylePanel } from '@/builder/components/StylePanel';
 import { PageNavigation } from '@/builder/components/PageNavigation';
 import { StyleSheetInjector } from '@/builder/components/StyleSheetInjector';
 import { ProjectSettingsModal } from '@/builder/components/ProjectSettingsModal';
-import { DndContext, DragEndEvent } from '@dnd-kit/core';
+import { DndContext, DragEndEvent, DragOverlay, DragStartEvent } from '@dnd-kit/core';
 import { useBuilderStore } from '@/builder/store/useBuilderStore';
 import { componentRegistry } from '@/builder/primitives/registry';
 import { ComponentInstance } from '@/builder/store/types';
 import { generateId } from '@/builder/utils/instance';
+import * as Icons from 'lucide-react';
 
 const Builder: React.FC = () => {
   const [zoom, setZoom] = useState(100);
@@ -24,14 +25,27 @@ const Builder: React.FC = () => {
   const [faviconUrl, setFaviconUrl] = useState('/favicon.ico');
   const [metaTitle, setMetaTitle] = useState('');
   const [metaDescription, setMetaDescription] = useState('');
+  const [draggedComponent, setDraggedComponent] = useState<{ type: string; label: string; icon: string } | null>(null);
   
   const addInstance = useBuilderStore((state) => state.addInstance);
   const selectedInstanceId = useBuilderStore((state) => state.selectedInstanceId);
 
+  const handleDragStart = (event: DragStartEvent) => {
+    const componentType = event.active.data.current?.type;
+    const componentLabel = event.active.data.current?.label;
+    const meta = componentRegistry[componentType];
+    
+    if (meta) {
+      setDraggedComponent({ type: componentType, label: componentLabel, icon: meta.icon });
+    }
+  };
+
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     
-    if (!over || over.id !== 'canvas-drop-zone') return;
+    setDraggedComponent(null);
+    
+    if (!over) return;
     
     const componentType = active.data.current?.type;
     if (!componentType) return;
@@ -48,11 +62,19 @@ const Builder: React.FC = () => {
       children: [],
     };
 
-    // Add to selected instance if it's a Box or Container, otherwise add to root
-    const selectedType = useBuilderStore.getState().getSelectedInstance()?.type;
-    const parentId = selectedInstanceId && (selectedType === 'Box' || selectedType === 'Container')
-      ? selectedInstanceId 
-      : 'root';
+    // Determine parent: use the droppable container if available, otherwise selected instance or root
+    let parentId = 'root';
+    
+    if (over.id.toString().startsWith('droppable-')) {
+      // Dropped directly on a container
+      parentId = over.data.current?.instanceId || 'root';
+    } else if (over.id === 'canvas-drop-zone') {
+      // Dropped on canvas - use selected instance if it's a container
+      const selectedType = useBuilderStore.getState().getSelectedInstance()?.type;
+      if (selectedInstanceId && (selectedType === 'Box' || selectedType === 'Container')) {
+        parentId = selectedInstanceId;
+      }
+    }
     
     addInstance(newInstance, parentId);
   };
@@ -93,7 +115,7 @@ const Builder: React.FC = () => {
   };
 
   return (
-    <DndContext onDragEnd={handleDragEnd}>
+    <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
       <div className="h-screen flex flex-col overflow-hidden bg-white">
         {/* Global stylesheet for builder classes */}
         <StyleSheetInjector />
@@ -172,6 +194,30 @@ const Builder: React.FC = () => {
         metaDescription={metaDescription}
         onMetaDescriptionChange={setMetaDescription}
       />
+      
+      <DragOverlay>
+        {draggedComponent && (
+          <div 
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '8px 12px',
+              backgroundColor: 'white',
+              border: '2px solid #3b82f6',
+              borderRadius: '8px',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+              cursor: 'grabbing',
+            }}
+          >
+            {(() => {
+              const IconComponent = Icons[draggedComponent.icon as keyof typeof Icons] as any;
+              return IconComponent ? <IconComponent size={16} color="#3b82f6" /> : null;
+            })()}
+            <span style={{ fontSize: '14px', fontWeight: '500' }}>{draggedComponent.label}</span>
+          </div>
+        )}
+      </DragOverlay>
       </div>
     </DndContext>
   );
