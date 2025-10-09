@@ -1,4 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 interface SpacingControlProps {
   marginTop?: string;
@@ -29,6 +33,11 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
     property: string;
     startY: number;
     startValue: number;
+    unit: string;
+  } | null>(null);
+  const [editingProperty, setEditingProperty] = useState<{
+    property: string;
+    value: string;
     unit: string;
   } | null>(null);
 
@@ -89,6 +98,104 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
 
   const handleInputChange = (property: string, value: string) => {
     onUpdate(property, value);
+  };
+
+  const handleInputClick = (e: React.MouseEvent, property: string, currentValue: string) => {
+    e.stopPropagation();
+    const { num, unit } = parseValue(currentValue);
+    setEditingProperty({
+      property,
+      value: num.toString(),
+      unit,
+    });
+  };
+
+  const handlePopoverValueChange = (value: string) => {
+    if (editingProperty) {
+      setEditingProperty({ ...editingProperty, value });
+    }
+  };
+
+  const handlePopoverUnitChange = (unit: string) => {
+    if (editingProperty) {
+      setEditingProperty({ ...editingProperty, unit });
+      onUpdate(editingProperty.property, `${editingProperty.value}${unit}`);
+    }
+  };
+
+  const handlePopoverClose = () => {
+    if (editingProperty) {
+      onUpdate(editingProperty.property, `${editingProperty.value}${editingProperty.unit}`);
+      setEditingProperty(null);
+    }
+  };
+
+  const getPropertyLabel = (property: string): string => {
+    const labels: Record<string, string> = {
+      marginTop: 'Margin Top',
+      marginRight: 'Margin Right',
+      marginBottom: 'Margin Bottom',
+      marginLeft: 'Margin Left',
+      paddingTop: 'Padding Top',
+      paddingRight: 'Padding Right',
+      paddingBottom: 'Padding Bottom',
+      paddingLeft: 'Padding Left',
+    };
+    return labels[property] || property;
+  };
+
+  const renderSpacingInput = (property: string, value: string, customStyle?: React.CSSProperties) => {
+    const isOpen = editingProperty?.property === property;
+    
+    return (
+      <Popover open={isOpen} onOpenChange={(open) => {
+        if (!open && editingProperty?.property === property) {
+          handlePopoverClose();
+        }
+      }}>
+        <PopoverTrigger asChild>
+          <input
+            type="text"
+            value={value || '0'}
+            onChange={(e) => handleInputChange(property, e.target.value)}
+            onMouseDown={(e) => handleMouseDown(e, property, value)}
+            onClick={(e) => handleInputClick(e, property, value)}
+            style={{ ...inputStyle, ...customStyle }}
+            className="spacing-input"
+          />
+        </PopoverTrigger>
+        <PopoverContent className="w-64 p-4" align="start">
+          <div className="space-y-3">
+            <Label className="text-sm font-medium">{getPropertyLabel(property)}</Label>
+            <div className="flex gap-2">
+              <Input
+                type="number"
+                value={editingProperty?.value || '0'}
+                onChange={(e) => handlePopoverValueChange(e.target.value)}
+                className="flex-1"
+                autoFocus
+              />
+              <Select
+                value={editingProperty?.unit || 'px'}
+                onValueChange={handlePopoverUnitChange}
+              >
+                <SelectTrigger className="w-20">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="px">PX</SelectItem>
+                  <SelectItem value="rem">REM</SelectItem>
+                  <SelectItem value="em">EM</SelectItem>
+                  <SelectItem value="%">%</SelectItem>
+                  <SelectItem value="vh">VH</SelectItem>
+                  <SelectItem value="vw">VW</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </PopoverContent>
+      </Popover>
+    );
   };
 
   const getAreaStyle = (area: string) => {
@@ -159,14 +266,7 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
           onMouseEnter={() => setHoveredArea('marginTop')}
           onMouseLeave={() => setHoveredArea(null)}
         >
-          <input
-            type="text"
-            value={marginTop || '0'}
-            onChange={(e) => handleInputChange('marginTop', e.target.value)}
-            onMouseDown={(e) => handleMouseDown(e, 'marginTop', marginTop)}
-            style={inputStyle}
-            className="spacing-input"
-          />
+          {renderSpacingInput('marginTop', marginTop)}
         </div>
 
         {/* Middle Row: Left Margin + Padding Box + Right Margin */}
@@ -181,14 +281,7 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
             onMouseEnter={() => setHoveredArea('marginLeft')}
             onMouseLeave={() => setHoveredArea(null)}
           >
-            <input
-              type="text"
-              value={marginLeft || '0'}
-              onChange={(e) => handleInputChange('marginLeft', e.target.value)}
-              onMouseDown={(e) => handleMouseDown(e, 'marginLeft', marginLeft)}
-              style={inputStyle}
-              className="spacing-input"
-            />
+            {renderSpacingInput('marginLeft', marginLeft)}
           </div>
 
           {/* Padding Box */}
@@ -228,14 +321,7 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
               onMouseEnter={() => setHoveredArea('paddingTop')}
               onMouseLeave={() => setHoveredArea(null)}
             >
-              <input
-                type="text"
-                value={paddingTop || '0'}
-                onChange={(e) => handleInputChange('paddingTop', e.target.value)}
-                onMouseDown={(e) => handleMouseDown(e, 'paddingTop', paddingTop)}
-                style={{ ...inputStyle, width: '40px' }}
-                className="spacing-input"
-              />
+              {renderSpacingInput('paddingTop', paddingTop, { width: '40px' })}
             </div>
 
             {/* Left and Right Padding */}
@@ -251,14 +337,7 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
                 onMouseEnter={() => setHoveredArea('paddingLeft')}
                 onMouseLeave={() => setHoveredArea(null)}
               >
-                <input
-                  type="text"
-                  value={paddingLeft || '0'}
-                  onChange={(e) => handleInputChange('paddingLeft', e.target.value)}
-                  onMouseDown={(e) => handleMouseDown(e, 'paddingLeft', paddingLeft)}
-                  style={{ ...inputStyle, width: '40px' }}
-                  className="spacing-input"
-                />
+                {renderSpacingInput('paddingLeft', paddingLeft, { width: '40px' })}
               </div>
               
               <div style={{ flex: 1 }} />
@@ -274,14 +353,7 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
                 onMouseEnter={() => setHoveredArea('paddingRight')}
                 onMouseLeave={() => setHoveredArea(null)}
               >
-                <input
-                  type="text"
-                  value={paddingRight || '0'}
-                  onChange={(e) => handleInputChange('paddingRight', e.target.value)}
-                  onMouseDown={(e) => handleMouseDown(e, 'paddingRight', paddingRight)}
-                  style={{ ...inputStyle, width: '40px' }}
-                  className="spacing-input"
-                />
+                {renderSpacingInput('paddingRight', paddingRight, { width: '40px' })}
               </div>
             </div>
 
@@ -297,14 +369,7 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
               onMouseEnter={() => setHoveredArea('paddingBottom')}
               onMouseLeave={() => setHoveredArea(null)}
             >
-              <input
-                type="text"
-                value={paddingBottom || '0'}
-                onChange={(e) => handleInputChange('paddingBottom', e.target.value)}
-                onMouseDown={(e) => handleMouseDown(e, 'paddingBottom', paddingBottom)}
-                style={{ ...inputStyle, width: '40px' }}
-                className="spacing-input"
-              />
+              {renderSpacingInput('paddingBottom', paddingBottom, { width: '40px' })}
             </div>
           </div>
 
@@ -318,14 +383,7 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
             onMouseEnter={() => setHoveredArea('marginRight')}
             onMouseLeave={() => setHoveredArea(null)}
           >
-            <input
-              type="text"
-              value={marginRight || '0'}
-              onChange={(e) => handleInputChange('marginRight', e.target.value)}
-              onMouseDown={(e) => handleMouseDown(e, 'marginRight', marginRight)}
-              style={inputStyle}
-              className="spacing-input"
-            />
+            {renderSpacingInput('marginRight', marginRight)}
           </div>
         </div>
 
@@ -340,14 +398,7 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
           onMouseEnter={() => setHoveredArea('marginBottom')}
           onMouseLeave={() => setHoveredArea(null)}
         >
-          <input
-            type="text"
-            value={marginBottom || '0'}
-            onChange={(e) => handleInputChange('marginBottom', e.target.value)}
-            onMouseDown={(e) => handleMouseDown(e, 'marginBottom', marginBottom)}
-            style={inputStyle}
-            className="spacing-input"
-          />
+          {renderSpacingInput('marginBottom', marginBottom)}
         </div>
       </div>
 
