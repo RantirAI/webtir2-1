@@ -36,11 +36,13 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
   const [currentState, setCurrentState] = useState<string>('base');
   const [isEditingLabel, setIsEditingLabel] = useState(false);
   const [labelInput, setLabelInput] = useState('');
+  const [activeTab, setActiveTab] = useState('style');
   
   // Initialize label input when selectedInstance changes
   useEffect(() => {
     if (selectedInstance) {
       setLabelInput(selectedInstance.label || selectedInstance.type);
+      setActiveTab('style'); // Reset to style tab when component is selected
     }
   }, [selectedInstance]);
 
@@ -338,7 +340,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
 
   return (
     <div className="w-80 h-full bg-background border border-border rounded-lg shadow-xl flex flex-col overflow-hidden backdrop-blur-md bg-white/70 dark:bg-zinc-900/70">
-      <Tabs defaultValue="style" className="flex-1 flex flex-col">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
         <TabsList className="w-full grid grid-cols-4 rounded-none border-b bg-transparent h-10 p-1 gap-1">
           <TabsTrigger 
             value="style" 
