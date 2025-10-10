@@ -24,12 +24,17 @@ export const DroppableContainer: React.FC<DroppableContainerProps> = ({
     data: { instanceId: instance.id, type: instance.type },
   });
 
+  // Full-width container types should take full width
+  const isFullWidthContainer = ['Section', 'Container'].includes(instance.type);
+
   return (
     <div
       ref={setNodeRef}
       data-droppable-id={instance.id}
       style={{
         position: 'relative',
+        width: isFullWidthContainer ? '100%' : undefined,
+        minHeight: isFullWidthContainer && instance.children.length === 0 ? '100px' : undefined,
         outline: isOver ? '3px dashed #10b981' : undefined,
         outlineOffset: '4px',
         backgroundColor: isOver ? 'rgba(16, 185, 129, 0.1)' : undefined,
