@@ -30,6 +30,7 @@ export const Container: React.FC<ContainerProps> = ({
       data-instance-id={instance.id}
       className={`${containerType} ${(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}`}
       style={{
+        width: '100%',
         display: 'flex',
         flexDirection: 'row',
         flexWrap: 'wrap',

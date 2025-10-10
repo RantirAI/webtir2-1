@@ -28,6 +28,7 @@ export const Section: React.FC<SectionProps> = ({
       data-instance-id={instance.id}
       className={`${(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}`}
       style={{
+        width: '100%',
         display: 'flex',
         flexDirection: 'row',
         flexWrap: 'wrap',

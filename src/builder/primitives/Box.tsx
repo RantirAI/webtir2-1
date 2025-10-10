@@ -30,6 +30,7 @@ export const Box: React.FC<BoxProps> = ({
       data-instance-id={instance.id}
       className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
       style={{
+        width: '100%',
         position: 'relative',
         backgroundColor: isRoot ? '#ffffff' : 'transparent',
         display: 'flex',
