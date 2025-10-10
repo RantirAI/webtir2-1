@@ -34,7 +34,7 @@ export const Box: React.FC<BoxProps> = ({
         position: 'relative',
         backgroundColor: isRoot ? '#ffffff' : 'transparent',
         display: 'flex',
-        flexDirection: 'row',
+        flexDirection: isRoot ? 'column' : 'row',
         flexWrap: 'wrap',
         alignItems: 'flex-start',
       }}

@@ -42,6 +42,8 @@ export const Section: React.FC<SectionProps> = ({
         flexDirection: 'row',
         flexWrap: 'wrap',
         alignItems: 'flex-start',
+        position: 'relative',
+        minHeight: '100px',
         outline: isNewlyAdded ? '2px dashed hsl(var(--primary) / 0.5)' : 'none',
         outlineOffset: '-2px',
         transition: 'outline 0.3s ease-out',
