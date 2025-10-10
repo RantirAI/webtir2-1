@@ -52,12 +52,15 @@ export const useStyleStore = create<StyleStore>((set, get) => ({
   },
 
   renameStyleSource: (id, newName) => {
+    // Validate and sanitize class name to be framework-safe
+    const safeName = newName.trim().toLowerCase().replace(/[^a-z0-9-_]/g, '-');
+    
     set((state) => ({
       styleSources: {
         ...state.styleSources,
         [id]: {
           ...state.styleSources[id],
-          name: newName,
+          name: safeName,
         },
       },
     }));

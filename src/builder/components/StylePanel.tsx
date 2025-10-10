@@ -38,6 +38,8 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
   const [isEditingLabel, setIsEditingLabel] = useState(false);
   const [labelInput, setLabelInput] = useState('');
   const [activeTab, setActiveTab] = useState('style');
+  const [isEditingClassName, setIsEditingClassName] = useState(false);
+  const [editingClassName, setEditingClassName] = useState('');
   
   // Initialize label input when selectedInstance changes
   useEffect(() => {
@@ -154,7 +156,25 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
 
   const renameClass = (newName: string) => {
     if (!styleSourceId) return;
-    renameStyleSource(styleSourceId, newName);
+    // Validate class name (framework-safe: no spaces, lowercase with hyphens)
+    const safeName = newName.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-');
+    if (safeName) {
+      renameStyleSource(styleSourceId, safeName);
+    }
+  };
+
+  const handleClassNameEdit = () => {
+    if (styleSource?.name) {
+      setEditingClassName(styleSource.name);
+      setIsEditingClassName(true);
+    }
+  };
+
+  const handleClassNameSave = () => {
+    if (editingClassName.trim()) {
+      renameClass(editingClassName);
+    }
+    setIsEditingClassName(false);
   };
 
   const classes = selectedInstance.styleSourceIds
@@ -433,43 +453,48 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
             <div style={{ padding: 'var(--space-2)', borderBottom: '1px solid hsl(var(--border))' }}>
               {selectedInstance.styleSourceIds && selectedInstance.styleSourceIds.length > 0 ? (
                 <>
-                  <div style={{ display: 'flex', gap: 'var(--space-2)', marginBottom: 'var(--space-2)' }}>
-                    <div 
-                      className="bg-[#F5F5F5] dark:bg-zinc-800 border border-border rounded" 
-                      style={{ flex: 1, display: 'flex', flexWrap: 'wrap', gap: 'var(--space-1)', alignItems: 'center', padding: 'var(--space-1)', minHeight: '28px' }}
-                    >
-                      {classNames.map((className, index) => (
-                        <span key={index} className="inline-flex items-center gap-1 px-2 py-0.5 bg-primary text-primary-foreground rounded text-[11px]">
-                          {className}
-                          <X className="w-3 h-3 cursor-pointer" onClick={() => handleRemoveClass(index)} />
-                        </span>
-                      ))}
+                  <div style={{ fontSize: '10px', fontWeight: 600, color: 'hsl(var(--muted-foreground))', marginBottom: 'var(--space-1)' }}>
+                    CLASS SELECTOR
+                  </div>
+                  <div style={{ marginBottom: 'var(--space-2)' }}>
+                    {isEditingClassName ? (
                       <input
-                        className="Input"
-                        placeholder="Add class..."
-                        value={classNameInput}
-                        onChange={(e) => setClassNameInput(e.target.value)}
-                        onKeyDown={handleAddClass}
-                        style={{ 
-                          flex: 1,
-                          minWidth: '80px',
-                          border: 'none',
-                          background: 'transparent',
-                          outline: 'none',
-                          padding: '0',
-                          height: '20px'
+                        type="text"
+                        value={editingClassName}
+                        onChange={(e) => setEditingClassName(e.target.value)}
+                        onBlur={handleClassNameSave}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') handleClassNameSave();
+                          if (e.key === 'Escape') {
+                            setEditingClassName(styleSource?.name || '');
+                            setIsEditingClassName(false);
+                          }
                         }}
+                        autoFocus
+                        placeholder="class-name"
+                        className="w-full px-3 py-2 bg-background border-2 border-primary rounded text-xs font-mono text-foreground outline-none"
                       />
-                    </div>
+                    ) : (
+                      <div
+                        onClick={handleClassNameEdit}
+                        className="w-full px-3 py-2 bg-primary text-primary-foreground rounded text-xs font-mono cursor-pointer flex items-center justify-between hover:opacity-90 transition-all"
+                      >
+                        <span>.{styleSource?.name}</span>
+                        <span className="text-[10px] opacity-70">Click to rename</span>
+                      </div>
+                    )}
+                  </div>
+                  <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <button className="IconButton" style={{ width: '32px', height: '28px' }}>
+                        <button className="IconButton flex-1 justify-between" style={{ height: '28px', padding: '0 var(--space-2)' }}>
+                          <span style={{ fontSize: '11px' }}>{currentState === 'base' ? 'None' : currentState}</span>
                           <ChevronDown className="w-4 h-4" />
                         </button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-48">
                         <DropdownMenuItem onClick={() => setCurrentState('base')}>
-                          Base
+                          None (Base State)
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={() => setCurrentState('hover')}>
@@ -487,24 +512,24 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
-                  {currentState !== 'base' && (
-                    <div style={{ fontSize: '10px', color: 'hsl(var(--muted-foreground))', padding: '2px 0' }}>
-                      State: {currentState}
-                    </div>
-                  )}
                 </>
               ) : (
-                <div 
-                  className="bg-[#F5F5F5] dark:bg-zinc-800 border border-border rounded text-center"
-                  style={{ padding: 'var(--space-2)', minHeight: '28px' }}
-                >
-                  <div style={{ fontSize: '11px', color: 'hsl(var(--muted-foreground))', marginBottom: '4px' }}>
-                    No class selected
+                <>
+                  <div style={{ fontSize: '10px', fontWeight: 600, color: 'hsl(var(--muted-foreground))', marginBottom: 'var(--space-1)' }}>
+                    CLASS SELECTOR
                   </div>
-                  <div style={{ fontSize: '10px', color: 'hsl(var(--muted-foreground))' }}>
-                    Style this element to auto-create a class
+                  <div 
+                    className="bg-[#F5F5F5] dark:bg-zinc-800 border border-dashed border-border rounded text-center"
+                    style={{ padding: 'var(--space-3)' }}
+                  >
+                    <div style={{ fontSize: '11px', color: 'hsl(var(--muted-foreground))', marginBottom: '4px' }}>
+                      No class selected
+                    </div>
+                    <div style={{ fontSize: '10px', color: 'hsl(var(--muted-foreground))' }}>
+                      Style this element to auto-create a class
+                    </div>
                   </div>
-                </div>
+                </>
               )}
             </div>
 

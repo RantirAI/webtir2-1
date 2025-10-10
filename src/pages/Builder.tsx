@@ -5,6 +5,8 @@ import { StylePanel } from '@/builder/components/StylePanel';
 import { PageNavigation } from '@/builder/components/PageNavigation';
 import { StyleSheetInjector } from '@/builder/components/StyleSheetInjector';
 import { ProjectSettingsModal } from '@/builder/components/ProjectSettingsModal';
+import { ExportButton } from '@/builder/components/ExportButton';
+import { Toaster } from '@/components/ui/toaster';
 import { DndContext, DragEndEvent, DragOverlay, DragStartEvent } from '@dnd-kit/core';
 import { useBuilderStore } from '@/builder/store/useBuilderStore';
 import { componentRegistry } from '@/builder/primitives/registry';
@@ -176,6 +178,11 @@ const Builder: React.FC = () => {
           />
         </div>
 
+        {/* Export Button - Top Right */}
+        <div className="absolute top-4 right-[336px] z-20">
+          <ExportButton />
+        </div>
+
         {/* Floating Right Sidebar */}
         <div className="absolute right-4 top-4 bottom-4 z-10">
           <StylePanel
@@ -228,6 +235,7 @@ const Builder: React.FC = () => {
           </div>
         )}
       </DragOverlay>
+      <Toaster />
       </div>
     </DndContext>
   );
