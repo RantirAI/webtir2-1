@@ -104,10 +104,16 @@ export const FontPicker: React.FC<FontPickerProps> = ({ value, weight, onChange,
     <div className="space-y-2">
       <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '4px', alignItems: 'center' }}>
         <Select value={currentFontName || 'inherit'} onValueChange={handleFontSelect}>
-          <SelectTrigger className="h-8 text-xs">
-            <SelectValue placeholder="Select font" />
+          <SelectTrigger className="h-8 text-xs bg-background border-input">
+            <SelectValue placeholder="Select font">
+              {currentFontName ? (
+                <span style={{ fontFamily: currentFontName === 'inherit' ? 'inherit' : `"${currentFontName}", sans-serif` }}>
+                  {currentFontName === 'inherit' ? 'Default' : currentFontName}
+                </span>
+              ) : 'Default'}
+            </SelectValue>
           </SelectTrigger>
-          <SelectContent className="max-h-[300px]">
+          <SelectContent className="max-h-[300px] bg-background border-border z-50">
             <SelectItem value="inherit">
               <span style={{ fontFamily: 'inherit' }}>Default</span>
             </SelectItem>
@@ -156,8 +162,8 @@ export const FontPicker: React.FC<FontPickerProps> = ({ value, weight, onChange,
 
         <Popover open={isUploadOpen} onOpenChange={setIsUploadOpen}>
           <PopoverTrigger asChild>
-            <Button variant="outline" size="sm" className="h-8 w-8 p-0">
-              <Upload className="h-3.5 w-3.5" />
+            <Button variant="outline" size="sm" className="h-8 w-8 p-0 bg-background border-input hover:bg-accent">
+              <Upload className="h-3.5 w-3.5 text-foreground" />
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-64" align="end">
