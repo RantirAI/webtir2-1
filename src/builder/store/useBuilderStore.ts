@@ -28,6 +28,41 @@ const initRootStyle = () => {
 // Call on module load
 setTimeout(initRootStyle, 0);
 
+// Initialize history after a brief delay to capture initial state
+setTimeout(() => {
+  const state = useBuilderStore.getState();
+  if (state.history.length === 0 && state.rootInstance) {
+    useBuilderStore.setState({
+      history: [JSON.parse(JSON.stringify(state.rootInstance))],
+      historyIndex: 0,
+    });
+  }
+}, 100);
+
+const MAX_HISTORY = 50;
+
+const saveToHistory = (state: BuilderState) => {
+  if (!state.rootInstance) return state;
+  
+  const newHistory = state.history.slice(0, state.historyIndex + 1);
+  newHistory.push(JSON.parse(JSON.stringify(state.rootInstance)));
+  
+  // Limit history size
+  if (newHistory.length > MAX_HISTORY) {
+    newHistory.shift();
+  } else {
+    return {
+      history: newHistory,
+      historyIndex: newHistory.length - 1,
+    };
+  }
+  
+  return {
+    history: newHistory,
+    historyIndex: newHistory.length - 1,
+  };
+};
+
 export const useBuilderStore = create<BuilderState>((set, get) => ({
   rootInstance: {
     id: 'root',
@@ -40,6 +75,10 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
   
   selectedInstanceId: null,
   hoveredInstanceId: null,
+  
+  history: [],
+  historyIndex: -1,
+  clipboard: null,
   
   addInstance: (instance, parentId, index) => {
     set((state) => {
@@ -59,7 +98,7 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
         parent.children.push(newInstance);
       }
       
-      return { rootInstance: newRoot };
+      return { rootInstance: newRoot, ...saveToHistory({ ...state, rootInstance: newRoot }) };
     });
   },
   
@@ -72,7 +111,7 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
       
       Object.assign(instance, updates);
       
-      return { rootInstance: newRoot };
+      return { rootInstance: newRoot, ...saveToHistory({ ...state, rootInstance: newRoot }) };
     });
   },
   
@@ -84,6 +123,7 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
       return {
         rootInstance: newRoot,
         selectedInstanceId: state.selectedInstanceId === id ? null : state.selectedInstanceId,
+        ...saveToHistory({ ...state, rootInstance: newRoot }),
       };
     });
   },
@@ -109,8 +149,82 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
       
       newParent.children.splice(index, 0, instanceCopy);
       
-      return { rootInstance: newRoot };
+      return { rootInstance: newRoot, ...saveToHistory({ ...state, rootInstance: newRoot }) };
     });
+  },
+  
+  undo: () => {
+    set((state) => {
+      if (state.historyIndex <= 0) return state;
+      
+      const newIndex = state.historyIndex - 1;
+      const rootInstance = JSON.parse(JSON.stringify(state.history[newIndex])) as ComponentInstance;
+      
+      return {
+        rootInstance,
+        historyIndex: newIndex,
+        selectedInstanceId: null,
+      };
+    });
+  },
+  
+  redo: () => {
+    set((state) => {
+      if (state.historyIndex >= state.history.length - 1) return state;
+      
+      const newIndex = state.historyIndex + 1;
+      const rootInstance = JSON.parse(JSON.stringify(state.history[newIndex])) as ComponentInstance;
+      
+      return {
+        rootInstance,
+        historyIndex: newIndex,
+        selectedInstanceId: null,
+      };
+    });
+  },
+  
+  copySelected: () => {
+    const state = get();
+    const selected = state.getSelectedInstance();
+    if (selected && selected.id !== 'root') {
+      set({ clipboard: JSON.parse(JSON.stringify(selected)) });
+    }
+  },
+  
+  cutSelected: () => {
+    const state = get();
+    const selected = state.getSelectedInstance();
+    if (selected && selected.id !== 'root') {
+      set({ clipboard: JSON.parse(JSON.stringify(selected)) });
+      state.deleteInstance(selected.id);
+    }
+  },
+  
+  pasteClipboard: () => {
+    const state = get();
+    if (!state.clipboard) return;
+    
+    // Recursively assign new IDs to avoid duplicates
+    const assignNewIds = (instance: ComponentInstance): ComponentInstance => {
+      return {
+        ...instance,
+        id: generateId(),
+        children: instance.children.map(assignNewIds),
+      };
+    };
+    
+    const newInstance = assignNewIds(state.clipboard);
+    
+    // Paste into selected container or root
+    const selectedInstance = state.getSelectedInstance();
+    const parentId = selectedInstance && 
+                     (selectedInstance.type === 'Box' || 
+                      selectedInstance.type === 'Container' || 
+                      selectedInstance.type === 'Section')
+      ? selectedInstance.id
+      : 'root';
+    
+    state.addInstance(newInstance, parentId);
   },
   
   findInstance: (id) => {

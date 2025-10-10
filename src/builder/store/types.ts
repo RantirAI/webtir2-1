@@ -208,6 +208,13 @@ export interface BuilderState {
   selectedInstanceId: string | null;
   hoveredInstanceId: string | null;
   
+  // History
+  history: ComponentInstance[];
+  historyIndex: number;
+  
+  // Clipboard
+  clipboard: ComponentInstance | null;
+  
   // Actions
   addInstance: (instance: ComponentInstance, parentId?: string, index?: number) => void;
   updateInstance: (id: string, updates: Partial<ComponentInstance>) => void;
@@ -215,6 +222,15 @@ export interface BuilderState {
   setSelectedInstanceId: (id: string | null) => void;
   setHoveredInstanceId: (id: string | null) => void;
   moveInstance: (instanceId: string, newParentId: string, index: number) => void;
+  
+  // History actions
+  undo: () => void;
+  redo: () => void;
+  
+  // Clipboard actions
+  copySelected: () => void;
+  cutSelected: () => void;
+  pasteClipboard: () => void;
   
   // Utilities
   findInstance: (id: string) => ComponentInstance | null;

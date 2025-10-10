@@ -11,6 +11,7 @@ import { componentRegistry } from '@/builder/primitives/registry';
 import { ComponentInstance } from '@/builder/store/types';
 import { generateId } from '@/builder/utils/instance';
 import { useStyleStore } from '@/builder/store/useStyleStore';
+import { useKeyboardShortcuts } from '@/builder/hooks/useKeyboardShortcuts';
 import * as Icons from 'lucide-react';
 
 const Builder: React.FC = () => {
@@ -30,6 +31,9 @@ const Builder: React.FC = () => {
   
   const addInstance = useBuilderStore((state) => state.addInstance);
   const selectedInstanceId = useBuilderStore((state) => state.selectedInstanceId);
+  
+  // Enable keyboard shortcuts
+  useKeyboardShortcuts();
 
   const handleDragStart = (event: DragStartEvent) => {
     const componentType = event.active.data.current?.type;
