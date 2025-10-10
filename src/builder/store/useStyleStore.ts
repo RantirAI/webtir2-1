@@ -15,7 +15,19 @@ export const useStyleStore = create<StyleStore>((set, get) => ({
   nameCounters: {},
 
   nextLocalClassName: (componentType: string) => {
-    const base = componentType.toLowerCase();
+    // Generate Webflow-style class names: div-block-1, button-base-1, text-block-1, etc.
+    const typeMap: Record<string, string> = {
+      'Box': 'div-block',
+      'Container': 'container',
+      'Section': 'section',
+      'Text': 'text-block',
+      'Heading': 'heading',
+      'Button': 'button',
+      'Image': 'image',
+      'Link': 'link',
+    };
+    
+    const base = typeMap[componentType] || componentType.toLowerCase();
     const count = (get().nameCounters[base] || 0) + 1;
     set((state) => ({ nameCounters: { ...state.nameCounters, [base]: count } }));
     return `${base}-${count}`;

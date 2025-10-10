@@ -129,8 +129,18 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
 
   const ensureLocalClass = () => {
     if (!selectedInstance.styleSourceIds || selectedInstance.styleSourceIds.length === 0) {
+      // Auto-create class on first style edit (Webflow pattern)
       const name = nextLocalClassName(selectedInstance.type);
       const id = createStyleSource('local', name);
+      
+      // Apply default styles from registry on first class creation
+      const meta = componentRegistry[selectedInstance.type];
+      if (meta?.defaultStyles) {
+        Object.entries(meta.defaultStyles).forEach(([property, value]) => {
+          setStyle(id, property, value);
+        });
+      }
+      
       updateInstance(selectedInstance.id, { styleSourceIds: [id] });
       return id;
     }
@@ -419,70 +429,84 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
               </div>
             </div>
 
-            {/* Class Name Input with States - only show if component has classes */}
-            {selectedInstance.styleSourceIds && selectedInstance.styleSourceIds.length > 0 && (
-              <div style={{ padding: 'var(--space-2)', borderBottom: '1px solid hsl(var(--border))' }}>
-                <div style={{ display: 'flex', gap: 'var(--space-2)', marginBottom: 'var(--space-2)' }}>
-                <div 
-                  className="bg-[#F5F5F5] dark:bg-zinc-800 border border-border rounded" 
-                  style={{ flex: 1, display: 'flex', flexWrap: 'wrap', gap: 'var(--space-1)', alignItems: 'center', padding: 'var(--space-1)', minHeight: '28px' }}
-                >
-                  {classNames.map((className, index) => (
-                    <span key={index} className="inline-flex items-center gap-1 px-2 py-0.5 bg-primary text-primary-foreground rounded text-[11px]">
-                      {className}
-                      <X className="w-3 h-3 cursor-pointer" onClick={() => handleRemoveClass(index)} />
-                    </span>
-                  ))}
-                  <input
-                    className="Input"
-                    placeholder="Add class..."
-                    value={classNameInput}
-                    onChange={(e) => setClassNameInput(e.target.value)}
-                    onKeyDown={handleAddClass}
-                    style={{ 
-                      flex: 1,
-                      minWidth: '80px',
-                      border: 'none',
-                      background: 'transparent',
-                      outline: 'none',
-                      padding: '0',
-                      height: '20px'
-                    }}
-                  />
-                </div>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <button className="IconButton" style={{ width: '32px', height: '28px' }}>
-                        <ChevronDown className="w-4 h-4" />
-                      </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-48">
-                      <DropdownMenuItem onClick={() => setCurrentState('base')}>
-                        Base
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => setCurrentState('hover')}>
-                        Hover
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setCurrentState('focus')}>
-                        Focus Visible
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setCurrentState('focus-within')}>
-                        Focus Within
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setCurrentState('active')}>
-                        Active
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-                {currentState !== 'base' && (
-                  <div style={{ fontSize: '10px', color: 'hsl(var(--muted-foreground))', padding: '2px 0' }}>
-                    State: {currentState}
+            {/* Class Selector - Webflow-style auto-classing */}
+            <div style={{ padding: 'var(--space-2)', borderBottom: '1px solid hsl(var(--border))' }}>
+              {selectedInstance.styleSourceIds && selectedInstance.styleSourceIds.length > 0 ? (
+                <>
+                  <div style={{ display: 'flex', gap: 'var(--space-2)', marginBottom: 'var(--space-2)' }}>
+                    <div 
+                      className="bg-[#F5F5F5] dark:bg-zinc-800 border border-border rounded" 
+                      style={{ flex: 1, display: 'flex', flexWrap: 'wrap', gap: 'var(--space-1)', alignItems: 'center', padding: 'var(--space-1)', minHeight: '28px' }}
+                    >
+                      {classNames.map((className, index) => (
+                        <span key={index} className="inline-flex items-center gap-1 px-2 py-0.5 bg-primary text-primary-foreground rounded text-[11px]">
+                          {className}
+                          <X className="w-3 h-3 cursor-pointer" onClick={() => handleRemoveClass(index)} />
+                        </span>
+                      ))}
+                      <input
+                        className="Input"
+                        placeholder="Add class..."
+                        value={classNameInput}
+                        onChange={(e) => setClassNameInput(e.target.value)}
+                        onKeyDown={handleAddClass}
+                        style={{ 
+                          flex: 1,
+                          minWidth: '80px',
+                          border: 'none',
+                          background: 'transparent',
+                          outline: 'none',
+                          padding: '0',
+                          height: '20px'
+                        }}
+                      />
+                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button className="IconButton" style={{ width: '32px', height: '28px' }}>
+                          <ChevronDown className="w-4 h-4" />
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-48">
+                        <DropdownMenuItem onClick={() => setCurrentState('base')}>
+                          Base
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => setCurrentState('hover')}>
+                          Hover
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setCurrentState('focus')}>
+                          Focus Visible
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setCurrentState('focus-within')}>
+                          Focus Within
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setCurrentState('active')}>
+                          Active
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
-                )}
-              </div>
-            )}
+                  {currentState !== 'base' && (
+                    <div style={{ fontSize: '10px', color: 'hsl(var(--muted-foreground))', padding: '2px 0' }}>
+                      State: {currentState}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div 
+                  className="bg-[#F5F5F5] dark:bg-zinc-800 border border-border rounded text-center"
+                  style={{ padding: 'var(--space-2)', minHeight: '28px' }}
+                >
+                  <div style={{ fontSize: '11px', color: 'hsl(var(--muted-foreground))', marginBottom: '4px' }}>
+                    No class selected
+                  </div>
+                  <div style={{ fontSize: '10px', color: 'hsl(var(--muted-foreground))' }}>
+                    Style this element to auto-create a class
+                  </div>
+                </div>
+              )}
+            </div>
 
       {/* Layout */}
       <AccordionSection title="Layout" section="layout" properties={['display', 'flexDirection', 'justifyContent', 'alignItems', 'flexWrap', 'gap', 'gridTemplateColumns', 'gridTemplateRows', 'gridAutoFlow', 'placeItems', 'placeContent']}>
