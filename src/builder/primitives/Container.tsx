@@ -29,6 +29,12 @@ export const Container: React.FC<ContainerProps> = ({
     <div
       data-instance-id={instance.id}
       className={`${containerType} ${(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}`}
+      style={{
+        display: 'flex',
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        alignItems: 'flex-start',
+      }}
       onClick={(e) => {
         e.stopPropagation();
         onSelect?.();
