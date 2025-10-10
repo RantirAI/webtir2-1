@@ -373,8 +373,8 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="style" className="flex-1 m-0 overflow-y-auto">
-          <div className="StylePanel">
+        <TabsContent value="style" className="flex-1 m-0 overflow-y-auto overflow-x-hidden">
+          <div className="StylePanel" style={{ overflowX: 'hidden' }}>
             <div style={{ 
               padding: 'var(--space-1) var(--space-2)',
               borderBottom: '1px solid hsl(var(--border))'
@@ -1093,19 +1093,19 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
           </div>
         </TabsContent>
 
-        <TabsContent value="settings" className="flex-1 m-0 p-4">
+        <TabsContent value="settings" className="flex-1 m-0 p-4 overflow-y-auto overflow-x-hidden">
           <div className="text-sm text-muted-foreground text-center">
             Settings panel coming soon
           </div>
         </TabsContent>
 
-        <TabsContent value="actions" className="flex-1 m-0 p-4">
+        <TabsContent value="actions" className="flex-1 m-0 p-4 overflow-y-auto overflow-x-hidden">
           <div className="text-sm text-muted-foreground text-center">
             Actions panel coming soon
           </div>
         </TabsContent>
 
-        <TabsContent value="data" className="flex-1 m-0 p-4">
+        <TabsContent value="data" className="flex-1 m-0 p-4 overflow-y-auto overflow-x-hidden">
           <div className="text-sm text-muted-foreground text-center">
             Data binding coming soon
           </div>
