@@ -25,7 +25,7 @@ export const DroppableContainer: React.FC<DroppableContainerProps> = ({
   });
 
   // Full-width container types should take full width
-  const isFullWidthContainer = ['Section', 'Container'].includes(instance.type);
+  const isFullWidthContainer = ['Box', 'Section', 'Container'].includes(instance.type);
 
   return (
     <div
