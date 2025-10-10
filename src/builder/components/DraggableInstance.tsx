@@ -28,6 +28,7 @@ export const DraggableInstance: React.FC<DraggableInstanceProps> = ({
     data: {
       type: instance.type,
       instanceId: instance.id,
+      instance: instance,
       isContainer,
     },
   });
@@ -40,7 +41,7 @@ export const DraggableInstance: React.FC<DraggableInstanceProps> = ({
     zIndex: isDragging ? 1000 : 'auto',
   };
 
-  // Show insertion indicator when dragging over
+  // Show insertion indicator when dragging over (for reordering siblings)
   const showInsertIndicator = isOver && active && active.id !== instance.id;
 
   return (

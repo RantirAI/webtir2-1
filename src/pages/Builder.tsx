@@ -89,13 +89,10 @@ const Builder: React.FC = () => {
           targetIndex = rootInstance.children.findIndex(c => c.id === overId);
           if (targetIndex === -1) targetIndex = rootInstance.children.length;
         } else {
-          // If dropping on a container, add to it (but not if it's a section being dropped into a section)
+          // If dropping on a container, add to it
           if (overInstance.type === 'Box' || overInstance.type === 'Container' || overInstance.type === 'Section') {
-            // Don't allow dropping into sections
-            if (overInstance.type !== 'Section') {
-              targetParentId = overId;
-              targetIndex = overInstance.children.length;
-            }
+            targetParentId = overId;
+            targetIndex = overInstance.children.length;
           } else {
             // Otherwise, insert before the over element
             const parent = findParent(rootInstance, overId);
@@ -136,11 +133,7 @@ const Builder: React.FC = () => {
       } else {
         if (over.id.toString().startsWith('droppable-')) {
           const targetInstanceId = over.data.current?.instanceId || 'root';
-          const targetInstance = findInstance(targetInstanceId);
-          // Don't drop into sections if dragging a section
-          if (targetInstance?.type !== 'Section') {
-            parentId = targetInstanceId;
-          }
+          parentId = targetInstanceId;
         } else if (over.id === 'canvas-drop-zone') {
           const selectedType = useBuilderStore.getState().getSelectedInstance()?.type;
           if (selectedInstanceId && (selectedType === 'Box' || selectedType === 'Container' || selectedType === 'Section')) {

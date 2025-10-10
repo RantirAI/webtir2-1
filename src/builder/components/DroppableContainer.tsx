@@ -32,7 +32,8 @@ export const DroppableContainer: React.FC<DroppableContainerProps> = ({
   const childIds = instance.children.map(child => child.id);
   
   // Don't show drop indicator if this is a Section and we're dragging a Section
-  const isDraggingSection = active?.data.current?.type === 'Section';
+  const activeInstance = active?.data.current?.instance as ComponentInstance | undefined;
+  const isDraggingSection = activeInstance?.type === 'Section' || active?.data.current?.type === 'Section';
   const canAcceptDrop = !(instance.type === 'Section' && isDraggingSection);
   const showDropIndicator = isOver && canAcceptDrop;
 
