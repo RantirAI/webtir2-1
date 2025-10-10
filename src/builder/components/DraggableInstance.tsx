@@ -1,0 +1,113 @@
+import React from 'react';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { ComponentInstance } from '../store/types';
+
+interface DraggableInstanceProps {
+  instance: ComponentInstance;
+  children: React.ReactNode;
+  isContainer: boolean;
+}
+
+export const DraggableInstance: React.FC<DraggableInstanceProps> = ({
+  instance,
+  children,
+  isContainer,
+}) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+    isOver,
+    active,
+  } = useSortable({
+    id: instance.id,
+    data: {
+      type: instance.type,
+      instanceId: instance.id,
+      isContainer,
+    },
+  });
+
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition: transition || 'transform 200ms cubic-bezier(0.2, 0, 0, 1)',
+    opacity: isDragging ? 0.4 : 1,
+    position: 'relative',
+    zIndex: isDragging ? 1000 : 'auto',
+  };
+
+  // Show insertion indicator when dragging over
+  const showInsertIndicator = isOver && active && active.id !== instance.id;
+
+  return (
+    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+      {/* Top insertion indicator */}
+      {showInsertIndicator && (
+        <div
+          style={{
+            position: 'absolute',
+            top: '-2px',
+            left: '0',
+            right: '0',
+            height: '4px',
+            backgroundColor: '#3b82f6',
+            borderRadius: '2px',
+            zIndex: 9999,
+            pointerEvents: 'none',
+            boxShadow: '0 0 8px rgba(59, 130, 246, 0.6)',
+          }}
+        >
+          {/* Left circle indicator */}
+          <div
+            style={{
+              position: 'absolute',
+              left: '-4px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              width: '8px',
+              height: '8px',
+              backgroundColor: '#3b82f6',
+              borderRadius: '50%',
+              boxShadow: '0 0 4px rgba(59, 130, 246, 0.8)',
+            }}
+          />
+          {/* Right circle indicator */}
+          <div
+            style={{
+              position: 'absolute',
+              right: '-4px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              width: '8px',
+              height: '8px',
+              backgroundColor: '#3b82f6',
+              borderRadius: '50%',
+              boxShadow: '0 0 4px rgba(59, 130, 246, 0.8)',
+            }}
+          />
+        </div>
+      )}
+
+      {/* Drag placeholder when item is being dragged */}
+      {isDragging && (
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            border: '2px dashed #cbd5e1',
+            backgroundColor: 'rgba(203, 213, 225, 0.1)',
+            borderRadius: '4px',
+            pointerEvents: 'none',
+            zIndex: 1,
+          }}
+        />
+      )}
+
+      {children}
+    </div>
+  );
+};

@@ -1,5 +1,6 @@
 import React from 'react';
 import { useDroppable } from '@dnd-kit/core';
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { ComponentInstance } from '../store/types';
 
 interface DroppableContainerProps {
@@ -26,6 +27,9 @@ export const DroppableContainer: React.FC<DroppableContainerProps> = ({
 
   // Full-width container types should take full width
   const isFullWidthContainer = ['Box', 'Section', 'Container'].includes(instance.type);
+
+  // Get child IDs for sortable context
+  const childIds = instance.children.map(child => child.id);
 
   return (
     <div
@@ -54,9 +58,9 @@ export const DroppableContainer: React.FC<DroppableContainerProps> = ({
       }}
       onContextMenu={onContextMenu}
     >
-      {isOver && (
+      {isOver && instance.children.length === 0 && (
         <>
-          {/* Prominent drop indicator overlay */}
+          {/* Prominent drop indicator overlay for empty containers */}
           <div 
             style={{
               position: 'absolute',
@@ -128,7 +132,11 @@ export const DroppableContainer: React.FC<DroppableContainerProps> = ({
           ))}
         </>
       )}
-      {children}
+      
+      {/* Wrap children in SortableContext for reordering */}
+      <SortableContext items={childIds} strategy={verticalListSortingStrategy}>
+        {children}
+      </SortableContext>
     </div>
   );
 };

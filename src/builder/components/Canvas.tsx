@@ -18,6 +18,7 @@ import { useDroppable } from '@dnd-kit/core';
 import { componentRegistry } from '../primitives/registry';
 import { generateId } from '../utils/instance';
 import { DroppableContainer } from './DroppableContainer';
+import { DraggableInstance } from './DraggableInstance';
 
 interface CanvasProps {
   zoom: number;
@@ -92,6 +93,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
   const renderInstance = (instance: ComponentInstance): React.ReactNode => {
     const isSelected = instance.id === selectedInstanceId;
     const isHovered = instance.id === hoveredInstanceId;
+    const isContainer = ['Box', 'Container', 'Section'].includes(instance.type);
 
     const commonProps = {
       instance,
@@ -103,9 +105,15 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
       onContextMenu: (e: React.MouseEvent) => handleContextMenu(e, instance),
     };
 
+    const wrapWithDraggable = (content: React.ReactNode) => (
+      <DraggableInstance instance={instance} isContainer={isContainer}>
+        {content}
+      </DraggableInstance>
+    );
+
     switch (instance.type) {
       case 'Box':
-        return (
+        return wrapWithDraggable(
           <DroppableContainer key={instance.id} instance={instance} {...commonProps}>
             <Box {...commonProps}>
               {instance.children.map((child) => renderInstance(child))}
@@ -113,7 +121,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
           </DroppableContainer>
         );
       case 'Container':
-        return (
+        return wrapWithDraggable(
           <DroppableContainer key={instance.id} instance={instance} {...commonProps}>
             <Container {...commonProps}>
               {instance.children.map((child) => renderInstance(child))}
@@ -121,7 +129,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
           </DroppableContainer>
         );
       case 'Section':
-        return (
+        return wrapWithDraggable(
           <DroppableContainer key={instance.id} instance={instance} {...commonProps}>
             <Section {...commonProps}>
               {instance.children.map((child) => renderInstance(child))}
@@ -129,15 +137,15 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
           </DroppableContainer>
         );
       case 'Text':
-        return <Text key={instance.id} {...commonProps} />;
+        return wrapWithDraggable(<Text key={instance.id} {...commonProps} />);
       case 'Heading':
-        return <Heading key={instance.id} {...commonProps} />;
+        return wrapWithDraggable(<Heading key={instance.id} {...commonProps} />);
       case 'Button':
-        return <ButtonPrimitive key={instance.id} {...commonProps} />;
+        return wrapWithDraggable(<ButtonPrimitive key={instance.id} {...commonProps} />);
       case 'Image':
-        return <ImagePrimitive key={instance.id} {...commonProps} />;
+        return wrapWithDraggable(<ImagePrimitive key={instance.id} {...commonProps} />);
       case 'Link':
-        return <LinkPrimitive key={instance.id} {...commonProps} />;
+        return wrapWithDraggable(<LinkPrimitive key={instance.id} {...commonProps} />);
       default:
         return null;
     }
