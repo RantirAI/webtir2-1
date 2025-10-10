@@ -78,12 +78,18 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
     setContextMenu({ x: e.clientX, y: e.clientY, instance });
   };
 
-  // Get selected element for overlay
-  const selectedElement = selectedInstanceId 
-    ? document.querySelector(`[data-instance-id="${selectedInstanceId}"]`) as HTMLElement
-    : null;
-  
+  // Get selected element for overlay - force update on selection changes
+  const [selectedElement, setSelectedElement] = useState<HTMLElement | null>(null);
   const selectedInstance = selectedInstanceId ? findInstance(selectedInstanceId) : null;
+
+  useEffect(() => {
+    if (selectedInstanceId) {
+      const element = document.querySelector(`[data-instance-id="${selectedInstanceId}"]`) as HTMLElement;
+      setSelectedElement(element);
+    } else {
+      setSelectedElement(null);
+    }
+  }, [selectedInstanceId]);
 
   // Get hovered element for overlay
   const hoveredElement = hoveredInstanceId && hoveredInstanceId !== selectedInstanceId

@@ -21,6 +21,14 @@ export const SelectionOverlay: React.FC<SelectionOverlayProps> = ({ instance, el
     
     updateRect();
     
+    // Update on animation frames for smooth tracking
+    let animationFrameId: number;
+    const trackPosition = () => {
+      updateRect();
+      animationFrameId = requestAnimationFrame(trackPosition);
+    };
+    trackPosition();
+    
     const observer = new ResizeObserver(updateRect);
     observer.observe(element);
     
@@ -28,11 +36,12 @@ export const SelectionOverlay: React.FC<SelectionOverlayProps> = ({ instance, el
     window.addEventListener('resize', updateRect);
     
     return () => {
+      cancelAnimationFrame(animationFrameId);
       observer.disconnect();
       window.removeEventListener('scroll', updateRect, true);
       window.removeEventListener('resize', updateRect);
     };
-  }, [element]);
+  }, [element, instance.id]);
   
   if (!rect || instance.id === 'root') return null;
 
