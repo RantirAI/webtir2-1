@@ -20,7 +20,7 @@ export const DroppableContainer: React.FC<DroppableContainerProps> = ({
   onHoverEnd,
   onContextMenu,
 }) => {
-  const { isOver, setNodeRef } = useDroppable({
+  const { isOver, setNodeRef, active } = useDroppable({
     id: `droppable-${instance.id}`,
     data: { instanceId: instance.id, type: instance.type },
   });
@@ -30,6 +30,11 @@ export const DroppableContainer: React.FC<DroppableContainerProps> = ({
 
   // Get child IDs for sortable context
   const childIds = instance.children.map(child => child.id);
+  
+  // Don't show drop indicator if this is a Section and we're dragging a Section
+  const isDraggingSection = active?.data.current?.type === 'Section';
+  const canAcceptDrop = !(instance.type === 'Section' && isDraggingSection);
+  const showDropIndicator = isOver && canAcceptDrop;
 
   return (
     <div
@@ -39,9 +44,9 @@ export const DroppableContainer: React.FC<DroppableContainerProps> = ({
         position: 'relative',
         width: isFullWidthContainer ? '100%' : undefined,
         minHeight: isFullWidthContainer && instance.children.length === 0 ? '100px' : undefined,
-        outline: isOver ? '3px dashed #10b981' : undefined,
+        outline: showDropIndicator ? '3px dashed #10b981' : undefined,
         outlineOffset: '4px',
-        backgroundColor: isOver ? 'rgba(16, 185, 129, 0.1)' : undefined,
+        backgroundColor: showDropIndicator ? 'rgba(16, 185, 129, 0.1)' : undefined,
         transition: 'all 0.2s ease',
       }}
       onClick={(e) => {
@@ -58,7 +63,7 @@ export const DroppableContainer: React.FC<DroppableContainerProps> = ({
       }}
       onContextMenu={onContextMenu}
     >
-      {isOver && instance.children.length === 0 && (
+      {showDropIndicator && instance.children.length === 0 && (
         <>
           {/* Prominent drop indicator overlay for empty containers */}
           <div 

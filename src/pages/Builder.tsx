@@ -83,16 +83,26 @@ const Builder: React.FC = () => {
         let targetParentId = 'root';
         let targetIndex = 0;
         
-        // If dropping on a container, add to it
-        if (overInstance.type === 'Box' || overInstance.type === 'Container' || overInstance.type === 'Section') {
-          targetParentId = overId;
-          targetIndex = overInstance.children.length;
+        // Sections can only be moved to root level
+        if (existingInstance.type === 'Section') {
+          targetParentId = 'root';
+          targetIndex = rootInstance.children.findIndex(c => c.id === overId);
+          if (targetIndex === -1) targetIndex = rootInstance.children.length;
         } else {
-          // Otherwise, insert before the over element
-          const parent = findParent(rootInstance, overId);
-          if (parent) {
-            targetParentId = parent.id;
-            targetIndex = parent.children.findIndex(c => c.id === overId);
+          // If dropping on a container, add to it (but not if it's a section being dropped into a section)
+          if (overInstance.type === 'Box' || overInstance.type === 'Container' || overInstance.type === 'Section') {
+            // Don't allow dropping into sections
+            if (overInstance.type !== 'Section') {
+              targetParentId = overId;
+              targetIndex = overInstance.children.length;
+            }
+          } else {
+            // Otherwise, insert before the over element
+            const parent = findParent(rootInstance, overId);
+            if (parent) {
+              targetParentId = parent.id;
+              targetIndex = parent.children.findIndex(c => c.id === overId);
+            }
           }
         }
         
@@ -117,35 +127,45 @@ const Builder: React.FC = () => {
         children: [],
       };
 
-      // Determine parent
+      // Determine parent - Sections always go to root
       let parentId = 'root';
       
-      if (over.id.toString().startsWith('droppable-')) {
-        parentId = over.data.current?.instanceId || 'root';
-      } else if (over.id === 'canvas-drop-zone') {
-        const selectedType = useBuilderStore.getState().getSelectedInstance()?.type;
-        if (selectedInstanceId && (selectedType === 'Box' || selectedType === 'Container' || selectedType === 'Section')) {
-          parentId = selectedInstanceId;
-        }
+      // Force sections to root level
+      if (componentType === 'Section') {
+        parentId = 'root';
       } else {
-        // Dropping on an existing instance
-        const overInstance = findInstance(overId);
-        if (overInstance) {
-          if (overInstance.type === 'Box' || overInstance.type === 'Container' || overInstance.type === 'Section') {
-            parentId = overId;
-          } else {
-            // Find parent and insert after the over element
-            const findParent = (tree: ComponentInstance, childId: string): ComponentInstance | null => {
-              if (tree.children.some(c => c.id === childId)) return tree;
-              for (const child of tree.children) {
-                const result = findParent(child, childId);
-                if (result) return result;
+        if (over.id.toString().startsWith('droppable-')) {
+          const targetInstanceId = over.data.current?.instanceId || 'root';
+          const targetInstance = findInstance(targetInstanceId);
+          // Don't drop into sections if dragging a section
+          if (targetInstance?.type !== 'Section') {
+            parentId = targetInstanceId;
+          }
+        } else if (over.id === 'canvas-drop-zone') {
+          const selectedType = useBuilderStore.getState().getSelectedInstance()?.type;
+          if (selectedInstanceId && (selectedType === 'Box' || selectedType === 'Container' || selectedType === 'Section')) {
+            parentId = selectedInstanceId;
+          }
+        } else {
+          // Dropping on an existing instance
+          const overInstance = findInstance(overId);
+          if (overInstance) {
+            if (overInstance.type === 'Box' || overInstance.type === 'Container' || overInstance.type === 'Section') {
+              parentId = overId;
+            } else {
+              // Find parent and insert after the over element
+              const findParent = (tree: ComponentInstance, childId: string): ComponentInstance | null => {
+                if (tree.children.some(c => c.id === childId)) return tree;
+                for (const child of tree.children) {
+                  const result = findParent(child, childId);
+                  if (result) return result;
+                }
+                return null;
+              };
+              const parent = findParent(rootInstance, overId);
+              if (parent) {
+                parentId = parent.id;
               }
-              return null;
-            };
-            const parent = findParent(rootInstance, overId);
-            if (parent) {
-              parentId = parent.id;
             }
           }
         }
