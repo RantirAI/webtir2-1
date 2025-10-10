@@ -6,7 +6,7 @@ import { PageNavigation } from '@/builder/components/PageNavigation';
 import { StyleSheetInjector } from '@/builder/components/StyleSheetInjector';
 import { ProjectSettingsModal } from '@/builder/components/ProjectSettingsModal';
 import { Toaster } from '@/components/ui/toaster';
-import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, DragOverEvent, closestCenter } from '@dnd-kit/core';
+import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, DragOverEvent, closestCenter, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useBuilderStore } from '@/builder/store/useBuilderStore';
 import { componentRegistry } from '@/builder/primitives/registry';
@@ -36,6 +36,15 @@ const Builder: React.FC = () => {
   const findInstance = useBuilderStore((state) => state.findInstance);
   const rootInstance = useBuilderStore((state) => state.rootInstance);
   const selectedInstanceId = useBuilderStore((state) => state.selectedInstanceId);
+  
+  // Configure sensors with activation constraint to prevent accidental drags
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8, // Require 8px movement before drag starts
+      },
+    })
+  );
   
   // Enable keyboard shortcuts
   useKeyboardShortcuts();
@@ -205,6 +214,7 @@ const Builder: React.FC = () => {
 
   return (
     <DndContext 
+      sensors={sensors}
       onDragStart={handleDragStart} 
       onDragEnd={handleDragEnd}
       collisionDetection={closestCenter}
