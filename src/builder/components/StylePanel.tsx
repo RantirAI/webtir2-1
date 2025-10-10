@@ -341,8 +341,8 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
 
   return (
     <div className="w-80 h-full bg-background border border-border rounded-lg shadow-xl flex flex-col overflow-hidden backdrop-blur-md bg-white/70 dark:bg-zinc-900/70">
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
-        <TabsList className="w-full grid grid-cols-4 rounded-none border-b bg-transparent h-10 p-1 gap-1">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
+        <TabsList className="w-full grid grid-cols-4 rounded-none border-b bg-transparent h-10 p-1 gap-1 flex-shrink-0">
           <TabsTrigger 
             value="style" 
             className="text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none flex items-center gap-1"
@@ -373,7 +373,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="style" className="flex-1 m-0 overflow-y-auto overflow-x-hidden">
+        <TabsContent value="style" className="flex-1 min-h-0 m-0 overflow-y-auto overflow-x-hidden">
           <div className="StylePanel" style={{ overflowX: 'hidden' }}>
             <div style={{ 
               padding: 'var(--space-1) var(--space-2)',
@@ -1093,19 +1093,19 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
           </div>
         </TabsContent>
 
-        <TabsContent value="settings" className="flex-1 m-0 p-4 overflow-y-auto overflow-x-hidden">
+        <TabsContent value="settings" className="flex-1 min-h-0 m-0 p-4 overflow-y-auto overflow-x-hidden">
           <div className="text-sm text-muted-foreground text-center">
             Settings panel coming soon
           </div>
         </TabsContent>
 
-        <TabsContent value="actions" className="flex-1 m-0 p-4 overflow-y-auto overflow-x-hidden">
+        <TabsContent value="actions" className="flex-1 min-h-0 m-0 p-4 overflow-y-auto overflow-x-hidden">
           <div className="text-sm text-muted-foreground text-center">
             Actions panel coming soon
           </div>
         </TabsContent>
 
-        <TabsContent value="data" className="flex-1 m-0 p-4 overflow-y-auto overflow-x-hidden">
+        <TabsContent value="data" className="flex-1 min-h-0 m-0 p-4 overflow-y-auto overflow-x-hidden">
           <div className="text-sm text-muted-foreground text-center">
             Data binding coming soon
           </div>
