@@ -6,6 +6,7 @@ import { PageNavigation } from '@/builder/components/PageNavigation';
 import { StyleSheetInjector } from '@/builder/components/StyleSheetInjector';
 import { ProjectSettingsModal } from '@/builder/components/ProjectSettingsModal';
 import { Toaster } from '@/components/ui/toaster';
+import { Button } from '@/components/ui/button';
 import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, DragOverEvent, closestCenter, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useBuilderStore } from '@/builder/store/useBuilderStore';
@@ -22,6 +23,7 @@ const Builder: React.FC = () => {
   const [pages, setPages] = useState(['Page 1']);
   const [currentBreakpoint, setCurrentBreakpoint] = useState('desktop');
   const [isPanMode, setIsPanMode] = useState(false);
+  const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [pageNames, setPageNames] = useState<Record<string, string>>({ 'Page 1': 'Page 1' });
   const [homePage, setHomePage] = useState('Page 1');
   const [projectName, setProjectName] = useState('My Project');
@@ -233,56 +235,79 @@ const Builder: React.FC = () => {
           pageNames={pageNames}
           onPageNameChange={handlePageNameChange}
           isPanMode={isPanMode}
+          isPreviewMode={isPreviewMode}
         />
 
+        {/* Preview Mode Exit Button */}
+        {isPreviewMode && (
+          <div className="absolute left-4 top-4 z-20">
+            <Button
+              variant="default"
+              size="sm"
+              className="h-10 px-3 gap-2 backdrop-blur-md bg-white/90 dark:bg-zinc-900/90 border border-border shadow-lg hover:bg-white dark:hover:bg-zinc-900"
+              onClick={() => setIsPreviewMode(false)}
+            >
+              <Icons.Eye className="w-4 h-4" />
+              Exit Preview
+            </Button>
+          </div>
+        )}
+
         {/* Floating Left Sidebar */}
-        <div className="absolute left-4 top-4 bottom-4 z-10">
-          <LeftSidebar
-            pages={pages}
-            currentPage={currentPage}
-            pageNames={pageNames}
-            onPageChange={setCurrentPage}
-            onPageNameChange={handlePageNameChange}
-            onDeletePage={handleDeletePage}
-            onDuplicatePage={handleDuplicatePage}
-            onSetHomePage={setHomePage}
-            homePage={homePage}
-          />
-        </div>
+        {!isPreviewMode && (
+          <div className="absolute left-4 top-4 bottom-4 z-10">
+            <LeftSidebar
+              pages={pages}
+              currentPage={currentPage}
+              pageNames={pageNames}
+              onPageChange={setCurrentPage}
+              onPageNameChange={handlePageNameChange}
+              onDeletePage={handleDeletePage}
+              onDuplicatePage={handleDuplicatePage}
+              onSetHomePage={setHomePage}
+              homePage={homePage}
+            />
+          </div>
+        )}
 
         {/* Floating Combined Navigation */}
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20">
-          <PageNavigation
-            currentPage={currentPage}
-            pages={pages}
-            onPageChange={setCurrentPage}
-            onAddPage={handleAddPage}
-            currentBreakpoint={currentBreakpoint}
-            onBreakpointChange={setCurrentBreakpoint}
-            zoom={zoom}
-            setZoom={setZoom}
-            isPanMode={isPanMode}
-            onPanModeToggle={() => setIsPanMode(!isPanMode)}
-            projectName={projectName}
-            onProjectNameChange={setProjectName}
-            onProjectSettingsOpen={() => setProjectSettingsOpen(true)}
-          />
-        </div>
+        {!isPreviewMode && (
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20">
+            <PageNavigation
+              currentPage={currentPage}
+              pages={pages}
+              onPageChange={setCurrentPage}
+              onAddPage={handleAddPage}
+              currentBreakpoint={currentBreakpoint}
+              onBreakpointChange={setCurrentBreakpoint}
+              zoom={zoom}
+              setZoom={setZoom}
+              isPanMode={isPanMode}
+              onPanModeToggle={() => setIsPanMode(!isPanMode)}
+              onPreviewToggle={() => setIsPreviewMode(!isPreviewMode)}
+              projectName={projectName}
+              onProjectNameChange={setProjectName}
+              onProjectSettingsOpen={() => setProjectSettingsOpen(true)}
+            />
+          </div>
+        )}
 
         {/* Floating Right Sidebar */}
-        <div className="absolute right-4 top-4 bottom-4 z-10">
-          <StylePanel
-            pages={[]}
-            currentPage={currentPage}
-            pageNames={{}}
-            onPageChange={() => {}}
-            onPageNameChange={() => {}}
-            onDeletePage={() => {}}
-            onDuplicatePage={() => {}}
-            onSetHomePage={() => {}}
-            homePage={homePage}
-          />
-        </div>
+        {!isPreviewMode && (
+          <div className="absolute right-4 top-4 bottom-4 z-10">
+            <StylePanel
+              pages={[]}
+              currentPage={currentPage}
+              pageNames={{}}
+              onPageChange={() => {}}
+              onPageNameChange={() => {}}
+              onDeletePage={() => {}}
+              onDuplicatePage={() => {}}
+              onSetHomePage={() => {}}
+              homePage={homePage}
+            />
+          </div>
+        )}
       </div>
 
       <ProjectSettingsModal

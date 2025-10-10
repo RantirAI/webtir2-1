@@ -19,6 +19,7 @@ interface PageNavigationProps {
   setZoom: (zoom: number) => void;
   isPanMode: boolean;
   onPanModeToggle: () => void;
+  onPreviewToggle: () => void;
   projectName: string;
   onProjectNameChange: (name: string) => void;
   onProjectSettingsOpen: () => void;
@@ -42,6 +43,7 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
   setZoom,
   isPanMode,
   onPanModeToggle,
+  onPreviewToggle,
   projectName,
   onProjectNameChange,
   onProjectSettingsOpen,
@@ -250,7 +252,7 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
       <Separator orientation="vertical" className="h-6" />
 
       {/* Action Buttons */}
-      <Button variant="ghost" size="sm" className="h-8 px-2">
+      <Button variant="ghost" size="sm" className="h-8 px-2" onClick={onPreviewToggle}>
         <Eye className="w-4 h-4" />
       </Button>
 

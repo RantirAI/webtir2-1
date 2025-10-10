@@ -28,9 +28,10 @@ interface CanvasProps {
   pageNames: Record<string, string>;
   onPageNameChange: (pageId: string, newName: string) => void;
   isPanMode: boolean;
+  isPreviewMode: boolean;
 }
 
-export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, currentPage, pageNames, onPageNameChange, isPanMode }) => {
+export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, currentPage, pageNames, onPageNameChange, isPanMode, isPreviewMode }) => {
   const rootInstance = useBuilderStore((state) => state.rootInstance);
   const selectedInstanceId = useBuilderStore((state) => state.selectedInstanceId);
   const hoveredInstanceId = useBuilderStore((state) => state.hoveredInstanceId);
@@ -50,7 +51,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
     id: 'canvas-drop-zone',
   });
 
-  const currentBreakpointWidth = breakpoints.find(bp => bp.id === currentBreakpoint)?.width || 960;
+  const currentBreakpointWidth = isPreviewMode ? '100%' : (breakpoints.find(bp => bp.id === currentBreakpoint)?.width || 960);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if (isPanMode) {
@@ -177,8 +178,8 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
       <div 
         className="transition-transform origin-center flex items-start justify-center gap-8"
         style={{
-          transform: `scale(${zoom / 100}) translate(${panOffset.x / (zoom / 100)}px, ${panOffset.y / (zoom / 100)}px)`,
-          padding: '4rem',
+          transform: isPreviewMode ? 'none' : `scale(${zoom / 100}) translate(${panOffset.x / (zoom / 100)}px, ${panOffset.y / (zoom / 100)}px)`,
+          padding: isPreviewMode ? '0' : '4rem',
           minHeight: '100vh',
           minWidth: '100%',
         }}
@@ -189,21 +190,22 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
             style={{ 
               backgroundColor: '#ffffff',
               color: '#000000',
-              width: `${currentBreakpointWidth}px`,
-              minHeight: '1200px',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+              width: isPreviewMode ? '100%' : `${currentBreakpointWidth}px`,
+              minHeight: isPreviewMode ? '100vh' : '1200px',
+              boxShadow: isPreviewMode ? 'none' : '0 2px 8px rgba(0,0,0,0.1)',
               transition: 'width 0.3s ease',
               position: 'relative',
-              resize: 'horizontal',
+              resize: isPreviewMode ? 'none' : 'horizontal',
               overflow: 'auto',
               maxWidth: '100%',
             }}
           >
             {/* Page Name Label */}
-            <div 
-              className="absolute -top-8 left-0 flex items-center gap-2"
-              onClick={(e) => e.stopPropagation()}
-            >
+            {!isPreviewMode && (
+              <div 
+                className="absolute -top-8 left-0 flex items-center gap-2"
+                onClick={(e) => e.stopPropagation()}
+              >
               {editingPageId === page ? (
                 <input
                   type="text"
@@ -225,7 +227,8 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
                   {pageNames[page] || page}
                 </div>
               )}
-            </div>
+              </div>
+            )}
             {index === 0 && rootInstance && renderInstance(rootInstance)}
           </div>
         ))}
