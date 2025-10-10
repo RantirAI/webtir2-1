@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Plus, ChevronDown, Monitor, Tablet, Smartphone, Download, Save, Eye, ZoomIn, ZoomOut, Sun, Moon, Hand } from 'lucide-react';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Plus, ChevronDown, Monitor, Tablet, Smartphone, Download, Save, Eye, ZoomIn, ZoomOut, Sun, Moon, Hand, FileCode, FileText, Palette } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Separator } from '@/components/ui/separator';
 import { useTheme } from 'next-themes';
+import { useBuilderStore } from '@/builder/store/useBuilderStore';
+import { exportReactComponent, exportHTML, exportStylesheet, downloadFile } from '@/builder/utils/export';
+import { useToast } from '@/hooks/use-toast';
 
 interface PageNavigationProps {
   currentPage: string;
@@ -44,8 +47,56 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
   onProjectSettingsOpen,
 }) => {
   const { theme, setTheme } = useTheme();
+  const { toast } = useToast();
+  const { rootInstance } = useBuilderStore();
   const [isEditingName, setIsEditingName] = useState(false);
   const [nameInput, setNameInput] = useState(projectName);
+
+  const handleExportReact = () => {
+    if (!rootInstance) return;
+    const code = exportReactComponent(rootInstance, 'App');
+    downloadFile('App.jsx', code);
+    toast({
+      title: 'React Component Exported',
+      description: 'Downloaded App.jsx successfully',
+    });
+  };
+
+  const handleExportHTML = () => {
+    if (!rootInstance) return;
+    const code = exportHTML(rootInstance, projectName);
+    downloadFile('index.html', code);
+    toast({
+      title: 'HTML Exported',
+      description: 'Downloaded index.html successfully',
+    });
+  };
+
+  const handleExportCSS = () => {
+    const css = exportStylesheet();
+    downloadFile('styles.css', css);
+    toast({
+      title: 'CSS Exported',
+      description: 'Downloaded styles.css successfully',
+    });
+  };
+
+  const handleExportAll = () => {
+    if (!rootInstance) return;
+    
+    const css = exportStylesheet();
+    const react = exportReactComponent(rootInstance, 'App');
+    const html = exportHTML(rootInstance, projectName);
+    
+    downloadFile('styles.css', css);
+    downloadFile('App.jsx', react);
+    downloadFile('index.html', html);
+    
+    toast({
+      title: 'Project Exported',
+      description: 'Downloaded all files successfully',
+    });
+  };
 
   const handleZoomIn = () => {
     setZoom(Math.min(zoom + 10, 200));
@@ -207,10 +258,33 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
         <Save className="w-4 h-4" />
       </Button>
 
-      <Button variant="default" size="sm" className="h-8 px-3 gap-2">
-        <Download className="w-4 h-4" />
-        Export
-      </Button>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="default" size="sm" className="h-8 px-3 gap-2">
+            <Download className="w-4 h-4" />
+            Export
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-48">
+          <DropdownMenuItem onClick={handleExportReact} className="gap-2">
+            <FileCode className="w-4 h-4" />
+            Export React (.jsx)
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={handleExportHTML} className="gap-2">
+            <FileText className="w-4 h-4" />
+            Export HTML
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={handleExportCSS} className="gap-2">
+            <Palette className="w-4 h-4" />
+            Export CSS
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={handleExportAll} className="gap-2 font-semibold">
+            <Download className="w-4 h-4" />
+            Export All Files
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   );
 };
