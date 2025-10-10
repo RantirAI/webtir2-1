@@ -595,31 +595,43 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
           {isGridDisplay && (
             <div style={{ marginTop: 'var(--space-3)', display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
               {/* Grid Columns and Rows */}
-              <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr 32px 1fr', gap: '4px', alignItems: 'center' }}>
-                <label className="Label" style={{ fontSize: '10px', color: 'hsl(217, 91%, 60%)' }}>Cols</label>
-                <input
-                  className="Input"
-                  type="number"
-                  min="1"
-                  value={computedStyles.gridTemplateColumns?.split(' ').length || 3}
-                  onChange={(e) => {
-                    const count = parseInt(e.target.value) || 1;
-                    updateStyle('gridTemplateColumns', `repeat(${count}, 1fr)`);
-                  }}
-                  style={{ textAlign: 'center' }}
-                />
-                <label className="Label" style={{ fontSize: '10px', color: 'hsl(217, 91%, 60%)' }}>Rows</label>
-                <input
-                  className="Input"
-                  type="number"
-                  min="1"
-                  value={computedStyles.gridTemplateRows?.split(' ').length || 2}
-                  onChange={(e) => {
-                    const count = parseInt(e.target.value) || 1;
-                    updateStyle('gridTemplateRows', `repeat(${count}, auto)`);
-                  }}
-                  style={{ textAlign: 'center' }}
-                />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                  <label className="Label" style={{ fontSize: '10px', color: 'hsl(217, 91%, 60%)', minWidth: '28px' }}>Cols</label>
+                  <input
+                    className="Input"
+                    type="number"
+                    min="1"
+                    value={(() => {
+                      const val = computedStyles.gridTemplateColumns || '';
+                      const match = val.match(/repeat\((\d+),/);
+                      return match ? parseInt(match[1]) : val.split(' ').filter(Boolean).length || 2;
+                    })()}
+                    onChange={(e) => {
+                      const count = Math.max(1, parseInt(e.target.value) || 1);
+                      updateStyle('gridTemplateColumns', `repeat(${count}, 1fr)`);
+                    }}
+                    style={{ textAlign: 'center', flex: 1 }}
+                  />
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                  <label className="Label" style={{ fontSize: '10px', color: 'hsl(217, 91%, 60%)', minWidth: '28px' }}>Rows</label>
+                  <input
+                    className="Input"
+                    type="number"
+                    min="1"
+                    value={(() => {
+                      const val = computedStyles.gridTemplateRows || '';
+                      const match = val.match(/repeat\((\d+),/);
+                      return match ? parseInt(match[1]) : val.split(' ').filter(Boolean).length || 2;
+                    })()}
+                    onChange={(e) => {
+                      const count = Math.max(1, parseInt(e.target.value) || 1);
+                      updateStyle('gridTemplateRows', `repeat(${count}, auto)`);
+                    }}
+                    style={{ textAlign: 'center', flex: 1 }}
+                  />
+                </div>
               </div>
 
               {/* Grid Template Columns */}
