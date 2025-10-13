@@ -15,6 +15,7 @@ import { ComponentInstance } from '@/builder/store/types';
 import { generateId } from '@/builder/utils/instance';
 import { useStyleStore } from '@/builder/store/useStyleStore';
 import { useKeyboardShortcuts } from '@/builder/hooks/useKeyboardShortcuts';
+import { DropIndicator } from '@/builder/components/DropIndicator';
 import * as Icons from 'lucide-react';
 
 const Builder: React.FC = () => {
@@ -32,6 +33,8 @@ const Builder: React.FC = () => {
   const [metaTitle, setMetaTitle] = useState('');
   const [metaDescription, setMetaDescription] = useState('');
   const [draggedComponent, setDraggedComponent] = useState<{ type: string; label: string; icon: string } | null>(null);
+  const [dragOverEvent, setDragOverEvent] = useState<any>(null);
+  const [canvasElement, setCanvasElement] = useState<HTMLElement | null>(null);
   
   const addInstance = useBuilderStore((state) => state.addInstance);
   const moveInstance = useBuilderStore((state) => state.moveInstance);
@@ -61,10 +64,15 @@ const Builder: React.FC = () => {
     }
   };
 
+  const handleDragOver = (event: DragOverEvent) => {
+    setDragOverEvent(event);
+  };
+
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     
     setDraggedComponent(null);
+    setDragOverEvent(null);
     
     if (!over) return;
     
@@ -217,7 +225,8 @@ const Builder: React.FC = () => {
   return (
     <DndContext 
       sensors={sensors}
-      onDragStart={handleDragStart} 
+      onDragStart={handleDragStart}
+      onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
       collisionDetection={closestCenter}
     >
@@ -236,6 +245,16 @@ const Builder: React.FC = () => {
           onPageNameChange={handlePageNameChange}
           isPanMode={isPanMode}
           isPreviewMode={isPreviewMode}
+          onCanvasRef={setCanvasElement}
+        />
+
+        {/* Drop Indicator Overlay */}
+        <DropIndicator
+          dragOverEvent={dragOverEvent}
+          canvasElement={canvasElement}
+          zoom={zoom}
+          panOffset={{ x: 0, y: 0 }}
+          findInstance={findInstance}
         />
 
         {/* Preview Mode Exit Button */}

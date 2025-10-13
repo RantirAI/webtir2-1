@@ -29,9 +29,10 @@ interface CanvasProps {
   onPageNameChange: (pageId: string, newName: string) => void;
   isPanMode: boolean;
   isPreviewMode: boolean;
+  onCanvasRef?: (element: HTMLElement | null) => void;
 }
 
-export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, currentPage, pageNames, onPageNameChange, isPanMode, isPreviewMode }) => {
+export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, currentPage, pageNames, onPageNameChange, isPanMode, isPreviewMode, onCanvasRef }) => {
   const rootInstance = useBuilderStore((state) => state.rootInstance);
   const selectedInstanceId = useBuilderStore((state) => state.selectedInstanceId);
   const hoveredInstanceId = useBuilderStore((state) => state.hoveredInstanceId);
@@ -163,6 +164,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
       ref={(node) => {
         canvasRef.current = node;
         setNodeRef(node);
+        onCanvasRef?.(node);
       }}
       className="absolute inset-0 overflow-hidden bg-[#e5e7eb] dark:bg-zinc-800"
       style={{
