@@ -33,12 +33,17 @@ export const DraggableInstance: React.FC<DraggableInstanceProps> = ({
     },
   });
 
+  const isFullWidth = ['Section', 'Container'].includes(instance.type);
+
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
     transition: transition || 'transform 200ms cubic-bezier(0.2, 0, 0, 1)',
     opacity: isDragging ? 0.4 : 1,
     position: 'relative',
     zIndex: isDragging ? 1000 : 'auto',
+    width: isFullWidth ? '100%' : undefined,
+    minWidth: isFullWidth ? '100%' : undefined,
+    flexBasis: isFullWidth ? '100%' : undefined,
   };
 
   // Show insertion indicator when dragging over (for reordering siblings)
