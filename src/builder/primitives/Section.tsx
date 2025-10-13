@@ -38,6 +38,8 @@ export const Section: React.FC<SectionProps> = ({
       className={`${(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')} ${isNewlyAdded ? 'animate-fade-in' : ''}`}
       style={{
         width: '100%',
+        minWidth: '100%',
+        flexBasis: '100%',
         display: 'flex',
         flexDirection: 'row',
         flexWrap: 'wrap',
