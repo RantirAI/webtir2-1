@@ -44,6 +44,8 @@ export const DroppableContainer: React.FC<DroppableContainerProps> = ({
       style={{
         position: 'relative',
         width: isFullWidthContainer ? '100%' : undefined,
+        minWidth: isFullWidthContainer ? '100%' : undefined,
+        flexBasis: isFullWidthContainer ? '100%' : undefined,
         minHeight: isFullWidthContainer && instance.children.length === 0 ? '100px' : undefined,
         outline: showDropIndicator ? '3px dashed #10b981' : undefined,
         outlineOffset: '4px',
