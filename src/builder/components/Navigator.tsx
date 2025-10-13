@@ -6,6 +6,10 @@ import { ChevronRight, ChevronDown, Trash2 } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import * as Icons from 'lucide-react';
 import { componentRegistry } from '../primitives/registry';
+import { useSortable } from '@dnd-kit/sortable';
+import { useDroppable } from '@dnd-kit/core';
+import { CSS } from '@dnd-kit/utilities';
+import { canDropInside } from '../utils/instance';
 
 export const Navigator: React.FC = () => {
   const rootInstance = useBuilderStore((state) => state.rootInstance);
@@ -27,10 +31,11 @@ export const Navigator: React.FC = () => {
     });
   };
 
-  const renderTreeNode = (instance: ComponentInstance, level: number = 0): React.ReactNode => {
+  const TreeNode: React.FC<{ instance: ComponentInstance; level: number }> = ({ instance, level }) => {
     const isExpanded = expandedIds.has(instance.id);
     const isSelected = instance.id === selectedInstanceId;
     const hasChildren = instance.children.length > 0;
+    const isRoot = instance.id === 'root';
     
     const meta = componentRegistry[instance.type];
     const IconComponent = meta ? Icons[meta.icon as keyof typeof Icons] as any : null;
@@ -40,12 +45,89 @@ export const Navigator: React.FC = () => {
     const width = computedStyles.width || 'auto';
     const height = computedStyles.height || 'auto';
 
+    // Setup drag-and-drop for non-root elements
+    const {
+      attributes,
+      listeners,
+      setNodeRef: setDragRef,
+      transform,
+      transition,
+      isDragging,
+    } = useSortable({
+      id: instance.id,
+      disabled: isRoot,
+      data: {
+        type: instance.type,
+        instanceId: instance.id,
+        instance: instance,
+        isContainer: canDropInside(instance.type),
+      },
+    });
+
+    // Setup droppable for container elements
+    const { isOver, setNodeRef: setDropRef, active } = useDroppable({
+      id: `nav-drop-${instance.id}`,
+      disabled: isRoot,
+      data: { 
+        instanceId: instance.id, 
+        type: instance.type,
+        isContainer: canDropInside(instance.type),
+      },
+    });
+
+    // Determine if this is a valid drop target
+    const activeInstance = active?.data.current?.instance as ComponentInstance | undefined;
+    const draggedType = activeInstance?.type || active?.data.current?.type;
+    const canAcceptDrop = canDropInside(instance.type, draggedType);
+    const showValidDropZone = isOver && canAcceptDrop;
+    const showInvalidDropZone = isOver && !canAcceptDrop;
+
+    // Combine refs
+    const setNodeRef = (node: HTMLElement | null) => {
+      if (!isRoot) {
+        setDragRef(node);
+        setDropRef(node);
+      }
+    };
+
+    const style: React.CSSProperties = {
+      transform: CSS.Transform.toString(transform),
+      transition: transition || 'transform 150ms ease',
+      opacity: isDragging ? 0.4 : 1,
+      position: 'relative',
+    };
+
     return (
-      <div key={instance.id}>
+      <div ref={setNodeRef} style={style} {...(!isRoot ? attributes : {})} {...(!isRoot ? listeners : {})}>
+        {/* Valid drop zone indicator */}
+        {showValidDropZone && (
+          <div
+            className="absolute inset-0 pointer-events-none rounded-md"
+            style={{
+              backgroundColor: 'rgba(59, 130, 246, 0.1)',
+              border: '2px solid hsl(217, 91%, 60%)',
+              boxShadow: '0 0 8px rgba(59, 130, 246, 0.4)',
+              zIndex: 10,
+            }}
+          />
+        )}
+
+        {/* Invalid drop zone indicator */}
+        {showInvalidDropZone && (
+          <div
+            className="absolute inset-0 pointer-events-none rounded-md"
+            style={{
+              backgroundColor: 'rgba(239, 68, 68, 0.1)',
+              border: '2px dashed hsl(0, 84%, 60%)',
+              zIndex: 10,
+            }}
+          />
+        )}
+
         <div
-          className={`flex items-center gap-1 px-2 py-1 text-sm cursor-pointer hover:bg-accent rounded-md group ${
+          className={`flex items-center gap-1 px-2 py-1 text-sm cursor-pointer hover:bg-accent rounded-md group relative ${
             isSelected ? 'bg-accent text-accent-foreground' : ''
-          }`}
+          } ${isDragging ? 'opacity-40' : ''}`}
           style={{ paddingLeft: `${level * 16 + 8}px` }}
         >
           <button
@@ -73,13 +155,16 @@ export const Navigator: React.FC = () => {
             <div className="flex items-center gap-2 min-w-0">
               {IconComponent && <IconComponent className="w-3 h-3 flex-shrink-0" />}
               <span className="truncate">{instance.label || instance.type}</span>
+              {canDropInside(instance.type) && (
+                <span className="text-[10px] text-muted-foreground">●</span>
+              )}
             </div>
             <span className="text-[10px] text-muted-foreground whitespace-nowrap">
               {width} × {height}
             </span>
           </div>
 
-          {instance.id !== 'root' && (
+          {!isRoot && (
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -92,9 +177,39 @@ export const Navigator: React.FC = () => {
           )}
         </div>
 
+        {/* Insertion line indicator between siblings */}
+        {isOver && !canAcceptDrop && (
+          <div
+            className="absolute left-0 right-0 pointer-events-none"
+            style={{
+              top: '-2px',
+              height: '4px',
+              backgroundColor: 'hsl(217, 91%, 60%)',
+              borderRadius: '2px',
+              boxShadow: '0 0 4px rgba(59, 130, 246, 0.6)',
+              zIndex: 20,
+            }}
+          >
+            <div
+              className="absolute"
+              style={{
+                left: `${level * 16}px`,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                width: '8px',
+                height: '8px',
+                backgroundColor: 'hsl(217, 91%, 60%)',
+                borderRadius: '50%',
+              }}
+            />
+          </div>
+        )}
+
         {hasChildren && isExpanded && (
           <div>
-            {instance.children.map((child) => renderTreeNode(child, level + 1))}
+            {instance.children.map((child) => (
+              <TreeNode key={child.id} instance={child} level={level + 1} />
+            ))}
           </div>
         )}
       </div>
@@ -103,8 +218,8 @@ export const Navigator: React.FC = () => {
 
   return (
     <ScrollArea className="flex-1">
-      <div className="p-2">
-        {rootInstance && renderTreeNode(rootInstance)}
+      <div className="p-2 space-y-0.5">
+        {rootInstance && <TreeNode instance={rootInstance} level={0} />}
       </div>
     </ScrollArea>
   );
