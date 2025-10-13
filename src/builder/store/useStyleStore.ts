@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { StyleStore, StyleSource, Breakpoint, StyleDeclaration } from './types';
+import { StyleStore, StyleSource, Breakpoint, StyleDeclaration, PseudoState } from './types';
 
 const defaultBreakpoints: Breakpoint[] = [
   { id: 'base', label: 'Base' },
@@ -12,6 +12,7 @@ export const useStyleStore = create<StyleStore>((set, get) => ({
   styles: {},
   breakpoints: defaultBreakpoints,
   currentBreakpointId: 'base',
+  currentPseudoState: 'default',
   nameCounters: {},
 
   nextLocalClassName: (componentType: string) => {
@@ -82,39 +83,47 @@ export const useStyleStore = create<StyleStore>((set, get) => ({
     });
   },
 
-  setStyle: (styleSourceId, property, value, breakpointId) => {
+  setStyle: (styleSourceId, property, value, breakpointId, state) => {
     const currentBreakpoint = breakpointId || get().currentBreakpointId;
-    const key = `${styleSourceId}:${currentBreakpoint}:${property}`;
+    const currentState = state || get().currentPseudoState;
+    const key = `${styleSourceId}:${currentBreakpoint}:${currentState}:${property}`;
     
-    set((state) => ({
+    set((prevState) => ({
       styles: {
-        ...state.styles,
+        ...prevState.styles,
         [key]: value,
       },
     }));
   },
 
-  getComputedStyles: (styleSourceIds, breakpointId) => {
-    const { styles, breakpoints, currentBreakpointId } = get();
+  getComputedStyles: (styleSourceIds, breakpointId, state) => {
+    const { styles, breakpoints, currentBreakpointId, currentPseudoState } = get();
     const targetBreakpoint = breakpointId || currentBreakpointId;
+    const targetState = state || currentPseudoState;
     const computed: StyleDeclaration = {} as any;
     
     // Get breakpoint cascade (base -> tablet -> mobile)
     const breakpointIndex = breakpoints.findIndex(bp => bp.id === targetBreakpoint);
     const cascadeBreakpoints = breakpoints.slice(0, breakpointIndex + 1).map(bp => bp.id);
     
+    // State cascade: default -> hover/focus/active/visited
+    const stateCascade: PseudoState[] = targetState === 'default' ? ['default'] : ['default', targetState];
+    
     // Apply styles from each style source in order
     styleSourceIds.forEach(sourceId => {
       // Apply styles from base to current breakpoint
       cascadeBreakpoints.forEach(bpId => {
-        const prefix = `${sourceId}:${bpId}:`;
-        Object.entries(styles).forEach(([key, value]) => {
-          if (key.startsWith(prefix)) {
-            const property = key.replace(prefix, '');
-            if (value) {
-              (computed as any)[property] = value;
+        // Apply default state first, then target state (cascade)
+        stateCascade.forEach(stateId => {
+          const prefix = `${sourceId}:${bpId}:${stateId}:`;
+          Object.entries(styles).forEach(([key, value]) => {
+            if (key.startsWith(prefix)) {
+              const property = key.replace(prefix, '');
+              if (value) {
+                (computed as any)[property] = value;
+              }
             }
-          }
+          });
         });
       });
     });
@@ -124,6 +133,26 @@ export const useStyleStore = create<StyleStore>((set, get) => ({
 
   setCurrentBreakpoint: (id) => {
     set({ currentBreakpointId: id });
+  },
+
+  setCurrentPseudoState: (state) => {
+    set({ currentPseudoState: state });
+  },
+
+  resetStyles: (styleSourceId, breakpointId, state) => {
+    const currentBreakpoint = breakpointId || get().currentBreakpointId;
+    const currentState = state || get().currentPseudoState;
+    const prefix = `${styleSourceId}:${currentBreakpoint}:${currentState}:`;
+    
+    set((prevState) => {
+      const newStyles = { ...prevState.styles };
+      Object.keys(newStyles).forEach(key => {
+        if (key.startsWith(prefix)) {
+          delete newStyles[key];
+        }
+      });
+      return { styles: newStyles };
+    });
   },
 
   setStyleMetadata: (styleSourceId, metadata) => {

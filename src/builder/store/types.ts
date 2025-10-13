@@ -4,6 +4,8 @@ export type ComponentType = 'Box' | 'Container' | 'Section' | 'Text' | 'Heading'
 
 export type StyleSourceType = 'local' | 'token' | 'preset';
 
+export type PseudoState = 'default' | 'hover' | 'focus' | 'active' | 'visited';
+
 export interface Breakpoint {
   id: string;
   label: string;
@@ -176,12 +178,15 @@ export interface StyleStore {
   // Style sources (classes)
   styleSources: Record<string, StyleSource>;
   
-  // Styles (key: styleSourceId:breakpointId:property)
+  // Styles (key: styleSourceId:breakpointId:state:property)
   styles: Record<string, string>;
   
   // Breakpoints
   breakpoints: Breakpoint[];
   currentBreakpointId: string;
+  
+  // Current state (for UI)
+  currentPseudoState: PseudoState;
 
   // Naming helpers
   nameCounters: Record<string, number>;
@@ -191,9 +196,11 @@ export interface StyleStore {
   createStyleSource: (type: StyleSourceType, name?: string) => string;
   renameStyleSource: (id: string, newName: string) => void;
   deleteStyleSource: (id: string) => void;
-  setStyle: (styleSourceId: string, property: string, value: string, breakpointId?: string) => void;
-  getComputedStyles: (styleSourceIds: string[], breakpointId?: string) => StyleDeclaration;
+  setStyle: (styleSourceId: string, property: string, value: string, breakpointId?: string, state?: PseudoState) => void;
+  getComputedStyles: (styleSourceIds: string[], breakpointId?: string, state?: PseudoState) => StyleDeclaration;
   setCurrentBreakpoint: (id: string) => void;
+  setCurrentPseudoState: (state: PseudoState) => void;
+  resetStyles: (styleSourceId: string, breakpointId?: string, state?: PseudoState) => void;
   
   // Metadata actions
   setStyleMetadata: (styleSourceId: string, metadata: Partial<StyleMetadata>) => void;

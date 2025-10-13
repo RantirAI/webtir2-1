@@ -19,43 +19,55 @@ export function exportStylesheet(): string {
   const { styleSources, styles, breakpoints } = useStyleStore.getState();
   let css = '/* Auto-generated styles from Visual Builder */\n\n';
 
+  const states = ['default', 'hover', 'focus', 'active', 'visited'];
+
   // Group styles by class name
   Object.values(styleSources).forEach(source => {
     const className = source.name.trim();
     if (!className) return;
 
-    // Base styles
-    const baseStyles: StyleDeclaration = {};
-    Object.entries(styles).forEach(([key, value]) => {
-      if (key.startsWith(`${source.id}:base:`)) {
-        const property = key.split(':')[2];
-        baseStyles[property] = value;
-      }
-    });
+    states.forEach(state => {
+      const stateSelector = state === 'default' 
+        ? `.${className}` 
+        : state === 'focus'
+        ? `.${className}:focus-visible`
+        : `.${className}:${state}`;
 
-    if (Object.keys(baseStyles).length > 0) {
-      css += `.${className} {\n${styleObjectToCSS(baseStyles)}\n}\n\n`;
-    }
-
-    // Responsive styles
-    breakpoints.forEach(breakpoint => {
-      if (breakpoint.id === 'base') return;
-
-      const responsiveStyles: StyleDeclaration = {};
+      // Base styles for this state
+      const baseStyles: StyleDeclaration = {};
       Object.entries(styles).forEach(([key, value]) => {
-        if (key.startsWith(`${source.id}:${breakpoint.id}:`)) {
-          const property = key.split(':')[2];
-          responsiveStyles[property] = value;
+        const parts = key.split(':');
+        if (parts.length === 4 && parts[0] === source.id && parts[1] === 'base' && parts[2] === state) {
+          const property = parts[3];
+          baseStyles[property] = value;
         }
       });
 
-      if (Object.keys(responsiveStyles).length > 0) {
-        const mediaQuery = breakpoint.maxWidth 
-          ? `@media (max-width: ${breakpoint.maxWidth}px)`
-          : `@media (min-width: ${breakpoint.minWidth}px)`;
-        
-        css += `${mediaQuery} {\n  .${className} {\n${styleObjectToCSS(responsiveStyles).split('\n').map(line => '  ' + line).join('\n')}\n  }\n}\n\n`;
+      if (Object.keys(baseStyles).length > 0) {
+        css += `${stateSelector} {\n${styleObjectToCSS(baseStyles)}\n}\n\n`;
       }
+
+      // Responsive styles for this state
+      breakpoints.forEach(breakpoint => {
+        if (breakpoint.id === 'base') return;
+
+        const responsiveStyles: StyleDeclaration = {};
+        Object.entries(styles).forEach(([key, value]) => {
+          const parts = key.split(':');
+          if (parts.length === 4 && parts[0] === source.id && parts[1] === breakpoint.id && parts[2] === state) {
+            const property = parts[3];
+            responsiveStyles[property] = value;
+          }
+        });
+
+        if (Object.keys(responsiveStyles).length > 0) {
+          const mediaQuery = breakpoint.maxWidth 
+            ? `@media (max-width: ${breakpoint.maxWidth}px)`
+            : `@media (min-width: ${breakpoint.minWidth}px)`;
+          
+          css += `${mediaQuery} {\n  ${stateSelector} {\n${styleObjectToCSS(responsiveStyles).split('\n').map(line => '  ' + line).join('\n')}\n  }\n}\n\n`;
+        }
+      });
     });
   });
 

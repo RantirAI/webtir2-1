@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useBuilderStore } from '../store/useBuilderStore';
 import { useStyleStore } from '../store/useStyleStore';
+import { PseudoState } from '../store/types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Paintbrush, Plus, Square, Type, Heading as HeadingIcon, MousePointerClick, Image as ImageIcon, Link as LinkIcon, X, ChevronDown, Settings, Zap, Database } from 'lucide-react';
+import { Paintbrush, Plus, Square, Type, Heading as HeadingIcon, MousePointerClick, Image as ImageIcon, Link as LinkIcon, X, ChevronDown, Settings, Zap, Database, RotateCcw } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
 import { componentRegistry } from '../primitives/registry';
 import { UnitInput } from './UnitInput';
 import { ColorPicker } from './ColorPicker';
@@ -28,18 +30,17 @@ interface StylePanelProps {
 
 export const StylePanel: React.FC<StylePanelProps> = ({}) => {
   const { getSelectedInstance, updateInstance } = useBuilderStore();
-  const { setStyle, getComputedStyles, styleSources, createStyleSource, nextLocalClassName, renameStyleSource } = useStyleStore();
+  const { setStyle, getComputedStyles, styleSources, createStyleSource, nextLocalClassName, renameStyleSource, deleteStyleSource, currentPseudoState, setCurrentPseudoState, resetStyles } = useStyleStore();
   const selectedInstance = getSelectedInstance();
   
   // ALL useState hooks MUST be at the top, before any conditional logic
   const [classNameInput, setClassNameInput] = useState('');
-  const [classNames, setClassNames] = useState<string[]>([]);
-  const [currentState, setCurrentState] = useState<string>('base');
   const [isEditingLabel, setIsEditingLabel] = useState(false);
   const [labelInput, setLabelInput] = useState('');
   const [activeTab, setActiveTab] = useState('style');
-  const [isEditingClassName, setIsEditingClassName] = useState(false);
-  const [editingClassName, setEditingClassName] = useState('');
+  const [hoveredClassId, setHoveredClassId] = useState<string | null>(null);
+  const [editingClassIndex, setEditingClassIndex] = useState<number | null>(null);
+  const [editingClassValue, setEditingClassValue] = useState('');
   
   // Initialize label input when selectedInstance changes
   useEffect(() => {
@@ -64,18 +65,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
     setOpenSections((prev) => ({ ...prev, [section]: !prev[section] }));
   };
 
-  const styleSourceId = selectedInstance?.styleSourceIds?.[0];
-  const styleSource = styleSourceId ? styleSources[styleSourceId] : undefined;
   const computedStyles = selectedInstance ? getComputedStyles(selectedInstance.styleSourceIds || []) : {};
-
-  // Initialize class names - MUST be before early return to follow hooks rules
-  React.useEffect(() => {
-    if (styleSource) {
-      const names = styleSource.name.split(' ').filter(Boolean);
-      setClassNames(names);
-      setClassNameInput('');
-    }
-  }, [styleSource?.name]);
 
   // Sync label input to selected instance (unconditional hook placement)
   useEffect(() => {
@@ -129,7 +119,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
     );
   }
 
-  const ensureLocalClass = () => {
+  const ensurePrimaryClass = () => {
     if (!selectedInstance.styleSourceIds || selectedInstance.styleSourceIds.length === 0) {
       // Auto-create class on first style edit (Webflow pattern)
       const name = nextLocalClassName(selectedInstance.type);
@@ -150,38 +140,60 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
   };
 
   const updateStyle = (property: string, value: string) => {
-    const id = styleSourceId || ensureLocalClass();
+    const id = ensurePrimaryClass();
     if (id) setStyle(id, property, value);
   };
 
-  const renameClass = (newName: string) => {
-    if (!styleSourceId) return;
-    // Validate class name (framework-safe: no spaces, lowercase with hyphens)
-    const safeName = newName.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-');
-    if (safeName) {
-      renameStyleSource(styleSourceId, safeName);
+  const handleAddClass = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && classNameInput.trim()) {
+      const safeName = classNameInput.trim().toLowerCase().replace(/[^a-z0-9-_]/g, '-');
+      if (!safeName) return;
+      
+      const newClassId = createStyleSource('local', safeName);
+      const newStyleSourceIds = [...(selectedInstance.styleSourceIds || []), newClassId];
+      updateInstance(selectedInstance.id, { styleSourceIds: newStyleSourceIds });
+      setClassNameInput('');
     }
   };
 
-  const handleClassNameEdit = () => {
-    if (styleSource?.name) {
-      setEditingClassName(styleSource.name);
-      setIsEditingClassName(true);
+  const handleRemoveClass = (classId: string) => {
+    const newStyleSourceIds = selectedInstance.styleSourceIds?.filter(id => id !== classId) || [];
+    updateInstance(selectedInstance.id, { styleSourceIds: newStyleSourceIds });
+    deleteStyleSource(classId);
+  };
+
+  const handleEditClass = (index: number) => {
+    const classId = selectedInstance.styleSourceIds?.[index];
+    if (classId && styleSources[classId]) {
+      setEditingClassIndex(index);
+      setEditingClassValue(styleSources[classId].name);
     }
   };
 
-  const handleClassNameSave = () => {
-    if (editingClassName.trim()) {
-      renameClass(editingClassName);
+  const handleSaveEditedClass = () => {
+    if (editingClassIndex !== null && editingClassValue.trim()) {
+      const classId = selectedInstance.styleSourceIds?.[editingClassIndex];
+      if (classId) {
+        const safeName = editingClassValue.trim().toLowerCase().replace(/[^a-z0-9-_]/g, '-');
+        renameStyleSource(classId, safeName);
+      }
     }
-    setIsEditingClassName(false);
+    setEditingClassIndex(null);
+    setEditingClassValue('');
+  };
+
+  const handleResetStyles = () => {
+    const primaryClassId = selectedInstance.styleSourceIds?.[0];
+    if (primaryClassId) {
+      resetStyles(primaryClassId);
+    }
   };
 
   const classes = selectedInstance.styleSourceIds
-    ?.map((id) => ({
+    ?.map((id, index) => ({
       id,
       name: styleSources[id]?.name || id,
-      isActive: id === styleSourceId,
+      isPrimary: index === 0,
     }))
     .filter(Boolean) || [];
 
@@ -217,54 +229,26 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
     return iconMap[iconName || ''] || <Square className="w-4 h-4" />;
   };
 
-  const handleAddClass = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && classNameInput.trim()) {
-      const input = classNameInput.trim();
-
-      // If no style source yet, create one and attach to the instance
-      if (!styleSourceId) {
-        const id = createStyleSource('local', input);
-        updateInstance(selectedInstance.id, { styleSourceIds: [id] });
-        setClassNames([input]);
-      } else {
-        const newClassNames = [...classNames, input];
-        setClassNames(newClassNames);
-        renameClass(newClassNames.join(' '));
-      }
-
-      setClassNameInput('');
-    }
-  };
-  const handleRemoveClass = (index: number) => {
-    const newClassNames = classNames.filter((_, i) => i !== index);
-    setClassNames(newClassNames);
-
-    if (newClassNames.length === 0 && styleSourceId) {
-      // Detach and delete the style source when no class names remain
-      updateInstance(selectedInstance.id, { styleSourceIds: [] });
-      useStyleStore.getState().deleteStyleSource(styleSourceId);
-    } else {
-      renameClass(newClassNames.join(' '));
-    }
-  };
-
   const hasStylesInSection = (properties: string[]) => {
-    if (!styleSourceId) return false;
-    const { styles, currentBreakpointId, styleSources } = useStyleStore.getState();
-    const name = styleSources[styleSourceId]?.name?.trim();
-    if (!name) return false; // if no class names, consider no active styles
+    const primaryClassId = selectedInstance.styleSourceIds?.[0];
+    if (!primaryClassId) return false;
+    const { styles, currentBreakpointId, currentPseudoState, styleSources } = useStyleStore.getState();
+    const name = styleSources[primaryClassId]?.name?.trim();
+    if (!name) return false;
     
-    // Check if any property has an explicit value set for this class at this breakpoint
+    // Check if any property has an explicit value set for this class at this breakpoint and state
     return properties.some((prop) => {
-      const key = `${styleSourceId}:${currentBreakpointId}:${prop}`;
+      const key = `${primaryClassId}:${currentBreakpointId}:${currentPseudoState}:${prop}`;
       const val = styles[key];
       return val !== undefined && val !== '' && val !== 'initial' && val !== 'inherit' && val !== 'normal' && val !== 'auto' && val !== 'none';
     });
   };
+  
   const clearSectionStyles = (properties: string[]) => {
-    if (!styleSourceId) return;
+    const primaryClassId = selectedInstance.styleSourceIds?.[0];
+    if (!primaryClassId) return;
     properties.forEach(prop => {
-      setStyle(styleSourceId, prop, '');
+      setStyle(primaryClassId, prop, '');
     });
   };
 
@@ -449,87 +433,138 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
               </div>
             </div>
 
-            {/* Class Selector - Webflow-style auto-classing */}
-            <div style={{ padding: 'var(--space-2)', borderBottom: '1px solid hsl(var(--border))' }}>
-              {selectedInstance.styleSourceIds && selectedInstance.styleSourceIds.length > 0 ? (
-                <>
-                  <div style={{ fontSize: '10px', fontWeight: 600, color: 'hsl(var(--muted-foreground))', marginBottom: 'var(--space-1)' }}>
-                    CLASS SELECTOR
-                  </div>
-                  <div style={{ marginBottom: 'var(--space-2)' }}>
-                    {isEditingClassName ? (
-                      <input
-                        type="text"
-                        value={editingClassName}
-                        onChange={(e) => setEditingClassName(e.target.value)}
-                        onBlur={handleClassNameSave}
+            {/* Class Selector - Multi-class support */}
+            <div style={{ padding: 'var(--space-3)', borderBottom: '1px solid hsl(var(--border))' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-2)' }}>
+                <div style={{ fontSize: '10px', fontWeight: 600, color: 'hsl(var(--muted-foreground))', letterSpacing: '0.5px' }}>
+                  CLASS SELECTOR
+                </div>
+                {classes.length > 0 && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-5 w-5 p-0"
+                          onClick={handleResetStyles}
+                        >
+                          <RotateCcw className="w-3 h-3" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Reset styles to default</TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
+              </div>
+
+              {/* Class badges */}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-1)', marginBottom: 'var(--space-2)' }}>
+                {classes.map((cls, index) => (
+                  <div
+                    key={cls.id}
+                    onMouseEnter={() => setHoveredClassId(cls.id)}
+                    onMouseLeave={() => setHoveredClassId(null)}
+                    className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-mono transition-all ${
+                      cls.isPrimary 
+                        ? 'bg-primary text-primary-foreground' 
+                        : 'bg-muted text-muted-foreground'
+                    } ${hoveredClassId === cls.id ? 'ring-2 ring-primary ring-offset-1' : ''}`}
+                  >
+                    {editingClassIndex === index ? (
+                      <Input
+                        value={editingClassValue}
+                        onChange={(e) => setEditingClassValue(e.target.value)}
+                        onBlur={handleSaveEditedClass}
                         onKeyDown={(e) => {
-                          if (e.key === 'Enter') handleClassNameSave();
+                          if (e.key === 'Enter') handleSaveEditedClass();
                           if (e.key === 'Escape') {
-                            setEditingClassName(styleSource?.name || '');
-                            setIsEditingClassName(false);
+                            setEditingClassIndex(null);
+                            setEditingClassValue('');
                           }
                         }}
                         autoFocus
-                        placeholder="class-name"
-                        className="w-full px-3 py-2 bg-background border-2 border-primary rounded text-xs font-mono text-foreground outline-none"
+                        className="h-4 w-24 px-1 py-0 text-xs border-0 focus-visible:ring-1"
                       />
                     ) : (
-                      <div
-                        onClick={handleClassNameEdit}
-                        className="w-full px-3 py-2 bg-primary text-primary-foreground rounded text-xs font-mono cursor-pointer flex items-center justify-between hover:opacity-90 transition-all"
-                      >
-                        <span>.{styleSource?.name}</span>
-                        <span className="text-[10px] opacity-70">Click to rename</span>
-                      </div>
+                      <>
+                        <span 
+                          onClick={() => handleEditClass(index)}
+                          className="cursor-pointer hover:underline"
+                        >
+                          .{cls.name}
+                        </span>
+                        {cls.isPrimary && (
+                          <span className="text-[9px] opacity-60">PRIMARY</span>
+                        )}
+                        <X
+                          className="w-3 h-3 cursor-pointer hover:opacity-70"
+                          onClick={() => handleRemoveClass(cls.id)}
+                        />
+                      </>
                     )}
                   </div>
-                  <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <button className="IconButton flex-1 justify-between" style={{ height: '28px', padding: '0 var(--space-2)' }}>
-                          <span style={{ fontSize: '11px' }}>{currentState === 'base' ? 'None' : currentState}</span>
-                          <ChevronDown className="w-4 h-4" />
-                        </button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-48">
-                        <DropdownMenuItem onClick={() => setCurrentState('base')}>
-                          None (Base State)
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => setCurrentState('hover')}>
-                          Hover
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setCurrentState('focus')}>
-                          Focus Visible
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setCurrentState('focus-within')}>
-                          Focus Within
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setCurrentState('active')}>
-                          Active
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                ))}
+              </div>
+
+              {/* Add class input */}
+              <Input
+                placeholder="+ Add class (Enter to confirm)"
+                value={classNameInput}
+                onChange={(e) => setClassNameInput(e.target.value)}
+                onKeyDown={handleAddClass}
+                className="text-xs h-8 font-mono"
+              />
+
+              {/* State dropdown */}
+              <div style={{ marginTop: 'var(--space-2)' }}>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="w-full justify-between h-8 text-xs font-normal"
+                    >
+                      <span className="flex items-center gap-2">
+                        <span className="text-muted-foreground">State:</span>
+                        <span className="font-medium capitalize">{currentPseudoState}</span>
+                      </span>
+                      <ChevronDown className="w-3 h-3" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuItem onClick={() => setCurrentPseudoState('default')}>
+                      Default
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => setCurrentPseudoState('hover')}>
+                      Hover
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setCurrentPseudoState('focus')}>
+                      Focus
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setCurrentPseudoState('active')}>
+                      Active
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setCurrentPseudoState('visited')}>
+                      Visited
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+
+              {classes.length === 0 && (
+                <div 
+                  className="bg-muted/50 border border-dashed border-border rounded text-center mt-2"
+                  style={{ padding: 'var(--space-3)' }}
+                >
+                  <div style={{ fontSize: '11px', color: 'hsl(var(--muted-foreground))', marginBottom: '4px' }}>
+                    No classes assigned
                   </div>
-                </>
-              ) : (
-                <>
-                  <div style={{ fontSize: '10px', fontWeight: 600, color: 'hsl(var(--muted-foreground))', marginBottom: 'var(--space-1)' }}>
-                    CLASS SELECTOR
+                  <div style={{ fontSize: '10px', color: 'hsl(var(--muted-foreground))' }}>
+                    Add a class or style to auto-create one
                   </div>
-                  <div 
-                    className="bg-[#F5F5F5] dark:bg-zinc-800 border border-dashed border-border rounded text-center"
-                    style={{ padding: 'var(--space-3)' }}
-                  >
-                    <div style={{ fontSize: '11px', color: 'hsl(var(--muted-foreground))', marginBottom: '4px' }}>
-                      No class selected
-                    </div>
-                    <div style={{ fontSize: '10px', color: 'hsl(var(--muted-foreground))' }}>
-                      Style this element to auto-create a class
-                    </div>
-                  </div>
-                </>
+                </div>
               )}
             </div>
 
