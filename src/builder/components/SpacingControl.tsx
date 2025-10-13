@@ -169,7 +169,7 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
             className="spacing-input"
           />
         </PopoverTrigger>
-        <PopoverContent className="w-64 p-4" align="start">
+        <PopoverContent className="w-64 p-4 z-[10000] bg-background border shadow-md pointer-events-auto" align="start">
           <div className="space-y-3">
             <Label className="text-sm font-medium">{getPropertyLabel(property)}</Label>
             <div className="flex gap-2">
@@ -178,17 +178,17 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
                 value={editingProperty?.value || '0'}
                 onChange={(e) => handlePopoverValueChange(e.target.value)}
                 onKeyDown={handleKeyDown}
-                className="flex-1"
+                className="flex-1 pointer-events-auto"
                 autoFocus
               />
               <Select
                 value={editingProperty?.unit || 'px'}
                 onValueChange={handlePopoverUnitChange}
               >
-                <SelectTrigger className="w-20">
+                <SelectTrigger className="w-20 pointer-events-auto">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="z-[10001] bg-background pointer-events-auto">
                   <SelectItem value="px">PX</SelectItem>
                   <SelectItem value="rem">REM</SelectItem>
                   <SelectItem value="em">EM</SelectItem>
