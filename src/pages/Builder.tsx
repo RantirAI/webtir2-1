@@ -244,7 +244,7 @@ const Builder: React.FC = () => {
             <Button
               variant="default"
               size="sm"
-              className="h-10 px-3 gap-2 backdrop-blur-md bg-white/90 dark:bg-zinc-900/90 border border-border shadow-lg hover:bg-white dark:hover:bg-zinc-900"
+              className="h-10 px-3 gap-2 shadow-lg"
               onClick={() => setIsPreviewMode(false)}
             >
               <Icons.Eye className="w-4 h-4" />
