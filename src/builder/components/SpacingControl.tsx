@@ -85,21 +85,38 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
   };
 
   const handleMouseDown = (e: React.MouseEvent, property: string, currentValue: string) => {
-    e.preventDefault();
+    // Don't prevent default - let click through for popover
     const { num, unit } = parseValue(currentValue);
-    setDragState({
-      isDragging: true,
-      property,
-      startY: e.clientY,
-      startValue: num,
-      unit,
-    });
+    
+    // Use a timeout to distinguish between click and drag
+    const timeout = setTimeout(() => {
+      setDragState({
+        isDragging: true,
+        property,
+        startY: e.clientY,
+        startValue: num,
+        unit,
+      });
+    }, 150); // 150ms delay before drag starts
+    
+    const handleMouseUp = () => {
+      clearTimeout(timeout);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+    
+    document.addEventListener('mouseup', handleMouseUp);
   };
 
   // Removed - input changes are now handled only through popover or drag
 
   const handleInputClick = (e: React.MouseEvent, property: string, currentValue: string) => {
-    e.stopPropagation();
+    // Only open popover if not currently dragging
+    if (dragState?.isDragging) {
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
+    
     const { num, unit } = parseValue(currentValue);
     setEditingProperty({
       property,
@@ -159,15 +176,19 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
         }
       }}>
         <PopoverTrigger asChild>
-          <input
-            type="text"
-            value={value || '0'}
-            readOnly
+          <div
             onMouseDown={(e) => handleMouseDown(e, property, value)}
             onClick={(e) => handleInputClick(e, property, value)}
-            style={{ ...inputStyle, ...customStyle }}
-            className="spacing-input"
-          />
+            style={{ display: 'inline-block', cursor: 'pointer' }}
+          >
+            <input
+              type="text"
+              value={value || '0'}
+              readOnly
+              style={{ ...inputStyle, ...customStyle, pointerEvents: 'none' }}
+              className="spacing-input"
+            />
+          </div>
         </PopoverTrigger>
         <PopoverContent className="w-64 p-4 z-[10000] bg-background border shadow-md pointer-events-auto" align="start">
           <div className="space-y-3">
