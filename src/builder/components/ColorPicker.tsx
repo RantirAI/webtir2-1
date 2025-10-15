@@ -29,6 +29,9 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange, class
   const [isDraggingHue, setIsDraggingHue] = useState(false);
   const [isDraggingAlpha, setIsDraggingAlpha] = useState(false);
   
+  // Store original values for cancel functionality
+  const [originalColor, setOriginalColor] = useState(value);
+  
   useEffect(() => {
     const parsed = parseColorValue(value || '#3B82F6');
     if (parsed) {
@@ -42,6 +45,36 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange, class
       setL(hsl.l);
     }
   }, [value]);
+  
+  // Store original color when opening picker
+  const handleOpenChange = (isOpen: boolean) => {
+    if (isOpen) {
+      setOriginalColor(value);
+    }
+    setOpen(isOpen);
+  };
+  
+  const handleConfirm = () => {
+    setOpen(false);
+  };
+  
+  const handleCancel = () => {
+    if (originalColor) {
+      onChange(originalColor);
+      const parsed = parseColorValue(originalColor);
+      if (parsed) {
+        setR(parsed.r);
+        setG(parsed.g);
+        setB(parsed.b);
+        setAlpha(parsed.a * 100);
+        const hsl = rgbToHsl(parsed.r, parsed.g, parsed.b);
+        setH(hsl.h);
+        setS(hsl.s);
+        setL(hsl.l);
+      }
+    }
+    setOpen(false);
+  };
   
   // Mouse move handlers
   useEffect(() => {
@@ -82,7 +115,7 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange, class
     }
   }, [isDraggingPicker, isDraggingHue, isDraggingAlpha, h, s, l, alpha]);
   
-  const updateFromRgb = (newR: number, newG: number, newB: number, newAlpha: number) => {
+  const updateFromRgb = (newR: number, newG: number, newB: number, newAlpha: number, liveUpdate: boolean = true) => {
     setR(newR);
     setG(newG);
     setB(newB);
@@ -93,11 +126,13 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange, class
     setS(hsl.s);
     setL(hsl.l);
     
-    const a = newAlpha / 100;
-    onChange(`rgba(${newR}, ${newG}, ${newB}, ${a})`);
+    if (liveUpdate) {
+      const a = newAlpha / 100;
+      onChange(`rgba(${newR}, ${newG}, ${newB}, ${a})`);
+    }
   };
   
-  const updateFromHsl = (newH: number, newS: number, newL: number, newAlpha: number) => {
+  const updateFromHsl = (newH: number, newS: number, newL: number, newAlpha: number, liveUpdate: boolean = true) => {
     setH(newH);
     setS(newS);
     setL(newL);
@@ -108,8 +143,10 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange, class
     setG(rgb.g);
     setB(rgb.b);
     
-    const a = newAlpha / 100;
-    onChange(`rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${a})`);
+    if (liveUpdate) {
+      const a = newAlpha / 100;
+      onChange(`rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${a})`);
+    }
   };
   
   const currentColor = `rgba(${r}, ${g}, ${b}, ${alpha / 100})`;
@@ -129,7 +166,7 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange, class
   ];
   
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={handleOpenChange} modal={false}>
       <PopoverTrigger asChild>
         <button
           className={`relative w-5 h-5 rounded border border-border cursor-pointer overflow-hidden ${className || ''}`}
@@ -150,7 +187,13 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange, class
           />
         </button>
       </PopoverTrigger>
-      <PopoverContent className="w-64 p-3" align="start" style={{ zIndex: 9999 }}>
+      <PopoverContent 
+        className="w-64 p-3 animate-fade-in" 
+        align="start" 
+        style={{ zIndex: 9999 }}
+        onInteractOutside={(e) => e.preventDefault()}
+        onEscapeKeyDown={handleCancel}
+      >
         {/* 2D Color Picker */}
         <div
           ref={pickerRef}
@@ -300,6 +343,24 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange, class
               </button>
             ))}
           </div>
+        </div>
+        
+        {/* Confirm/Cancel buttons */}
+        <div className="flex gap-2 pt-2 border-t border-border mt-2">
+          <button
+            onClick={handleCancel}
+            className="flex-1 h-7 px-2 text-xs border border-border rounded bg-background hover:bg-accent transition-colors flex items-center justify-center gap-1"
+          >
+            <span>✕</span>
+            <span>Cancel</span>
+          </button>
+          <button
+            onClick={handleConfirm}
+            className="flex-1 h-7 px-2 text-xs bg-primary text-primary-foreground rounded hover:bg-primary/90 transition-colors flex items-center justify-center gap-1"
+          >
+            <span>✓</span>
+            <span>Confirm</span>
+          </button>
         </div>
       </PopoverContent>
     </Popover>

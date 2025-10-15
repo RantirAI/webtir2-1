@@ -87,6 +87,7 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
     const { num, unit } = parseValue(currentValue);
     
     let dragStarted = false;
+    let hasMoved = false;
     const startX = e.clientX;
     const startY = e.clientY;
     const startTime = Date.now();
@@ -95,8 +96,13 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
       const deltaX = Math.abs(moveEvent.clientX - startX);
       const deltaY = Math.abs(moveEvent.clientY - startY);
       
-      // Start drag if moved more than 3px
-      if (!dragStarted && (deltaX > 3 || deltaY > 3)) {
+      // Track if mouse has moved at all
+      if (deltaX > 0 || deltaY > 0) {
+        hasMoved = true;
+      }
+      
+      // Start drag if moved more than 5px vertically
+      if (!dragStarted && deltaY > 5) {
         dragStarted = true;
         setDragState({
           isDragging: true,
@@ -112,8 +118,8 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
       const endTime = Date.now();
       const timeDiff = endTime - startTime;
       
-      // If it was a quick click (< 200ms) and no drag, open popover
-      if (!dragStarted && timeDiff < 200) {
+      // If it was a quick click without significant movement, open popover
+      if (!dragStarted && timeDiff < 300 && !hasMoved) {
         setEditingProperty({
           property,
           value: num.toString(),
@@ -178,14 +184,23 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
     const isDragging = dragState?.property === property && dragState?.isDragging;
     
     return (
-      <Popover open={isOpen} onOpenChange={(open) => {
-        if (!open && editingProperty?.property === property) {
-          handlePopoverClose();
-        }
-      }}>
+      <Popover 
+        open={isOpen} 
+        onOpenChange={(open) => {
+          if (!open && editingProperty?.property === property) {
+            handlePopoverClose();
+          }
+        }}
+        modal={false}
+      >
         <PopoverTrigger asChild>
           <div
-            onMouseDown={(e) => handleMouseDown(e, property, value)}
+            onMouseDown={(e) => {
+              // Only handle if not already dragging something else
+              if (!dragState?.isDragging || dragState?.property === property) {
+                handleMouseDown(e, property, value);
+              }
+            }}
             style={{ 
               display: 'inline-block', 
               cursor: isDragging ? 'ns-resize' : 'ns-resize',
@@ -201,7 +216,14 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
             />
           </div>
         </PopoverTrigger>
-        <PopoverContent className="w-64 p-4 z-[10000] bg-background border shadow-md pointer-events-auto" align="start">
+        <PopoverContent 
+          className="w-64 p-4 z-[10000] bg-background border shadow-md pointer-events-auto" 
+          align="start"
+          onInteractOutside={(e) => {
+            // Prevent closing when clicking inside
+            e.preventDefault();
+          }}
+        >
           <div className="space-y-3">
             <Label className="text-sm font-medium">{getPropertyLabel(property)}</Label>
             <div className="flex gap-2">
