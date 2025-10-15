@@ -191,7 +191,16 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange, class
         className="w-64 p-3 animate-fade-in" 
         align="start" 
         style={{ zIndex: 9999 }}
-        onInteractOutside={(e) => e.preventDefault()}
+        onInteractOutside={(e) => {
+          // Prevent closing when interacting with the color picker
+          e.preventDefault();
+        }}
+        onPointerDownOutside={(e) => {
+          // Prevent closing when clicking outside during drag
+          if (isDraggingPicker || isDraggingHue || isDraggingAlpha) {
+            e.preventDefault();
+          }
+        }}
         onEscapeKeyDown={handleCancel}
       >
         {/* 2D Color Picker */}
@@ -207,6 +216,14 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange, class
           onMouseDown={(e) => {
             e.preventDefault();
             e.stopPropagation();
+            const rect = pickerRef.current?.getBoundingClientRect();
+            if (rect) {
+              const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
+              const y = Math.max(0, Math.min(e.clientY - rect.top, rect.height));
+              const newS = (x / rect.width) * 100;
+              const newL = 100 - (y / rect.height) * 100;
+              updateFromHsl(h, newS, newL, alpha);
+            }
             setIsDraggingPicker(true);
           }}
         >
@@ -233,6 +250,12 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange, class
             onMouseDown={(e) => {
               e.preventDefault();
               e.stopPropagation();
+              const rect = hueRef.current?.getBoundingClientRect();
+              if (rect) {
+                const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
+                const newH = (x / rect.width) * 360;
+                updateFromHsl(newH, s, l, alpha);
+              }
               setIsDraggingHue(true);
             }}
           >
@@ -268,6 +291,12 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange, class
             onMouseDown={(e) => {
               e.preventDefault();
               e.stopPropagation();
+              const rect = alphaRef.current?.getBoundingClientRect();
+              if (rect) {
+                const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
+                const newAlpha = (x / rect.width) * 100;
+                updateFromHsl(h, s, l, newAlpha);
+              }
               setIsDraggingAlpha(true);
             }}
           >
