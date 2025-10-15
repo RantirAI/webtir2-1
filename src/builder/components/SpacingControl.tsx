@@ -82,27 +82,39 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
   };
 
   const handleMouseDown = (e: React.MouseEvent, property: string, currentValue: string) => {
+    e.preventDefault();
     const { num, unit } = parseValue(currentValue);
-    let hasMoved = false;
     
-    const timeout = setTimeout(() => {
-      if (!hasMoved) {
+    let dragStarted = false;
+    const startX = e.clientX;
+    const startY = e.clientY;
+    
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      const deltaX = Math.abs(moveEvent.clientX - startX);
+      const deltaY = Math.abs(moveEvent.clientY - startY);
+      
+      // Start drag if moved more than 3px
+      if (!dragStarted && (deltaX > 3 || deltaY > 3)) {
+        dragStarted = true;
         setDragState({
           isDragging: true,
           property,
-          startY: e.clientY,
+          startY: moveEvent.clientY,
           startValue: num,
           unit,
         });
       }
-    }, 100);
-    
-    const handleMouseMove = () => {
-      hasMoved = true;
     };
     
     const handleMouseUp = () => {
-      clearTimeout(timeout);
+      if (!dragStarted) {
+        // It was a click, open popover
+        setEditingProperty({
+          property,
+          value: num.toString(),
+          unit,
+        });
+      }
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
@@ -113,21 +125,6 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
 
   // Removed - input changes are now handled only through popover or drag
 
-  const handleInputClick = (e: React.MouseEvent, property: string, currentValue: string) => {
-    // Only open popover if not currently dragging
-    if (dragState?.isDragging) {
-      e.preventDefault();
-      e.stopPropagation();
-      return;
-    }
-    
-    const { num, unit } = parseValue(currentValue);
-    setEditingProperty({
-      property,
-      value: num.toString(),
-      unit,
-    });
-  };
 
   const handlePopoverValueChange = (value: string) => {
     if (editingProperty) {
@@ -172,6 +169,7 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
 
   const renderSpacingInput = (property: string, value: string, customStyle?: React.CSSProperties) => {
     const isOpen = editingProperty?.property === property;
+    const isDragging = dragState?.property === property && dragState?.isDragging;
     
     return (
       <Popover open={isOpen} onOpenChange={(open) => {
@@ -182,8 +180,11 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
         <PopoverTrigger asChild>
           <div
             onMouseDown={(e) => handleMouseDown(e, property, value)}
-            onClick={(e) => handleInputClick(e, property, value)}
-            style={{ display: 'inline-block', cursor: 'pointer' }}
+            style={{ 
+              display: 'inline-block', 
+              cursor: isDragging ? 'ns-resize' : 'ns-resize',
+              position: 'relative'
+            }}
           >
             <input
               type="text"
@@ -239,8 +240,8 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
   };
 
   const inputStyle = {
-    width: '36px',
-    height: '20px',
+    width: '40px',
+    height: '18px',
     textAlign: 'center' as const,
     fontSize: '11px',
     fontWeight: 500,
@@ -251,6 +252,7 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
     userSelect: 'none' as const,
     color: '#F39C12',
     transition: 'background-color 0.15s ease',
+    outline: 'none',
   };
 
   return (
@@ -431,8 +433,12 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
       </div>
 
       <style>{`
+        .spacing-input {
+          cursor: ns-resize !important;
+        }
+        
         .spacing-input:hover {
-          background: rgba(243, 156, 18, 0.15) !important;
+          background: rgba(243, 156, 18, 0.12) !important;
           border-radius: 2px;
         }
         
