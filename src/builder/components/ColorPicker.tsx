@@ -191,12 +191,8 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange, class
         className="w-64 p-3 animate-fade-in" 
         align="start" 
         style={{ zIndex: 9999 }}
-        onInteractOutside={(e) => {
-          // Prevent closing when interacting with the color picker
-          e.preventDefault();
-        }}
         onPointerDownOutside={(e) => {
-          // Prevent closing when clicking outside during drag
+          // Only prevent closing during drag operations or when clicking inside
           if (isDraggingPicker || isDraggingHue || isDraggingAlpha) {
             e.preventDefault();
           }
