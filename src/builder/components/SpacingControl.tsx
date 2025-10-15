@@ -83,11 +83,13 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
 
   const handleMouseDown = (e: React.MouseEvent, property: string, currentValue: string) => {
     e.preventDefault();
+    e.stopPropagation();
     const { num, unit } = parseValue(currentValue);
     
     let dragStarted = false;
     const startX = e.clientX;
     const startY = e.clientY;
+    const startTime = Date.now();
     
     const handleMouseMove = (moveEvent: MouseEvent) => {
       const deltaX = Math.abs(moveEvent.clientX - startX);
@@ -107,14 +109,18 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
     };
     
     const handleMouseUp = () => {
-      if (!dragStarted) {
-        // It was a click, open popover
+      const endTime = Date.now();
+      const timeDiff = endTime - startTime;
+      
+      // If it was a quick click (< 200ms) and no drag, open popover
+      if (!dragStarted && timeDiff < 200) {
         setEditingProperty({
           property,
           value: num.toString(),
           unit,
         });
       }
+      
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };

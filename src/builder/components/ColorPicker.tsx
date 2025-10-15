@@ -162,15 +162,9 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange, class
             `,
           }}
           onMouseDown={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
             setIsDraggingPicker(true);
-            const rect = pickerRef.current?.getBoundingClientRect();
-            if (rect) {
-              const x = e.clientX - rect.left;
-              const y = e.clientY - rect.top;
-              const newS = (x / rect.width) * 100;
-              const newL = 100 - (y / rect.height) * 100;
-              updateFromHsl(h, newS, newL, alpha);
-            }
           }}
         >
           {/* Picker cursor */}
@@ -194,13 +188,9 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange, class
               background: 'linear-gradient(to right, #ff0000 0%, #ffff00 17%, #00ff00 33%, #00ffff 50%, #0000ff 67%, #ff00ff 83%, #ff0000 100%)',
             }}
             onMouseDown={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
               setIsDraggingHue(true);
-              const rect = hueRef.current?.getBoundingClientRect();
-              if (rect) {
-                const x = e.clientX - rect.left;
-                const newH = (x / rect.width) * 360;
-                updateFromHsl(newH, s, l, alpha);
-              }
             }}
           >
             {/* Hue cursor */}
@@ -233,13 +223,9 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange, class
               backgroundPosition: 'center, 0 0, 0 4px, 4px -4px, -4px 0px',
             }}
             onMouseDown={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
               setIsDraggingAlpha(true);
-              const rect = alphaRef.current?.getBoundingClientRect();
-              if (rect) {
-                const x = e.clientX - rect.left;
-                const newAlpha = (x / rect.width) * 100;
-                updateFromHsl(h, s, l, newAlpha);
-              }
             }}
           >
             {/* Alpha cursor */}
