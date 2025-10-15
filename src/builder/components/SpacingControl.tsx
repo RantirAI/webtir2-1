@@ -47,12 +47,10 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
     const handleMouseMove = (e: MouseEvent) => {
       if (!dragState) return;
       
-      // Calculate change based on vertical mouse movement
-      // Moving up (negative clientY change) increases value
-      // Moving down (positive clientY change) decreases value
       const deltaY = dragState.startY - e.clientY;
-      const change = Math.round(deltaY);
-      const newValue = Math.max(0, dragState.startValue + change);
+      const speed = Math.abs(deltaY) > 20 ? 5 : 1;
+      const change = Math.sign(deltaY) * speed;
+      const newValue = Math.max(0, dragState.startValue + Math.round(deltaY / (speed === 5 ? 2 : 1)));
       
       onUpdate(dragState.property, `${newValue}${dragState.unit}`);
     };
@@ -64,7 +62,6 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
     
-    // Prevent text selection during drag
     document.body.style.userSelect = 'none';
     document.body.style.cursor = 'ns-resize';
 
@@ -85,25 +82,32 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
   };
 
   const handleMouseDown = (e: React.MouseEvent, property: string, currentValue: string) => {
-    // Don't prevent default - let click through for popover
     const { num, unit } = parseValue(currentValue);
+    let hasMoved = false;
     
-    // Use a timeout to distinguish between click and drag
     const timeout = setTimeout(() => {
-      setDragState({
-        isDragging: true,
-        property,
-        startY: e.clientY,
-        startValue: num,
-        unit,
-      });
-    }, 150); // 150ms delay before drag starts
+      if (!hasMoved) {
+        setDragState({
+          isDragging: true,
+          property,
+          startY: e.clientY,
+          startValue: num,
+          unit,
+        });
+      }
+    }, 100);
+    
+    const handleMouseMove = () => {
+      hasMoved = true;
+    };
     
     const handleMouseUp = () => {
       clearTimeout(timeout);
+      document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
     
+    document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
   };
 
@@ -226,87 +230,79 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
   };
 
   const getAreaStyle = (area: string) => {
-    const isHovered = hoveredArea === area;
     const isDragging = dragState?.property === area;
     
     return {
-      backgroundColor: isHovered || isDragging 
-        ? 'rgba(59, 130, 246, 0.1)' 
-        : 'transparent',
+      backgroundColor: isDragging ? 'rgba(243, 156, 18, 0.1)' : 'transparent',
       transition: 'background-color 0.15s ease',
     };
   };
 
   const inputStyle = {
-    width: '48px',
-    height: '24px',
+    width: '36px',
+    height: '20px',
     textAlign: 'center' as const,
     fontSize: '11px',
-    background: '#F5F5F5',
-    border: '1px solid hsl(var(--border))',
-    borderRadius: '4px',
+    fontWeight: 500,
+    background: 'transparent',
+    border: 'none',
+    borderRadius: '2px',
     cursor: 'ns-resize',
     userSelect: 'none' as const,
-    color: 'hsl(var(--foreground))',
-  };
-
-  const darkInputStyle = {
-    ...inputStyle,
-    background: '#09090b',
-    color: '#ffffff',
+    color: '#F39C12',
+    transition: 'background-color 0.15s ease',
   };
 
   return (
     <div style={{ 
       position: 'relative',
       width: '100%',
-      background: 'hsl(var(--muted) / 0.1)',
-      border: '1px solid hsl(var(--border))',
-      borderRadius: '4px',
-      padding: 'var(--space-4)',
-      minHeight: '160px'
+      background: '#fafafa',
+      border: '1px solid #e5e5e5',
+      borderRadius: '3px',
+      padding: '8px',
     }}>
       {/* Margin Label */}
       <div style={{
         position: 'absolute',
-        top: '4px',
-        left: '4px',
-        fontSize: '8px',
-        color: 'hsl(var(--muted-foreground))',
+        top: '6px',
+        left: '6px',
+        fontSize: '10px',
+        color: '#999',
         textTransform: 'uppercase',
-        letterSpacing: '0.05em',
+        letterSpacing: '0.5px',
         fontWeight: 600
       }}>
         MARGIN
       </div>
 
       {/* Margin Area */}
-      <div style={{ position: 'relative', width: '100%', display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+      <div style={{ position: 'relative', width: '100%', display: 'flex', flexDirection: 'column', gap: '2px', paddingTop: '12px' }}>
         {/* Top Margin */}
         <div 
           style={{ 
             display: 'flex', 
             justifyContent: 'center',
-            padding: 'var(--space-1)',
+            padding: '2px',
+            borderRadius: '2px',
             ...getAreaStyle('marginTop')
           }}
-          onMouseEnter={() => setHoveredArea('marginTop')}
-          onMouseLeave={() => setHoveredArea(null)}
         >
           {renderSpacingInput('marginTop', marginTop)}
         </div>
 
         {/* Middle Row: Left Margin + Padding Box + Right Margin */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
           {/* Left Margin */}
           <div 
             style={{ 
               display: 'flex',
-              padding: 'var(--space-1)',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '2px',
+              borderRadius: '2px',
               ...getAreaStyle('marginLeft')
             }}
-            onMouseEnter={() => setHoveredArea('marginLeft')}
-            onMouseLeave={() => setHoveredArea(null)}
           >
             {renderSpacingInput('marginLeft', marginLeft)}
           </div>
@@ -314,89 +310,94 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
           {/* Padding Box */}
           <div style={{
             flex: 1,
-            border: '1px solid hsl(var(--border))',
-            borderRadius: '4px',
-            padding: 'var(--space-3)',
+            border: '1px solid #e5e5e5',
+            borderRadius: '2px',
+            padding: '6px',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: 'var(--space-2)',
-            minHeight: '90px',
+            gap: '2px',
+            background: '#fff',
             position: 'relative'
           }}>
             {/* Padding Label */}
             <div style={{
-              fontSize: '8px',
-              color: 'hsl(var(--muted-foreground))',
+              position: 'absolute',
+              top: '4px',
+              left: '4px',
+              fontSize: '10px',
+              color: '#999',
               textTransform: 'uppercase',
-              letterSpacing: '0.05em',
+              letterSpacing: '0.5px',
               fontWeight: 600
             }}>
               PADDING
             </div>
 
-            {/* Top Padding */}
-            <div 
-              style={{ 
-                width: '100%',
-                display: 'flex',
-                justifyContent: 'center',
-                padding: 'var(--space-1)',
-                ...getAreaStyle('paddingTop')
-              }}
-              onMouseEnter={() => setHoveredArea('paddingTop')}
-              onMouseLeave={() => setHoveredArea(null)}
-            >
-              {renderSpacingInput('paddingTop', paddingTop, { width: '40px' })}
-            </div>
-
-            {/* Left and Right Padding */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', width: '100%' }}>
+            <div style={{ paddingTop: '10px', width: '100%' }}>
+              {/* Top Padding */}
               <div 
                 style={{ 
-                  flex: 1,
+                  width: '100%',
                   display: 'flex',
-                  justifyContent: 'flex-start',
-                  padding: 'var(--space-1)',
-                  ...getAreaStyle('paddingLeft')
+                  justifyContent: 'center',
+                  padding: '2px',
+                  borderRadius: '2px',
+                  ...getAreaStyle('paddingTop')
                 }}
-                onMouseEnter={() => setHoveredArea('paddingLeft')}
-                onMouseLeave={() => setHoveredArea(null)}
               >
-                {renderSpacingInput('paddingLeft', paddingLeft, { width: '40px' })}
+                {renderSpacingInput('paddingTop', paddingTop)}
               </div>
-              
-              <div style={{ flex: 1 }} />
-              
+
+              {/* Left and Right Padding */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '4px', width: '100%', margin: '2px 0' }}>
+                <div 
+                  style={{ 
+                    display: 'flex',
+                    justifyContent: 'center',
+                    padding: '2px',
+                    borderRadius: '2px',
+                    ...getAreaStyle('paddingLeft')
+                  }}
+                >
+                  {renderSpacingInput('paddingLeft', paddingLeft)}
+                </div>
+                
+                <div style={{ 
+                  width: '20px', 
+                  height: '20px',
+                  border: '1px solid #e5e5e5',
+                  borderRadius: '2px',
+                  background: '#fafafa'
+                }} />
+                
+                <div 
+                  style={{ 
+                    display: 'flex',
+                    justifyContent: 'center',
+                    padding: '2px',
+                    borderRadius: '2px',
+                    ...getAreaStyle('paddingRight')
+                  }}
+                >
+                  {renderSpacingInput('paddingRight', paddingRight)}
+                </div>
+              </div>
+
+              {/* Bottom Padding */}
               <div 
                 style={{ 
-                  flex: 1,
+                  width: '100%',
                   display: 'flex',
-                  justifyContent: 'flex-end',
-                  padding: 'var(--space-1)',
-                  ...getAreaStyle('paddingRight')
+                  justifyContent: 'center',
+                  padding: '2px',
+                  borderRadius: '2px',
+                  ...getAreaStyle('paddingBottom')
                 }}
-                onMouseEnter={() => setHoveredArea('paddingRight')}
-                onMouseLeave={() => setHoveredArea(null)}
               >
-                {renderSpacingInput('paddingRight', paddingRight, { width: '40px' })}
+                {renderSpacingInput('paddingBottom', paddingBottom)}
               </div>
-            </div>
-
-            {/* Bottom Padding */}
-            <div 
-              style={{ 
-                width: '100%',
-                display: 'flex',
-                justifyContent: 'center',
-                padding: 'var(--space-1)',
-                ...getAreaStyle('paddingBottom')
-              }}
-              onMouseEnter={() => setHoveredArea('paddingBottom')}
-              onMouseLeave={() => setHoveredArea(null)}
-            >
-              {renderSpacingInput('paddingBottom', paddingBottom, { width: '40px' })}
             </div>
           </div>
 
@@ -404,11 +405,12 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
           <div 
             style={{ 
               display: 'flex',
-              padding: 'var(--space-1)',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '2px',
+              borderRadius: '2px',
               ...getAreaStyle('marginRight')
             }}
-            onMouseEnter={() => setHoveredArea('marginRight')}
-            onMouseLeave={() => setHoveredArea(null)}
           >
             {renderSpacingInput('marginRight', marginRight)}
           </div>
@@ -419,29 +421,23 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
           style={{ 
             display: 'flex', 
             justifyContent: 'center',
-            padding: 'var(--space-1)',
+            padding: '2px',
+            borderRadius: '2px',
             ...getAreaStyle('marginBottom')
           }}
-          onMouseEnter={() => setHoveredArea('marginBottom')}
-          onMouseLeave={() => setHoveredArea(null)}
         >
           {renderSpacingInput('marginBottom', marginBottom)}
         </div>
       </div>
 
       <style>{`
-        .dark .spacing-input {
-          background: #09090b !important;
-          color: #ffffff !important;
-        }
-        
         .spacing-input:hover {
-          background: hsl(var(--accent)) !important;
+          background: rgba(243, 156, 18, 0.15) !important;
+          border-radius: 2px;
         }
         
-        .spacing-input:focus {
-          outline: 2px solid hsl(var(--ring));
-          outline-offset: 0;
+        .dark .spacing-input {
+          color: #F39C12 !important;
         }
       `}</style>
     </div>
