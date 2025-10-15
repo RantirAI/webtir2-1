@@ -13,6 +13,7 @@ import { SpacingControl } from './SpacingControl';
 import { FontPicker } from './FontPicker';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
+import { ClassSelector } from './ClassSelector';
 import '../styles/style-panel.css';
 import '../styles/tokens.css';
 
@@ -38,17 +39,17 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
   const [isEditingLabel, setIsEditingLabel] = useState(false);
   const [labelInput, setLabelInput] = useState('');
   const [activeTab, setActiveTab] = useState('style');
-  const [hoveredClassId, setHoveredClassId] = useState<string | null>(null);
-  const [editingClassIndex, setEditingClassIndex] = useState<number | null>(null);
-  const [editingClassValue, setEditingClassValue] = useState('');
+  const [activeClassIndex, setActiveClassIndex] = useState<number | null>(null);
   
-  // Initialize label input when selectedInstance changes
+  // Initialize label input and active class when selectedInstance changes
   useEffect(() => {
     if (selectedInstance) {
       setLabelInput(selectedInstance.label || selectedInstance.type);
       setActiveTab('style'); // Reset to style tab when component is selected
+      // Set active class to primary (index 0) when switching to a different component
+      setActiveClassIndex(selectedInstance.styleSourceIds && selectedInstance.styleSourceIds.length > 0 ? 0 : null);
     }
-  }, [selectedInstance]);
+  }, [selectedInstance?.id]);
 
   const [openSections, setOpenSections] = useState({
     layout: true,
@@ -65,7 +66,13 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
     setOpenSections((prev) => ({ ...prev, [section]: !prev[section] }));
   };
 
-  const computedStyles = selectedInstance ? getComputedStyles(selectedInstance.styleSourceIds || []) : {};
+  // Get computed styles - if we have an active combo class, show only that class's styles
+  // Otherwise show all classes combined
+  const computedStyles = selectedInstance 
+    ? (activeClassIndex !== null && activeClassIndex > 0 && selectedInstance.styleSourceIds
+        ? getComputedStyles([selectedInstance.styleSourceIds[activeClassIndex]])
+        : getComputedStyles(selectedInstance.styleSourceIds || []))
+    : {};
 
   // Sync label input to selected instance (unconditional hook placement)
   useEffect(() => {
@@ -140,46 +147,62 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
   };
 
   const updateStyle = (property: string, value: string) => {
-    const id = ensurePrimaryClass();
-    if (id) setStyle(id, property, value);
+    // If we have an active combo class (activeClassIndex > 0), update that
+    // Otherwise update the primary class
+    let targetClassId: string;
+    
+    if (activeClassIndex !== null && activeClassIndex > 0 && selectedInstance.styleSourceIds) {
+      targetClassId = selectedInstance.styleSourceIds[activeClassIndex];
+    } else {
+      targetClassId = ensurePrimaryClass();
+    }
+    
+    if (targetClassId) {
+      setStyle(targetClassId, property, value);
+    }
   };
 
-  const handleAddClass = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && classNameInput.trim()) {
-      const safeName = classNameInput.trim().toLowerCase().replace(/[^a-z0-9-_]/g, '-');
-      if (!safeName) return;
-      
-      const newClassId = createStyleSource('local', safeName);
-      const newStyleSourceIds = [...(selectedInstance.styleSourceIds || []), newClassId];
+  const handleAddClass = (className: string) => {
+    const safeName = className.trim().toLowerCase().replace(/[^a-z0-9-_]/g, '-');
+    if (!safeName) return;
+    
+    // Check if class already exists in the style store
+    const existingClassId = Object.entries(styleSources).find(
+      ([_, source]) => source.name === safeName && source.type === 'local'
+    )?.[0];
+    
+    let classIdToAdd: string;
+    
+    if (existingClassId) {
+      // Reuse existing class
+      classIdToAdd = existingClassId;
+    } else {
+      // Create new class
+      classIdToAdd = createStyleSource('local', safeName);
+    }
+    
+    // Add to instance's styleSourceIds if not already present
+    const currentIds = selectedInstance.styleSourceIds || [];
+    if (!currentIds.includes(classIdToAdd)) {
+      const newStyleSourceIds = [...currentIds, classIdToAdd];
       updateInstance(selectedInstance.id, { styleSourceIds: newStyleSourceIds });
-      setClassNameInput('');
+      // Set this as the active class
+      setActiveClassIndex(newStyleSourceIds.length - 1);
     }
   };
 
   const handleRemoveClass = (classId: string) => {
     const newStyleSourceIds = selectedInstance.styleSourceIds?.filter(id => id !== classId) || [];
     updateInstance(selectedInstance.id, { styleSourceIds: newStyleSourceIds });
-    deleteStyleSource(classId);
-  };
-
-  const handleEditClass = (index: number) => {
-    const classId = selectedInstance.styleSourceIds?.[index];
-    if (classId && styleSources[classId]) {
-      setEditingClassIndex(index);
-      setEditingClassValue(styleSources[classId].name);
+    
+    // Reset active class index if needed
+    if (activeClassIndex !== null && activeClassIndex >= newStyleSourceIds.length) {
+      setActiveClassIndex(newStyleSourceIds.length > 0 ? 0 : null);
     }
   };
 
-  const handleSaveEditedClass = () => {
-    if (editingClassIndex !== null && editingClassValue.trim()) {
-      const classId = selectedInstance.styleSourceIds?.[editingClassIndex];
-      if (classId) {
-        const safeName = editingClassValue.trim().toLowerCase().replace(/[^a-z0-9-_]/g, '-');
-        renameStyleSource(classId, safeName);
-      }
-    }
-    setEditingClassIndex(null);
-    setEditingClassValue('');
+  const handleClassClick = (classId: string, index: number) => {
+    setActiveClassIndex(index);
   };
 
   const handleResetStyles = () => {
@@ -230,25 +253,32 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
   };
 
   const hasStylesInSection = (properties: string[]) => {
-    const primaryClassId = selectedInstance.styleSourceIds?.[0];
-    if (!primaryClassId) return false;
+    // Check the active class or primary class
+    const targetClassId = activeClassIndex !== null && activeClassIndex >= 0 && selectedInstance.styleSourceIds
+      ? selectedInstance.styleSourceIds[activeClassIndex]
+      : selectedInstance.styleSourceIds?.[0];
+      
+    if (!targetClassId) return false;
     const { styles, currentBreakpointId, currentPseudoState, styleSources } = useStyleStore.getState();
-    const name = styleSources[primaryClassId]?.name?.trim();
+    const name = styleSources[targetClassId]?.name?.trim();
     if (!name) return false;
     
     // Check if any property has an explicit value set for this class at this breakpoint and state
     return properties.some((prop) => {
-      const key = `${primaryClassId}:${currentBreakpointId}:${currentPseudoState}:${prop}`;
+      const key = `${targetClassId}:${currentBreakpointId}:${currentPseudoState}:${prop}`;
       const val = styles[key];
       return val !== undefined && val !== '' && val !== 'initial' && val !== 'inherit' && val !== 'normal' && val !== 'auto' && val !== 'none';
     });
   };
   
   const clearSectionStyles = (properties: string[]) => {
-    const primaryClassId = selectedInstance.styleSourceIds?.[0];
-    if (!primaryClassId) return;
+    const targetClassId = activeClassIndex !== null && activeClassIndex >= 0 && selectedInstance.styleSourceIds
+      ? selectedInstance.styleSourceIds[activeClassIndex]
+      : selectedInstance.styleSourceIds?.[0];
+      
+    if (!targetClassId) return;
     properties.forEach(prop => {
-      setStyle(primaryClassId, prop, '');
+      setStyle(targetClassId, prop, '');
     });
   };
 
@@ -261,21 +291,31 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
     properties?: string[];
   }> = ({ title, section, children, hasAddButton, indicator, properties }) => {
     const hasStyles = properties ? hasStylesInSection(properties) : indicator;
+    const isPrimary = activeClassIndex === null || activeClassIndex === 0;
     
     return (
       <div className="Section">
         <div className="SectionHeader" onClick={() => toggleSection(section)}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-            <span className={`SectionTitle ${hasStyles ? 'text-yellow-600' : ''}`}>{title}</span>
+            <span className={`SectionTitle ${hasStyles ? (isPrimary ? 'text-blue-600 dark:text-blue-400' : 'text-yellow-600 dark:text-yellow-400') : ''}`}>
+              {title}
+            </span>
             {hasStyles && (
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'hsl(217, 91%, 60%)' }} />
+                    <span style={{ 
+                      width: '8px', 
+                      height: '8px', 
+                      borderRadius: '50%', 
+                      background: isPrimary ? 'hsl(217, 91%, 60%)' : 'hsl(45, 93%, 47%)'
+                    }} />
                   </TooltipTrigger>
                   <TooltipContent side="right" className="bg-popover border border-border">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs">Active styles</span>
+                      <span className="text-xs">
+                        {isPrimary ? 'Primary class styles' : 'Combo class overrides'}
+                      </span>
                       {properties && (
                         <Button
                           size="sm"
@@ -437,7 +477,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
             <div style={{ padding: 'var(--space-3)', borderBottom: '1px solid hsl(var(--border))' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-2)' }}>
                 <div style={{ fontSize: '10px', fontWeight: 600, color: 'hsl(var(--muted-foreground))', letterSpacing: '0.5px' }}>
-                  CLASS SELECTOR
+                  STYLE SOURCES
                 </div>
                 {classes.length > 0 && (
                   <TooltipProvider>
@@ -458,66 +498,16 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
                 )}
               </div>
 
-              {/* Class badges */}
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-1)', marginBottom: 'var(--space-2)' }}>
-                {classes.map((cls, index) => (
-                  <div
-                    key={cls.id}
-                    onMouseEnter={() => setHoveredClassId(cls.id)}
-                    onMouseLeave={() => setHoveredClassId(null)}
-                    className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-mono transition-all ${
-                      cls.isPrimary 
-                        ? 'bg-primary text-primary-foreground' 
-                        : 'bg-muted text-muted-foreground'
-                    } ${hoveredClassId === cls.id ? 'ring-2 ring-primary ring-offset-1' : ''}`}
-                  >
-                    {editingClassIndex === index ? (
-                      <Input
-                        value={editingClassValue}
-                        onChange={(e) => setEditingClassValue(e.target.value)}
-                        onBlur={handleSaveEditedClass}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') handleSaveEditedClass();
-                          if (e.key === 'Escape') {
-                            setEditingClassIndex(null);
-                            setEditingClassValue('');
-                          }
-                        }}
-                        autoFocus
-                        className="h-4 w-24 px-1 py-0 text-xs border-0 focus-visible:ring-1"
-                      />
-                    ) : (
-                      <>
-                        <span 
-                          onClick={() => handleEditClass(index)}
-                          className="cursor-pointer hover:underline"
-                        >
-                          .{cls.name}
-                        </span>
-                        {cls.isPrimary && (
-                          <span className="text-[9px] opacity-60">PRIMARY</span>
-                        )}
-                        <X
-                          className="w-3 h-3 cursor-pointer hover:opacity-70"
-                          onClick={() => handleRemoveClass(cls.id)}
-                        />
-                      </>
-                    )}
-                  </div>
-                ))}
-              </div>
-
-              {/* Add class input */}
-              <Input
-                placeholder="+ Add class (Enter to confirm)"
-                value={classNameInput}
-                onChange={(e) => setClassNameInput(e.target.value)}
-                onKeyDown={handleAddClass}
-                className="text-xs h-8 font-mono"
+              <ClassSelector
+                selectedClasses={classes}
+                onAddClass={handleAddClass}
+                onRemoveClass={handleRemoveClass}
+                onClassClick={handleClassClick}
+                activeClassIndex={activeClassIndex}
               />
 
               {/* State dropdown */}
-              <div style={{ marginTop: 'var(--space-2)' }}>
+              <div style={{ marginTop: 'var(--space-3)' }}>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button 
@@ -532,7 +522,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
                       <ChevronDown className="w-3 h-3" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuContent align="end" className="w-48 bg-background z-[10000]">
                     <DropdownMenuItem onClick={() => setCurrentPseudoState('default')}>
                       Default
                     </DropdownMenuItem>
@@ -555,7 +545,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
 
               {classes.length === 0 && (
                 <div 
-                  className="bg-muted/50 border border-dashed border-border rounded text-center mt-2"
+                  className="bg-muted/50 border border-dashed border-border rounded text-center mt-3"
                   style={{ padding: 'var(--space-3)' }}
                 >
                   <div style={{ fontSize: '11px', color: 'hsl(var(--muted-foreground))', marginBottom: '4px' }}>
