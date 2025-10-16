@@ -14,114 +14,54 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange, class
   const hueRef = useRef<HTMLDivElement>(null);
   const alphaRef = useRef<HTMLDivElement>(null);
   
-  const parsed = parseColorValue(value || '#3B82F6');
-  const [r, setR] = useState(parsed?.r || 59);
-  const [g, setG] = useState(parsed?.g || 130);
-  const [b, setB] = useState(parsed?.b || 246);
-  const [alpha, setAlpha] = useState((parsed?.a || 1) * 100);
+  // Original color stored when modal opens
+  const [originalColor, setOriginalColor] = useState(value);
   
-  const hsl = parsed ? rgbToHsl(parsed.r, parsed.g, parsed.b) : { h: 217, s: 91, l: 60 };
-  const [h, setH] = useState(hsl.h);
-  const [s, setS] = useState(hsl.s);
-  const [l, setL] = useState(hsl.l);
+  // Working state - only used while modal is open
+  const [workingR, setWorkingR] = useState(0);
+  const [workingG, setWorkingG] = useState(0);
+  const [workingB, setWorkingB] = useState(0);
+  const [workingAlpha, setWorkingAlpha] = useState(100);
+  const [workingH, setWorkingH] = useState(0);
+  const [workingS, setWorkingS] = useState(0);
+  const [workingL, setWorkingL] = useState(0);
   
   const [isDraggingPicker, setIsDraggingPicker] = useState(false);
   const [isDraggingHue, setIsDraggingHue] = useState(false);
   const [isDraggingAlpha, setIsDraggingAlpha] = useState(false);
   
-  // Store original values for cancel functionality
-  const [originalColor, setOriginalColor] = useState(value);
-  
-  // Track temporary color state (live preview)
-  const [tempR, setTempR] = useState(r);
-  const [tempG, setTempG] = useState(g);
-  const [tempB, setTempB] = useState(b);
-  const [tempAlpha, setTempAlpha] = useState(alpha);
-  const [tempH, setTempH] = useState(h);
-  const [tempS, setTempS] = useState(s);
-  const [tempL, setTempL] = useState(l);
-  
-  useEffect(() => {
-    const parsed = parseColorValue(value || '#3B82F6');
-    if (parsed) {
-      setR(parsed.r);
-      setG(parsed.g);
-      setB(parsed.b);
-      setAlpha(parsed.a * 100);
-      setTempR(parsed.r);
-      setTempG(parsed.g);
-      setTempB(parsed.b);
-      setTempAlpha(parsed.a * 100);
-      const hsl = rgbToHsl(parsed.r, parsed.g, parsed.b);
-      setH(hsl.h);
-      setS(hsl.s);
-      setL(hsl.l);
-      setTempH(hsl.h);
-      setTempS(hsl.s);
-      setTempL(hsl.l);
-    }
-  }, [value]);
-  
-  // Store original color when opening picker
+  // Initialize working state when opening
   const handleOpenChange = (isOpen: boolean) => {
     if (isOpen) {
       setOriginalColor(value);
-      // Initialize temp values
-      setTempR(r);
-      setTempG(g);
-      setTempB(b);
-      setTempAlpha(alpha);
-      setTempH(h);
-      setTempS(s);
-      setTempL(l);
+      const parsed = parseColorValue(value || '#3B82F6');
+      if (parsed) {
+        setWorkingR(parsed.r);
+        setWorkingG(parsed.g);
+        setWorkingB(parsed.b);
+        setWorkingAlpha(parsed.a * 100);
+        const hsl = rgbToHsl(parsed.r, parsed.g, parsed.b);
+        setWorkingH(hsl.h);
+        setWorkingS(hsl.s);
+        setWorkingL(hsl.l);
+      }
     }
     setOpen(isOpen);
   };
   
   const handleConfirm = () => {
-    // Apply the temporary color
-    const a = tempAlpha / 100;
-    onChange(`rgba(${tempR}, ${tempG}, ${tempB}, ${a})`);
-    
-    // Update main state
-    setR(tempR);
-    setG(tempG);
-    setB(tempB);
-    setAlpha(tempAlpha);
-    setH(tempH);
-    setS(tempS);
-    setL(tempL);
-    
+    // Only update parent on confirm
+    const a = workingAlpha / 100;
+    onChange(`rgba(${workingR}, ${workingG}, ${workingB}, ${a})`);
     setOpen(false);
   };
   
   const handleCancel = () => {
-    // Revert to original color
-    if (originalColor) {
-      onChange(originalColor);
-      const parsed = parseColorValue(originalColor);
-      if (parsed) {
-        setR(parsed.r);
-        setG(parsed.g);
-        setB(parsed.b);
-        setAlpha(parsed.a * 100);
-        setTempR(parsed.r);
-        setTempG(parsed.g);
-        setTempB(parsed.b);
-        setTempAlpha(parsed.a * 100);
-        const hsl = rgbToHsl(parsed.r, parsed.g, parsed.b);
-        setH(hsl.h);
-        setS(hsl.s);
-        setL(hsl.l);
-        setTempH(hsl.h);
-        setTempS(hsl.s);
-        setTempL(hsl.l);
-      }
-    }
+    // Don't change anything, just close
     setOpen(false);
   };
   
-  // Mouse move handlers
+  // Mouse move handlers for dragging
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (isDraggingPicker && pickerRef.current) {
@@ -130,17 +70,17 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange, class
         const y = Math.max(0, Math.min(e.clientY - rect.top, rect.height));
         const newS = (x / rect.width) * 100;
         const newL = 100 - (y / rect.height) * 100;
-        updateFromHsl(tempH, newS, newL, tempAlpha, true);
+        updateFromHsl(workingH, newS, newL, workingAlpha);
       } else if (isDraggingHue && hueRef.current) {
         const rect = hueRef.current.getBoundingClientRect();
         const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
         const newH = (x / rect.width) * 360;
-        updateFromHsl(newH, tempS, tempL, tempAlpha, true);
+        updateFromHsl(newH, workingS, workingL, workingAlpha);
       } else if (isDraggingAlpha && alphaRef.current) {
         const rect = alphaRef.current.getBoundingClientRect();
         const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
         const newAlpha = (x / rect.width) * 100;
-        updateFromHsl(tempH, tempS, tempL, newAlpha, true);
+        updateFromHsl(workingH, workingS, workingL, newAlpha);
       }
     };
     
@@ -158,45 +98,35 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange, class
         document.removeEventListener('mouseup', handleMouseUp);
       };
     }
-  }, [isDraggingPicker, isDraggingHue, isDraggingAlpha, tempH, tempS, tempL, tempAlpha]);
+  }, [isDraggingPicker, isDraggingHue, isDraggingAlpha, workingH, workingS, workingL, workingAlpha]);
   
-  const updateFromRgb = (newR: number, newG: number, newB: number, newAlpha: number, liveUpdate: boolean = true) => {
-    setTempR(newR);
-    setTempG(newG);
-    setTempB(newB);
-    setTempAlpha(newAlpha);
+  const updateFromRgb = (newR: number, newG: number, newB: number, newAlpha: number) => {
+    setWorkingR(newR);
+    setWorkingG(newG);
+    setWorkingB(newB);
+    setWorkingAlpha(newAlpha);
     
     const hsl = rgbToHsl(newR, newG, newB);
-    setTempH(hsl.h);
-    setTempS(hsl.s);
-    setTempL(hsl.l);
-    
-    if (liveUpdate) {
-      const a = newAlpha / 100;
-      onChange(`rgba(${newR}, ${newG}, ${newB}, ${a})`);
-    }
+    setWorkingH(hsl.h);
+    setWorkingS(hsl.s);
+    setWorkingL(hsl.l);
   };
   
-  const updateFromHsl = (newH: number, newS: number, newL: number, newAlpha: number, liveUpdate: boolean = true) => {
-    setTempH(newH);
-    setTempS(newS);
-    setTempL(newL);
-    setTempAlpha(newAlpha);
+  const updateFromHsl = (newH: number, newS: number, newL: number, newAlpha: number) => {
+    setWorkingH(newH);
+    setWorkingS(newS);
+    setWorkingL(newL);
+    setWorkingAlpha(newAlpha);
     
     const rgb = hslToRgb(newH, newS, newL);
-    setTempR(rgb.r);
-    setTempG(rgb.g);
-    setTempB(rgb.b);
-    
-    if (liveUpdate) {
-      const a = newAlpha / 100;
-      onChange(`rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${a})`);
-    }
+    setWorkingR(rgb.r);
+    setWorkingG(rgb.g);
+    setWorkingB(rgb.b);
   };
   
-  const currentColor = `rgba(${tempR}, ${tempG}, ${tempB}, ${tempAlpha / 100})`;
-  const hex = rgbToHex(tempR, tempG, tempB);
-  const hueColor = `hsl(${tempH}, 100%, 50%)`;
+  const currentColor = `rgba(${workingR}, ${workingG}, ${workingB}, ${workingAlpha / 100})`;
+  const hex = rgbToHex(workingR, workingG, workingB);
+  const hueColor = `hsl(${workingH}, 100%, 50%)`;
   
   // Common color tokens
   const tokens = [
@@ -210,27 +140,40 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange, class
     { name: 'Destructive', hex: '#EF4444', value: 'hsl(var(--destructive))' },
   ];
   
-  const handleTokenClick = (tokenValue: string) => {
-    // Update temp state with token color for preview
-    const parsed = parseColorValue(tokenValue);
+  const handleTokenClick = (tokenHex: string) => {
+    const parsed = parseColorValue(tokenHex);
     if (parsed) {
-      setTempR(parsed.r);
-      setTempG(parsed.g);
-      setTempB(parsed.b);
-      setTempAlpha(parsed.a * 100);
-      const hsl = rgbToHsl(parsed.r, parsed.g, parsed.b);
-      setTempH(hsl.h);
-      setTempS(hsl.s);
-      setTempL(hsl.l);
-      
-      // Live preview
-      onChange(tokenValue);
+      updateFromRgb(parsed.r, parsed.g, parsed.b, workingAlpha);
     }
-    // Don't close the modal - let user confirm or cancel
+  };
+  
+  const handleHexInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    // Allow typing incomplete hex values
+    if (/^#[0-9A-Fa-f]{0,6}$/.test(val)) {
+      // Only parse when complete
+      if (val.length === 7) {
+        const parsed = parseColorValue(val);
+        if (parsed) {
+          updateFromRgb(parsed.r, parsed.g, parsed.b, workingAlpha);
+        }
+      }
+    }
+  };
+  
+  const handleAlphaInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    // Allow empty or partial input
+    if (val === '') return;
+    const numVal = parseInt(val);
+    if (!isNaN(numVal)) {
+      const clampedVal = Math.max(0, Math.min(100, numVal));
+      updateFromHsl(workingH, workingS, workingL, clampedVal);
+    }
   };
   
   return (
-    <Popover open={open} onOpenChange={handleOpenChange} modal={false}>
+    <Popover open={open} onOpenChange={handleOpenChange} modal={true}>
       <PopoverTrigger asChild>
         <button
           className={`relative w-5 h-5 rounded border border-border cursor-pointer overflow-hidden ${className || ''}`}
@@ -252,17 +195,21 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange, class
         </button>
       </PopoverTrigger>
       <PopoverContent 
-        className="w-64 p-3 animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95" 
+        className="w-64 p-3 animate-in fade-in-0 zoom-in-95 duration-200" 
         align="start" 
+        side="right"
+        sideOffset={5}
         style={{ zIndex: 9999 }}
+        onOpenAutoFocus={(e) => e.preventDefault()}
+        onCloseAutoFocus={(e) => e.preventDefault()}
         onPointerDownOutside={(e) => {
-          // Prevent closing during drag operations
+          // Only close if not dragging and not clicking inside inputs
           if (isDraggingPicker || isDraggingHue || isDraggingAlpha) {
             e.preventDefault();
           }
         }}
         onInteractOutside={(e) => {
-          // Prevent closing when clicking inside the popover
+          // Prevent accidental closure during interactions
           if (isDraggingPicker || isDraggingHue || isDraggingAlpha) {
             e.preventDefault();
           }
@@ -272,7 +219,7 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange, class
         {/* 2D Color Picker */}
         <div
           ref={pickerRef}
-          className="relative w-full h-40 rounded border border-border cursor-crosshair mb-3"
+          className="relative w-full h-40 rounded border border-border cursor-crosshair mb-3 select-none"
           style={{
             background: `
               linear-gradient(to top, #000, transparent),
@@ -288,7 +235,7 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange, class
               const y = Math.max(0, Math.min(e.clientY - rect.top, rect.height));
               const newS = (x / rect.width) * 100;
               const newL = 100 - (y / rect.height) * 100;
-              updateFromHsl(tempH, newS, newL, tempAlpha);
+              updateFromHsl(workingH, newS, newL, workingAlpha);
             }
             setIsDraggingPicker(true);
           }}
@@ -297,8 +244,8 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange, class
           <div
             className="absolute w-4 h-4 border-2 border-white rounded-full shadow-lg pointer-events-none"
             style={{
-              left: `${tempS}%`,
-              top: `${100 - tempL}%`,
+              left: `${workingS}%`,
+              top: `${100 - workingL}%`,
               transform: 'translate(-50%, -50%)',
               boxShadow: '0 0 0 1px rgba(0,0,0,0.3), inset 0 0 0 1px rgba(0,0,0,0.3)',
             }}
@@ -309,7 +256,7 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange, class
         <div className="mb-3">
           <div
             ref={hueRef}
-            className="relative w-full h-3 rounded cursor-pointer"
+            className="relative w-full h-3 rounded cursor-pointer select-none"
             style={{
               background: 'linear-gradient(to right, #ff0000 0%, #ffff00 17%, #00ff00 33%, #00ffff 50%, #0000ff 67%, #ff00ff 83%, #ff0000 100%)',
             }}
@@ -320,7 +267,7 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange, class
               if (rect) {
                 const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
                 const newH = (x / rect.width) * 360;
-                updateFromHsl(newH, tempS, tempL, tempAlpha);
+                updateFromHsl(newH, workingS, workingL, workingAlpha);
               }
               setIsDraggingHue(true);
             }}
@@ -329,7 +276,7 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange, class
             <div
               className="absolute w-3 h-5 border-2 border-white rounded shadow-lg pointer-events-none"
               style={{
-                left: `${(tempH / 360) * 100}%`,
+                left: `${(workingH / 360) * 100}%`,
                 top: '50%',
                 transform: 'translate(-50%, -50%)',
                 backgroundColor: hueColor,
@@ -342,10 +289,10 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange, class
         <div className="mb-3">
           <div
             ref={alphaRef}
-            className="relative w-full h-3 rounded cursor-pointer border border-border"
+            className="relative w-full h-3 rounded cursor-pointer border border-border select-none"
             style={{
               background: `
-                linear-gradient(to right, transparent, ${rgbToHex(tempR, tempG, tempB)}),
+                linear-gradient(to right, transparent, ${rgbToHex(workingR, workingG, workingB)}),
                 linear-gradient(45deg, #ccc 25%, transparent 25%),
                 linear-gradient(-45deg, #ccc 25%, transparent 25%),
                 linear-gradient(45deg, transparent 75%, #ccc 75%),
@@ -361,7 +308,7 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange, class
               if (rect) {
                 const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
                 const newAlpha = (x / rect.width) * 100;
-                updateFromHsl(tempH, tempS, tempL, newAlpha);
+                updateFromHsl(workingH, workingS, workingL, newAlpha);
               }
               setIsDraggingAlpha(true);
             }}
@@ -370,7 +317,7 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange, class
             <div
               className="absolute w-3 h-5 border-2 border-white rounded shadow-lg pointer-events-none"
               style={{
-                left: `${tempAlpha}%`,
+                left: `${workingAlpha}%`,
                 top: '50%',
                 transform: 'translate(-50%, -50%)',
                 backgroundColor: currentColor,
@@ -385,18 +332,10 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange, class
             <input
               type="text"
               value={hex}
-              onChange={(e) => {
-                const val = e.target.value;
-                if (/^#[0-9A-Fa-f]{0,6}$/.test(val)) {
-                  if (val.length === 7) {
-                    const parsed = parseColorValue(val);
-                    if (parsed) {
-                      updateFromRgb(parsed.r, parsed.g, parsed.b, tempAlpha);
-                    }
-                  }
-                }
-              }}
-              className="w-full h-7 px-2 text-xs border border-border rounded bg-background text-center font-mono uppercase"
+              onChange={handleHexInput}
+              onClick={(e) => e.stopPropagation()}
+              onMouseDown={(e) => e.stopPropagation()}
+              className="w-full h-7 px-2 text-xs border border-border rounded bg-background text-center font-mono uppercase focus:outline-none focus:ring-2 focus:ring-primary"
               placeholder="#000000"
             />
           </div>
@@ -405,12 +344,12 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange, class
               type="number"
               min="0"
               max="100"
-              value={Math.round(tempAlpha)}
-              onChange={(e) => {
-                const val = Math.max(0, Math.min(100, parseInt(e.target.value) || 0));
-                updateFromHsl(tempH, tempS, tempL, val);
-              }}
-              className="w-full h-7 px-1 text-xs border border-border rounded bg-background text-center"
+              value={Math.round(workingAlpha)}
+              onChange={handleAlphaInput}
+              onClick={(e) => e.stopPropagation()}
+              onMouseDown={(e) => e.stopPropagation()}
+              onKeyDown={(e) => e.stopPropagation()}
+              className="w-full h-7 px-1 text-xs border border-border rounded bg-background text-center focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
           <span className="text-xs text-muted-foreground">%</span>
@@ -423,7 +362,11 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange, class
             {tokens.map((token) => (
               <button
                 key={token.name}
-                onClick={() => handleTokenClick(token.value)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleTokenClick(token.hex);
+                }}
+                onMouseDown={(e) => e.stopPropagation()}
                 className="w-full flex items-center gap-1.5 px-1.5 py-0.5 rounded hover:bg-accent transition-colors text-left"
               >
                 <div
@@ -440,14 +383,22 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange, class
         {/* Confirm/Cancel buttons */}
         <div className="flex gap-2 pt-2 border-t border-border mt-2">
           <button
-            onClick={handleCancel}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleCancel();
+            }}
+            onMouseDown={(e) => e.stopPropagation()}
             className="flex-1 h-7 px-2 text-xs border border-border rounded bg-background hover:bg-accent transition-colors flex items-center justify-center gap-1"
           >
             <span>✕</span>
             <span>Cancel</span>
           </button>
           <button
-            onClick={handleConfirm}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleConfirm();
+            }}
+            onMouseDown={(e) => e.stopPropagation()}
             className="flex-1 h-7 px-2 text-xs bg-primary text-primary-foreground rounded hover:bg-primary/90 transition-colors flex items-center justify-center gap-1"
           >
             <span>✓</span>
