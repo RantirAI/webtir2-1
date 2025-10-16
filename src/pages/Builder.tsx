@@ -7,7 +7,7 @@ import { StyleSheetInjector } from '@/builder/components/StyleSheetInjector';
 import { ProjectSettingsModal } from '@/builder/components/ProjectSettingsModal';
 import { Toaster } from '@/components/ui/toaster';
 import { Button } from '@/components/ui/button';
-import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, DragOverEvent, closestCenter, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, DragOverEvent, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useBuilderStore } from '@/builder/store/useBuilderStore';
 import { componentRegistry } from '@/builder/primitives/registry';
@@ -16,6 +16,7 @@ import { generateId } from '@/builder/utils/instance';
 import { useStyleStore } from '@/builder/store/useStyleStore';
 import { useKeyboardShortcuts } from '@/builder/hooks/useKeyboardShortcuts';
 import { DropIndicator } from '@/builder/components/DropIndicator';
+import { deepestContainerCollision } from '@/builder/utils/collisionDetection';
 import * as Icons from 'lucide-react';
 
 const Builder: React.FC = () => {
@@ -228,7 +229,7 @@ const Builder: React.FC = () => {
       onDragStart={handleDragStart}
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
-      collisionDetection={closestCenter}
+      collisionDetection={deepestContainerCollision}
     >
       <div className="h-screen flex flex-col overflow-hidden bg-white">
         {/* Global stylesheet for builder classes */}
