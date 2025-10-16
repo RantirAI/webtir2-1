@@ -40,6 +40,29 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
     value: string;
     unit: string;
   } | null>(null);
+  const [isShiftPressed, setIsShiftPressed] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Shift') {
+        setIsShiftPressed(true);
+      }
+    };
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.key === 'Shift') {
+        setIsShiftPressed(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, []);
 
   useEffect(() => {
     if (!dragState?.isDragging) return;
@@ -52,7 +75,18 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
       const change = Math.sign(deltaY) * speed;
       const newValue = Math.max(0, dragState.startValue + Math.round(deltaY / (speed === 5 ? 2 : 1)));
       
-      onUpdate(dragState.property, `${newValue}${dragState.unit}`);
+      // If Shift is pressed, update all sides of margin or padding
+      if (e.shiftKey) {
+        const isMargin = dragState.property.startsWith('margin');
+        const propertyType = isMargin ? 'margin' : 'padding';
+        const sides = ['Top', 'Right', 'Bottom', 'Left'];
+        
+        sides.forEach(side => {
+          onUpdate(`${propertyType}${side}`, `${newValue}${dragState.unit}`);
+        });
+      } else {
+        onUpdate(dragState.property, `${newValue}${dragState.unit}`);
+      }
     };
 
     const handleMouseUp = () => {
@@ -147,20 +181,54 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
   const handlePopoverUnitChange = (unit: string) => {
     if (editingProperty) {
       setEditingProperty({ ...editingProperty, unit });
-      onUpdate(editingProperty.property, `${editingProperty.value}${unit}`);
+      
+      // If Shift is pressed, update all sides
+      if (isShiftPressed) {
+        const isMargin = editingProperty.property.startsWith('margin');
+        const propertyType = isMargin ? 'margin' : 'padding';
+        const sides = ['Top', 'Right', 'Bottom', 'Left'];
+        
+        sides.forEach(side => {
+          onUpdate(`${propertyType}${side}`, `${editingProperty.value}${unit}`);
+        });
+      } else {
+        onUpdate(editingProperty.property, `${editingProperty.value}${unit}`);
+      }
     }
   };
 
   const handlePopoverClose = () => {
     if (editingProperty) {
-      onUpdate(editingProperty.property, `${editingProperty.value}${editingProperty.unit}`);
+      // If Shift is pressed, update all sides
+      if (isShiftPressed) {
+        const isMargin = editingProperty.property.startsWith('margin');
+        const propertyType = isMargin ? 'margin' : 'padding';
+        const sides = ['Top', 'Right', 'Bottom', 'Left'];
+        
+        sides.forEach(side => {
+          onUpdate(`${propertyType}${side}`, `${editingProperty.value}${editingProperty.unit}`);
+        });
+      } else {
+        onUpdate(editingProperty.property, `${editingProperty.value}${editingProperty.unit}`);
+      }
       setEditingProperty(null);
     }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && editingProperty) {
-      onUpdate(editingProperty.property, `${editingProperty.value}${editingProperty.unit}`);
+      // If Shift is pressed, update all sides
+      if (e.shiftKey) {
+        const isMargin = editingProperty.property.startsWith('margin');
+        const propertyType = isMargin ? 'margin' : 'padding';
+        const sides = ['Top', 'Right', 'Bottom', 'Left'];
+        
+        sides.forEach(side => {
+          onUpdate(`${propertyType}${side}`, `${editingProperty.value}${editingProperty.unit}`);
+        });
+      } else {
+        onUpdate(editingProperty.property, `${editingProperty.value}${editingProperty.unit}`);
+      }
       setEditingProperty(null);
     }
   };
@@ -225,7 +293,12 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
           }}
         >
           <div className="space-y-3">
-            <Label className="text-sm font-medium">{getPropertyLabel(property)}</Label>
+            <div className="flex items-center justify-between">
+              <Label className="text-sm font-medium">{getPropertyLabel(property)}</Label>
+              {isShiftPressed && (
+                <span className="text-xs text-muted-foreground">All sides</span>
+              )}
+            </div>
             <div className="flex gap-2">
               <Input
                 type="number"
@@ -252,6 +325,9 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
                 </SelectContent>
               </Select>
             </div>
+            <p className="text-xs text-muted-foreground">
+              Hold Shift to change all {property.startsWith('margin') ? 'margins' : 'paddings'}
+            </p>
           </div>
         </PopoverContent>
       </Popover>

@@ -121,7 +121,7 @@ export const ClassSelector: React.FC<ClassSelectorProps> = ({
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder={selectedClasses.length === 0 ? "+ Add class (Enter to confirm)" : ""}
-              className="flex-1 min-w-[120px] outline-none bg-transparent text-xs font-mono placeholder:text-muted-foreground px-1"
+              className="flex-1 min-w-[120px] outline-none bg-transparent text-foreground text-xs font-mono placeholder:text-muted-foreground px-1"
             />
           </div>
         </PopoverTrigger>
