@@ -34,11 +34,18 @@ export const deepestContainerCollision: CollisionDetection = ({
       const element = droppableContainer.node.current;
       const depth = element ? getElementDepth(element) : 0;
 
+      // Get the instance type to prioritize actual containers over canvas
+      const instanceType = droppableContainer.data.current?.type;
+      const isActualContainer = ['Box', 'Container', 'Section'].includes(instanceType || '');
+      
+      // Boost depth for actual container components to ensure they're prioritized
+      const adjustedDepth = isActualContainer ? depth + 100 : depth;
+
       collisions.push({
         id,
         data: {
           droppableContainer,
-          value: depth, // Use depth as the collision value (higher = more nested)
+          value: adjustedDepth,
         },
       });
     }
