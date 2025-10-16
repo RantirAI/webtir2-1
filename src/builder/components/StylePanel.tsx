@@ -498,27 +498,26 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
                 )}
               </div>
 
-              <ClassSelector
-                selectedClasses={classes}
-                onAddClass={handleAddClass}
-                onRemoveClass={handleRemoveClass}
-                onClassClick={handleClassClick}
-                activeClassIndex={activeClassIndex}
-              />
+              <div className="flex items-start gap-2">
+                <div className="flex-1">
+                  <ClassSelector
+                    selectedClasses={classes}
+                    onAddClass={handleAddClass}
+                    onRemoveClass={handleRemoveClass}
+                    onClassClick={handleClassClick}
+                    activeClassIndex={activeClassIndex}
+                  />
+                </div>
 
-              {/* State dropdown */}
-              <div style={{ marginTop: 'var(--space-3)' }}>
+                {/* State dropdown - aligned to the right */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button 
                       variant="outline" 
                       size="sm" 
-                      className="w-full justify-between h-8 text-xs font-normal"
+                      className="w-16 h-9 justify-center text-xs font-normal px-2"
+                      title={`State: ${currentPseudoState}`}
                     >
-                      <span className="flex items-center gap-2">
-                        <span className="text-muted-foreground">State:</span>
-                        <span className="font-medium capitalize">{currentPseudoState}</span>
-                      </span>
                       <ChevronDown className="w-3 h-3" />
                     </Button>
                   </DropdownMenuTrigger>
