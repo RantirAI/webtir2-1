@@ -41,7 +41,6 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
     unit: string;
   } | null>(null);
   const [isShiftPressed, setIsShiftPressed] = useState(false);
-  const [clickStartPos, setClickStartPos] = useState<{ x: number; y: number } | null>(null);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -65,11 +64,15 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
     };
   }, []);
 
+  // Global drag handling
   useEffect(() => {
     if (!dragState?.isDragging) return;
 
-    const handleMouseMove = (e: MouseEvent) => {
+    const handleGlobalMouseMove = (e: MouseEvent) => {
       if (!dragState) return;
+      
+      e.preventDefault();
+      e.stopPropagation();
       
       const deltaY = dragState.startY - e.clientY;
       const newValue = Math.max(0, dragState.startValue + Math.round(deltaY));
@@ -88,21 +91,24 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
       }
     };
 
-    const handleMouseUp = () => {
+    const handleGlobalMouseUp = (e: MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
       setDragState(null);
       document.body.style.userSelect = '';
       document.body.style.cursor = '';
     };
 
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
+    // Add listeners to document to catch all mouse movements
+    document.addEventListener('mousemove', handleGlobalMouseMove, true);
+    document.addEventListener('mouseup', handleGlobalMouseUp, true);
     
     document.body.style.userSelect = 'none';
     document.body.style.cursor = 'ns-resize';
 
     return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener('mousemove', handleGlobalMouseMove, true);
+      document.removeEventListener('mouseup', handleGlobalMouseUp, true);
       document.body.style.userSelect = '';
       document.body.style.cursor = '';
     };
@@ -117,6 +123,9 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
   };
 
   const handleMouseDown = (e: React.MouseEvent, property: string, currentValue: string) => {
+    // Only handle left click
+    if (e.button !== 0) return;
+    
     e.preventDefault();
     e.stopPropagation();
     
@@ -126,11 +135,9 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
     let hasMoved = false;
     let dragInitiated = false;
     
-    setClickStartPos({ x: startX, y: startY });
-    
     const { num, unit } = parseValue(currentValue);
     
-    const handleMouseMove = (moveEvent: MouseEvent) => {
+    const handleInitialMouseMove = (moveEvent: MouseEvent) => {
       const deltaX = Math.abs(moveEvent.clientX - startX);
       const deltaY = Math.abs(moveEvent.clientY - startY);
       
@@ -138,9 +145,15 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
         hasMoved = true;
       }
       
-      // Start drag if moved more than 5px
+      // Start drag if moved more than 5px in any direction
       if (!dragInitiated && (deltaX > 5 || deltaY > 5)) {
         dragInitiated = true;
+        
+        // Remove initial listeners
+        document.removeEventListener('mousemove', handleInitialMouseMove);
+        document.removeEventListener('mouseup', handleInitialMouseUp);
+        
+        // Set drag state which will trigger the global drag handler
         setDragState({
           isDragging: true,
           property,
@@ -151,11 +164,9 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
       }
     };
     
-    const handleMouseUp = () => {
+    const handleInitialMouseUp = () => {
       const endTime = Date.now();
       const timeDiff = endTime - startTime;
-      
-      setClickStartPos(null);
       
       // If it was a quick click without movement, open popover
       if (!dragInitiated && timeDiff < 300 && !hasMoved) {
@@ -166,12 +177,13 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
         });
       }
       
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener('mousemove', handleInitialMouseMove);
+      document.removeEventListener('mouseup', handleInitialMouseUp);
     };
     
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
+    // Initial listeners to detect click vs drag
+    document.addEventListener('mousemove', handleInitialMouseMove);
+    document.addEventListener('mouseup', handleInitialMouseUp);
   };
 
   const handlePopoverValueChange = (value: string) => {
@@ -243,13 +255,10 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
       >
         <PopoverTrigger asChild>
           <div
-            onMouseEnter={() => setHoveredProperty(property)}
+            onMouseEnter={() => !dragState?.isDragging && setHoveredProperty(property)}
             onMouseLeave={() => setHoveredProperty(null)}
-            onMouseDown={(e) => {
-              if (!dragState?.isDragging || dragState?.property === property) {
-                handleMouseDown(e, property, value);
-              }
-            }}
+            onMouseDown={(e) => handleMouseDown(e, property, value)}
+            onContextMenu={(e) => e.preventDefault()}
             style={{ 
               display: 'inline-block', 
               cursor: isDragging ? 'ns-resize' : 'pointer',
@@ -258,7 +267,7 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
           >
             <div style={{
               ...inputStyle,
-              textDecoration: isHovered && !isDragging ? 'underline' : 'none',
+              textDecoration: isHovered && !isDragging && !isOpen ? 'underline' : 'none',
               backgroundColor: isDragging ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
             }}>
               {value || '0'}
