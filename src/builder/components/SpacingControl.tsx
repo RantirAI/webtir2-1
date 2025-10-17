@@ -1,8 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Settings2 } from 'lucide-react';
 
 interface SpacingControlProps {
   marginTop?: string;
@@ -27,7 +29,7 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
   paddingLeft = '0',
   onUpdate,
 }) => {
-  const [hoveredArea, setHoveredArea] = useState<string | null>(null);
+  const [hoveredProperty, setHoveredProperty] = useState<string | null>(null);
   const [dragState, setDragState] = useState<{
     isDragging: boolean;
     property: string;
@@ -250,40 +252,83 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
   const renderSpacingInput = (property: string, value: string, customStyle?: React.CSSProperties) => {
     const isOpen = editingProperty?.property === property;
     const isDragging = dragState?.property === property && dragState?.isDragging;
+    const isHovered = hoveredProperty === property;
+    const showTooltip = isHovered && !dragState?.isDragging && !isOpen;
     
     return (
-      <Popover 
-        open={isOpen} 
-        onOpenChange={(open) => {
-          if (!open && editingProperty?.property === property) {
-            handlePopoverClose();
-          }
-        }}
-        modal={false}
-      >
-        <PopoverTrigger asChild>
-          <div
-            onMouseDown={(e) => {
-              // Only handle if not already dragging something else
-              if (!dragState?.isDragging || dragState?.property === property) {
-                handleMouseDown(e, property, value);
+      <TooltipProvider delayDuration={300}>
+        <Tooltip open={showTooltip}>
+          <Popover 
+            open={isOpen} 
+            onOpenChange={(open) => {
+              if (!open && editingProperty?.property === property) {
+                handlePopoverClose();
               }
             }}
-            style={{ 
-              display: 'inline-block', 
-              cursor: isDragging ? 'ns-resize' : 'ns-resize',
-              position: 'relative'
-            }}
+            modal={false}
           >
-            <input
-              type="text"
-              value={value || '0'}
-              readOnly
-              style={{ ...inputStyle, ...customStyle, pointerEvents: 'none' }}
-              className="spacing-input"
-            />
-          </div>
-        </PopoverTrigger>
+            <PopoverTrigger asChild>
+              <TooltipTrigger asChild>
+                <div
+                  onMouseEnter={() => setHoveredProperty(property)}
+                  onMouseLeave={() => setHoveredProperty(null)}
+                  onMouseDown={(e) => {
+                    // Only handle if not already dragging something else
+                    if (!dragState?.isDragging || dragState?.property === property) {
+                      handleMouseDown(e, property, value);
+                    }
+                  }}
+                  style={{ 
+                    display: 'inline-block', 
+                    cursor: isDragging ? 'ns-resize' : 'ns-resize',
+                    position: 'relative'
+                  }}
+                >
+                  <input
+                    type="text"
+                    value={value || '0'}
+                    readOnly
+                    style={{ ...inputStyle, ...customStyle, pointerEvents: 'none' }}
+                    className="spacing-input"
+                  />
+                  {/* Status button - shown on hover */}
+                  {isHovered && !dragState?.isDragging && !isOpen && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        // Future: open mini dropdown menu
+                        console.log('Status button clicked for', property);
+                      }}
+                      style={{
+                        position: 'absolute',
+                        top: '-6px',
+                        right: '-6px',
+                        width: '14px',
+                        height: '14px',
+                        borderRadius: '50%',
+                        background: 'rgba(255, 255, 255, 0.9)',
+                        border: '1px solid #F39C12',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        zIndex: 10,
+                        padding: 0,
+                        transition: 'all 0.15s ease',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = '#F39C12';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'rgba(255, 255, 255, 0.9)';
+                      }}
+                    >
+                      <Settings2 size={8} color="#F39C12" style={{ strokeWidth: 2.5 }} />
+                    </button>
+                  )}
+                </div>
+              </TooltipTrigger>
+            </PopoverTrigger>
         <PopoverContent 
           className="w-64 p-4 z-[10000] bg-background border shadow-md pointer-events-auto" 
           align="start"
@@ -330,16 +375,27 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
             </p>
           </div>
         </PopoverContent>
-      </Popover>
+          <TooltipContent 
+            side="top" 
+            className="bg-[#222] text-white border-none px-2 py-1 text-xs rounded shadow-md"
+            sideOffset={5}
+          >
+            {getPropertyLabel(property)}
+          </TooltipContent>
+        </Popover>
+      </Tooltip>
+      </TooltipProvider>
     );
   };
 
   const getAreaStyle = (area: string) => {
     const isDragging = dragState?.property === area;
+    const isHovered = hoveredProperty === area;
     
     return {
       backgroundColor: isDragging ? 'rgba(243, 156, 18, 0.1)' : 'transparent',
-      transition: 'background-color 0.15s ease',
+      outline: isHovered && !dragState?.isDragging ? '1px solid #F39C12' : 'none',
+      transition: 'background-color 0.15s ease, outline 0.15s ease',
     };
   };
 
