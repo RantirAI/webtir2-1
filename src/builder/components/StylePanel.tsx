@@ -487,7 +487,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="h-5 w-5 p-0"
+                          className="h-5 w-5 p-0 text-foreground hover:text-primary"
                           onClick={handleResetStyles}
                         >
                           <RotateCcw className="w-3 h-3" />
@@ -516,10 +516,10 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
                     <Button 
                       variant="outline" 
                       size="sm" 
-                      className="w-16 h-9 justify-center text-xs font-normal px-2"
+                      className="w-16 h-9 justify-center text-xs font-normal px-2 text-foreground"
                       title={`State: ${currentPseudoState}`}
                     >
-                      <ChevronDown className="w-3 h-3" />
+                      <ChevronDown className="w-3 h-3 text-foreground" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-48 bg-background z-[10000]">
