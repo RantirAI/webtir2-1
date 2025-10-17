@@ -14,6 +14,7 @@ interface SpacingControlProps {
   paddingBottom?: string;
   paddingLeft?: string;
   onUpdate: (property: string, value: string) => void;
+  isPrimaryClass?: boolean; // true for Primary (blue), false for Combo (yellow)
 }
 
 export const SpacingControl: React.FC<SpacingControlProps> = ({
@@ -26,6 +27,7 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
   paddingBottom = '0',
   paddingLeft = '0',
   onUpdate,
+  isPrimaryClass = true, // default to primary (blue)
 }) => {
   const [hoveredProperty, setHoveredProperty] = useState<string | null>(null);
   const [dragState, setDragState] = useState<{
@@ -260,8 +262,9 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
         >
           <div style={{
             ...inputStyle,
+            color: isHovered && !isDragging && !isOpen ? hoverColor : baseColor,
             textDecoration: isHovered && !isDragging && !isOpen ? 'underline' : 'none',
-            backgroundColor: isDragging ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
+            backgroundColor: isDragging ? activeBgColor : 'transparent',
           }}>
             {value || '0'}
           </div>
@@ -334,11 +337,16 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
     );
   };
 
+  // Determine color based on class type
+  const baseColor = isPrimaryClass ? 'rgb(59, 130, 246)' : 'rgb(234, 179, 8)'; // blue for primary, yellow for combo
+  const hoverColor = isPrimaryClass ? 'rgb(37, 99, 235)' : 'rgb(202, 138, 4)'; // darker on hover
+  const activeBgColor = isPrimaryClass ? 'rgba(59, 130, 246, 0.1)' : 'rgba(234, 179, 8, 0.1)';
+
   const inputStyle: React.CSSProperties = {
     padding: '2px 4px',
     fontSize: '11px',
     fontWeight: 500,
-    color: '#666',
+    color: baseColor,
     userSelect: 'none',
     minWidth: '24px',
     textAlign: 'center',

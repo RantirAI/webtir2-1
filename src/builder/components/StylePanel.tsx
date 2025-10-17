@@ -822,6 +822,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
           paddingBottom={computedStyles.paddingBottom}
           paddingLeft={computedStyles.paddingLeft}
           onUpdate={updateStyle}
+          isPrimaryClass={activeClassIndex === null || activeClassIndex === 0}
         />
       </AccordionSection>
 
