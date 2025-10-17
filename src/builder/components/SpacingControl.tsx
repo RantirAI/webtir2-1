@@ -3,6 +3,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Link2, Link2Off } from 'lucide-react';
 
 interface SpacingControlProps {
   marginTop?: string;
@@ -43,6 +44,8 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
     unit: string;
   } | null>(null);
   const [isShiftPressed, setIsShiftPressed] = useState(false);
+  const [isMarginLinked, setIsMarginLinked] = useState(false);
+  const [isPaddingLinked, setIsPaddingLinked] = useState(false);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -79,9 +82,11 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
       const deltaY = dragState.startY - e.clientY;
       const newValue = Math.max(0, dragState.startValue + Math.round(deltaY));
       
-      // If Shift is pressed, update all sides of margin or padding
-      if (e.shiftKey) {
-        const isMargin = dragState.property.startsWith('margin');
+      const isMargin = dragState.property.startsWith('margin');
+      const shouldLinkAll = (isMargin && isMarginLinked) || (!isMargin && isPaddingLinked) || e.shiftKey;
+      
+      // If chainlink is active or Shift is pressed, update all sides
+      if (shouldLinkAll) {
         const propertyType = isMargin ? 'margin' : 'padding';
         const sides = ['Top', 'Right', 'Bottom', 'Left'];
         
@@ -202,9 +207,11 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
 
   const handlePopoverClose = (applyChanges: boolean = true) => {
     if (editingProperty && applyChanges) {
-      // If Shift is pressed, update all sides
-      if (isShiftPressed) {
-        const isMargin = editingProperty.property.startsWith('margin');
+      const isMargin = editingProperty.property.startsWith('margin');
+      const shouldLinkAll = (isMargin && isMarginLinked) || (!isMargin && isPaddingLinked) || isShiftPressed;
+      
+      // If chainlink is active or Shift is pressed, update all sides
+      if (shouldLinkAll) {
         const propertyType = isMargin ? 'margin' : 'padding';
         const sides = ['Top', 'Right', 'Bottom', 'Left'];
         
@@ -296,7 +303,7 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <Label className="text-sm font-medium">{getPropertyLabel(property)}</Label>
-                  {isShiftPressed && (
+                  {(isShiftPressed || (property.startsWith('margin') ? isMarginLinked : isPaddingLinked)) && (
                     <span className="text-xs text-muted-foreground">All sides</span>
                   )}
                 </div>
@@ -326,9 +333,11 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
                     </SelectContent>
                   </Select>
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  Hold Shift to change all {property.startsWith('margin') ? 'margins' : 'paddings'}
-                </p>
+                {!isMarginLinked && !isPaddingLinked && (
+                  <p className="text-xs text-muted-foreground">
+                    Hold Shift to change all {property.startsWith('margin') ? 'margins' : 'paddings'}
+                  </p>
+                )}
               </div>
             </PopoverContent>
           </Popover>
@@ -361,18 +370,40 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
       borderRadius: '4px',
       padding: '12px',
     }}>
-      {/* Margin Label */}
+      {/* Margin Label and Chainlink */}
       <div style={{
         position: 'absolute',
         top: '8px',
         left: '8px',
-        fontSize: '9px',
-        color: '#999',
-        textTransform: 'uppercase',
-        letterSpacing: '0.5px',
-        fontWeight: 600
+        display: 'flex',
+        alignItems: 'center',
+        gap: '6px'
       }}>
-        MARGIN
+        <span style={{
+          fontSize: '9px',
+          color: '#999',
+          textTransform: 'uppercase',
+          letterSpacing: '0.5px',
+          fontWeight: 600
+        }}>
+          MARGIN
+        </span>
+        <button
+          onClick={() => setIsMarginLinked(!isMarginLinked)}
+          style={{
+            background: 'none',
+            border: 'none',
+            padding: 0,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            color: isMarginLinked ? baseColor : '#999',
+            transition: 'color 0.2s'
+          }}
+          title={isMarginLinked ? "Unlink margins" : "Link all margins"}
+        >
+          {isMarginLinked ? <Link2 className="w-3 h-3" /> : <Link2Off className="w-3 h-3" />}
+        </button>
       </div>
 
       {/* Margin Area */}
@@ -416,18 +447,40 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
             background: '#fff',
             position: 'relative'
           }}>
-            {/* Padding Label */}
+            {/* Padding Label and Chainlink */}
             <div style={{
               position: 'absolute',
               top: '6px',
               left: '6px',
-              fontSize: '9px',
-              color: '#999',
-              textTransform: 'uppercase',
-              letterSpacing: '0.5px',
-              fontWeight: 600
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px'
             }}>
-              PADDING
+              <span style={{
+                fontSize: '9px',
+                color: '#999',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+                fontWeight: 600
+              }}>
+                PADDING
+              </span>
+              <button
+                onClick={() => setIsPaddingLinked(!isPaddingLinked)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  padding: 0,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  color: isPaddingLinked ? baseColor : '#999',
+                  transition: 'color 0.2s'
+                }}
+                title={isPaddingLinked ? "Unlink paddings" : "Link all paddings"}
+              >
+                {isPaddingLinked ? <Link2 className="w-3 h-3" /> : <Link2Off className="w-3 h-3" />}
+              </button>
             </div>
 
             <div style={{ paddingTop: '14px', width: '100%' }}>
