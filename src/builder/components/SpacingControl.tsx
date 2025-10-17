@@ -242,86 +242,95 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
     const isOpen = editingProperty?.property === property;
     const isDragging = dragState?.property === property && dragState?.isDragging;
     const isHovered = hoveredProperty === property;
+    const inputRef = useRef<HTMLDivElement>(null);
     
     return (
-      <Popover 
-        open={isOpen} 
-        onOpenChange={(open) => {
-          if (!open && editingProperty?.property === property) {
-            handlePopoverClose(true);
-          }
-        }}
-        modal={true}
-      >
-        <PopoverTrigger asChild>
-          <div
-            onMouseEnter={() => !dragState?.isDragging && setHoveredProperty(property)}
-            onMouseLeave={() => setHoveredProperty(null)}
-            onMouseDown={(e) => handleMouseDown(e, property, value)}
-            onContextMenu={(e) => e.preventDefault()}
-            style={{ 
-              display: 'inline-block', 
-              cursor: isDragging ? 'ns-resize' : 'pointer',
-              position: 'relative'
-            }}
-          >
-            <div style={{
-              ...inputStyle,
-              textDecoration: isHovered && !isDragging && !isOpen ? 'underline' : 'none',
-              backgroundColor: isDragging ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
-            }}>
-              {value || '0'}
-            </div>
-          </div>
-        </PopoverTrigger>
-        <PopoverContent 
-          className="w-64 p-4 bg-background border shadow-lg" 
-          align="start"
-          side="right"
-          sideOffset={8}
-          onOpenAutoFocus={(e) => e.preventDefault()}
-          onCloseAutoFocus={(e) => e.preventDefault()}
-          onEscapeKeyDown={() => handlePopoverClose(false)}
+      <>
+        <div
+          ref={inputRef}
+          onMouseEnter={() => !dragState?.isDragging && setHoveredProperty(property)}
+          onMouseLeave={() => setHoveredProperty(null)}
+          onMouseDown={(e) => handleMouseDown(e, property, value)}
+          onContextMenu={(e) => e.preventDefault()}
+          style={{ 
+            display: 'inline-block', 
+            cursor: isDragging ? 'ns-resize' : 'pointer',
+            position: 'relative'
+          }}
         >
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <Label className="text-sm font-medium">{getPropertyLabel(property)}</Label>
-              {isShiftPressed && (
-                <span className="text-xs text-muted-foreground">All sides</span>
-              )}
-            </div>
-            <div className="flex gap-2">
-              <Input
-                type="number"
-                value={editingProperty?.value || '0'}
-                onChange={(e) => handlePopoverValueChange(e.target.value)}
-                onKeyDown={handleKeyDown}
-                className="flex-1"
-                autoFocus
-              />
-              <Select
-                value={editingProperty?.unit || 'px'}
-                onValueChange={handlePopoverUnitChange}
-              >
-                <SelectTrigger className="w-20">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-background">
-                  <SelectItem value="px">px</SelectItem>
-                  <SelectItem value="rem">rem</SelectItem>
-                  <SelectItem value="em">em</SelectItem>
-                  <SelectItem value="%">%</SelectItem>
-                  <SelectItem value="vh">vh</SelectItem>
-                  <SelectItem value="vw">vw</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Hold Shift to change all {property.startsWith('margin') ? 'margins' : 'paddings'}
-            </p>
+          <div style={{
+            ...inputStyle,
+            textDecoration: isHovered && !isDragging && !isOpen ? 'underline' : 'none',
+            backgroundColor: isDragging ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
+          }}>
+            {value || '0'}
           </div>
-        </PopoverContent>
-      </Popover>
+        </div>
+        
+        {/* Popover rendered separately */}
+        {isOpen && (
+          <Popover 
+            open={true} 
+            onOpenChange={(open) => {
+              if (!open) {
+                handlePopoverClose(true);
+              }
+            }}
+            modal={true}
+          >
+            <PopoverTrigger asChild>
+              <div style={{ position: 'absolute', left: 0, top: 0, width: 0, height: 0, pointerEvents: 'none' }} />
+            </PopoverTrigger>
+            <PopoverContent 
+              className="w-64 p-4 bg-background border shadow-lg" 
+              align="start"
+              side="right"
+              sideOffset={8}
+              onOpenAutoFocus={(e) => e.preventDefault()}
+              onCloseAutoFocus={(e) => e.preventDefault()}
+              onEscapeKeyDown={() => handlePopoverClose(false)}
+            >
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <Label className="text-sm font-medium">{getPropertyLabel(property)}</Label>
+                  {isShiftPressed && (
+                    <span className="text-xs text-muted-foreground">All sides</span>
+                  )}
+                </div>
+                <div className="flex gap-2">
+                  <Input
+                    type="number"
+                    value={editingProperty?.value || '0'}
+                    onChange={(e) => handlePopoverValueChange(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    className="flex-1"
+                    autoFocus
+                  />
+                  <Select
+                    value={editingProperty?.unit || 'px'}
+                    onValueChange={handlePopoverUnitChange}
+                  >
+                    <SelectTrigger className="w-20">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-background">
+                      <SelectItem value="px">px</SelectItem>
+                      <SelectItem value="rem">rem</SelectItem>
+                      <SelectItem value="em">em</SelectItem>
+                      <SelectItem value="%">%</SelectItem>
+                      <SelectItem value="vh">vh</SelectItem>
+                      <SelectItem value="vw">vw</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Hold Shift to change all {property.startsWith('margin') ? 'margins' : 'paddings'}
+                </p>
+              </div>
+            </PopoverContent>
+          </Popover>
+        )}
+      </>
     );
   };
 
