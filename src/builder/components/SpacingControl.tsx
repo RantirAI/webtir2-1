@@ -1,10 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Settings2 } from 'lucide-react';
 
 interface SpacingControlProps {
   marginTop?: string;
@@ -43,6 +41,7 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
     unit: string;
   } | null>(null);
   const [isShiftPressed, setIsShiftPressed] = useState(false);
+  const [clickStartPos, setClickStartPos] = useState<{ x: number; y: number } | null>(null);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -73,9 +72,7 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
       if (!dragState) return;
       
       const deltaY = dragState.startY - e.clientY;
-      const speed = Math.abs(deltaY) > 20 ? 5 : 1;
-      const change = Math.sign(deltaY) * speed;
-      const newValue = Math.max(0, dragState.startValue + Math.round(deltaY / (speed === 5 ? 2 : 1)));
+      const newValue = Math.max(0, dragState.startValue + Math.round(deltaY));
       
       // If Shift is pressed, update all sides of margin or padding
       if (e.shiftKey) {
@@ -93,6 +90,8 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
 
     const handleMouseUp = () => {
       setDragState(null);
+      document.body.style.userSelect = '';
+      document.body.style.cursor = '';
     };
 
     document.addEventListener('mousemove', handleMouseMove);
@@ -120,26 +119,28 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
   const handleMouseDown = (e: React.MouseEvent, property: string, currentValue: string) => {
     e.preventDefault();
     e.stopPropagation();
-    const { num, unit } = parseValue(currentValue);
     
-    let dragStarted = false;
-    let hasMoved = false;
     const startX = e.clientX;
     const startY = e.clientY;
     const startTime = Date.now();
+    let hasMoved = false;
+    let dragInitiated = false;
+    
+    setClickStartPos({ x: startX, y: startY });
+    
+    const { num, unit } = parseValue(currentValue);
     
     const handleMouseMove = (moveEvent: MouseEvent) => {
       const deltaX = Math.abs(moveEvent.clientX - startX);
       const deltaY = Math.abs(moveEvent.clientY - startY);
       
-      // Track if mouse has moved at all
       if (deltaX > 0 || deltaY > 0) {
         hasMoved = true;
       }
       
-      // Start drag if moved more than 5px vertically
-      if (!dragStarted && deltaY > 5) {
-        dragStarted = true;
+      // Start drag if moved more than 5px
+      if (!dragInitiated && (deltaX > 5 || deltaY > 5)) {
+        dragInitiated = true;
         setDragState({
           isDragging: true,
           property,
@@ -154,8 +155,10 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
       const endTime = Date.now();
       const timeDiff = endTime - startTime;
       
-      // If it was a quick click without significant movement, open popover
-      if (!dragStarted && timeDiff < 300 && !hasMoved) {
+      setClickStartPos(null);
+      
+      // If it was a quick click without movement, open popover
+      if (!dragInitiated && timeDiff < 300 && !hasMoved) {
         setEditingProperty({
           property,
           value: num.toString(),
@@ -171,9 +174,6 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
     document.addEventListener('mouseup', handleMouseUp);
   };
 
-  // Removed - input changes are now handled only through popover or drag
-
-
   const handlePopoverValueChange = (value: string) => {
     if (editingProperty) {
       setEditingProperty({ ...editingProperty, value });
@@ -183,24 +183,11 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
   const handlePopoverUnitChange = (unit: string) => {
     if (editingProperty) {
       setEditingProperty({ ...editingProperty, unit });
-      
-      // If Shift is pressed, update all sides
-      if (isShiftPressed) {
-        const isMargin = editingProperty.property.startsWith('margin');
-        const propertyType = isMargin ? 'margin' : 'padding';
-        const sides = ['Top', 'Right', 'Bottom', 'Left'];
-        
-        sides.forEach(side => {
-          onUpdate(`${propertyType}${side}`, `${editingProperty.value}${unit}`);
-        });
-      } else {
-        onUpdate(editingProperty.property, `${editingProperty.value}${unit}`);
-      }
     }
   };
 
-  const handlePopoverClose = () => {
-    if (editingProperty) {
+  const handlePopoverClose = (applyChanges: boolean = true) => {
+    if (editingProperty && applyChanges) {
       // If Shift is pressed, update all sides
       if (isShiftPressed) {
         const isMargin = editingProperty.property.startsWith('margin');
@@ -213,24 +200,14 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
       } else {
         onUpdate(editingProperty.property, `${editingProperty.value}${editingProperty.unit}`);
       }
-      setEditingProperty(null);
     }
+    setEditingProperty(null);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && editingProperty) {
-      // If Shift is pressed, update all sides
-      if (e.shiftKey) {
-        const isMargin = editingProperty.property.startsWith('margin');
-        const propertyType = isMargin ? 'margin' : 'padding';
-        const sides = ['Top', 'Right', 'Bottom', 'Left'];
-        
-        sides.forEach(side => {
-          onUpdate(`${propertyType}${side}`, `${editingProperty.value}${editingProperty.unit}`);
-        });
-      } else {
-        onUpdate(editingProperty.property, `${editingProperty.value}${editingProperty.unit}`);
-      }
+      handlePopoverClose(true);
+    } else if (e.key === 'Escape') {
       setEditingProperty(null);
     }
   };
@@ -249,93 +226,53 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
     return labels[property] || property;
   };
 
-  const renderSpacingInput = (property: string, value: string, customStyle?: React.CSSProperties) => {
+  const renderSpacingInput = (property: string, value: string) => {
     const isOpen = editingProperty?.property === property;
     const isDragging = dragState?.property === property && dragState?.isDragging;
     const isHovered = hoveredProperty === property;
-    const showTooltip = isHovered && !dragState?.isDragging && !isOpen;
     
     return (
-      <TooltipProvider delayDuration={300}>
-        <Tooltip open={showTooltip}>
-          <Popover 
-            open={isOpen} 
-            onOpenChange={(open) => {
-              if (!open && editingProperty?.property === property) {
-                handlePopoverClose();
+      <Popover 
+        open={isOpen} 
+        onOpenChange={(open) => {
+          if (!open && editingProperty?.property === property) {
+            handlePopoverClose(true);
+          }
+        }}
+        modal={true}
+      >
+        <PopoverTrigger asChild>
+          <div
+            onMouseEnter={() => setHoveredProperty(property)}
+            onMouseLeave={() => setHoveredProperty(null)}
+            onMouseDown={(e) => {
+              if (!dragState?.isDragging || dragState?.property === property) {
+                handleMouseDown(e, property, value);
               }
             }}
-            modal={false}
+            style={{ 
+              display: 'inline-block', 
+              cursor: isDragging ? 'ns-resize' : 'pointer',
+              position: 'relative'
+            }}
           >
-            <PopoverTrigger asChild>
-              <TooltipTrigger asChild>
-                <div
-                  onMouseEnter={() => setHoveredProperty(property)}
-                  onMouseLeave={() => setHoveredProperty(null)}
-                  onMouseDown={(e) => {
-                    // Only handle if not already dragging something else
-                    if (!dragState?.isDragging || dragState?.property === property) {
-                      handleMouseDown(e, property, value);
-                    }
-                  }}
-                  style={{ 
-                    display: 'inline-block', 
-                    cursor: isDragging ? 'ns-resize' : 'ns-resize',
-                    position: 'relative'
-                  }}
-                >
-                  <input
-                    type="text"
-                    value={value || '0'}
-                    readOnly
-                    style={{ ...inputStyle, ...customStyle, pointerEvents: 'none' }}
-                    className="spacing-input"
-                  />
-                  {/* Status button - shown on hover */}
-                  {isHovered && !dragState?.isDragging && !isOpen && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        // Future: open mini dropdown menu
-                        console.log('Status button clicked for', property);
-                      }}
-                      style={{
-                        position: 'absolute',
-                        top: '-6px',
-                        right: '-6px',
-                        width: '14px',
-                        height: '14px',
-                        borderRadius: '50%',
-                        background: 'rgba(255, 255, 255, 0.9)',
-                        border: '1px solid #F39C12',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        cursor: 'pointer',
-                        zIndex: 10,
-                        padding: 0,
-                        transition: 'all 0.15s ease',
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.background = '#F39C12';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.background = 'rgba(255, 255, 255, 0.9)';
-                      }}
-                    >
-                      <Settings2 size={8} color="#F39C12" style={{ strokeWidth: 2.5 }} />
-                    </button>
-                  )}
-                </div>
-              </TooltipTrigger>
-            </PopoverTrigger>
+            <div style={{
+              ...inputStyle,
+              textDecoration: isHovered && !isDragging ? 'underline' : 'none',
+              backgroundColor: isDragging ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
+            }}>
+              {value || '0'}
+            </div>
+          </div>
+        </PopoverTrigger>
         <PopoverContent 
-          className="w-64 p-4 z-[10000] bg-background border shadow-md pointer-events-auto" 
+          className="w-64 p-4 bg-background border shadow-lg" 
           align="start"
-          onInteractOutside={(e) => {
-            // Prevent closing when clicking inside
-            e.preventDefault();
-          }}
+          side="right"
+          sideOffset={8}
+          onOpenAutoFocus={(e) => e.preventDefault()}
+          onCloseAutoFocus={(e) => e.preventDefault()}
+          onEscapeKeyDown={() => handlePopoverClose(false)}
         >
           <div className="space-y-3">
             <div className="flex items-center justify-between">
@@ -350,23 +287,23 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
                 value={editingProperty?.value || '0'}
                 onChange={(e) => handlePopoverValueChange(e.target.value)}
                 onKeyDown={handleKeyDown}
-                className="flex-1 pointer-events-auto"
+                className="flex-1"
                 autoFocus
               />
               <Select
                 value={editingProperty?.unit || 'px'}
                 onValueChange={handlePopoverUnitChange}
               >
-                <SelectTrigger className="w-20 pointer-events-auto">
+                <SelectTrigger className="w-20">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="z-[10001] bg-background pointer-events-auto">
-                  <SelectItem value="px">PX</SelectItem>
-                  <SelectItem value="rem">REM</SelectItem>
-                  <SelectItem value="em">EM</SelectItem>
+                <SelectContent className="bg-background">
+                  <SelectItem value="px">px</SelectItem>
+                  <SelectItem value="rem">rem</SelectItem>
+                  <SelectItem value="em">em</SelectItem>
                   <SelectItem value="%">%</SelectItem>
-                  <SelectItem value="vh">VH</SelectItem>
-                  <SelectItem value="vw">VW</SelectItem>
+                  <SelectItem value="vh">vh</SelectItem>
+                  <SelectItem value="vw">vw</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -375,44 +312,18 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
             </p>
           </div>
         </PopoverContent>
-          <TooltipContent 
-            side="top" 
-            className="bg-[#222] text-white border-none px-2 py-1 text-xs rounded shadow-md"
-            sideOffset={5}
-          >
-            {getPropertyLabel(property)}
-          </TooltipContent>
-        </Popover>
-      </Tooltip>
-      </TooltipProvider>
+      </Popover>
     );
   };
 
-  const getAreaStyle = (area: string) => {
-    const isDragging = dragState?.property === area;
-    const isHovered = hoveredProperty === area;
-    
-    return {
-      backgroundColor: isDragging ? 'rgba(243, 156, 18, 0.1)' : 'transparent',
-      outline: isHovered && !dragState?.isDragging ? '1px solid #F39C12' : 'none',
-      transition: 'background-color 0.15s ease, outline 0.15s ease',
-    };
-  };
-
-  const inputStyle = {
-    width: '40px',
-    height: '18px',
-    textAlign: 'center' as const,
+  const inputStyle: React.CSSProperties = {
+    padding: '2px 4px',
     fontSize: '11px',
     fontWeight: 500,
-    background: 'transparent',
-    border: 'none',
-    borderRadius: '2px',
-    cursor: 'ns-resize',
-    userSelect: 'none' as const,
-    color: '#F39C12',
-    transition: 'background-color 0.15s ease',
-    outline: 'none',
+    color: '#666',
+    userSelect: 'none',
+    minWidth: '24px',
+    textAlign: 'center',
   };
 
   return (
@@ -421,15 +332,15 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
       width: '100%',
       background: '#fafafa',
       border: '1px solid #e5e5e5',
-      borderRadius: '3px',
-      padding: '8px',
+      borderRadius: '4px',
+      padding: '12px',
     }}>
       {/* Margin Label */}
       <div style={{
         position: 'absolute',
-        top: '6px',
-        left: '6px',
-        fontSize: '10px',
+        top: '8px',
+        left: '8px',
+        fontSize: '9px',
         color: '#999',
         textTransform: 'uppercase',
         letterSpacing: '0.5px',
@@ -439,33 +350,32 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
       </div>
 
       {/* Margin Area */}
-      <div style={{ position: 'relative', width: '100%', display: 'flex', flexDirection: 'column', gap: '2px', paddingTop: '12px' }}>
+      <div style={{ 
+        position: 'relative', 
+        width: '100%', 
+        display: 'flex', 
+        flexDirection: 'column', 
+        gap: '4px', 
+        paddingTop: '16px' 
+      }}>
         {/* Top Margin */}
-        <div 
-          style={{ 
-            display: 'flex', 
-            justifyContent: 'center',
-            padding: '2px',
-            borderRadius: '2px',
-            ...getAreaStyle('marginTop')
-          }}
-        >
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'center',
+          padding: '4px'
+        }}>
           {renderSpacingInput('marginTop', marginTop)}
         </div>
 
         {/* Middle Row: Left Margin + Padding Box + Right Margin */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+        <div style={{ display: 'flex', alignItems: 'stretch', gap: '4px' }}>
           {/* Left Margin */}
-          <div 
-            style={{ 
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '2px',
-              borderRadius: '2px',
-              ...getAreaStyle('marginLeft')
-            }}
-          >
+          <div style={{ 
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '4px'
+          }}>
             {renderSpacingInput('marginLeft', marginLeft)}
           </div>
 
@@ -473,22 +383,19 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
           <div style={{
             flex: 1,
             border: '1px solid #e5e5e5',
-            borderRadius: '2px',
-            padding: '6px',
+            borderRadius: '4px',
+            padding: '8px',
             display: 'flex',
             flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '2px',
             background: '#fff',
             position: 'relative'
           }}>
             {/* Padding Label */}
             <div style={{
               position: 'absolute',
-              top: '4px',
-              left: '4px',
-              fontSize: '10px',
+              top: '6px',
+              left: '6px',
+              fontSize: '9px',
               color: '#999',
               textTransform: 'uppercase',
               letterSpacing: '0.5px',
@@ -497,115 +404,83 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
               PADDING
             </div>
 
-            <div style={{ paddingTop: '10px', width: '100%' }}>
+            <div style={{ paddingTop: '14px', width: '100%' }}>
               {/* Top Padding */}
-              <div 
-                style={{ 
-                  width: '100%',
-                  display: 'flex',
-                  justifyContent: 'center',
-                  padding: '2px',
-                  borderRadius: '2px',
-                  ...getAreaStyle('paddingTop')
-                }}
-              >
+              <div style={{ 
+                width: '100%',
+                display: 'flex',
+                justifyContent: 'center',
+                padding: '4px'
+              }}>
                 {renderSpacingInput('paddingTop', paddingTop)}
               </div>
 
               {/* Left and Right Padding */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '4px', width: '100%', margin: '2px 0' }}>
-                <div 
-                  style={{ 
-                    display: 'flex',
-                    justifyContent: 'center',
-                    padding: '2px',
-                    borderRadius: '2px',
-                    ...getAreaStyle('paddingLeft')
-                  }}
-                >
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'space-between', 
+                gap: '8px', 
+                width: '100%', 
+                margin: '4px 0' 
+              }}>
+                <div style={{ 
+                  display: 'flex',
+                  justifyContent: 'center',
+                  padding: '4px'
+                }}>
                   {renderSpacingInput('paddingLeft', paddingLeft)}
                 </div>
                 
                 <div style={{ 
-                  width: '20px', 
-                  height: '20px',
+                  width: '32px', 
+                  height: '32px',
                   border: '1px solid #e5e5e5',
                   borderRadius: '2px',
                   background: '#fafafa'
                 }} />
                 
-                <div 
-                  style={{ 
-                    display: 'flex',
-                    justifyContent: 'center',
-                    padding: '2px',
-                    borderRadius: '2px',
-                    ...getAreaStyle('paddingRight')
-                  }}
-                >
+                <div style={{ 
+                  display: 'flex',
+                  justifyContent: 'center',
+                  padding: '4px'
+                }}>
                   {renderSpacingInput('paddingRight', paddingRight)}
                 </div>
               </div>
 
               {/* Bottom Padding */}
-              <div 
-                style={{ 
-                  width: '100%',
-                  display: 'flex',
-                  justifyContent: 'center',
-                  padding: '2px',
-                  borderRadius: '2px',
-                  ...getAreaStyle('paddingBottom')
-                }}
-              >
+              <div style={{ 
+                width: '100%',
+                display: 'flex',
+                justifyContent: 'center',
+                padding: '4px'
+              }}>
                 {renderSpacingInput('paddingBottom', paddingBottom)}
               </div>
             </div>
           </div>
 
           {/* Right Margin */}
-          <div 
-            style={{ 
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '2px',
-              borderRadius: '2px',
-              ...getAreaStyle('marginRight')
-            }}
-          >
+          <div style={{ 
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '4px'
+          }}>
             {renderSpacingInput('marginRight', marginRight)}
           </div>
         </div>
 
         {/* Bottom Margin */}
-        <div 
-          style={{ 
-            display: 'flex', 
-            justifyContent: 'center',
-            padding: '2px',
-            borderRadius: '2px',
-            ...getAreaStyle('marginBottom')
-          }}
-        >
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'center',
+          padding: '4px'
+        }}>
           {renderSpacingInput('marginBottom', marginBottom)}
         </div>
       </div>
-
-      <style>{`
-        .spacing-input {
-          cursor: ns-resize !important;
-        }
-        
-        .spacing-input:hover {
-          background: rgba(243, 156, 18, 0.12) !important;
-          border-radius: 2px;
-        }
-        
-        .dark .spacing-input {
-          color: #F39C12 !important;
-        }
-      `}</style>
     </div>
   );
 };
