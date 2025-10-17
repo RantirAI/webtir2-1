@@ -33,6 +33,7 @@ export const ImagePrimitive: React.FC<ImagePrimitiveProps> = ({
       src={instance.props.src || 'https://via.placeholder.com/400x300'}
       alt={instance.props.alt || 'Image'}
       style={{
+        ...style,
         position: 'relative',
       }}
       onClick={(e) => {

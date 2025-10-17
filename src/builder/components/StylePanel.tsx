@@ -14,6 +14,7 @@ import { FontPicker } from './FontPicker';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
 import { ClassSelector } from './ClassSelector';
+import { ImageUpload } from './ImageUpload';
 import '../styles/style-panel.css';
 import '../styles/tokens.css';
 
@@ -1167,9 +1168,117 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
         </TabsContent>
 
         <TabsContent value="settings" className="flex-1 min-h-0 m-0 p-4 overflow-y-auto overflow-x-hidden">
-          <div className="text-sm text-muted-foreground text-center">
-            Settings panel coming soon
-          </div>
+          {selectedInstance.type === 'Image' && (
+            <div className="space-y-4">
+              <ImageUpload
+                currentValue={selectedInstance.props.src || ''}
+                onImageChange={(url) => {
+                  updateInstance(selectedInstance.id, {
+                    props: { ...selectedInstance.props, src: url }
+                  });
+                }}
+                mode="src"
+                label="Image Source"
+              />
+              
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-foreground">Alt Text</label>
+                <Input
+                  type="text"
+                  placeholder="Image description"
+                  value={selectedInstance.props.alt || ''}
+                  onChange={(e) => {
+                    updateInstance(selectedInstance.id, {
+                      props: { ...selectedInstance.props, alt: e.target.value }
+                    });
+                  }}
+                  className="h-8 text-xs"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Describe the image for accessibility and SEO
+                </p>
+              </div>
+            </div>
+          )}
+
+          {(selectedInstance.type === 'Container' || selectedInstance.type === 'Box' || selectedInstance.type === 'Section') && (
+            <div className="space-y-4">
+              <ImageUpload
+                currentValue={computedStyles.backgroundImage?.match(/url\(['"]?(.+?)['"]?\)/)?.[1] || ''}
+                onImageChange={(url) => {
+                  if (url) {
+                    updateStyle('backgroundImage', `url(${url})`);
+                    updateStyle('backgroundSize', 'cover');
+                    updateStyle('backgroundPosition', 'center');
+                    updateStyle('backgroundRepeat', 'no-repeat');
+                  } else {
+                    updateStyle('backgroundImage', '');
+                  }
+                }}
+                mode="background"
+                label="Background Image"
+              />
+
+              {computedStyles.backgroundImage && (
+                <div className="space-y-3 pt-3 border-t border-border">
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold text-foreground">Background Size</label>
+                    <select
+                      className="w-full h-8 px-2 text-xs rounded-md border border-border bg-background"
+                      value={computedStyles.backgroundSize || 'cover'}
+                      onChange={(e) => updateStyle('backgroundSize', e.target.value)}
+                    >
+                      <option value="cover">Cover</option>
+                      <option value="contain">Contain</option>
+                      <option value="auto">Auto</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold text-foreground">Background Position</label>
+                    <select
+                      className="w-full h-8 px-2 text-xs rounded-md border border-border bg-background"
+                      value={computedStyles.backgroundPosition || 'center'}
+                      onChange={(e) => updateStyle('backgroundPosition', e.target.value)}
+                    >
+                      <option value="center">Center</option>
+                      <option value="top">Top</option>
+                      <option value="bottom">Bottom</option>
+                      <option value="left">Left</option>
+                      <option value="right">Right</option>
+                      <option value="top left">Top Left</option>
+                      <option value="top right">Top Right</option>
+                      <option value="bottom left">Bottom Left</option>
+                      <option value="bottom right">Bottom Right</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold text-foreground">Background Repeat</label>
+                    <select
+                      className="w-full h-8 px-2 text-xs rounded-md border border-border bg-background"
+                      value={computedStyles.backgroundRepeat || 'no-repeat'}
+                      onChange={(e) => updateStyle('backgroundRepeat', e.target.value)}
+                    >
+                      <option value="no-repeat">No Repeat</option>
+                      <option value="repeat">Repeat</option>
+                      <option value="repeat-x">Repeat X</option>
+                      <option value="repeat-y">Repeat Y</option>
+                    </select>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {selectedInstance.type !== 'Image' && 
+           selectedInstance.type !== 'Container' && 
+           selectedInstance.type !== 'Box' && 
+           selectedInstance.type !== 'Section' && (
+            <div className="text-sm text-muted-foreground text-center">
+              No settings available for this component
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="actions" className="flex-1 min-h-0 m-0 p-4 overflow-y-auto overflow-x-hidden">
