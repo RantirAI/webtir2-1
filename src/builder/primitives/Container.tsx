@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ComponentInstance } from '../store/types';
 import { useStyleStore } from '../store/useStyleStore';
-import { stylesToObject } from '../utils/style';
 
 interface ContainerProps {
   instance: ComponentInstance;
@@ -34,34 +33,20 @@ export const Container: React.FC<ContainerProps> = ({
     return () => clearTimeout(timer);
   }, []);
 
-  // Get computed styles from style store
-  const computedStyles = useStyleStore.getState().getComputedStyles(instance.styleSourceIds || []);
-  const customStyles = stylesToObject(computedStyles);
-
-  // Default styles that can be overridden
-  const defaultStyles: React.CSSProperties = {
-    width: '100%',
-    display: 'flex',
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    alignItems: 'flex-start',
-  };
-
-  // Merge styles with custom styles taking precedence
-  const mergedStyles: React.CSSProperties = {
-    ...defaultStyles,
-    ...customStyles,
-    // Always apply these regardless of custom styles
-    outline: isNewlyAdded ? '2px dashed hsl(var(--primary) / 0.5)' : 'none',
-    outlineOffset: '-2px',
-    transition: 'outline 0.3s ease-out',
-  };
-
   return (
     <div
       data-instance-id={instance.id}
       className={`${containerType} ${(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')} ${isNewlyAdded ? 'animate-fade-in' : ''}`}
-      style={mergedStyles}
+      style={{
+        width: '100%',
+        display: 'flex',
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        alignItems: 'flex-start',
+        outline: isNewlyAdded ? '2px dashed hsl(var(--primary) / 0.5)' : 'none',
+        outlineOffset: '-2px',
+        transition: 'outline 0.3s ease-out',
+      }}
       onClick={(e) => {
         e.stopPropagation();
         onSelect?.();
