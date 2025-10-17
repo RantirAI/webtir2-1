@@ -41,6 +41,8 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
   const [labelInput, setLabelInput] = useState('');
   const [activeTab, setActiveTab] = useState('style');
   const [activeClassIndex, setActiveClassIndex] = useState<number | null>(null);
+  const [isMarginLinked, setIsMarginLinked] = useState(false);
+  const [isPaddingLinked, setIsPaddingLinked] = useState(false);
   
   // Initialize label input and active class when selectedInstance changes
   useEffect(() => {
@@ -823,6 +825,10 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
           paddingLeft={computedStyles.paddingLeft}
           onUpdate={updateStyle}
           isPrimaryClass={activeClassIndex === null || activeClassIndex === 0}
+          isMarginLinked={isMarginLinked}
+          isPaddingLinked={isPaddingLinked}
+          onMarginLinkChange={setIsMarginLinked}
+          onPaddingLinkChange={setIsPaddingLinked}
         />
       </AccordionSection>
 

@@ -16,6 +16,10 @@ interface SpacingControlProps {
   paddingLeft?: string;
   onUpdate: (property: string, value: string) => void;
   isPrimaryClass?: boolean; // true for Primary (blue), false for Combo (yellow)
+  isMarginLinked?: boolean;
+  isPaddingLinked?: boolean;
+  onMarginLinkChange?: (linked: boolean) => void;
+  onPaddingLinkChange?: (linked: boolean) => void;
 }
 
 export const SpacingControl: React.FC<SpacingControlProps> = ({
@@ -29,7 +33,33 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
   paddingLeft = '0',
   onUpdate,
   isPrimaryClass = true, // default to primary (blue)
+  isMarginLinked: externalIsMarginLinked,
+  isPaddingLinked: externalIsPaddingLinked,
+  onMarginLinkChange,
+  onPaddingLinkChange,
 }) => {
+  // Use controlled state if props are provided, otherwise use local state
+  const [localIsMarginLinked, setLocalIsMarginLinked] = useState(false);
+  const [localIsPaddingLinked, setLocalIsPaddingLinked] = useState(false);
+  
+  const isMarginLinked = externalIsMarginLinked !== undefined ? externalIsMarginLinked : localIsMarginLinked;
+  const isPaddingLinked = externalIsPaddingLinked !== undefined ? externalIsPaddingLinked : localIsPaddingLinked;
+  
+  const setIsMarginLinked = (value: boolean) => {
+    if (onMarginLinkChange) {
+      onMarginLinkChange(value);
+    } else {
+      setLocalIsMarginLinked(value);
+    }
+  };
+  
+  const setIsPaddingLinked = (value: boolean) => {
+    if (onPaddingLinkChange) {
+      onPaddingLinkChange(value);
+    } else {
+      setLocalIsPaddingLinked(value);
+    }
+  };
   const [hoveredProperty, setHoveredProperty] = useState<string | null>(null);
   const [dragState, setDragState] = useState<{
     isDragging: boolean;
@@ -44,8 +74,6 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
     unit: string;
   } | null>(null);
   const [isShiftPressed, setIsShiftPressed] = useState(false);
-  const [isMarginLinked, setIsMarginLinked] = useState(false);
-  const [isPaddingLinked, setIsPaddingLinked] = useState(false);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
