@@ -170,7 +170,7 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
     if (styles[activeKey]) {
       const activeClassName = styleSources[activeClassId]?.name || activeClassId;
       return { 
-        color: activeClassIndex === 0 ? '#3b82f6' : '#3b82f6', // Blue for active
+        color: '#3b82f6', // Blue for active
         source: `Active in .${activeClassName}`,
         isEditable: true 
       };
@@ -183,15 +183,15 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
       if (styles[key]) {
         const className = styleSources[classId]?.name || classId;
         return { 
-          color: '#ea9005', // Orange for inherited
-          source: `Inherited from .${className}`,
-          isEditable: true // Can override
+          color: '#ea9005', // Orange for inherited - can be overridden
+          source: `Inherited from .${className} (click to override)`,
+          isEditable: true
         };
       }
     }
 
     // Not set in any class
-    return { color: '#999', source: 'Not set', isEditable: true };
+    return { color: '#999', source: 'Not set (click to define)', isEditable: true };
   };
 
   const parseValue = (value: string): { num: number; unit: string } => {
@@ -352,10 +352,15 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
                   userSelect: 'none',
                   minWidth: '28px',
                   textAlign: 'center',
-                  transition: 'all 0.3s ease',
+                  transition: 'color 0.3s ease, background-color 0.3s ease, transform 0.15s ease',
                   textDecoration: isHovered && !isDragging && !isOpen ? 'underline' : 'none',
-                  backgroundColor: isDragging ? `${propertyState.color}15` : 'transparent',
+                  backgroundColor: isDragging 
+                    ? `${propertyState.color}15` 
+                    : isHovered && !isOpen 
+                    ? `${propertyState.color}0a` 
+                    : 'transparent',
                   borderRadius: '2px',
+                  transform: isHovered && !isDragging && !isOpen ? 'scale(1.05)' : 'scale(1)',
                 }}>
                   {value || '0'}
                 </div>
