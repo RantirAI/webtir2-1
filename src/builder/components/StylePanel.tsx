@@ -150,13 +150,16 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
   };
 
   const updateStyle = (property: string, value: string) => {
-    // If we have an active combo class (activeClassIndex > 0), update that
-    // Otherwise update the primary class
+    // Always target the currently active class to ensure proper inheritance behavior
+    // This ensures that editing inherited (orange) values creates new entries in the active class
+    // without modifying base class definitions, causing the visual transition orange → blue
     let targetClassId: string;
     
-    if (activeClassIndex !== null && activeClassIndex > 0 && selectedInstance.styleSourceIds) {
+    if (activeClassIndex !== null && selectedInstance.styleSourceIds && selectedInstance.styleSourceIds[activeClassIndex]) {
+      // Target the specific active class (works for index 0, 1, 2, etc.)
       targetClassId = selectedInstance.styleSourceIds[activeClassIndex];
     } else {
+      // Fallback: ensure primary class exists if no valid active class
       targetClassId = ensurePrimaryClass();
     }
     
