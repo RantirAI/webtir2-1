@@ -560,42 +560,42 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
           </button>
         </div>
 
-        {/* Margin Top - In the space between outer box top and inner box top */}
+        {/* Margin Top - In the margin area (between outer box top and padding box top at y=28.5) */}
         <div style={{ position: 'absolute', top: '14px', left: '50%', transform: 'translateX(-50%)' }}>
           {renderSpacingInput('marginTop', marginTop)}
         </div>
 
-        {/* Margin Right - In the space between inner box right and outer box right */}
+        {/* Margin Right - In the margin area */}
         <div style={{ position: 'absolute', top: '60px', right: '18px', transform: 'translateY(-50%)' }}>
           {renderSpacingInput('marginRight', marginRight)}
         </div>
 
-        {/* Margin Bottom - In the space between inner box bottom and outer box bottom */}
+        {/* Margin Bottom - In the margin area */}
         <div style={{ position: 'absolute', bottom: '14px', left: '50%', transform: 'translateX(-50%)' }}>
           {renderSpacingInput('marginBottom', marginBottom)}
         </div>
 
-        {/* Margin Left - In the space between outer box left and inner box left */}
+        {/* Margin Left - In the margin area */}
         <div style={{ position: 'absolute', top: '60px', left: '18px', transform: 'translateY(-50%)' }}>
           {renderSpacingInput('marginLeft', marginLeft)}
         </div>
 
-        {/* Padding Top - In the space between inner box top and content box top */}
+        {/* Padding Top - In the padding area (between padding box at y=28.5 and content box at y=50.5) */}
         <div style={{ position: 'absolute', top: '39px', left: '50%', transform: 'translateX(-50%)' }}>
           {renderSpacingInput('paddingTop', paddingTop)}
         </div>
 
-        {/* Padding Right - In the space between content box right and inner box right */}
+        {/* Padding Right - In the padding area */}
         <div style={{ position: 'absolute', top: '60px', right: '56px', transform: 'translateY(-50%)' }}>
           {renderSpacingInput('paddingRight', paddingRight)}
         </div>
 
-        {/* Padding Bottom - In the space between content box bottom and inner box bottom */}
+        {/* Padding Bottom - In the padding area */}
         <div style={{ position: 'absolute', bottom: '39px', left: '50%', transform: 'translateX(-50%)' }}>
           {renderSpacingInput('paddingBottom', paddingBottom)}
         </div>
 
-        {/* Padding Left - In the space between inner box left and content box left */}
+        {/* Padding Left - In the padding area */}
         <div style={{ position: 'absolute', top: '60px', left: '56px', transform: 'translateY(-50%)' }}>
           {renderSpacingInput('paddingLeft', paddingLeft)}
         </div>
