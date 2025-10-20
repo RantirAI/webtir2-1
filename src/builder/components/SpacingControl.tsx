@@ -571,7 +571,7 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
         </div>
 
         {/* Margin Bottom - In the margin area */}
-        <div style={{ position: 'absolute', bottom: '24px', left: '50%', transform: 'translateX(-50%)' }}>
+        <div style={{ position: 'absolute', bottom: '14px', left: '50%', transform: 'translateX(-50%)' }}>
           {renderSpacingInput('marginBottom', marginBottom)}
         </div>
 
