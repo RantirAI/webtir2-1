@@ -334,18 +334,6 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
     const inputRef = useRef<HTMLDivElement>(null);
     const propertyState = getPropertyState(property);
     
-    // Darken the background color when hovered or selected for paddingTop
-    const darkenColor = (color: string) => {
-      if (property === 'paddingTop' && (isHovered || isOpen)) {
-        const r = parseInt(color.slice(1, 3), 16);
-        const g = parseInt(color.slice(3, 5), 16);
-        const b = parseInt(color.slice(5, 7), 16);
-        const darkened = `rgb(${Math.max(0, r - 30)}, ${Math.max(0, g - 30)}, ${Math.max(0, b - 30)})`;
-        return darkened;
-      }
-      return color;
-    };
-
     return (
       <>
         <TooltipProvider delayDuration={300}>
@@ -375,8 +363,8 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
                   textDecoration: isHovered && !isDragging && !isOpen ? 'underline' : 'none',
                   backgroundColor: isDragging 
                     ? `${propertyState.color}15` 
-                    : isHovered && !isOpen && property === 'paddingTop'
-                    ? darkenColor(`${propertyState.color}0a`)
+                    : isHovered && !isOpen 
+                    ? `${propertyState.color}0a` 
                     : 'transparent',
                   borderRadius: '2px',
                   transform: isHovered && !isDragging && !isOpen ? 'scale(1.05)' : 'scale(1)',
