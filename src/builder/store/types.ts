@@ -205,6 +205,14 @@ export interface StyleStore {
   // Metadata actions
   setStyleMetadata: (styleSourceId: string, metadata: Partial<StyleMetadata>) => void;
   getStyleMetadata: (styleSourceId: string) => StyleMetadata | undefined;
+  
+  // Class dependency tracking
+  classDependencies: Record<string, string[]>;
+  setClassDependency: (baseClassId: string, dependentClassId: string) => void;
+  removeClassDependency: (baseClassId: string, dependentClassId: string) => void;
+  isClassEditable: (classId: string) => boolean;
+  getClassDependents: (classId: string) => string[];
+  getPropertyState: (styleSourceId: string, property: string, breakpointId?: string, state?: PseudoState) => any;
 }
 
 export interface BuilderState {

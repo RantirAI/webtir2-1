@@ -69,12 +69,10 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
     setOpenSections((prev) => ({ ...prev, [section]: !prev[section] }));
   };
 
-  // Get computed styles - if we have an active combo class, show only that class's styles
-  // Otherwise show all classes combined
+  // Get computed styles - always show the full cascade (all classes combined)
+  // This shows both active (blue) and inherited (yellow) properties
   const computedStyles = selectedInstance 
-    ? (activeClassIndex !== null && activeClassIndex > 0 && selectedInstance.styleSourceIds
-        ? getComputedStyles([selectedInstance.styleSourceIds[activeClassIndex]])
-        : getComputedStyles(selectedInstance.styleSourceIds || []))
+    ? getComputedStyles(selectedInstance.styleSourceIds || [])
     : {};
 
   // Sync label input to selected instance (unconditional hook placement)
@@ -150,21 +148,34 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
   };
 
   const updateStyle = (property: string, value: string) => {
-    // Always target the currently active class to ensure proper inheritance behavior
-    // This ensures that editing inherited (orange) values creates new entries in the active class
-    // without modifying base class definitions, causing the visual transition orange → blue
-    let targetClassId: string;
-    
-    if (activeClassIndex !== null && selectedInstance.styleSourceIds && selectedInstance.styleSourceIds[activeClassIndex]) {
-      // Target the specific active class (works for index 0, 1, 2, etc.)
-      targetClassId = selectedInstance.styleSourceIds[activeClassIndex];
-    } else {
-      // Fallback: ensure primary class exists if no valid active class
-      targetClassId = ensurePrimaryClass();
-    }
-    
-    if (targetClassId) {
+    // Strict inheritance rules: Only allow editing the LAST class in the chain
+    if (!selectedInstance.styleSourceIds || selectedInstance.styleSourceIds.length === 0) {
+      // No classes exist, create primary class
+      const targetClassId = ensurePrimaryClass();
       setStyle(targetClassId, property, value);
+      return;
+    }
+
+    // Get the last class in the chain (the only editable one)
+    const lastClassIndex = selectedInstance.styleSourceIds.length - 1;
+    const lastClassId = selectedInstance.styleSourceIds[lastClassIndex];
+
+    // Check if trying to edit a class that's not the last one
+    if (activeClassIndex !== null && activeClassIndex !== lastClassIndex) {
+      const { isClassEditable } = useStyleStore.getState();
+      if (!isClassEditable(selectedInstance.styleSourceIds[activeClassIndex])) {
+        console.warn(`Cannot modify Class ${activeClassIndex + 1} - it has dependent classes. Only Class ${lastClassIndex + 1} can be edited.`);
+        // Automatically switch to the last class
+        setActiveClassIndex(lastClassIndex);
+      }
+    }
+
+    // Always target the last class in the chain
+    setStyle(lastClassId, property, value);
+    
+    // Ensure we're viewing the last class
+    if (activeClassIndex !== lastClassIndex) {
+      setActiveClassIndex(lastClassIndex);
     }
   };
 

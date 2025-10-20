@@ -14,6 +14,7 @@ export const useStyleStore = create<StyleStore>((set, get) => ({
   currentBreakpointId: 'base',
   currentPseudoState: 'default',
   nameCounters: {},
+  classDependencies: {}, // Track which classes depend on which: { classId: [dependentClassId1, dependentClassId2] }
 
   nextLocalClassName: (componentType: string) => {
     // Generate Webflow-style class names: div-block-1, button-base-1, text-block-1, etc.
@@ -172,5 +173,60 @@ export const useStyleStore = create<StyleStore>((set, get) => ({
 
   getStyleMetadata: (styleSourceId) => {
     return get().styleSources[styleSourceId]?.metadata;
+  },
+
+  // Dependency tracking for class inheritance
+  setClassDependency: (baseClassId: string, dependentClassId: string) => {
+    set((state) => {
+      const currentDependents = state.classDependencies[baseClassId] || [];
+      if (!currentDependents.includes(dependentClassId)) {
+        return {
+          classDependencies: {
+            ...state.classDependencies,
+            [baseClassId]: [...currentDependents, dependentClassId],
+          },
+        };
+      }
+      return state;
+    });
+  },
+
+  removeClassDependency: (baseClassId: string, dependentClassId: string) => {
+    set((state) => {
+      const currentDependents = state.classDependencies[baseClassId] || [];
+      const filtered = currentDependents.filter(id => id !== dependentClassId);
+      
+      if (filtered.length === 0) {
+        const { [baseClassId]: _, ...remaining } = state.classDependencies;
+        return { classDependencies: remaining };
+      }
+      
+      return {
+        classDependencies: {
+          ...state.classDependencies,
+          [baseClassId]: filtered,
+        },
+      };
+    });
+  },
+
+  isClassEditable: (classId: string) => {
+    const { classDependencies } = get();
+    const dependents = classDependencies[classId] || [];
+    return dependents.length === 0;
+  },
+
+  getClassDependents: (classId: string) => {
+    return get().classDependencies[classId] || [];
+  },
+
+  // Get property state for a specific class (not cascaded)
+  getPropertyState: (styleSourceId: string, property: string, breakpointId?: string, state?: PseudoState) => {
+    const { styles, currentBreakpointId, currentPseudoState } = get();
+    const targetBreakpoint = breakpointId || currentBreakpointId;
+    const targetState = state || currentPseudoState;
+    const key = `${styleSourceId}:${targetBreakpoint}:${targetState}:${property}`;
+    
+    return styles[key];
   },
 }));

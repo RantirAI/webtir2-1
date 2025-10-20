@@ -155,43 +155,50 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
   }, [dragState, onUpdate]);
 
   // Determine property color state (blue = active, yellow/orange = inherited, gray = default)
+  // STRICT RULE: Only show editable state for the LAST class in chain
   const getPropertyState = (property: string): { color: string; source: string; isEditable: boolean } => {
-    // If no active class, everything is gray/default
-    if (activeClassIndex === null || activeClassIndex >= styleSourceIds.length) {
-      return { color: '#999', source: 'Not set', isEditable: true };
+    // If no classes exist, everything is gray/default
+    if (!styleSourceIds || styleSourceIds.length === 0) {
+      return { color: '#999', source: 'Not set (click to define)', isEditable: true };
     }
 
-    const activeClassId = styleSourceIds[activeClassIndex];
+    // Always check the LAST class in the chain (only editable one)
+    const lastClassIndex = styleSourceIds.length - 1;
+    const lastClassId = styleSourceIds[lastClassIndex];
     const breakpoint = currentBreakpointId || 'base';
     const state = currentPseudoState || 'default';
     
-    // Check if property is defined in the active class
-    const activeKey = `${activeClassId}:${breakpoint}:${state}:${property}`;
-    if (styles[activeKey]) {
-      const activeClassName = styleSources[activeClassId]?.name || activeClassId;
+    // Check if property is defined in the LAST (active) class
+    const lastClassKey = `${lastClassId}:${breakpoint}:${state}:${property}`;
+    if (styles[lastClassKey]) {
+      const lastClassName = styleSources[lastClassId]?.name || lastClassId;
       return { 
-        color: '#3b82f6', // Blue for active
-        source: `Active in .${activeClassName}`,
+        color: '#3b82f6', // Blue for active (defined on last class)
+        source: `Active in Class ${lastClassIndex + 1} (.${lastClassName})`,
         isEditable: true 
       };
     }
 
     // Check if property is inherited from previous classes
-    for (let i = activeClassIndex - 1; i >= 0; i--) {
+    for (let i = lastClassIndex - 1; i >= 0; i--) {
       const classId = styleSourceIds[i];
       const key = `${classId}:${breakpoint}:${state}:${property}`;
       if (styles[key]) {
         const className = styleSources[classId]?.name || classId;
         return { 
-          color: '#ea9005', // Orange for inherited - can be overridden
-          source: `Inherited from .${className} (click to override)`,
+          color: '#ea9005', // Orange for inherited - can be overridden in last class
+          source: `Inherited from Class ${i + 1} (.${className}) - click to override in Class ${lastClassIndex + 1}`,
           isEditable: true
         };
       }
     }
 
-    // Not set in any class
-    return { color: '#999', source: 'Not set (click to define)', isEditable: true };
+    // Not set in any class - can be defined in last class
+    return { 
+      color: '#999', 
+      source: `Not set - click to define in Class ${lastClassIndex + 1}`, 
+      isEditable: true 
+    };
   };
 
   const parseValue = (value: string): { num: number; unit: string } => {
