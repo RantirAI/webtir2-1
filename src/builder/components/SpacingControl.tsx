@@ -566,7 +566,7 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
         </div>
 
         {/* Margin Right - In the margin area */}
-        <div style={{ position: 'absolute', top: '50px', right: '48px', transform: 'translateY(-50%)' }}>
+        <div style={{ position: 'absolute', top: '50px', right: '38px', transform: 'translateY(-50%)' }}>
           {renderSpacingInput('marginRight', marginRight)}
         </div>
 
@@ -576,7 +576,7 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
         </div>
 
         {/* Margin Left - In the margin area */}
-        <div style={{ position: 'absolute', top: '50px', left: '48px', transform: 'translateY(-50%)' }}>
+        <div style={{ position: 'absolute', top: '50px', left: '38px', transform: 'translateY(-50%)' }}>
           {renderSpacingInput('marginLeft', marginLeft)}
         </div>
 
