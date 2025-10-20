@@ -510,14 +510,15 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
           <button
             onClick={() => setIsMarginLinked(!isMarginLinked)}
             style={{
-              background: 'none',
-              border: 'none',
-              padding: 0,
+              background: isMarginLinked ? `${linkIconColor}15` : 'transparent',
+              border: isMarginLinked ? `1px solid ${linkIconColor}40` : '1px solid transparent',
+              borderRadius: '3px',
+              padding: '2px',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               color: isMarginLinked ? linkIconColor : '#999',
-              transition: 'color 0.2s'
+              transition: 'all 0.2s ease'
             }}
             title={isMarginLinked ? "Unlink margins" : "Link all margins"}
           >
@@ -545,14 +546,15 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
           <button
             onClick={() => setIsPaddingLinked(!isPaddingLinked)}
             style={{
-              background: 'none',
-              border: 'none',
-              padding: 0,
+              background: isPaddingLinked ? `${linkIconColor}15` : 'transparent',
+              border: isPaddingLinked ? `1px solid ${linkIconColor}40` : '1px solid transparent',
+              borderRadius: '3px',
+              padding: '2px',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               color: isPaddingLinked ? linkIconColor : '#999',
-              transition: 'color 0.2s'
+              transition: 'all 0.2s ease'
             }}
             title={isPaddingLinked ? "Unlink paddings" : "Link all paddings"}
           >
