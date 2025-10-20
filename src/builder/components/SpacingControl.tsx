@@ -490,21 +490,21 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
 
       {/* Interactive Spacing Inputs Overlaid on SVG */}
       <div style={{ position: 'relative', width: '100%', height: '120px' }}>
-        {/* MARGIN Label with Chainlink */}
+        {/* MARGIN Label with Chainlink - Inside outer box */}
         <div style={{ 
           position: 'absolute', 
-          top: '4px', 
+          top: '8px', 
           left: '8px',
           display: 'flex',
           alignItems: 'center',
-          gap: '6px'
+          gap: '4px'
         }}>
           <span style={{ 
             fontSize: '9px',
             fontWeight: 600,
-            color: '#666',
+            color: '#999',
             textTransform: 'uppercase',
-            letterSpacing: '0.3px'
+            letterSpacing: '0.5px'
           }}>MARGIN</span>
           <button
             onClick={() => setIsMarginLinked(!isMarginLinked)}
@@ -524,21 +524,21 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
           </button>
         </div>
 
-        {/* PADDING Label with Chainlink */}
+        {/* PADDING Label with Chainlink - Inside inner box */}
         <div style={{ 
           position: 'absolute', 
-          top: '22px', 
-          left: '8px',
+          top: '32px', 
+          left: '45px',
           display: 'flex',
           alignItems: 'center',
-          gap: '6px'
+          gap: '4px'
         }}>
           <span style={{ 
             fontSize: '9px',
             fontWeight: 600,
-            color: '#666',
+            color: '#999',
             textTransform: 'uppercase',
-            letterSpacing: '0.3px'
+            letterSpacing: '0.5px'
           }}>PADDING</span>
           <button
             onClick={() => setIsPaddingLinked(!isPaddingLinked)}
@@ -558,44 +558,44 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
           </button>
         </div>
 
-        {/* Margin Top */}
-        <div style={{ position: 'absolute', top: '6px', left: '50%', transform: 'translateX(-50%)' }}>
+        {/* Margin Top - Centered on top side */}
+        <div style={{ position: 'absolute', top: '8px', left: '50%', transform: 'translateX(-50%)' }}>
           {renderSpacingInput('marginTop', marginTop)}
         </div>
 
-        {/* Margin Left */}
-        <div style={{ position: 'absolute', top: '50%', left: '4px', transform: 'translateY(-50%)' }}>
-          {renderSpacingInput('marginLeft', marginLeft)}
-        </div>
-
-        {/* Margin Right */}
-        <div style={{ position: 'absolute', top: '50%', right: '4px', transform: 'translateY(-50%)' }}>
+        {/* Margin Right - Centered on right side */}
+        <div style={{ position: 'absolute', top: '50%', right: '6px', transform: 'translateY(-50%)' }}>
           {renderSpacingInput('marginRight', marginRight)}
         </div>
 
-        {/* Margin Bottom */}
-        <div style={{ position: 'absolute', bottom: '6px', left: '50%', transform: 'translateX(-50%)' }}>
+        {/* Margin Bottom - Centered on bottom side */}
+        <div style={{ position: 'absolute', bottom: '8px', left: '50%', transform: 'translateX(-50%)' }}>
           {renderSpacingInput('marginBottom', marginBottom)}
         </div>
 
-        {/* Padding Top */}
-        <div style={{ position: 'absolute', top: '30px', left: '50%', transform: 'translateX(-50%)' }}>
+        {/* Margin Left - Centered on left side */}
+        <div style={{ position: 'absolute', top: '50%', left: '6px', transform: 'translateY(-50%)' }}>
+          {renderSpacingInput('marginLeft', marginLeft)}
+        </div>
+
+        {/* Padding Top - Centered on top side of inner box */}
+        <div style={{ position: 'absolute', top: '32px', left: '50%', transform: 'translateX(-50%)' }}>
           {renderSpacingInput('paddingTop', paddingTop)}
         </div>
 
-        {/* Padding Left */}
-        <div style={{ position: 'absolute', top: '50%', left: '42px', transform: 'translateY(-50%)' }}>
-          {renderSpacingInput('paddingLeft', paddingLeft)}
-        </div>
-
-        {/* Padding Right */}
-        <div style={{ position: 'absolute', top: '50%', right: '42px', transform: 'translateY(-50%)' }}>
+        {/* Padding Right - Centered on right side of inner box */}
+        <div style={{ position: 'absolute', top: '50%', right: '44px', transform: 'translateY(-50%)' }}>
           {renderSpacingInput('paddingRight', paddingRight)}
         </div>
 
-        {/* Padding Bottom */}
-        <div style={{ position: 'absolute', bottom: '30px', left: '50%', transform: 'translateX(-50%)' }}>
+        {/* Padding Bottom - Centered on bottom side of inner box */}
+        <div style={{ position: 'absolute', bottom: '32px', left: '50%', transform: 'translateX(-50%)' }}>
           {renderSpacingInput('paddingBottom', paddingBottom)}
+        </div>
+
+        {/* Padding Left - Centered on left side of inner box */}
+        <div style={{ position: 'absolute', top: '50%', left: '44px', transform: 'translateY(-50%)' }}>
+          {renderSpacingInput('paddingLeft', paddingLeft)}
         </div>
       </div>
     </div>
