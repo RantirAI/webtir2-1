@@ -8,6 +8,7 @@ import * as Icons from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
+import { Search } from 'lucide-react';
 
 const DraggableComponent: React.FC<{ type: string; label: string; icon: string }> = ({ type, label, icon }) => {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
@@ -28,10 +29,10 @@ const DraggableComponent: React.FC<{ type: string; label: string; icon: string }
       style={style}
       {...listeners}
       {...attributes}
-      className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-accent hover:text-accent-foreground transition-colors text-left cursor-grab active:cursor-grabbing"
+      className="w-full aspect-square flex flex-col items-center justify-center gap-1 p-2 rounded-md border border-border bg-card hover:bg-accent hover:border-primary transition-all text-center cursor-grab active:cursor-grabbing"
     >
-      {IconComponent && <IconComponent className="w-4 h-4" />}
-      <span>{label}</span>
+      {IconComponent && <IconComponent className="w-5 h-5 text-foreground" />}
+      <span className="text-[9px] leading-tight font-medium text-foreground">{label}</span>
     </button>
   );
 };
@@ -76,14 +77,48 @@ export const ComponentsPanel: React.FC = () => {
     addInstance(newInstance, parentId);
   };
 
+  // Group components by category
+  const categories = [
+    { name: 'Layout', types: ['Container', 'Section', 'Box'] },
+    { name: 'Typography', types: ['Heading', 'Text'] },
+    { name: 'Interactive', types: ['ButtonPrimitive', 'LinkPrimitive'] },
+    { name: 'Media', types: ['ImagePrimitive'] },
+  ];
+
   return (
     <ScrollArea className="flex-1">
-      <div className="p-2 space-y-1">
-        {Object.values(componentRegistry).map((component) => (
-          <div key={component.type} onDoubleClick={() => handleAddComponent(component.type)}>
-            <DraggableComponent type={component.type} label={component.label} icon={component.icon} />
-          </div>
-        ))}
+      <div className="p-3 space-y-3">
+        {/* Search input */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <input
+            type="text"
+            placeholder="Find components"
+            className="w-full h-8 pl-9 pr-3 text-xs rounded-md border border-border bg-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+          />
+        </div>
+
+        {/* Categories */}
+        {categories.map((category) => {
+          const components = category.types
+            .map(type => componentRegistry[type])
+            .filter(Boolean);
+          
+          if (components.length === 0) return null;
+          
+          return (
+            <div key={category.name}>
+              <h3 className="text-xs font-semibold text-foreground mb-2">{category.name}</h3>
+              <div className="grid grid-cols-3 gap-2">
+                {components.map((component) => (
+                  <div key={component.type} onDoubleClick={() => handleAddComponent(component.type)}>
+                    <DraggableComponent type={component.type} label={component.label} icon={component.icon} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })}
       </div>
     </ScrollArea>
   );

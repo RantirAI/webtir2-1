@@ -84,9 +84,9 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
 
   if (!selectedInstance) {
     return (
-      <div className="w-80 h-full bg-background border border-border rounded-lg shadow-xl flex flex-col overflow-hidden backdrop-blur-md bg-white/70 dark:bg-zinc-900/70">
+      <div className="w-64 h-full bg-background border border-border rounded-lg shadow-xl flex flex-col overflow-hidden backdrop-blur-md bg-white/70 dark:bg-zinc-900/70">
         <Tabs defaultValue="styles" className="flex-1 flex flex-col">
-          <TabsList className="w-full grid grid-cols-3 rounded-none border-b bg-transparent h-10 p-1 gap-1">
+          <TabsList className="w-full grid grid-cols-2 rounded-none border-b bg-transparent h-10 p-1 gap-1">
             <TabsTrigger 
               value="styles" 
               className="gap-1 text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none"
@@ -98,13 +98,8 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
               value="settings" 
               className="gap-1 text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none"
             >
+              <Settings className="w-3 h-3" />
               Settings
-            </TabsTrigger>
-            <TabsTrigger 
-              value="actions" 
-              className="gap-1 text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none"
-            >
-              Actions
             </TabsTrigger>
           </TabsList>
           <TabsContent value="styles" className="flex-1 m-0 p-3 overflow-y-auto">
@@ -115,11 +110,6 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
           <TabsContent value="settings" className="flex-1 m-0 p-3 overflow-y-auto">
             <div className="text-xs text-muted-foreground text-center">
               Select an element to configure settings
-            </div>
-          </TabsContent>
-          <TabsContent value="actions" className="flex-1 m-0 p-3 overflow-y-auto">
-            <div className="text-xs text-muted-foreground text-center">
-              Select an element to add actions
             </div>
           </TabsContent>
         </Tabs>
@@ -359,63 +349,13 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
     );
   };
 
-  // If no instance is selected, show tabs for Settings, Actions, Data
-  if (!selectedInstance) {
-    return (
-      <div className="w-80 h-full bg-background border border-border rounded-lg shadow-xl flex flex-col overflow-hidden backdrop-blur-md bg-white/70 dark:bg-zinc-900/70">
-        <Tabs defaultValue="settings" className="flex-1 flex flex-col">
-          <TabsList className="w-full grid grid-cols-3 rounded-none border-b bg-transparent h-10 p-1 gap-1">
-            <TabsTrigger 
-              value="settings" 
-              className="text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none flex items-center gap-1"
-            >
-              <Settings className="w-3 h-3" />
-              Settings
-            </TabsTrigger>
-            <TabsTrigger 
-              value="actions" 
-              className="text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none flex items-center gap-1"
-            >
-              <Zap className="w-3 h-3" />
-              Actions
-            </TabsTrigger>
-            <TabsTrigger 
-              value="data" 
-              className="text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none flex items-center gap-1"
-            >
-              <Database className="w-3 h-3" />
-              Data
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="settings" className="flex-1 m-0 p-4">
-            <div className="text-sm text-muted-foreground text-center">
-              Select an element to edit its settings
-            </div>
-          </TabsContent>
-
-          <TabsContent value="actions" className="flex-1 m-0 p-4">
-            <div className="text-sm text-muted-foreground text-center">
-              Select an element to add actions
-            </div>
-          </TabsContent>
-
-          <TabsContent value="data" className="flex-1 m-0 p-4">
-            <div className="text-sm text-muted-foreground text-center">
-              Select an element to bind data
-            </div>
-          </TabsContent>
-        </Tabs>
-      </div>
-    );
-  }
 
   return (
-    <div className="w-80 h-full bg-background border border-border rounded-lg shadow-xl flex flex-col overflow-hidden backdrop-blur-md bg-white/70 dark:bg-zinc-900/70">
+    <div className="w-64 h-full bg-background border border-border rounded-lg shadow-xl flex flex-col overflow-hidden backdrop-blur-md bg-white/70 dark:bg-zinc-900/70">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
-        <TabsList className="w-full grid grid-cols-4 rounded-none border-b bg-transparent h-10 p-1 gap-1 flex-shrink-0">
+        <TabsList className="w-full grid grid-cols-2 rounded-none border-b bg-transparent h-10 p-1 gap-1 flex-shrink-0">
           <TabsTrigger 
-            value="style" 
+            value="style"
             className="text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none flex items-center gap-1"
           >
             <Paintbrush className="w-3 h-3" />
@@ -427,20 +367,6 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
           >
             <Settings className="w-3 h-3" />
             Settings
-          </TabsTrigger>
-          <TabsTrigger 
-            value="actions" 
-            className="text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none flex items-center gap-1"
-          >
-            <Zap className="w-3 h-3" />
-            Actions
-          </TabsTrigger>
-          <TabsTrigger 
-            value="data" 
-            className="text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none flex items-center gap-1"
-          >
-            <Database className="w-3 h-3" />
-            Data
           </TabsTrigger>
         </TabsList>
 
