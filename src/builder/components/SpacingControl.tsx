@@ -456,135 +456,146 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
     <div style={{ 
       position: 'relative',
       width: '100%',
-      padding: '16px',
+      padding: '12px',
     }}>
       {/* SVG Background with Margin and Padding Visual */}
-      <svg width="100%" height="140" viewBox="0 0 216 140" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }}>
+      <svg width="100%" height="120" viewBox="0 0 216 120" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }}>
         {/* Margin Area (Outer Box with Diagonal Pattern) */}
-        <mask id="mask0" style={{maskType: 'luminance'}} maskUnits="userSpaceOnUse" x="0" y="0" width="216" height="140">
-          <path d="M212 0H4C1.79 0 0 1.79 0 4V136C0 138.21 1.79 140 4 140H212C214.21 140 216 138.21 216 136V4C216 1.79 214.21 0 212 0Z" fill="white"/>
+        <mask id="mask0" style={{maskType: 'luminance'}} maskUnits="userSpaceOnUse" x="0" y="0" width="216" height="120">
+          <path d="M212 0H4C1.79 0 0 1.79 0 4V116C0 118.21 1.79 120 4 120H212C214.21 120 216 118.21 216 116V4C216 1.79 214.21 0 212 0Z" fill="white"/>
         </mask>
         <g mask="url(#mask0)">
-          <path d="M216 0H0L81.5 70H134.5L216 0Z" fill="#F8F8F8"/>
-          <path d="M216 140L134.5 70L216 0V140Z" fill="#F1F3F5"/>
-          <path d="M216 140H0L81.5 70H134.5L216 140Z" fill="#F8F8F8"/>
-          <path d="M0 0L81.5 70L0 140V0Z" fill="#F1F3F5"/>
+          <path d="M216 0H0L81.5 60H134.5L216 0Z" fill="#F8F8F8"/>
+          <path d="M216 120L134.5 60L216 0V120Z" fill="#F1F3F5"/>
+          <path d="M216 120H0L81.5 60H134.5L216 120Z" fill="#F8F8F8"/>
+          <path d="M0 0L81.5 60L0 120V0Z" fill="#F1F3F5"/>
         </g>
-        <rect x="0.5" y="0.5" width="215" height="139" rx="3.5" stroke="#E6E6E6"/>
+        <rect x="0.5" y="0.5" width="215" height="119" rx="3.5" stroke="#E6E6E6"/>
         
         {/* Padding Area (Inner Box) */}
-        <rect x="37.5" y="32.5" width="141" height="75" rx="3.5" fill="#F5F5F5" stroke="#E6E6E6"/>
-        <mask id="mask1" style={{maskType: 'luminance'}} maskUnits="userSpaceOnUse" x="40" y="35" width="136" height="70">
-          <path d="M175 35H41C40.45 35 40 35.45 40 36V104C40 104.55 40.45 105 41 105H175C175.55 105 176 104.55 176 104V36C176 35.45 175.55 35 175 35Z" fill="white"/>
+        <rect x="37.5" y="28.5" width="141" height="63" rx="3.5" fill="#F5F5F5" stroke="#E6E6E6"/>
+        <mask id="mask1" style={{maskType: 'luminance'}} maskUnits="userSpaceOnUse" x="40" y="31" width="136" height="58">
+          <path d="M175 31H41C40.45 31 40 31.45 40 32V88C40 88.55 40.45 89 41 89H175C175.55 89 176 88.55 176 88V32C176 31.45 175.55 31 175 31Z" fill="white"/>
         </mask>
         <g mask="url(#mask1)">
-          <path d="M216 0H0L81.5 70H134.5L216 0Z" fill="#FCFCFC"/>
-          <path d="M216 140L134.5 70L216 0V140Z" fill="#F8F8F8"/>
-          <path d="M216 140H0L81.5 70H134.5L216 140Z" fill="#FCFCFC"/>
-          <path d="M0 0L81.5 70L0 140V0Z" fill="#F8F8F8"/>
+          <path d="M216 0H0L81.5 60H134.5L216 0Z" fill="#FCFCFC"/>
+          <path d="M216 120L134.5 60L216 0V120Z" fill="#F8F8F8"/>
+          <path d="M216 120H0L81.5 60H134.5L216 120Z" fill="#FCFCFC"/>
+          <path d="M0 0L81.5 60L0 120V0Z" fill="#F8F8F8"/>
         </g>
         
         {/* Content Box (Center) */}
-        <rect x="88.5" y="57.5" width="39" height="25" rx="2.5" fill="#FAFAFA" stroke="#E6E6E6"/>
+        <rect x="88.5" y="50.5" width="39" height="19" rx="2.5" fill="#FAFAFA" stroke="#E6E6E6"/>
       </svg>
 
       {/* Interactive Spacing Inputs Overlaid on SVG */}
-      <div style={{ position: 'relative', width: '100%', height: '140px' }}>
+      <div style={{ position: 'relative', width: '100%', height: '120px' }}>
+        {/* MARGIN Label with Chainlink */}
+        <div style={{ 
+          position: 'absolute', 
+          top: '4px', 
+          left: '8px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '6px'
+        }}>
+          <span style={{ 
+            fontSize: '9px',
+            fontWeight: 600,
+            color: '#666',
+            textTransform: 'uppercase',
+            letterSpacing: '0.3px'
+          }}>MARGIN</span>
+          <button
+            onClick={() => setIsMarginLinked(!isMarginLinked)}
+            style={{
+              background: 'none',
+              border: 'none',
+              padding: 0,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              color: isMarginLinked ? linkIconColor : '#999',
+              transition: 'color 0.2s'
+            }}
+            title={isMarginLinked ? "Unlink margins" : "Link all margins"}
+          >
+            {isMarginLinked ? <Link2 className="w-3 h-3" /> : <Link2Off className="w-3 h-3" />}
+          </button>
+        </div>
+
+        {/* PADDING Label with Chainlink */}
+        <div style={{ 
+          position: 'absolute', 
+          top: '22px', 
+          left: '8px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '6px'
+        }}>
+          <span style={{ 
+            fontSize: '9px',
+            fontWeight: 600,
+            color: '#666',
+            textTransform: 'uppercase',
+            letterSpacing: '0.3px'
+          }}>PADDING</span>
+          <button
+            onClick={() => setIsPaddingLinked(!isPaddingLinked)}
+            style={{
+              background: 'none',
+              border: 'none',
+              padding: 0,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              color: isPaddingLinked ? linkIconColor : '#999',
+              transition: 'color 0.2s'
+            }}
+            title={isPaddingLinked ? "Unlink paddings" : "Link all paddings"}
+          >
+            {isPaddingLinked ? <Link2 className="w-3 h-3" /> : <Link2Off className="w-3 h-3" />}
+          </button>
+        </div>
+
         {/* Margin Top */}
-        <div style={{ position: 'absolute', top: '8px', left: '50%', transform: 'translateX(-50%)' }}>
+        <div style={{ position: 'absolute', top: '6px', left: '50%', transform: 'translateX(-50%)' }}>
           {renderSpacingInput('marginTop', marginTop)}
         </div>
 
         {/* Margin Left */}
-        <div style={{ position: 'absolute', top: '50%', left: '8px', transform: 'translateY(-50%)' }}>
+        <div style={{ position: 'absolute', top: '50%', left: '4px', transform: 'translateY(-50%)' }}>
           {renderSpacingInput('marginLeft', marginLeft)}
         </div>
 
         {/* Margin Right */}
-        <div style={{ position: 'absolute', top: '50%', right: '8px', transform: 'translateY(-50%)' }}>
+        <div style={{ position: 'absolute', top: '50%', right: '4px', transform: 'translateY(-50%)' }}>
           {renderSpacingInput('marginRight', marginRight)}
         </div>
 
         {/* Margin Bottom */}
-        <div style={{ position: 'absolute', bottom: '8px', left: '50%', transform: 'translateX(-50%)' }}>
+        <div style={{ position: 'absolute', bottom: '6px', left: '50%', transform: 'translateX(-50%)' }}>
           {renderSpacingInput('marginBottom', marginBottom)}
         </div>
 
         {/* Padding Top */}
-        <div style={{ position: 'absolute', top: '36px', left: '50%', transform: 'translateX(-50%)' }}>
+        <div style={{ position: 'absolute', top: '30px', left: '50%', transform: 'translateX(-50%)' }}>
           {renderSpacingInput('paddingTop', paddingTop)}
         </div>
 
         {/* Padding Left */}
-        <div style={{ position: 'absolute', top: '50%', left: '48px', transform: 'translateY(-50%)' }}>
+        <div style={{ position: 'absolute', top: '50%', left: '42px', transform: 'translateY(-50%)' }}>
           {renderSpacingInput('paddingLeft', paddingLeft)}
         </div>
 
         {/* Padding Right */}
-        <div style={{ position: 'absolute', top: '50%', right: '48px', transform: 'translateY(-50%)' }}>
+        <div style={{ position: 'absolute', top: '50%', right: '42px', transform: 'translateY(-50%)' }}>
           {renderSpacingInput('paddingRight', paddingRight)}
         </div>
 
         {/* Padding Bottom */}
-        <div style={{ position: 'absolute', bottom: '36px', left: '50%', transform: 'translateX(-50%)' }}>
+        <div style={{ position: 'absolute', bottom: '30px', left: '50%', transform: 'translateX(-50%)' }}>
           {renderSpacingInput('paddingBottom', paddingBottom)}
-        </div>
-
-        {/* Chainlink Controls */}
-        <div style={{
-          position: 'absolute',
-          top: '2px',
-          left: '2px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          background: 'rgba(255, 255, 255, 0.9)',
-          padding: '4px 6px',
-          borderRadius: '4px',
-          fontSize: '9px',
-          color: '#666',
-          textTransform: 'uppercase',
-          letterSpacing: '0.5px',
-          fontWeight: 600
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <span>M</span>
-            <button
-              onClick={() => setIsMarginLinked(!isMarginLinked)}
-              style={{
-                background: 'none',
-                border: 'none',
-                padding: 0,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                color: isMarginLinked ? linkIconColor : '#999',
-                transition: 'color 0.2s'
-              }}
-              title={isMarginLinked ? "Unlink margins" : "Link all margins"}
-            >
-              {isMarginLinked ? <Link2 className="w-3 h-3" /> : <Link2Off className="w-3 h-3" />}
-            </button>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <span>P</span>
-            <button
-              onClick={() => setIsPaddingLinked(!isPaddingLinked)}
-              style={{
-                background: 'none',
-                border: 'none',
-                padding: 0,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                color: isPaddingLinked ? linkIconColor : '#999',
-                transition: 'color 0.2s'
-              }}
-              title={isPaddingLinked ? "Unlink paddings" : "Link all paddings"}
-            >
-              {isPaddingLinked ? <Link2 className="w-3 h-3" /> : <Link2Off className="w-3 h-3" />}
-            </button>
-          </div>
         </div>
       </div>
     </div>
