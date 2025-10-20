@@ -591,7 +591,7 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
         </div>
 
         {/* Padding Bottom - In the padding area */}
-        <div style={{ position: 'absolute', bottom: '6px', left: '50%', transform: 'translateX(-50%)' }}>
+        <div style={{ position: 'absolute', bottom: '36px', left: '50%', transform: 'translateX(-50%)' }}>
           {renderSpacingInput('paddingBottom', paddingBottom)}
         </div>
 
