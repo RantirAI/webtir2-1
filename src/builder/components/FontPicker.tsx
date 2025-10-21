@@ -105,7 +105,10 @@ export const FontPicker: React.FC<FontPickerProps> = ({ value, weight, onChange,
       <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '4px', alignItems: 'center' }}>
         <Select value={currentFontName || 'inherit'} onValueChange={handleFontSelect}>
           <SelectTrigger className="h-6 text-xs bg-[#F5F5F5] dark:bg-[#09090b] border-input">
-            <SelectValue placeholder="Select font" className="placeholder:text-muted-foreground placeholder:opacity-70">
+            <SelectValue 
+              placeholder={currentFontName || 'Default'}
+              className="placeholder:text-foreground placeholder:opacity-100"
+            >
               {currentFontName ? (
                 <span style={{ fontFamily: currentFontName === 'inherit' ? 'inherit' : `"${currentFontName}", sans-serif` }}>
                   {currentFontName === 'inherit' ? 'Default' : currentFontName}

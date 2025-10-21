@@ -65,8 +65,8 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, instance, onClos
   };
 
   const handleWrapInBox = () => {
-    const parent = useBuilderStore.getState().rootInstance;
-    if (!parent) return;
+    const { rootInstance, updateInstance } = useBuilderStore.getState();
+    if (!rootInstance) return;
     
     const findParent = (root: ComponentInstance): ComponentInstance | null => {
       for (const child of root.children) {
@@ -77,26 +77,29 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, instance, onClos
       return null;
     };
     
-    const parentInstance = findParent(parent);
+    const parentInstance = findParent(rootInstance);
     if (parentInstance) {
       const index = parentInstance.children.findIndex(c => c.id === instance.id);
       
-      // Remove instance from parent
-      parentInstance.children.splice(index, 1);
-      
-      // Create wrapper box
-      const wrapper: ComponentInstance = {
+      // Create a proper Box component using addInstance
+      const wrapperBox: ComponentInstance = {
         id: `box-${Date.now()}`,
         type: 'Box',
-        label: 'Wrapper',
+        label: 'Wrapper Box',
         props: {},
-        styleSourceIds: [],
-        children: [instance],
+        styleSourceIds: [], // Will be assigned default styles when selected
+        children: [],
       };
       
-      // Add wrapper at the same position
-      parentInstance.children.splice(index, 0, wrapper);
-      useBuilderStore.setState({ rootInstance: { ...parent } });
+      // Use addInstance to properly create the box with the instance as its child
+      addInstance(wrapperBox, parentInstance.id, index);
+      
+      // Remove the instance from its current parent
+      const newParentChildren = parentInstance.children.filter(c => c.id !== instance.id);
+      updateInstance(parentInstance.id, { children: newParentChildren });
+      
+      // Add instance to the new wrapper box
+      addInstance(instance, wrapperBox.id, 0);
     }
     onClose();
   };

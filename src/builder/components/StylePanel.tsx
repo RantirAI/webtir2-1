@@ -434,7 +434,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
                           <Info className="w-3 h-3" />
                         </Button>
                       </TooltipTrigger>
-                      <TooltipContent side="right" className="max-w-xs">
+                      <TooltipContent side="right" align="start" className="max-w-xs z-[100000]">
                         <div className="text-xs space-y-2">
                           <div className="flex items-center gap-3">
                             <div className="flex items-center gap-1">
@@ -976,7 +976,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
       </AccordionSection>
 
       {/* Typography */}
-      <AccordionSection title="Typography" section="typography" properties={['fontFamily', 'fontSize', 'fontWeight', 'lineHeight', 'letterSpacing', 'textAlign', 'textDecoration', 'textTransform', 'color']}>
+      <AccordionSection title="Typography" section="typography" properties={['fontFamily', 'fontSize', 'fontWeight', 'lineHeight', 'letterSpacing', 'textAlign', 'textDecoration', 'textTransform', 'color', 'textIndent', 'wordBreak', 'whiteSpace', 'textOverflow']}>
         <div className="Col" style={{ gap: '8px' }}>
           <div>
             <label className="Label" style={{ fontSize: '10px', marginBottom: '4px', display: 'block' }}>Font Family</label>
@@ -988,12 +988,18 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
             />
           </div>
           
-          <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr', gap: '4px', alignItems: 'center' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr 32px 1fr', gap: '4px', alignItems: 'center' }}>
             <label className="Label" style={{ fontSize: '10px' }}>Size</label>
             <UnitInput
               value={computedStyles.fontSize || ''}
               onChange={(val) => updateStyle('fontSize', val)}
               placeholder="16px"
+            />
+            <label className="Label" style={{ fontSize: '10px' }}>Height</label>
+            <UnitInput
+              value={computedStyles.lineHeight || ''}
+              onChange={(val) => updateStyle('lineHeight', val)}
+              placeholder="1.5"
             />
           </div>
           
@@ -1003,6 +1009,111 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
               value={computedStyles.color || 'hsl(var(--foreground))'}
               onChange={(val) => updateStyle('color', val)}
             />
+          </div>
+
+          {/* Text Align */}
+          <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr', gap: '4px', alignItems: 'center' }}>
+            <label className="Label" style={{ fontSize: '10px' }}>Align</label>
+            <select
+              className="Select"
+              value={computedStyles.textAlign || 'left'}
+              onChange={(e) => updateStyle('textAlign', e.target.value)}
+            >
+              <option value="left">Left</option>
+              <option value="center">Center</option>
+              <option value="right">Right</option>
+              <option value="justify">Justify</option>
+            </select>
+          </div>
+
+          {/* Text Decoration */}
+          <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr', gap: '4px', alignItems: 'center' }}>
+            <label className="Label" style={{ fontSize: '10px' }}>Decor</label>
+            <select
+              className="Select"
+              value={computedStyles.textDecoration || 'none'}
+              onChange={(e) => updateStyle('textDecoration', e.target.value)}
+            >
+              <option value="none">None</option>
+              <option value="underline">Underline</option>
+              <option value="overline">Overline</option>
+              <option value="line-through">Strikethrough</option>
+            </select>
+          </div>
+
+          {/* Text Transform */}
+          <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr', gap: '4px', alignItems: 'center' }}>
+            <label className="Label" style={{ fontSize: '10px' }}>Transform</label>
+            <select
+              className="Select"
+              value={computedStyles.textTransform || 'none'}
+              onChange={(e) => updateStyle('textTransform', e.target.value)}
+            >
+              <option value="none">None</option>
+              <option value="uppercase">Uppercase</option>
+              <option value="lowercase">Lowercase</option>
+              <option value="capitalize">Capitalize</option>
+            </select>
+          </div>
+
+          {/* Letter Spacing and Text Indent */}
+          <div style={{ display: 'grid', gridTemplateColumns: '45px 1fr 32px 1fr', gap: '4px', alignItems: 'center' }}>
+            <label className="Label" style={{ fontSize: '10px' }}>Letter</label>
+            <UnitInput
+              value={computedStyles.letterSpacing || ''}
+              onChange={(val) => updateStyle('letterSpacing', val)}
+              placeholder="0"
+            />
+            <label className="Label" style={{ fontSize: '10px' }}>Indent</label>
+            <UnitInput
+              value={computedStyles.textIndent || ''}
+              onChange={(val) => updateStyle('textIndent', val)}
+              placeholder="0"
+            />
+          </div>
+
+          {/* Word Break */}
+          <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr', gap: '4px', alignItems: 'center' }}>
+            <label className="Label" style={{ fontSize: '10px' }}>Break</label>
+            <select
+              className="Select"
+              value={computedStyles.wordBreak || 'normal'}
+              onChange={(e) => updateStyle('wordBreak', e.target.value)}
+            >
+              <option value="normal">Normal</option>
+              <option value="break-all">Break All</option>
+              <option value="keep-all">Keep All</option>
+              <option value="break-word">Break Word</option>
+            </select>
+          </div>
+
+          {/* White Space */}
+          <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr', gap: '4px', alignItems: 'center' }}>
+            <label className="Label" style={{ fontSize: '10px' }}>Wrap</label>
+            <select
+              className="Select"
+              value={computedStyles.whiteSpace || 'normal'}
+              onChange={(e) => updateStyle('whiteSpace', e.target.value)}
+            >
+              <option value="normal">Normal</option>
+              <option value="nowrap">No Wrap</option>
+              <option value="pre">Pre</option>
+              <option value="pre-wrap">Pre Wrap</option>
+              <option value="pre-line">Pre Line</option>
+            </select>
+          </div>
+
+          {/* Text Overflow */}
+          <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr', gap: '4px', alignItems: 'center' }}>
+            <label className="Label" style={{ fontSize: '10px' }}>Overflow</label>
+            <select
+              className="Select"
+              value={computedStyles.textOverflow || 'clip'}
+              onChange={(e) => updateStyle('textOverflow', e.target.value)}
+            >
+              <option value="clip">Clip</option>
+              <option value="ellipsis">Ellipsis</option>
+            </select>
           </div>
         </div>
       </AccordionSection>
