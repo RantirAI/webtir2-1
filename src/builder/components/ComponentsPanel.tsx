@@ -40,7 +40,6 @@ const DraggableComponent: React.FC<{ type: string; label: string; icon: string }
 export const ComponentsPanel: React.FC = () => {
   const addInstance = useBuilderStore((state) => state.addInstance);
   const selectedInstanceId = useBuilderStore((state) => state.selectedInstanceId);
-  const scrollContainerRef = React.useRef<HTMLDivElement>(null);
 
   const handleAddComponent = (type: string) => {
     const meta = componentRegistry[type];
@@ -81,59 +80,6 @@ export const ComponentsPanel: React.FC = () => {
 
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearch = useDebounce(searchQuery, 300);
-
-  // Auto-scroll on drag near edges
-  React.useEffect(() => {
-    const scrollContainer = scrollContainerRef.current;
-    if (!scrollContainer) return;
-
-    let scrollInterval: NodeJS.Timeout | null = null;
-
-    const handleDragOver = (e: DragEvent) => {
-      const rect = scrollContainer.getBoundingClientRect();
-      const scrollThreshold = 40;
-      
-      if (e.clientY < rect.top + scrollThreshold) {
-        // Near top edge
-        if (!scrollInterval) {
-          scrollInterval = setInterval(() => {
-            scrollContainer.scrollBy({ top: -10, behavior: 'auto' });
-          }, 20);
-        }
-      } else if (e.clientY > rect.bottom - scrollThreshold) {
-        // Near bottom edge
-        if (!scrollInterval) {
-          scrollInterval = setInterval(() => {
-            scrollContainer.scrollBy({ top: 10, behavior: 'auto' });
-          }, 20);
-        }
-      } else {
-        // Clear interval when not near edges
-        if (scrollInterval) {
-          clearInterval(scrollInterval);
-          scrollInterval = null;
-        }
-      }
-    };
-
-    const handleDragEnd = () => {
-      if (scrollInterval) {
-        clearInterval(scrollInterval);
-        scrollInterval = null;
-      }
-    };
-
-    scrollContainer.addEventListener('dragover', handleDragOver);
-    scrollContainer.addEventListener('dragleave', handleDragEnd);
-    scrollContainer.addEventListener('drop', handleDragEnd);
-
-    return () => {
-      if (scrollInterval) clearInterval(scrollInterval);
-      scrollContainer.removeEventListener('dragover', handleDragOver);
-      scrollContainer.removeEventListener('dragleave', handleDragEnd);
-      scrollContainer.removeEventListener('drop', handleDragEnd);
-    };
-  }, []);
 
   // Group components by category - Commonly Used is always first
   const categories = [
@@ -193,8 +139,8 @@ export const ComponentsPanel: React.FC = () => {
   }, [debouncedSearch]);
 
   return (
-    <div className="flex flex-col h-full overflow-hidden">
-      <div className="p-4 pb-2 flex-shrink-0">
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
+      <div style={{ padding: '16px', paddingBottom: '8px', flexShrink: 0 }}>
         {/* Search input */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
@@ -208,7 +154,7 @@ export const ComponentsPanel: React.FC = () => {
         </div>
       </div>
 
-      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto overflow-x-hidden components-panel-scroll">
+      <div style={{ flex: 1, overflowY: 'scroll', overflowX: 'hidden', minHeight: 0 }}>
         <div className="px-4 space-y-5 pb-6">
           {/* Categories */}
           {filteredCategories.map((category) => {
