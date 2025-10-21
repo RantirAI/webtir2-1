@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Navigator } from './Navigator';
 import { ComponentsPanel } from './ComponentsPanel';
-import { Layers, Plus, FileText, ChevronRight, Home, Box } from 'lucide-react';
+import { Layers, Plus, FileText, ChevronRight, Home, Box, Sparkles } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -44,6 +44,13 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
   const [statusCode, setStatusCode] = useState('200');
   const [redirect, setRedirect] = useState('');
   const [language, setLanguage] = useState('en-US');
+  const [activeTab, setActiveTab] = useState(() => {
+    return localStorage.getItem('builder-sidebar-tab') || 'components';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('builder-sidebar-tab', activeTab);
+  }, [activeTab]);
 
   const handlePageClick = (page: string) => {
     setSelectedPageForSettings(page);
@@ -55,33 +62,44 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
       <div 
         className="w-64 h-full border border-border rounded-lg shadow-xl flex flex-col overflow-hidden backdrop-blur-md bg-white/70 dark:bg-zinc-900/70"
       >
-        <Tabs defaultValue="components" className="flex-1 flex flex-col">
-          <TabsList className="w-full grid grid-cols-3 rounded-none border-b bg-transparent h-10 p-1 gap-1">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
+          <TabsList className="w-full grid grid-cols-4 rounded-none border-b bg-transparent h-10 p-1 gap-1">
             <TabsTrigger 
               value="components" 
               className="gap-1 text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none flex items-center"
             >
               <Box className="w-3 h-3" />
-              Components
+              <span className="hidden sm:inline">Components</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="elements" 
+              className="gap-1 text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none flex items-center"
+            >
+              <Sparkles className="w-3 h-3" />
+              <span className="hidden sm:inline">Elements</span>
             </TabsTrigger>
             <TabsTrigger 
               value="navigator" 
               className="gap-1 text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none flex items-center"
             >
               <Layers className="w-3 h-3" />
-              Layers
+              <span className="hidden sm:inline">Layers</span>
             </TabsTrigger>
             <TabsTrigger 
               value="pages" 
               className="gap-1 text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none flex items-center"
             >
               <FileText className="w-3 h-3" />
-              Pages
+              <span className="hidden sm:inline">Pages</span>
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="components" className="flex-1 m-0">
-            <ComponentsPanel />
+            <ComponentsPanel mode="basic" />
+          </TabsContent>
+
+          <TabsContent value="elements" className="flex-1 m-0">
+            <ComponentsPanel mode="advanced" />
           </TabsContent>
 
           <TabsContent value="navigator" className="flex-1 m-0">

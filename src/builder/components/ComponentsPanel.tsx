@@ -37,7 +37,11 @@ const DraggableComponent: React.FC<{ type: string; label: string; icon: string }
   );
 };
 
-export const ComponentsPanel: React.FC = () => {
+interface ComponentsPanelProps {
+  mode?: 'basic' | 'advanced';
+}
+
+export const ComponentsPanel: React.FC<ComponentsPanelProps> = ({ mode = 'basic' }) => {
   const addInstance = useBuilderStore((state) => state.addInstance);
   const selectedInstanceId = useBuilderStore((state) => state.selectedInstanceId);
 
@@ -81,46 +85,63 @@ export const ComponentsPanel: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearch = useDebounce(searchQuery, 300);
 
-  // Group components by category - Commonly Used is always first
-  const categories = [
-    { 
-      name: 'Commonly Used', 
-      types: ['Table', 'Text', 'Button', 'TextInput', 'NumberInput', 'Select', 'Form', 'TabbedContainer', 'MixedChart', 'KeyValue', 'Image', 'Navigation'],
-      pinned: true 
-    },
+  // Basic components (foundational UI)
+  const basicCategories = [
     { 
       name: 'Layouts', 
       types: ['Section', 'Container', 'Box'] 
-    },
-    { 
-      name: 'Text Inputs', 
-      types: ['EditableText', 'EditableTextArea', 'Email', 'JSONEditor', 'Password', 'RichTextEditor', 'TextArea', 'TextInput', 'URL'] 
-    },
-    { 
-      name: 'Charts', 
-      types: ['BarChart', 'BubbleChart', 'FunnelChart', 'HeatMap', 'LineChart', 'MixedChart', 'PieChart', 'PlotlyJSONChart', 'SankeyChart', 'ScatterChart', 'Sparkline', 'StackedBarChart', 'SunburstChart', 'Treemap', 'WaterfallChart'] 
-    },
-    { 
-      name: 'Presentation', 
-      types: ['Alert', 'Avatar', 'AvatarGroup', 'Calendar', 'CircularImage', 'Divider', 'EventList', 'Icon', 'IconText', 'Image', 'ImageGrid', 'PDF', 'ProgressBar', 'ProgressCircle', 'QRCode', 'Spacer', 'Statistic', 'Status', 'Tags', 'Text', 'Timeline', 'Video'] 
     },
     { 
       name: 'Typography', 
       types: ['Heading', 'Text'] 
     },
     { 
+      name: 'Media', 
+      types: ['Image', 'Link'] 
+    },
+    { 
       name: 'Forms', 
-      types: ['Form', 'Button', 'InputLabel', 'TextInput', 'TextArea', 'Select', 'Radio', 'Checkbox'] 
+      types: ['Form', 'FormButton', 'InputLabel', 'TextInput', 'TextArea', 'Select', 'RadioGroup', 'CheckboxField'] 
+    },
+    { 
+      name: 'Data', 
+      types: ['Table', 'KeyValue'] 
+    },
+    { 
+      name: 'Navigation', 
+      types: ['Navigation', 'Button'] 
+    },
+  ];
+
+  // Advanced components (extended elements)
+  const advancedCategories = [
+    { 
+      name: 'Charts', 
+      types: ['BarChart', 'LineChart', 'PieChart', 'MixedChart', 'BubbleChart', 'FunnelChart', 'HeatMap', 'PlotlyJSONChart', 'SankeyChart', 'ScatterChart', 'Sparkline', 'StackedBarChart', 'SunburstChart', 'Treemap', 'WaterfallChart'] 
+    },
+    { 
+      name: 'Presentation', 
+      types: ['Alert', 'Avatar', 'AvatarGroup', 'Calendar', 'CircularImage', 'Divider', 'EventList', 'Icon', 'IconText', 'ImageGrid', 'PDF', 'ProgressBar', 'ProgressCircle', 'QRCode', 'Spacer', 'Statistic', 'Status', 'Tags', 'Timeline', 'Video'] 
+    },
+    { 
+      name: 'Advanced Inputs', 
+      types: ['EditableText', 'EditableTextArea', 'Email', 'JSONEditor', 'Password', 'RichTextEditor', 'URL', 'NumberInput'] 
+    },
+    { 
+      name: 'Containers', 
+      types: ['TabbedContainer', 'Sheet', 'Dialog', 'Collapsible', 'Accordion'] 
+    },
+    { 
+      name: 'Interactive', 
+      types: ['NavigationMenu', 'Tabs', 'Popover', 'Tooltip', 'Switch'] 
     },
     { 
       name: 'Localization', 
       types: ['Time'] 
     },
-    { 
-      name: 'Radix', 
-      types: ['Sheet', 'NavigationMenu', 'Tabs', 'Accordion', 'Dialog', 'Collapsible', 'Popover', 'Tooltip', 'Select', 'Switch', 'RadioGroup', 'Checkbox', 'Label'] 
-    },
   ];
+
+  const categories = mode === 'basic' ? basicCategories : advancedCategories;
 
   // Filter categories based on search
   const filteredCategories = useMemo(() => {
@@ -146,7 +167,7 @@ export const ComponentsPanel: React.FC = () => {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
           <input
             type="text"
-            placeholder="Search components..."
+            placeholder={mode === 'basic' ? 'Search components...' : 'Search elements...'}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full h-9 pl-9 pr-3 text-sm rounded-lg border border-border bg-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
@@ -190,7 +211,7 @@ export const ComponentsPanel: React.FC = () => {
           {filteredCategories.length === 0 && (
             <div className="flex flex-col items-center justify-center py-12 text-center space-y-2">
               <Search className="w-8 h-8 text-muted-foreground/50" />
-              <p className="text-sm text-muted-foreground">No components found</p>
+              <p className="text-sm text-muted-foreground">No {mode === 'basic' ? 'components' : 'elements'} found</p>
               <p className="text-xs text-muted-foreground/70">Try a different search term</p>
             </div>
           )}
