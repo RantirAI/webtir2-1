@@ -110,8 +110,8 @@ export const ComponentsPanel: React.FC = () => {
   }, [debouncedSearch]);
 
   return (
-    <ScrollArea className="flex-1">
-      <div className="p-4 space-y-4">
+    <div className="flex flex-col h-full">
+      <div className="p-4 pb-2">
         {/* Search input */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
@@ -123,9 +123,11 @@ export const ComponentsPanel: React.FC = () => {
             className="w-full h-9 pl-9 pr-3 text-sm rounded-lg border border-border bg-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
           />
         </div>
+      </div>
 
-        {/* Categories */}
-        <div className="space-y-4">
+      <ScrollArea className="flex-1 px-4">
+        <div className="space-y-4 pb-4">
+          {/* Categories */}
           {filteredCategories.map((category) => {
             const components = category.types
               .map(type => componentRegistry[type])
@@ -139,7 +141,7 @@ export const ComponentsPanel: React.FC = () => {
                   <h3 className="text-xs font-bold text-foreground uppercase tracking-wide">{category.name}</h3>
                   <div className="flex-1 h-px bg-border"></div>
                 </div>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-3 gap-2">
                   {components.map((component) => (
                     <div key={component.type} onDoubleClick={() => handleAddComponent(component.type)}>
                       <DraggableComponent type={component.type} label={component.label} icon={component.icon} />
@@ -149,14 +151,14 @@ export const ComponentsPanel: React.FC = () => {
               </div>
             );
           })}
-        </div>
 
-        {filteredCategories.length === 0 && (
-          <div className="text-center py-8 text-muted-foreground text-sm">
-            No components found for "{debouncedSearch}"
-          </div>
-        )}
-      </div>
-    </ScrollArea>
+          {filteredCategories.length === 0 && (
+            <div className="text-center py-8 text-muted-foreground text-sm">
+              No components found for "{debouncedSearch}"
+            </div>
+          )}
+        </div>
+      </ScrollArea>
+    </div>
   );
 };
