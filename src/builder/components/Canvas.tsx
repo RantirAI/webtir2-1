@@ -12,6 +12,13 @@ import { ImagePrimitive } from '../primitives/ImagePrimitive';
 import { LinkPrimitive } from '../primitives/LinkPrimitive';
 import { TablePrimitive } from '../primitives/TablePrimitive';
 import { FormPrimitive } from '../primitives/FormPrimitive';
+import { FormButtonPrimitive } from '../primitives/FormButtonPrimitive';
+import { InputLabelPrimitive } from '../primitives/InputLabelPrimitive';
+import { TextInputPrimitive } from '../primitives/TextInputPrimitive';
+import { TextAreaPrimitive } from '../primitives/TextAreaPrimitive';
+import { SelectPrimitive } from '../primitives/SelectPrimitive';
+import { RadioPrimitive } from '../primitives/RadioPrimitive';
+import { CheckboxPrimitive } from '../primitives/CheckboxPrimitive';
 import { NavigationPrimitive } from '../primitives/NavigationPrimitive';
 import { breakpoints } from './PageNavigation';
 import { ContextMenu } from './ContextMenu';
@@ -195,6 +202,95 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
             instanceId={instance.id}
             fields={instance.props.fields}
             buttonText={instance.props.buttonText}
+            className=""
+            style={getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties}
+          />
+        );
+      case 'FormButton':
+        return wrapWithDraggable(
+          <FormButtonPrimitive
+            key={instance.id}
+            instanceId={instance.id}
+            text={instance.props.text}
+            type={instance.props.type}
+            disabled={instance.props.disabled}
+            className=""
+            style={getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties}
+          />
+        );
+      case 'InputLabel':
+        return wrapWithDraggable(
+          <InputLabelPrimitive
+            key={instance.id}
+            instanceId={instance.id}
+            text={instance.props.text}
+            htmlFor={instance.props.htmlFor}
+            required={instance.props.required}
+            className=""
+            style={getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties}
+          />
+        );
+      case 'TextInput':
+        return wrapWithDraggable(
+          <TextInputPrimitive
+            key={instance.id}
+            instanceId={instance.id}
+            placeholder={instance.props.placeholder}
+            type={instance.props.type}
+            required={instance.props.required}
+            disabled={instance.props.disabled}
+            className=""
+            style={getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties}
+          />
+        );
+      case 'TextArea':
+        return wrapWithDraggable(
+          <TextAreaPrimitive
+            key={instance.id}
+            instanceId={instance.id}
+            placeholder={instance.props.placeholder}
+            rows={instance.props.rows}
+            required={instance.props.required}
+            disabled={instance.props.disabled}
+            className=""
+            style={getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties}
+          />
+        );
+      case 'Select':
+        return wrapWithDraggable(
+          <SelectPrimitive
+            key={instance.id}
+            instanceId={instance.id}
+            options={instance.props.options}
+            placeholder={instance.props.placeholder}
+            required={instance.props.required}
+            disabled={instance.props.disabled}
+            className=""
+            style={getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties}
+          />
+        );
+      case 'RadioGroup':
+        return wrapWithDraggable(
+          <RadioPrimitive
+            key={instance.id}
+            instanceId={instance.id}
+            name={instance.props.name}
+            options={instance.props.options}
+            required={instance.props.required}
+            disabled={instance.props.disabled}
+            orientation={instance.props.orientation}
+            className=""
+            style={getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties}
+          />
+        );
+      case 'CheckboxField':
+        return wrapWithDraggable(
+          <CheckboxPrimitive
+            key={instance.id}
+            instanceId={instance.id}
+            label={instance.props.label}
+            required={instance.props.required}
+            disabled={instance.props.disabled}
             className=""
             style={getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties}
           />

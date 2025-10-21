@@ -12,11 +12,11 @@ export type ComponentType =
   // Presentation
   | 'Alert' | 'Avatar' | 'AvatarGroup' | 'Calendar' | 'CircularImage' | 'Divider' | 'EventList' | 'Icon' | 'IconText' | 'ImageGrid' | 'PDF' | 'ProgressBar' | 'ProgressCircle' | 'QRCode' | 'Spacer' | 'Statistic' | 'Status' | 'Tags' | 'Timeline' | 'Video'
   // Forms
-  | 'Form' | 'InputLabel' | 'Select' | 'Radio' | 'Checkbox'
+  | 'Form' | 'FormButton' | 'InputLabel' | 'Select' | 'RadioGroup' | 'CheckboxField'
   // Localization
   | 'Time'
   // Radix
-  | 'Sheet' | 'NavigationMenu' | 'Tabs' | 'Accordion' | 'Dialog' | 'Collapsible' | 'Popover' | 'Tooltip' | 'Switch' | 'RadioGroup' | 'Label';
+  | 'Sheet' | 'NavigationMenu' | 'Tabs' | 'Accordion' | 'Dialog' | 'Collapsible' | 'Popover' | 'Tooltip' | 'Switch' | 'Label';
 
 export type StyleSourceType = 'local' | 'token' | 'preset';
 

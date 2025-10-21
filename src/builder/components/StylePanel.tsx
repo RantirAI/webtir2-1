@@ -1633,12 +1633,535 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
             </div>
           )}
 
+          {selectedInstance.type === 'FormButton' && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-foreground">Button Type</label>
+                <select
+                  className="w-full h-8 px-2 text-xs rounded-md border border-border bg-background"
+                  value={selectedInstance.props.type || 'button'}
+                  onChange={(e) => {
+                    updateInstance(selectedInstance.id, {
+                      props: { ...selectedInstance.props, type: e.target.value }
+                    });
+                  }}
+                >
+                  <option value="button">Button</option>
+                  <option value="submit">Submit</option>
+                  <option value="reset">Reset</option>
+                </select>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="disabled"
+                  checked={selectedInstance.props.disabled || false}
+                  onChange={(e) => {
+                    updateInstance(selectedInstance.id, {
+                      props: { ...selectedInstance.props, disabled: e.target.checked }
+                    });
+                  }}
+                  className="w-4 h-4"
+                />
+                <label htmlFor="disabled" className="text-xs text-foreground cursor-pointer">
+                  Disabled
+                </label>
+              </div>
+            </div>
+          )}
+
+          {selectedInstance.type === 'InputLabel' && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-foreground">For (Input ID)</label>
+                <Input
+                  type="text"
+                  value={selectedInstance.props.htmlFor || ''}
+                  onChange={(e) => {
+                    updateInstance(selectedInstance.id, {
+                      props: { ...selectedInstance.props, htmlFor: e.target.value }
+                    });
+                  }}
+                  className="h-8 text-xs"
+                  placeholder="input-id"
+                />
+              </div>
+
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="required"
+                  checked={selectedInstance.props.required || false}
+                  onChange={(e) => {
+                    updateInstance(selectedInstance.id, {
+                      props: { ...selectedInstance.props, required: e.target.checked }
+                    });
+                  }}
+                  className="w-4 h-4"
+                />
+                <label htmlFor="required" className="text-xs text-foreground cursor-pointer">
+                  Required
+                </label>
+              </div>
+            </div>
+          )}
+
+          {selectedInstance.type === 'TextInput' && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-foreground">Placeholder</label>
+                <Input
+                  type="text"
+                  value={selectedInstance.props.placeholder || ''}
+                  onChange={(e) => {
+                    updateInstance(selectedInstance.id, {
+                      props: { ...selectedInstance.props, placeholder: e.target.value }
+                    });
+                  }}
+                  className="h-8 text-xs"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-foreground">Input Type</label>
+                <select
+                  className="w-full h-8 px-2 text-xs rounded-md border border-border bg-background"
+                  value={selectedInstance.props.type || 'text'}
+                  onChange={(e) => {
+                    updateInstance(selectedInstance.id, {
+                      props: { ...selectedInstance.props, type: e.target.value }
+                    });
+                  }}
+                >
+                  <option value="text">Text</option>
+                  <option value="email">Email</option>
+                  <option value="password">Password</option>
+                  <option value="tel">Telephone</option>
+                  <option value="url">URL</option>
+                  <option value="search">Search</option>
+                </select>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="required"
+                  checked={selectedInstance.props.required || false}
+                  onChange={(e) => {
+                    updateInstance(selectedInstance.id, {
+                      props: { ...selectedInstance.props, required: e.target.checked }
+                    });
+                  }}
+                  className="w-4 h-4"
+                />
+                <label htmlFor="required" className="text-xs text-foreground cursor-pointer">
+                  Required
+                </label>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="disabled"
+                  checked={selectedInstance.props.disabled || false}
+                  onChange={(e) => {
+                    updateInstance(selectedInstance.id, {
+                      props: { ...selectedInstance.props, disabled: e.target.checked }
+                    });
+                  }}
+                  className="w-4 h-4"
+                />
+                <label htmlFor="disabled" className="text-xs text-foreground cursor-pointer">
+                  Disabled
+                </label>
+              </div>
+            </div>
+          )}
+
+          {selectedInstance.type === 'TextArea' && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-foreground">Placeholder</label>
+                <Input
+                  type="text"
+                  value={selectedInstance.props.placeholder || ''}
+                  onChange={(e) => {
+                    updateInstance(selectedInstance.id, {
+                      props: { ...selectedInstance.props, placeholder: e.target.value }
+                    });
+                  }}
+                  className="h-8 text-xs"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-foreground">Rows</label>
+                <Input
+                  type="number"
+                  min={1}
+                  max={20}
+                  value={selectedInstance.props.rows || 4}
+                  onChange={(e) => {
+                    updateInstance(selectedInstance.id, {
+                      props: { ...selectedInstance.props, rows: parseInt(e.target.value) || 4 }
+                    });
+                  }}
+                  className="h-8 text-xs"
+                />
+              </div>
+
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="required"
+                  checked={selectedInstance.props.required || false}
+                  onChange={(e) => {
+                    updateInstance(selectedInstance.id, {
+                      props: { ...selectedInstance.props, required: e.target.checked }
+                    });
+                  }}
+                  className="w-4 h-4"
+                />
+                <label htmlFor="required" className="text-xs text-foreground cursor-pointer">
+                  Required
+                </label>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="disabled"
+                  checked={selectedInstance.props.disabled || false}
+                  onChange={(e) => {
+                    updateInstance(selectedInstance.id, {
+                      props: { ...selectedInstance.props, disabled: e.target.checked }
+                    });
+                  }}
+                  className="w-4 h-4"
+                />
+                <label htmlFor="disabled" className="text-xs text-foreground cursor-pointer">
+                  Disabled
+                </label>
+              </div>
+            </div>
+          )}
+
+          {selectedInstance.type === 'Select' && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-foreground">Placeholder</label>
+                <Input
+                  type="text"
+                  value={selectedInstance.props.placeholder || ''}
+                  onChange={(e) => {
+                    updateInstance(selectedInstance.id, {
+                      props: { ...selectedInstance.props, placeholder: e.target.value }
+                    });
+                  }}
+                  className="h-8 text-xs"
+                />
+              </div>
+
+              <div className="space-y-3 pt-3 border-t border-border">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-semibold text-foreground">Options</label>
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      const currentOptions = selectedInstance.props.options || [];
+                      const newOption = {
+                        id: Date.now().toString(),
+                        label: 'New Option',
+                        value: 'new-option'
+                      };
+                      updateInstance(selectedInstance.id, {
+                        props: { ...selectedInstance.props, options: [...currentOptions, newOption] }
+                      });
+                    }}
+                    className="h-6 text-xs px-2"
+                  >
+                    <Plus className="w-3 h-3 mr-1" />
+                    Add Option
+                  </Button>
+                </div>
+
+                <div className="space-y-2 max-h-48 overflow-y-auto">
+                  {(selectedInstance.props.options || []).map((option: { id: string; label: string; value: string }, index: number) => (
+                    <div key={option.id} className="flex items-center gap-2 p-2 bg-muted/50 rounded-md">
+                      <div className="flex-1 space-y-1">
+                        <Input
+                          type="text"
+                          value={option.label}
+                          onChange={(e) => {
+                            const newOptions = [...selectedInstance.props.options];
+                            newOptions[index] = { ...option, label: e.target.value };
+                            updateInstance(selectedInstance.id, {
+                              props: { ...selectedInstance.props, options: newOptions }
+                            });
+                          }}
+                          className="h-6 text-xs"
+                          placeholder="Option label"
+                        />
+                        <Input
+                          type="text"
+                          value={option.value}
+                          onChange={(e) => {
+                            const newOptions = [...selectedInstance.props.options];
+                            newOptions[index] = { ...option, value: e.target.value };
+                            updateInstance(selectedInstance.id, {
+                              props: { ...selectedInstance.props, options: newOptions }
+                            });
+                          }}
+                          className="h-6 text-xs"
+                          placeholder="Option value"
+                        />
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => {
+                          const newOptions = selectedInstance.props.options.filter((_: any, i: number) => i !== index);
+                          updateInstance(selectedInstance.id, {
+                            props: { ...selectedInstance.props, options: newOptions }
+                          });
+                        }}
+                        className="h-6 w-6 p-0"
+                      >
+                        <X className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="required"
+                  checked={selectedInstance.props.required || false}
+                  onChange={(e) => {
+                    updateInstance(selectedInstance.id, {
+                      props: { ...selectedInstance.props, required: e.target.checked }
+                    });
+                  }}
+                  className="w-4 h-4"
+                />
+                <label htmlFor="required" className="text-xs text-foreground cursor-pointer">
+                  Required
+                </label>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="disabled"
+                  checked={selectedInstance.props.disabled || false}
+                  onChange={(e) => {
+                    updateInstance(selectedInstance.id, {
+                      props: { ...selectedInstance.props, disabled: e.target.checked }
+                    });
+                  }}
+                  className="w-4 h-4"
+                />
+                <label htmlFor="disabled" className="text-xs text-foreground cursor-pointer">
+                  Disabled
+                </label>
+              </div>
+            </div>
+          )}
+
+          {selectedInstance.type === 'RadioGroup' && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-foreground">Name</label>
+                <Input
+                  type="text"
+                  value={selectedInstance.props.name || 'radio-group'}
+                  onChange={(e) => {
+                    updateInstance(selectedInstance.id, {
+                      props: { ...selectedInstance.props, name: e.target.value }
+                    });
+                  }}
+                  className="h-8 text-xs"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-foreground">Orientation</label>
+                <select
+                  className="w-full h-8 px-2 text-xs rounded-md border border-border bg-background"
+                  value={selectedInstance.props.orientation || 'vertical'}
+                  onChange={(e) => {
+                    updateInstance(selectedInstance.id, {
+                      props: { ...selectedInstance.props, orientation: e.target.value }
+                    });
+                  }}
+                >
+                  <option value="horizontal">Horizontal</option>
+                  <option value="vertical">Vertical</option>
+                </select>
+              </div>
+
+              <div className="space-y-3 pt-3 border-t border-border">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-semibold text-foreground">Options</label>
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      const currentOptions = selectedInstance.props.options || [];
+                      const newOption = {
+                        id: Date.now().toString(),
+                        label: 'New Option',
+                        value: 'new-option'
+                      };
+                      updateInstance(selectedInstance.id, {
+                        props: { ...selectedInstance.props, options: [...currentOptions, newOption] }
+                      });
+                    }}
+                    className="h-6 text-xs px-2"
+                  >
+                    <Plus className="w-3 h-3 mr-1" />
+                    Add Option
+                  </Button>
+                </div>
+
+                <div className="space-y-2 max-h-48 overflow-y-auto">
+                  {(selectedInstance.props.options || []).map((option: { id: string; label: string; value: string }, index: number) => (
+                    <div key={option.id} className="flex items-center gap-2 p-2 bg-muted/50 rounded-md">
+                      <div className="flex-1 space-y-1">
+                        <Input
+                          type="text"
+                          value={option.label}
+                          onChange={(e) => {
+                            const newOptions = [...selectedInstance.props.options];
+                            newOptions[index] = { ...option, label: e.target.value };
+                            updateInstance(selectedInstance.id, {
+                              props: { ...selectedInstance.props, options: newOptions }
+                            });
+                          }}
+                          className="h-6 text-xs"
+                          placeholder="Option label"
+                        />
+                        <Input
+                          type="text"
+                          value={option.value}
+                          onChange={(e) => {
+                            const newOptions = [...selectedInstance.props.options];
+                            newOptions[index] = { ...option, value: e.target.value };
+                            updateInstance(selectedInstance.id, {
+                              props: { ...selectedInstance.props, options: newOptions }
+                            });
+                          }}
+                          className="h-6 text-xs"
+                          placeholder="Option value"
+                        />
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => {
+                          const newOptions = selectedInstance.props.options.filter((_: any, i: number) => i !== index);
+                          updateInstance(selectedInstance.id, {
+                            props: { ...selectedInstance.props, options: newOptions }
+                          });
+                        }}
+                        className="h-6 w-6 p-0"
+                      >
+                        <X className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="required"
+                  checked={selectedInstance.props.required || false}
+                  onChange={(e) => {
+                    updateInstance(selectedInstance.id, {
+                      props: { ...selectedInstance.props, required: e.target.checked }
+                    });
+                  }}
+                  className="w-4 h-4"
+                />
+                <label htmlFor="required" className="text-xs text-foreground cursor-pointer">
+                  Required
+                </label>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="disabled"
+                  checked={selectedInstance.props.disabled || false}
+                  onChange={(e) => {
+                    updateInstance(selectedInstance.id, {
+                      props: { ...selectedInstance.props, disabled: e.target.checked }
+                    });
+                  }}
+                  className="w-4 h-4"
+                />
+                <label htmlFor="disabled" className="text-xs text-foreground cursor-pointer">
+                  Disabled
+                </label>
+              </div>
+            </div>
+          )}
+
+          {selectedInstance.type === 'CheckboxField' && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="required"
+                  checked={selectedInstance.props.required || false}
+                  onChange={(e) => {
+                    updateInstance(selectedInstance.id, {
+                      props: { ...selectedInstance.props, required: e.target.checked }
+                    });
+                  }}
+                  className="w-4 h-4"
+                />
+                <label htmlFor="required" className="text-xs text-foreground cursor-pointer">
+                  Required
+                </label>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="disabled"
+                  checked={selectedInstance.props.disabled || false}
+                  onChange={(e) => {
+                    updateInstance(selectedInstance.id, {
+                      props: { ...selectedInstance.props, disabled: e.target.checked }
+                    });
+                  }}
+                  className="w-4 h-4"
+                />
+                <label htmlFor="disabled" className="text-xs text-foreground cursor-pointer">
+                  Disabled
+                </label>
+              </div>
+            </div>
+          )}
+
           {selectedInstance.type !== 'Image' && 
            selectedInstance.type !== 'Container' && 
            selectedInstance.type !== 'Box' && 
            selectedInstance.type !== 'Section' &&
            selectedInstance.type !== 'Table' &&
-           selectedInstance.type !== 'Navigation' && (
+           selectedInstance.type !== 'Navigation' &&
+           selectedInstance.type !== 'FormButton' &&
+           selectedInstance.type !== 'InputLabel' &&
+           selectedInstance.type !== 'TextInput' &&
+           selectedInstance.type !== 'TextArea' &&
+           selectedInstance.type !== 'Select' &&
+           selectedInstance.type !== 'RadioGroup' &&
+           selectedInstance.type !== 'CheckboxField' && (
             <div className="text-sm text-muted-foreground text-center">
               No settings available for this component
             </div>
