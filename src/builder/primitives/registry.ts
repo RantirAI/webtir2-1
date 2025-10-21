@@ -232,6 +232,24 @@ export const componentRegistry: Record<string, ComponentMeta> = {
       },
     },
   },
+  Form: {
+    type: 'Form',
+    label: 'Form',
+    icon: 'FileText',
+    defaultProps: {
+      fields: [
+        { label: 'Name', type: 'text', placeholder: 'Enter your name' },
+        { label: 'Email', type: 'email', placeholder: 'Enter your email' },
+        { label: 'Message', type: 'textarea', placeholder: 'Enter your message' },
+      ],
+      buttonText: 'Submit',
+    },
+    defaultStyles: {
+      width: '100%',
+      maxWidth: '500px',
+    },
+    propsDefinition: {},
+  },
   NumberInput: {
     type: 'NumberInput',
     label: 'Number Input',
@@ -602,16 +620,6 @@ export const componentRegistry: Record<string, ComponentMeta> = {
     type: 'Video',
     label: 'Video',
     icon: 'Video',
-    defaultProps: {},
-    defaultStyles: {},
-    propsDefinition: {},
-  },
-  
-  // Forms Category (already defined above, keeping originals)
-  Form: {
-    type: 'Form',
-    label: 'Form',
-    icon: 'FileText',
     defaultProps: {},
     defaultStyles: {},
     propsDefinition: {},

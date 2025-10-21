@@ -11,6 +11,7 @@ import { ButtonPrimitive } from '../primitives/ButtonPrimitive';
 import { ImagePrimitive } from '../primitives/ImagePrimitive';
 import { LinkPrimitive } from '../primitives/LinkPrimitive';
 import { TablePrimitive } from '../primitives/TablePrimitive';
+import { FormPrimitive } from '../primitives/FormPrimitive';
 import { breakpoints } from './PageNavigation';
 import { ContextMenu } from './ContextMenu';
 import { SelectionOverlay } from './SelectionOverlay';
@@ -184,6 +185,17 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
                 props: { ...instance.props, [key]: value }
               });
             }}
+          />
+        );
+      case 'Form':
+        return wrapWithDraggable(
+          <FormPrimitive
+            key={instance.id}
+            instanceId={instance.id}
+            fields={instance.props.fields}
+            buttonText={instance.props.buttonText}
+            className=""
+            style={getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties}
           />
         );
       default:
