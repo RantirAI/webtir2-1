@@ -441,48 +441,59 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
                 )}
               </div>
 
-              <div className="flex items-start gap-2">
-                <div className="flex-1">
-                  <ClassSelector
-                    selectedClasses={classes}
-                    onAddClass={handleAddClass}
-                    onRemoveClass={handleRemoveClass}
-                    onClassClick={handleClassClick}
-                    activeClassIndex={activeClassIndex}
-                  />
-                </div>
+              {/* Integrated State dropdown + Class selector */}
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center gap-1">
+                  {/* Compact State dropdown */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className={`h-6 w-6 p-0 justify-center border border-border ${currentPseudoState !== 'default' ? 'bg-green-500/10 border-green-500/50' : ''}`}
+                        title={`State: ${currentPseudoState}`}
+                      >
+                        <ChevronDown className="w-3 h-3 text-foreground" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" side="bottom" className="w-32 bg-popover border border-border z-[10000]">
+                      {(['default', 'hover', 'focus', 'active', 'visited'] as const).map((state) => {
+                        // Check if this state has any styles
+                        const hasStyles = selectedInstance.styleSourceIds?.some(classId => {
+                          const { styles, currentBreakpointId } = useStyleStore.getState();
+                          return Object.keys(styles).some(key => {
+                            const [keyClassId, keyBreakpoint, keyState] = key.split(':');
+                            return keyClassId === classId && keyBreakpoint === currentBreakpointId && keyState === state;
+                          });
+                        });
+                        
+                        return (
+                          <DropdownMenuItem 
+                            key={state}
+                            onClick={() => setCurrentPseudoState(state as PseudoState)}
+                            className="flex items-center justify-between"
+                          >
+                            <span className="capitalize">{state}</span>
+                            {hasStyles && state !== 'default' && (
+                              <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                            )}
+                          </DropdownMenuItem>
+                        );
+                      })}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
 
-                {/* State dropdown - aligned to the right */}
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="w-16 h-9 justify-center text-xs font-normal px-2 text-foreground"
-                      title={`State: ${currentPseudoState}`}
-                    >
-                      <ChevronDown className="w-3 h-3 text-foreground" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-48 bg-background z-[10000]">
-                    <DropdownMenuItem onClick={() => setCurrentPseudoState('default')}>
-                      Default
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => setCurrentPseudoState('hover')}>
-                      Hover
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setCurrentPseudoState('focus')}>
-                      Focus
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setCurrentPseudoState('active')}>
-                      Active
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setCurrentPseudoState('visited')}>
-                      Visited
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                  {/* Class selector taking remaining space */}
+                  <div className="flex-1">
+                    <ClassSelector
+                      selectedClasses={classes}
+                      onAddClass={handleAddClass}
+                      onRemoveClass={handleRemoveClass}
+                      onClassClick={handleClassClick}
+                      activeClassIndex={activeClassIndex}
+                    />
+                  </div>
+                </div>
               </div>
 
               {classes.length === 0 && (
