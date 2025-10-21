@@ -1,6 +1,10 @@
 // Core types inspired by Webtir's component system
 
-export type ComponentType = 'Box' | 'Container' | 'Section' | 'Text' | 'Heading' | 'Image' | 'Button' | 'Link';
+export type ComponentType = 
+  | 'Box' | 'Container' | 'Section' | 'Text' | 'Heading' | 'Image' | 'Button' | 'Link'
+  | 'Form' | 'InputLabel' | 'TextInput' | 'TextArea' | 'Select' | 'Radio' | 'Checkbox'
+  | 'Time'
+  | 'Sheet' | 'NavigationMenu' | 'Tabs' | 'Accordion' | 'Dialog' | 'Collapsible' | 'Popover' | 'Tooltip' | 'Switch' | 'RadioGroup';
 
 export type StyleSourceType = 'local' | 'token' | 'preset';
 

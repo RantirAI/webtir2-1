@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { componentRegistry } from '../primitives/registry';
 import { useBuilderStore } from '../store/useBuilderStore';
 import { useStyleStore } from '../store/useStyleStore';
@@ -9,6 +9,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import { Search } from 'lucide-react';
+import { useDebounce } from '@/hooks/useDebounce';
 
 const DraggableComponent: React.FC<{ type: string; label: string; icon: string }> = ({ type, label, icon }) => {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
@@ -29,10 +30,10 @@ const DraggableComponent: React.FC<{ type: string; label: string; icon: string }
       style={style}
       {...listeners}
       {...attributes}
-      className="w-full aspect-square flex flex-col items-center justify-center gap-1 p-2 rounded-md border border-border bg-card hover:bg-accent hover:border-primary transition-all text-center cursor-grab active:cursor-grabbing"
+      className="w-full aspect-square flex flex-col items-center justify-center gap-1.5 p-3 rounded-lg border border-border bg-card hover:bg-accent hover:border-primary hover:shadow-md transition-all duration-200 text-center cursor-grab active:cursor-grabbing active:scale-95"
     >
       {IconComponent && <IconComponent className="w-5 h-5 text-foreground" />}
-      <span className="text-[9px] leading-tight font-medium text-foreground">{label}</span>
+      <span className="text-[10px] leading-tight font-medium text-foreground">{label}</span>
     </button>
   );
 };
@@ -78,48 +79,83 @@ export const ComponentsPanel: React.FC = () => {
     addInstance(newInstance, parentId);
   };
 
+  const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearch = useDebounce(searchQuery, 300);
+
   // Group components by category
   const categories = [
     { name: 'Layout', types: ['Container', 'Section', 'Box'] },
     { name: 'Typography', types: ['Heading', 'Text'] },
     { name: 'Interactive', types: ['Button', 'Link'] },
     { name: 'Media', types: ['Image'] },
+    { name: 'Forms', types: ['Form', 'Button', 'InputLabel', 'TextInput', 'TextArea', 'Select', 'Radio', 'Checkbox'] },
+    { name: 'Localization', types: ['Time'] },
+    { name: 'Radix', types: ['Sheet', 'NavigationMenu', 'Tabs', 'Accordion', 'Dialog', 'Collapsible', 'Popover', 'Tooltip', 'Select', 'Switch', 'RadioGroup', 'Checkbox', 'InputLabel'] },
   ];
+
+  // Filter categories based on search
+  const filteredCategories = useMemo(() => {
+    if (!debouncedSearch.trim()) return categories;
+
+    const searchLower = debouncedSearch.toLowerCase();
+    return categories
+      .map(category => ({
+        ...category,
+        types: category.types.filter(type => {
+          const component = componentRegistry[type];
+          return component?.label.toLowerCase().includes(searchLower);
+        }),
+      }))
+      .filter(category => category.types.length > 0);
+  }, [debouncedSearch]);
 
   return (
     <ScrollArea className="flex-1">
-      <div className="p-3 space-y-3">
+      <div className="p-4 space-y-4">
         {/* Search input */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
           <input
             type="text"
-            placeholder="Find components"
-            className="w-full h-8 pl-9 pr-3 text-xs rounded-md border border-border bg-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+            placeholder="Search components..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full h-9 pl-9 pr-3 text-sm rounded-lg border border-border bg-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
           />
         </div>
 
         {/* Categories */}
-        {categories.map((category) => {
-          const components = category.types
-            .map(type => componentRegistry[type])
-            .filter(Boolean);
-          
-          if (components.length === 0) return null;
-          
-          return (
-            <div key={category.name}>
-              <h3 className="text-xs font-semibold text-foreground mb-2">{category.name}</h3>
-              <div className="grid grid-cols-3 gap-2">
-                {components.map((component) => (
-                  <div key={component.type} onDoubleClick={() => handleAddComponent(component.type)}>
-                    <DraggableComponent type={component.type} label={component.label} icon={component.icon} />
-                  </div>
-                ))}
+        <div className="space-y-4">
+          {filteredCategories.map((category) => {
+            const components = category.types
+              .map(type => componentRegistry[type])
+              .filter(Boolean);
+            
+            if (components.length === 0) return null;
+            
+            return (
+              <div key={category.name} className="space-y-2 animate-fade-in">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-xs font-bold text-foreground uppercase tracking-wide">{category.name}</h3>
+                  <div className="flex-1 h-px bg-border"></div>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  {components.map((component) => (
+                    <div key={component.type} onDoubleClick={() => handleAddComponent(component.type)}>
+                      <DraggableComponent type={component.type} label={component.label} icon={component.icon} />
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
+
+        {filteredCategories.length === 0 && (
+          <div className="text-center py-8 text-muted-foreground text-sm">
+            No components found for "{debouncedSearch}"
+          </div>
+        )}
       </div>
     </ScrollArea>
   );
