@@ -242,24 +242,6 @@ export const ClassSelector: React.FC<ClassSelectorProps> = ({
             </PopoverContent>
           )}
         </Popover>
-        
-        <div className="text-[10px] text-muted-foreground mt-2 space-y-1">
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1">
-              <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-              <span>Class 1 (Primary)</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
-              <span>Class 2+ (Inherits)</span>
-            </div>
-          </div>
-          <div className="text-[9px] opacity-70">
-            • Each class inherits from its predecessor<br />
-            • Only the last class in the chain is editable<br />
-            • Remove dependent classes to unlock editing
-          </div>
-        </div>
       </div>
     </TooltipProvider>
   );

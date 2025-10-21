@@ -3,7 +3,7 @@ import { useBuilderStore } from '../store/useBuilderStore';
 import { useStyleStore } from '../store/useStyleStore';
 import { PseudoState } from '../store/types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Paintbrush, Plus, Square, Type, Heading as HeadingIcon, MousePointerClick, Image as ImageIcon, Link as LinkIcon, X, ChevronDown, Settings, Zap, Database, RotateCcw } from 'lucide-react';
+import { Paintbrush, Plus, Square, Type, Heading as HeadingIcon, MousePointerClick, Image as ImageIcon, Link as LinkIcon, X, ChevronDown, Settings, Zap, Database, RotateCcw, Info } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { componentRegistry } from '../primitives/registry';
@@ -419,8 +419,42 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
             {/* Class Selector - Multi-class support */}
             <div style={{ padding: 'var(--space-3)', borderBottom: '1px solid hsl(var(--border))' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-2)' }}>
-                <div style={{ fontSize: '10px', fontWeight: 600, color: 'hsl(var(--muted-foreground))', letterSpacing: '0.5px' }}>
-                  STYLE SOURCES
+                <div className="flex items-center gap-1">
+                  <div style={{ fontSize: '10px', fontWeight: 600, color: 'hsl(var(--muted-foreground))', letterSpacing: '0.5px' }}>
+                    STYLE SOURCES
+                  </div>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-4 w-4 p-0 text-muted-foreground hover:text-foreground"
+                        >
+                          <Info className="w-3 h-3" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="right" className="max-w-xs">
+                        <div className="text-xs space-y-2">
+                          <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-1">
+                              <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                              <span>Class 1 (Primary)</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
+                              <span>Class 2+ (Inherits)</span>
+                            </div>
+                          </div>
+                          <div className="text-[10px] opacity-80 space-y-0.5">
+                            <div>• Each class inherits from its predecessor</div>
+                            <div>• Only the last class in the chain is editable</div>
+                            <div>• Remove dependent classes to unlock editing</div>
+                          </div>
+                        </div>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
                 {classes.length > 0 && (
                   <TooltipProvider>
@@ -443,20 +477,31 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
 
               {/* Integrated State dropdown + Class selector */}
               <div className="flex flex-col gap-2">
-                <div className="flex items-center gap-1">
-                  {/* Compact State dropdown */}
+                <div className="flex items-center gap-1 relative">
+                  {/* Class selector taking space */}
+                  <div className="flex-1 pr-7">
+                    <ClassSelector
+                      selectedClasses={classes}
+                      onAddClass={handleAddClass}
+                      onRemoveClass={handleRemoveClass}
+                      onClassClick={handleClassClick}
+                      activeClassIndex={activeClassIndex}
+                    />
+                  </div>
+                  
+                  {/* Compact State dropdown - absolute positioned to right */}
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button 
                         variant="outline" 
                         size="sm" 
-                        className={`h-6 w-6 p-0 justify-center border border-border ${currentPseudoState !== 'default' ? 'bg-green-500/10 border-green-500/50' : ''}`}
+                        className={`absolute right-0 top-0 h-9 w-6 p-0 justify-center border border-border ${currentPseudoState !== 'default' ? 'bg-green-500/10 border-green-500/50' : ''}`}
                         title={`State: ${currentPseudoState}`}
                       >
                         <ChevronDown className="w-3 h-3 text-foreground" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start" side="bottom" className="w-32 bg-popover border border-border z-[10000]">
+                    <DropdownMenuContent align="end" side="bottom" className="w-32 bg-popover border border-border z-[10000]">
                       {(['default', 'hover', 'focus', 'active', 'visited'] as const).map((state) => {
                         // Check if this state has any styles
                         const hasStyles = selectedInstance.styleSourceIds?.some(classId => {
@@ -482,17 +527,6 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
                       })}
                     </DropdownMenuContent>
                   </DropdownMenu>
-
-                  {/* Class selector taking remaining space */}
-                  <div className="flex-1">
-                    <ClassSelector
-                      selectedClasses={classes}
-                      onAddClass={handleAddClass}
-                      onRemoveClass={handleRemoveClass}
-                      onClassClick={handleClassClick}
-                      activeClassIndex={activeClassIndex}
-                    />
-                  </div>
                 </div>
               </div>
 
