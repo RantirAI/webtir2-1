@@ -85,8 +85,12 @@ export const ComponentsPanel: React.FC = () => {
   const categories = [
     { 
       name: 'Commonly Used', 
-      types: ['Table', 'Text', 'Button', 'TextInput', 'NumberInput', 'Select', 'Container', 'Form', 'TabbedContainer', 'MixedChart', 'KeyValue', 'Image', 'Navigation'],
+      types: ['Table', 'Text', 'Button', 'TextInput', 'NumberInput', 'Select', 'Form', 'TabbedContainer', 'MixedChart', 'KeyValue', 'Image', 'Navigation'],
       pinned: true 
+    },
+    { 
+      name: 'Layouts', 
+      types: ['Section', 'Container', 'Box'] 
     },
     { 
       name: 'Text Inputs', 
@@ -99,10 +103,6 @@ export const ComponentsPanel: React.FC = () => {
     { 
       name: 'Presentation', 
       types: ['Alert', 'Avatar', 'AvatarGroup', 'Calendar', 'CircularImage', 'Divider', 'EventList', 'Icon', 'IconText', 'Image', 'ImageGrid', 'PDF', 'ProgressBar', 'ProgressCircle', 'QRCode', 'Spacer', 'Statistic', 'Status', 'Tags', 'Text', 'Timeline', 'Video'] 
-    },
-    { 
-      name: 'Layout', 
-      types: ['Container', 'Section', 'Box'] 
     },
     { 
       name: 'Typography', 
