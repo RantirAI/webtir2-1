@@ -26,9 +26,11 @@ export const Box: React.FC<BoxProps> = ({
 }) => {
   const isRoot = instance.id === 'root';
 
-  // Get computed styles from the style store
+  // Get computed styles from the style store (only default state for inline styles)
   const computedStyles = useStyleStore.getState().getComputedStyles(
-    instance.styleSourceIds || []
+    instance.styleSourceIds || [],
+    undefined,
+    'default'
   );
   const customStyles = stylesToObject(computedStyles);
 

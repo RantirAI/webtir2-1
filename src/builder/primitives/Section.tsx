@@ -33,9 +33,11 @@ export const Section: React.FC<SectionProps> = ({
     return () => clearTimeout(timer);
   }, []);
 
-  // Get computed styles from the style store
+  // Get computed styles from the style store (only default state for inline styles)
   const computedStyles = useStyleStore.getState().getComputedStyles(
-    instance.styleSourceIds || []
+    instance.styleSourceIds || [],
+    undefined,
+    'default'
   );
   const customStyles = stylesToObject(computedStyles);
 

@@ -26,7 +26,7 @@ export const Heading: React.FC<HeadingProps> = ({
 }) => {
   const { getComputedStyles } = useStyleStore();
   const { updateInstance } = useBuilderStore();
-  const computedStyles = getComputedStyles(instance.styleSourceIds || []);
+  const computedStyles = getComputedStyles(instance.styleSourceIds || [], undefined, 'default');
   const style = stylesToObject(computedStyles);
   const level = instance.props.level || 'h2';
 

@@ -23,7 +23,7 @@ export const ImagePrimitive: React.FC<ImagePrimitiveProps> = ({
   onContextMenu,
 }) => {
   const { getComputedStyles } = useStyleStore();
-  const computedStyles = getComputedStyles(instance.styleSourceIds || []);
+  const computedStyles = getComputedStyles(instance.styleSourceIds || [], undefined, 'default');
   const style = stylesToObject(computedStyles);
 
   return (
