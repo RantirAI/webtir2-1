@@ -285,9 +285,26 @@ export const componentRegistry: Record<string, ComponentMeta> = {
   Navigation: {
     type: 'Navigation',
     label: 'Navigation',
-    icon: 'Navigation',
-    defaultProps: {},
-    defaultStyles: {},
+    icon: 'Menu',
+    defaultProps: {
+      logo: 'Logo',
+      menuItems: [
+        { text: 'Home', url: '#', id: '1' },
+        { text: 'About', url: '#', id: '2' },
+        { text: 'Contact', url: '#', id: '3' },
+      ],
+      alignment: 'left-right',
+      mobileAnimation: 'slide',
+      animationDuration: 300,
+      hamburgerStyle: 'classic',
+      animateIcon: true,
+    },
+    defaultStyles: {
+      width: '100%',
+      backgroundColor: 'hsl(var(--background))',
+      color: 'hsl(var(--foreground))',
+      borderBottom: '1px solid hsl(var(--border))',
+    },
     propsDefinition: {},
   },
   

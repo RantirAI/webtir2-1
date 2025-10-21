@@ -12,6 +12,7 @@ import { ImagePrimitive } from '../primitives/ImagePrimitive';
 import { LinkPrimitive } from '../primitives/LinkPrimitive';
 import { TablePrimitive } from '../primitives/TablePrimitive';
 import { FormPrimitive } from '../primitives/FormPrimitive';
+import { NavigationPrimitive } from '../primitives/NavigationPrimitive';
 import { breakpoints } from './PageNavigation';
 import { ContextMenu } from './ContextMenu';
 import { SelectionOverlay } from './SelectionOverlay';
@@ -194,6 +195,23 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
             instanceId={instance.id}
             fields={instance.props.fields}
             buttonText={instance.props.buttonText}
+            className=""
+            style={getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties}
+          />
+        );
+      case 'Navigation':
+        return wrapWithDraggable(
+          <NavigationPrimitive
+            key={instance.id}
+            instanceId={instance.id}
+            logo={instance.props.logo}
+            menuItems={instance.props.menuItems}
+            alignment={instance.props.alignment}
+            mobileAnimation={instance.props.mobileAnimation}
+            animationDuration={instance.props.animationDuration}
+            hamburgerStyle={instance.props.hamburgerStyle}
+            animateIcon={instance.props.animateIcon}
+            isSelected={isSelected}
             className=""
             style={getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties}
           />

@@ -1467,11 +1467,178 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
             </div>
           )}
 
+          {selectedInstance.type === 'Navigation' && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-foreground">Layout Alignment</label>
+                <select
+                  className="w-full h-8 px-2 text-xs rounded-md border border-border bg-background"
+                  value={selectedInstance.props.alignment || 'left-right'}
+                  onChange={(e) => {
+                    updateInstance(selectedInstance.id, {
+                      props: { ...selectedInstance.props, alignment: e.target.value }
+                    });
+                  }}
+                >
+                  <option value="left-right">Logo Left / Menu Right</option>
+                  <option value="center">Logo Center / Menu Centered</option>
+                  <option value="right-left">Logo Right / Menu Left</option>
+                </select>
+              </div>
+
+              <div className="space-y-2 pt-3 border-t border-border">
+                <label className="text-xs font-semibold text-foreground">Mobile Animation</label>
+                <select
+                  className="w-full h-8 px-2 text-xs rounded-md border border-border bg-background"
+                  value={selectedInstance.props.mobileAnimation || 'slide'}
+                  onChange={(e) => {
+                    updateInstance(selectedInstance.id, {
+                      props: { ...selectedInstance.props, mobileAnimation: e.target.value }
+                    });
+                  }}
+                >
+                  <option value="none">None</option>
+                  <option value="slide">Slide Down</option>
+                  <option value="fade">Fade In</option>
+                  <option value="scale">Scale Up</option>
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-foreground">Animation Duration (ms)</label>
+                <Input
+                  type="number"
+                  min={0}
+                  max={1000}
+                  step={50}
+                  value={selectedInstance.props.animationDuration || 300}
+                  onChange={(e) => {
+                    updateInstance(selectedInstance.id, {
+                      props: { ...selectedInstance.props, animationDuration: parseInt(e.target.value) || 300 }
+                    });
+                  }}
+                  className="h-8 text-xs"
+                />
+              </div>
+
+              <div className="space-y-2 pt-3 border-t border-border">
+                <label className="text-xs font-semibold text-foreground">Hamburger Icon Style</label>
+                <select
+                  className="w-full h-8 px-2 text-xs rounded-md border border-border bg-background"
+                  value={selectedInstance.props.hamburgerStyle || 'classic'}
+                  onChange={(e) => {
+                    updateInstance(selectedInstance.id, {
+                      props: { ...selectedInstance.props, hamburgerStyle: e.target.value }
+                    });
+                  }}
+                >
+                  <option value="classic">Classic</option>
+                  <option value="minimal">Minimal</option>
+                  <option value="dots">Dots</option>
+                </select>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="animateIcon"
+                  checked={selectedInstance.props.animateIcon !== false}
+                  onChange={(e) => {
+                    updateInstance(selectedInstance.id, {
+                      props: { ...selectedInstance.props, animateIcon: e.target.checked }
+                    });
+                  }}
+                  className="w-4 h-4"
+                />
+                <label htmlFor="animateIcon" className="text-xs text-foreground cursor-pointer">
+                  Animate icon to X when open
+                </label>
+              </div>
+
+              <div className="space-y-3 pt-3 border-t border-border">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-semibold text-foreground">Menu Items</label>
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      const currentItems = selectedInstance.props.menuItems || [];
+                      const newItem = {
+                        text: 'New Item',
+                        url: '#',
+                        id: Date.now().toString()
+                      };
+                      updateInstance(selectedInstance.id, {
+                        props: { ...selectedInstance.props, menuItems: [...currentItems, newItem] }
+                      });
+                    }}
+                    className="h-6 text-xs px-2"
+                  >
+                    <Plus className="w-3 h-3 mr-1" />
+                    Add Item
+                  </Button>
+                </div>
+
+                <div className="space-y-2 max-h-64 overflow-y-auto">
+                  {(selectedInstance.props.menuItems || []).map((item: { text: string; url: string; id: string }, index: number) => (
+                    <div key={item.id} className="flex items-center gap-2 p-2 bg-muted/50 rounded-md">
+                      <div className="flex-1 space-y-1">
+                        <Input
+                          type="text"
+                          value={item.text}
+                          onChange={(e) => {
+                            const newItems = [...selectedInstance.props.menuItems];
+                            newItems[index] = { ...item, text: e.target.value };
+                            updateInstance(selectedInstance.id, {
+                              props: { ...selectedInstance.props, menuItems: newItems }
+                            });
+                          }}
+                          className="h-6 text-xs"
+                          placeholder="Menu text"
+                        />
+                        <Input
+                          type="text"
+                          value={item.url}
+                          onChange={(e) => {
+                            const newItems = [...selectedInstance.props.menuItems];
+                            newItems[index] = { ...item, url: e.target.value };
+                            updateInstance(selectedInstance.id, {
+                              props: { ...selectedInstance.props, menuItems: newItems }
+                            });
+                          }}
+                          className="h-6 text-xs"
+                          placeholder="URL"
+                        />
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => {
+                          const newItems = selectedInstance.props.menuItems.filter((_: any, i: number) => i !== index);
+                          updateInstance(selectedInstance.id, {
+                            props: { ...selectedInstance.props, menuItems: newItems }
+                          });
+                        }}
+                        className="h-6 w-6 p-0"
+                      >
+                        <X className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <p className="text-xs text-muted-foreground pt-2">
+                Double-click on logo or menu items in the canvas to edit them directly
+              </p>
+            </div>
+          )}
+
           {selectedInstance.type !== 'Image' && 
            selectedInstance.type !== 'Container' && 
            selectedInstance.type !== 'Box' && 
            selectedInstance.type !== 'Section' &&
-           selectedInstance.type !== 'Table' && (
+           selectedInstance.type !== 'Table' &&
+           selectedInstance.type !== 'Navigation' && (
             <div className="text-sm text-muted-foreground text-center">
               No settings available for this component
             </div>
