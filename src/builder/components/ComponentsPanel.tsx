@@ -139,7 +139,7 @@ export const ComponentsPanel: React.FC = () => {
   }, [debouncedSearch]);
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full overflow-hidden">
       <div className="p-4 pb-2 flex-shrink-0">
         {/* Search input */}
         <div className="relative">
@@ -154,7 +154,7 @@ export const ComponentsPanel: React.FC = () => {
         </div>
       </div>
 
-      <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden">
         <div className="px-4 space-y-5 pb-6">
           {/* Categories */}
           {filteredCategories.map((category) => {
