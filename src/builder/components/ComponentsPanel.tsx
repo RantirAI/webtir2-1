@@ -139,8 +139,8 @@ export const ComponentsPanel: React.FC = () => {
   }, [debouncedSearch]);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
-      <div style={{ padding: '16px', paddingBottom: '8px', flexShrink: 0 }}>
+    <div className="w-full h-full flex flex-col">
+      <div className="p-4 pb-2 shrink-0">
         {/* Search input */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
@@ -154,8 +154,8 @@ export const ComponentsPanel: React.FC = () => {
         </div>
       </div>
 
-      <div style={{ flex: 1, overflowY: 'scroll', overflowX: 'hidden', minHeight: 0 }}>
-        <div className="px-4 space-y-5 pb-6">
+      <div className="flex-1 overflow-auto px-4 pb-6" style={{ maxHeight: 'calc(100vh - 200px)' }}>
+        <div className="space-y-5">
           {/* Categories */}
           {filteredCategories.map((category) => {
             const components = category.types
