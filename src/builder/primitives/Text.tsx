@@ -1,6 +1,5 @@
 import React from 'react';
 import { ComponentInstance } from '../store/types';
-import { stylesToObject } from '../utils/style';
 import { useStyleStore } from '../store/useStyleStore';
 import { useBuilderStore } from '../store/useBuilderStore';
 import { EditableText } from '../components/EditableText';
@@ -13,6 +12,7 @@ interface TextProps {
   onHover?: () => void;
   onHoverEnd?: () => void;
   onContextMenu?: (e: React.MouseEvent) => void;
+  isPreviewMode?: boolean;
 }
 
 export const Text: React.FC<TextProps> = ({
@@ -23,11 +23,9 @@ export const Text: React.FC<TextProps> = ({
   onHover,
   onHoverEnd,
   onContextMenu,
+  isPreviewMode,
 }) => {
-  const { getComputedStyles } = useStyleStore();
   const { updateInstance } = useBuilderStore();
-  const computedStyles = getComputedStyles(instance.styleSourceIds || [], undefined, 'default');
-  const style = stylesToObject(computedStyles);
 
   const handleTextChange = (newText: string) => {
     updateInstance(instance.id, {
@@ -42,25 +40,25 @@ export const Text: React.FC<TextProps> = ({
       style={{
         position: 'relative',
       }}
-      onClick={(e) => {
+      onClick={isPreviewMode ? undefined : (e) => {
         e.stopPropagation();
         onSelect?.();
       }}
-      onMouseEnter={(e) => {
+      onMouseEnter={isPreviewMode ? undefined : (e) => {
         e.stopPropagation();
         onHover?.();
       }}
-      onMouseLeave={(e) => {
+      onMouseLeave={isPreviewMode ? undefined : (e) => {
         e.stopPropagation();
         onHoverEnd?.();
       }}
-      onContextMenu={onContextMenu}
+      onContextMenu={isPreviewMode ? undefined : onContextMenu}
     >
       <EditableText
         value={instance.props.children || 'Text'}
         onChange={handleTextChange}
         as="p"
-        style={style}
+        style={{}}
         isSelected={isSelected}
       />
     </div>

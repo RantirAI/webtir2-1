@@ -47,11 +47,12 @@ export const ComponentsPanel: React.FC = () => {
 
     const newId = generateId();
     
-    // Create style source with default styles
+    // Only create style source with default styles for Button component
     let styleSourceId: string | undefined;
-    if (meta.defaultStyles && Object.keys(meta.defaultStyles).length > 0) {
+    if (type === 'Button' && meta.defaultStyles && Object.keys(meta.defaultStyles).length > 0) {
       const { createStyleSource, setStyle } = useStyleStore.getState();
-      styleSourceId = createStyleSource('local', `${newId}-style`);
+      // Use "button" as the class name for Button components
+      styleSourceId = createStyleSource('local', 'button');
       
       // Apply default styles
       Object.entries(meta.defaultStyles).forEach(([property, value]) => {

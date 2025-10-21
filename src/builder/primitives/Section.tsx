@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ComponentInstance } from '../store/types';
 import { useStyleStore } from '../store/useStyleStore';
-import { stylesToObject } from '../utils/style';
 
 interface SectionProps {
   instance: ComponentInstance;
@@ -12,6 +11,7 @@ interface SectionProps {
   onHover?: () => void;
   onHoverEnd?: () => void;
   onContextMenu?: (e: React.MouseEvent) => void;
+  isPreviewMode?: boolean;
 }
 
 export const Section: React.FC<SectionProps> = ({
@@ -23,6 +23,7 @@ export const Section: React.FC<SectionProps> = ({
   onHover,
   onHoverEnd,
   onContextMenu,
+  isPreviewMode,
 }) => {
   const [isNewlyAdded, setIsNewlyAdded] = useState(true);
 
@@ -33,13 +34,7 @@ export const Section: React.FC<SectionProps> = ({
     return () => clearTimeout(timer);
   }, []);
 
-  // Get computed styles from the style store (only default state for inline styles)
-  const computedStyles = useStyleStore.getState().getComputedStyles(
-    instance.styleSourceIds || [],
-    undefined,
-    'default'
-  );
-  const customStyles = stylesToObject(computedStyles);
+  // No inline computed styles - use CSS classes only
 
   // Default styles - use column to allow children to fill height
   const defaultStyles: React.CSSProperties = {
@@ -56,27 +51,26 @@ export const Section: React.FC<SectionProps> = ({
     transition: 'outline 0.3s ease-out',
   };
 
-  // Merge styles, custom styles take precedence
-  const finalStyles = { ...defaultStyles, ...customStyles };
+  const finalStyles = defaultStyles;
 
   return (
     <section
       data-instance-id={instance.id}
       className={`${(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')} ${isNewlyAdded ? 'animate-fade-in' : ''}`}
       style={finalStyles}
-      onClick={(e) => {
+      onClick={isPreviewMode ? undefined : (e) => {
         e.stopPropagation();
         onSelect?.();
       }}
-      onMouseEnter={(e) => {
+      onMouseEnter={isPreviewMode ? undefined : (e) => {
         e.stopPropagation();
         onHover?.();
       }}
-      onMouseLeave={(e) => {
+      onMouseLeave={isPreviewMode ? undefined : (e) => {
         e.stopPropagation();
         onHoverEnd?.();
       }}
-      onContextMenu={onContextMenu}
+      onContextMenu={isPreviewMode ? undefined : onContextMenu}
     >
       {children}
     </section>

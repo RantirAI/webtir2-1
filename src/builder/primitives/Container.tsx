@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ComponentInstance } from '../store/types';
 import { useStyleStore } from '../store/useStyleStore';
-import { stylesToObject } from '../utils/style';
 
 interface ContainerProps {
   instance: ComponentInstance;
@@ -12,6 +11,7 @@ interface ContainerProps {
   onHover?: () => void;
   onHoverEnd?: () => void;
   onContextMenu?: (e: React.MouseEvent) => void;
+  isPreviewMode?: boolean;
 }
 
 export const Container: React.FC<ContainerProps> = ({
@@ -23,6 +23,7 @@ export const Container: React.FC<ContainerProps> = ({
   onHover,
   onHoverEnd,
   onContextMenu,
+  isPreviewMode,
 }) => {
   const containerType = instance.props.containerType || 'container';
   const [isNewlyAdded, setIsNewlyAdded] = useState(true);
@@ -34,13 +35,7 @@ export const Container: React.FC<ContainerProps> = ({
     return () => clearTimeout(timer);
   }, []);
 
-  // Get computed styles from the style store (only default state for inline styles)
-  const computedStyles = useStyleStore.getState().getComputedStyles(
-    instance.styleSourceIds || [],
-    undefined,
-    'default'
-  );
-  const customStyles = stylesToObject(computedStyles);
+  // No inline computed styles - use CSS classes only
 
   // Default styles
   const defaultStyles: React.CSSProperties = {
@@ -56,27 +51,26 @@ export const Container: React.FC<ContainerProps> = ({
     transition: 'outline 0.3s ease-out',
   };
 
-  // Merge styles, custom styles take precedence
-  const finalStyles = { ...defaultStyles, ...customStyles };
+  const finalStyles = defaultStyles;
 
   return (
     <div
       data-instance-id={instance.id}
       className={`${containerType} ${(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')} ${isNewlyAdded ? 'animate-fade-in' : ''}`}
       style={finalStyles}
-      onClick={(e) => {
+      onClick={isPreviewMode ? undefined : (e) => {
         e.stopPropagation();
         onSelect?.();
       }}
-      onMouseEnter={(e) => {
+      onMouseEnter={isPreviewMode ? undefined : (e) => {
         e.stopPropagation();
         onHover?.();
       }}
-      onMouseLeave={(e) => {
+      onMouseLeave={isPreviewMode ? undefined : (e) => {
         e.stopPropagation();
         onHoverEnd?.();
       }}
-      onContextMenu={onContextMenu}
+      onContextMenu={isPreviewMode ? undefined : onContextMenu}
     >
       {children}
     </div>

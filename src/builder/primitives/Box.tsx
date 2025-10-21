@@ -11,6 +11,7 @@ interface BoxProps {
   onHover?: () => void;
   onHoverEnd?: () => void;
   onContextMenu?: (e: React.MouseEvent) => void;
+  isPreviewMode?: boolean;
 }
 
 export const Box: React.FC<BoxProps> = ({
@@ -22,16 +23,11 @@ export const Box: React.FC<BoxProps> = ({
   onHover,
   onHoverEnd,
   onContextMenu,
+  isPreviewMode,
 }) => {
   const isRoot = instance.id === 'root';
 
-  // Get computed styles from the style store (only default state for inline styles)
-  const computedStyles = useStyleStore.getState().getComputedStyles(
-    instance.styleSourceIds || [],
-    undefined,
-    'default'
-  );
-  const customStyles = stylesToObject(computedStyles);
+  // No inline computed styles - use CSS classes only
 
   // Default styles
   const defaultStyles: React.CSSProperties = {
@@ -47,27 +43,26 @@ export const Box: React.FC<BoxProps> = ({
     alignItems: 'flex-start',
   };
 
-  // Merge styles, custom styles take precedence
-  const finalStyles = { ...defaultStyles, ...customStyles };
+  const finalStyles = defaultStyles;
 
   return (
     <div
       data-instance-id={instance.id}
       className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
       style={finalStyles}
-      onClick={(e) => {
+      onClick={isPreviewMode ? undefined : (e) => {
         e.stopPropagation();
         onSelect?.();
       }}
-      onMouseEnter={(e) => {
+      onMouseEnter={isPreviewMode ? undefined : (e) => {
         e.stopPropagation();
         onHover?.();
       }}
-      onMouseLeave={(e) => {
+      onMouseLeave={isPreviewMode ? undefined : (e) => {
         e.stopPropagation();
         onHoverEnd?.();
       }}
-      onContextMenu={onContextMenu}
+      onContextMenu={isPreviewMode ? undefined : onContextMenu}
     >
       {children}
     </div>
