@@ -140,8 +140,8 @@ export const ComponentsPanel: React.FC = () => {
   }, [debouncedSearch]);
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="p-4 pb-2">
+    <div className="flex flex-col h-full overflow-hidden">
+      <div className="p-4 pb-2 flex-shrink-0">
         {/* Search input */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
@@ -155,8 +155,8 @@ export const ComponentsPanel: React.FC = () => {
         </div>
       </div>
 
-      <ScrollArea className="flex-1 px-4">
-        <div className="space-y-5 pb-6">
+      <ScrollArea className="flex-1 min-h-0">
+        <div className="px-4 space-y-5 pb-6">
           {/* Categories */}
           {filteredCategories.map((category) => {
             const components = category.types
