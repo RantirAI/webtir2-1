@@ -5,7 +5,6 @@ import { useStyleStore } from '../store/useStyleStore';
 import { ComponentInstance } from '../store/types';
 import { generateId } from '../utils/instance';
 import * as Icons from 'lucide-react';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import { Search } from 'lucide-react';
@@ -140,7 +139,7 @@ export const ComponentsPanel: React.FC = () => {
   }, [debouncedSearch]);
 
   return (
-    <div className="flex flex-col h-full overflow-hidden">
+    <div className="flex flex-col h-full">
       <div className="p-4 pb-2 flex-shrink-0">
         {/* Search input */}
         <div className="relative">
@@ -155,7 +154,7 @@ export const ComponentsPanel: React.FC = () => {
         </div>
       </div>
 
-      <ScrollArea className="flex-1 min-h-0">
+      <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
         <div className="px-4 space-y-5 pb-6">
           {/* Categories */}
           {filteredCategories.map((category) => {
@@ -196,7 +195,7 @@ export const ComponentsPanel: React.FC = () => {
             </div>
           )}
         </div>
-      </ScrollArea>
+      </div>
     </div>
   );
 };
