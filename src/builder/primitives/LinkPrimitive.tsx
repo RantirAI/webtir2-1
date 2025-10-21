@@ -32,6 +32,7 @@ export const LinkPrimitive: React.FC<LinkPrimitiveProps> = ({
       className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
       href={instance.props.href || '#'}
       style={{
+        ...style,
         position: 'relative',
       }}
       onClick={(e) => {

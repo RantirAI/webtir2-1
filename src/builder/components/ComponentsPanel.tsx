@@ -81,8 +81,8 @@ export const ComponentsPanel: React.FC = () => {
   const categories = [
     { name: 'Layout', types: ['Container', 'Section', 'Box'] },
     { name: 'Typography', types: ['Heading', 'Text'] },
-    { name: 'Interactive', types: ['ButtonPrimitive', 'LinkPrimitive'] },
-    { name: 'Media', types: ['ImagePrimitive'] },
+    { name: 'Interactive', types: ['Button', 'Link'] },
+    { name: 'Media', types: ['Image'] },
   ];
 
   return (

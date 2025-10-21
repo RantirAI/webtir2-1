@@ -31,6 +31,7 @@ export const ButtonPrimitive: React.FC<ButtonPrimitiveProps> = ({
       data-instance-id={instance.id}
       className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
       style={{
+        ...style,
         position: 'relative',
       }}
       onClick={(e) => {
