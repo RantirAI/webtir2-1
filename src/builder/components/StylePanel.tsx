@@ -3,7 +3,7 @@ import { useBuilderStore } from '../store/useBuilderStore';
 import { useStyleStore } from '../store/useStyleStore';
 import { PseudoState } from '../store/types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Paintbrush, Plus, Square, Type, Heading as HeadingIcon, MousePointerClick, Image as ImageIcon, Link as LinkIcon, X, ChevronDown, Settings, Zap, Database, RotateCcw, Info } from 'lucide-react';
+import { Paintbrush, Plus, Square, Type, Heading as HeadingIcon, MousePointerClick, Image as ImageIcon, Link as LinkIcon, X, ChevronDown, Settings, Zap, Database, RotateCcw, Info, AlignLeft, AlignCenter, AlignRight, AlignJustify } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { componentRegistry } from '../primitives/registry';
@@ -979,7 +979,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
       <AccordionSection title="Typography" section="typography" properties={['fontFamily', 'fontSize', 'fontWeight', 'lineHeight', 'letterSpacing', 'textAlign', 'textDecoration', 'textTransform', 'color', 'textIndent', 'wordBreak', 'whiteSpace', 'textOverflow']}>
         <div className="Col" style={{ gap: '8px' }}>
           <div>
-            <label className="Label" style={{ fontSize: '10px', marginBottom: '4px', display: 'block' }}>Font Family</label>
+            <label className="Label" style={{ fontSize: '10px', marginBottom: '4px', display: 'block' }}>Font</label>
             <FontPicker
               value={computedStyles.fontFamily || ''}
               weight={computedStyles.fontWeight || '400'}
@@ -1011,23 +1011,39 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
             />
           </div>
 
-          {/* Text Align */}
+          {/* Text Align with Icons */}
           <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr', gap: '4px', alignItems: 'center' }}>
             <label className="Label" style={{ fontSize: '10px' }}>Align</label>
-            <select
-              className="Select"
-              value={computedStyles.textAlign || 'left'}
-              onChange={(e) => updateStyle('textAlign', e.target.value)}
-            >
-              <option value="left">Left</option>
-              <option value="center">Center</option>
-              <option value="right">Right</option>
-              <option value="justify">Justify</option>
-            </select>
+            <div style={{ display: 'flex', gap: '2px' }}>
+              <button
+                className={`flex-1 h-6 flex items-center justify-center rounded border ${computedStyles.textAlign === 'left' || !computedStyles.textAlign ? 'bg-accent border-primary' : 'bg-[#F5F5F5] dark:bg-[#09090b] border-input hover:bg-accent'}`}
+                onClick={() => updateStyle('textAlign', 'left')}
+              >
+                <AlignLeft className="w-3.5 h-3.5" />
+              </button>
+              <button
+                className={`flex-1 h-6 flex items-center justify-center rounded border ${computedStyles.textAlign === 'center' ? 'bg-accent border-primary' : 'bg-[#F5F5F5] dark:bg-[#09090b] border-input hover:bg-accent'}`}
+                onClick={() => updateStyle('textAlign', 'center')}
+              >
+                <AlignCenter className="w-3.5 h-3.5" />
+              </button>
+              <button
+                className={`flex-1 h-6 flex items-center justify-center rounded border ${computedStyles.textAlign === 'right' ? 'bg-accent border-primary' : 'bg-[#F5F5F5] dark:bg-[#09090b] border-input hover:bg-accent'}`}
+                onClick={() => updateStyle('textAlign', 'right')}
+              >
+                <AlignRight className="w-3.5 h-3.5" />
+              </button>
+              <button
+                className={`flex-1 h-6 flex items-center justify-center rounded border ${computedStyles.textAlign === 'justify' ? 'bg-accent border-primary' : 'bg-[#F5F5F5] dark:bg-[#09090b] border-input hover:bg-accent'}`}
+                onClick={() => updateStyle('textAlign', 'justify')}
+              >
+                <AlignJustify className="w-3.5 h-3.5" />
+              </button>
+            </div>
           </div>
 
-          {/* Text Decoration */}
-          <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr', gap: '4px', alignItems: 'center' }}>
+          {/* Decor and Transform side by side */}
+          <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr 32px 1fr', gap: '4px', alignItems: 'center' }}>
             <label className="Label" style={{ fontSize: '10px' }}>Decor</label>
             <select
               className="Select"
@@ -1037,12 +1053,8 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
               <option value="none">None</option>
               <option value="underline">Underline</option>
               <option value="overline">Overline</option>
-              <option value="line-through">Strikethrough</option>
+              <option value="line-through">Strike</option>
             </select>
-          </div>
-
-          {/* Text Transform */}
-          <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr', gap: '4px', alignItems: 'center' }}>
             <label className="Label" style={{ fontSize: '10px' }}>Transform</label>
             <select
               className="Select"
@@ -1050,9 +1062,9 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
               onChange={(e) => updateStyle('textTransform', e.target.value)}
             >
               <option value="none">None</option>
-              <option value="uppercase">Uppercase</option>
-              <option value="lowercase">Lowercase</option>
-              <option value="capitalize">Capitalize</option>
+              <option value="uppercase">Upper</option>
+              <option value="lowercase">Lower</option>
+              <option value="capitalize">Caps</option>
             </select>
           </div>
 
@@ -1072,7 +1084,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
             />
           </div>
 
-          {/* Word Break */}
+          {/* Break, Wrap, Overflow side by side */}
           <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr', gap: '4px', alignItems: 'center' }}>
             <label className="Label" style={{ fontSize: '10px' }}>Break</label>
             <select
@@ -1081,14 +1093,13 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
               onChange={(e) => updateStyle('wordBreak', e.target.value)}
             >
               <option value="normal">Normal</option>
-              <option value="break-all">Break All</option>
-              <option value="keep-all">Keep All</option>
-              <option value="break-word">Break Word</option>
+              <option value="break-all">All</option>
+              <option value="keep-all">Keep</option>
+              <option value="break-word">Word</option>
             </select>
           </div>
 
-          {/* White Space */}
-          <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr', gap: '4px', alignItems: 'center' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr 32px 1fr', gap: '4px', alignItems: 'center' }}>
             <label className="Label" style={{ fontSize: '10px' }}>Wrap</label>
             <select
               className="Select"
@@ -1096,15 +1107,10 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
               onChange={(e) => updateStyle('whiteSpace', e.target.value)}
             >
               <option value="normal">Normal</option>
-              <option value="nowrap">No Wrap</option>
+              <option value="nowrap">None</option>
               <option value="pre">Pre</option>
               <option value="pre-wrap">Pre Wrap</option>
-              <option value="pre-line">Pre Line</option>
             </select>
-          </div>
-
-          {/* Text Overflow */}
-          <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr', gap: '4px', alignItems: 'center' }}>
             <label className="Label" style={{ fontSize: '10px' }}>Overflow</label>
             <select
               className="Select"
@@ -1112,7 +1118,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
               onChange={(e) => updateStyle('textOverflow', e.target.value)}
             >
               <option value="clip">Clip</option>
-              <option value="ellipsis">Ellipsis</option>
+              <option value="ellipsis">...</option>
             </select>
           </div>
         </div>

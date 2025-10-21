@@ -135,12 +135,24 @@ const Builder: React.FC = () => {
 
       const newId = generateId();
 
+      // Create style source with default styles
+      let styleSourceId: string | undefined;
+      if (meta.defaultStyles && Object.keys(meta.defaultStyles).length > 0) {
+        const { createStyleSource, setStyle } = useStyleStore.getState();
+        styleSourceId = createStyleSource('local', `${newId}-style`);
+        
+        // Apply default styles
+        Object.entries(meta.defaultStyles).forEach(([property, value]) => {
+          setStyle(styleSourceId!, property, value);
+        });
+      }
+
       const newInstance: ComponentInstance = {
         id: newId,
         type: meta.type,
         label: meta.label,
         props: { ...meta.defaultProps },
-        styleSourceIds: [],
+        styleSourceIds: styleSourceId ? [styleSourceId] : [],
         children: [],
       };
 
