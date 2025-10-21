@@ -1,10 +1,22 @@
 // Core types inspired by Webtir's component system
 
 export type ComponentType = 
+  // Core/Layout
   | 'Box' | 'Container' | 'Section' | 'Text' | 'Heading' | 'Image' | 'Button' | 'Link'
-  | 'Form' | 'InputLabel' | 'TextInput' | 'TextArea' | 'Select' | 'Radio' | 'Checkbox'
+  // Commonly Used
+  | 'Table' | 'NumberInput' | 'TabbedContainer' | 'MixedChart' | 'KeyValue' | 'Navigation'
+  // Text Inputs
+  | 'EditableText' | 'EditableTextArea' | 'Email' | 'JSONEditor' | 'Password' | 'RichTextEditor' | 'TextArea' | 'TextInput' | 'URL'
+  // Charts
+  | 'BarChart' | 'BubbleChart' | 'FunnelChart' | 'HeatMap' | 'LineChart' | 'PieChart' | 'PlotlyJSONChart' | 'SankeyChart' | 'ScatterChart' | 'Sparkline' | 'StackedBarChart' | 'SunburstChart' | 'Treemap' | 'WaterfallChart'
+  // Presentation
+  | 'Alert' | 'Avatar' | 'AvatarGroup' | 'Calendar' | 'CircularImage' | 'Divider' | 'EventList' | 'Icon' | 'IconText' | 'ImageGrid' | 'PDF' | 'ProgressBar' | 'ProgressCircle' | 'QRCode' | 'Spacer' | 'Statistic' | 'Status' | 'Tags' | 'Timeline' | 'Video'
+  // Forms
+  | 'Form' | 'InputLabel' | 'Select' | 'Radio' | 'Checkbox'
+  // Localization
   | 'Time'
-  | 'Sheet' | 'NavigationMenu' | 'Tabs' | 'Accordion' | 'Dialog' | 'Collapsible' | 'Popover' | 'Tooltip' | 'Switch' | 'RadioGroup';
+  // Radix
+  | 'Sheet' | 'NavigationMenu' | 'Tabs' | 'Accordion' | 'Dialog' | 'Collapsible' | 'Popover' | 'Tooltip' | 'Switch' | 'RadioGroup' | 'Label';
 
 export type StyleSourceType = 'local' | 'token' | 'preset';
 
