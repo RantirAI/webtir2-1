@@ -10,6 +10,7 @@ import { Heading } from '../primitives/Heading';
 import { ButtonPrimitive } from '../primitives/ButtonPrimitive';
 import { ImagePrimitive } from '../primitives/ImagePrimitive';
 import { LinkPrimitive } from '../primitives/LinkPrimitive';
+import { TablePrimitive } from '../primitives/TablePrimitive';
 import { breakpoints } from './PageNavigation';
 import { ContextMenu } from './ContextMenu';
 import { SelectionOverlay } from './SelectionOverlay';
@@ -171,6 +172,20 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
         return wrapWithDraggable(<ImagePrimitive key={instance.id} {...commonProps} />);
       case 'Link':
         return wrapWithDraggable(<LinkPrimitive key={instance.id} {...commonProps} />);
+      case 'Table':
+        return wrapWithDraggable(
+          <TablePrimitive 
+            key={instance.id} 
+            instance={instance}
+            isSelected={isSelected}
+            onUpdateProp={(key, value) => {
+              const { updateInstance } = useBuilderStore.getState();
+              updateInstance(instance.id, {
+                props: { ...instance.props, [key]: value }
+              });
+            }}
+          />
+        );
       default:
         return null;
     }

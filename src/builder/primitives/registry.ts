@@ -204,9 +204,33 @@ export const componentRegistry: Record<string, ComponentMeta> = {
     type: 'Table',
     label: 'Table',
     icon: 'Table',
-    defaultProps: {},
-    defaultStyles: {},
-    propsDefinition: {},
+    defaultProps: {
+      rows: 3,
+      columns: 3,
+      headers: ['Column 1', 'Column 2', 'Column 3'],
+      data: [
+        ['', '', ''],
+        ['', '', ''],
+        ['', '', '']
+      ],
+    },
+    defaultStyles: {
+      width: '100%',
+    },
+    propsDefinition: {
+      rows: {
+        type: 'number',
+        label: 'Rows',
+        control: 'number',
+        defaultValue: 3,
+      },
+      columns: {
+        type: 'number',
+        label: 'Columns',
+        control: 'number',
+        defaultValue: 3,
+      },
+    },
   },
   NumberInput: {
     type: 'NumberInput',

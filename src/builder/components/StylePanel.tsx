@@ -1278,6 +1278,92 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
         </TabsContent>
 
         <TabsContent value="settings" className="flex-1 min-h-0 m-0 p-4 overflow-y-auto overflow-x-hidden">
+          {selectedInstance.type === 'Table' && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-foreground">Rows</label>
+                <Input
+                  type="number"
+                  min={1}
+                  max={20}
+                  value={selectedInstance.props?.rows || 3}
+                  onChange={(e) => {
+                    const newRows = parseInt(e.target.value) || 3;
+                    const currentRows = selectedInstance.props?.rows || 3;
+                    const currentData = selectedInstance.props?.data || [];
+                    const columns = selectedInstance.props?.columns || 3;
+                    
+                    let newData = [...currentData];
+                    if (newRows > currentRows) {
+                      // Add rows
+                      for (let i = currentRows; i < newRows; i++) {
+                        newData.push(Array(columns).fill(''));
+                      }
+                    } else {
+                      // Remove rows
+                      newData = newData.slice(0, newRows);
+                    }
+                    
+                    updateInstance(selectedInstance.id, {
+                      props: { ...selectedInstance.props, rows: newRows, data: newData }
+                    });
+                  }}
+                  className="h-8 text-xs"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-foreground">Columns</label>
+                <Input
+                  type="number"
+                  min={1}
+                  max={10}
+                  value={selectedInstance.props?.columns || 3}
+                  onChange={(e) => {
+                    const newColumns = parseInt(e.target.value) || 3;
+                    const currentColumns = selectedInstance.props?.columns || 3;
+                    const currentHeaders = selectedInstance.props?.headers || [];
+                    const currentData = selectedInstance.props?.data || [];
+                    
+                    let newHeaders = [...currentHeaders];
+                    if (newColumns > currentColumns) {
+                      // Add columns
+                      for (let i = currentColumns; i < newColumns; i++) {
+                        newHeaders.push(`Column ${i + 1}`);
+                      }
+                    } else {
+                      // Remove columns
+                      newHeaders = newHeaders.slice(0, newColumns);
+                    }
+                    
+                    const newData = currentData.map((row: string[]) => {
+                      const newRow = [...row];
+                      if (newColumns > currentColumns) {
+                        // Add empty cells
+                        for (let i = currentColumns; i < newColumns; i++) {
+                          newRow.push('');
+                        }
+                      } else {
+                        // Remove cells
+                        return newRow.slice(0, newColumns);
+                      }
+                      return newRow;
+                    });
+                    
+                    updateInstance(selectedInstance.id, {
+                      props: { ...selectedInstance.props, columns: newColumns, headers: newHeaders, data: newData }
+                    });
+                  }}
+                  className="h-8 text-xs"
+                />
+              </div>
+              
+              <p className="text-xs text-muted-foreground">
+                Double-click on table cells to edit content
+              </p>
+            </div>
+          )}
+
           {selectedInstance.type === 'Image' && (
             <div className="space-y-4">
               <ImageUpload
@@ -1384,7 +1470,8 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
           {selectedInstance.type !== 'Image' && 
            selectedInstance.type !== 'Container' && 
            selectedInstance.type !== 'Box' && 
-           selectedInstance.type !== 'Section' && (
+           selectedInstance.type !== 'Section' &&
+           selectedInstance.type !== 'Table' && (
             <div className="text-sm text-muted-foreground text-center">
               No settings available for this component
             </div>
