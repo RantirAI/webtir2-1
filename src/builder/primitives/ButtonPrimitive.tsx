@@ -1,6 +1,6 @@
 import React from 'react';
 import { ComponentInstance } from '../store/types';
-import { stylesToObject } from '../utils/style';
+
 import { useStyleStore } from '../store/useStyleStore';
 
 interface ButtonPrimitiveProps {
@@ -11,6 +11,7 @@ interface ButtonPrimitiveProps {
   onHover?: () => void;
   onHoverEnd?: () => void;
   onContextMenu?: (e: React.MouseEvent) => void;
+  isPreviewMode?: boolean;
 }
 
 export const ButtonPrimitive: React.FC<ButtonPrimitiveProps> = ({
@@ -21,33 +22,29 @@ export const ButtonPrimitive: React.FC<ButtonPrimitiveProps> = ({
   onHover,
   onHoverEnd,
   onContextMenu,
+  isPreviewMode,
 }) => {
-  const { getComputedStyles } = useStyleStore();
-  const computedStyles = getComputedStyles(instance.styleSourceIds || [], undefined, 'default');
-  const style = stylesToObject(computedStyles);
+  // Using CSS classes only; no inline computed styles
 
   return (
     <button
       data-instance-id={instance.id}
       className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
-      style={{
-        ...style,
-        position: 'relative',
-      }}
-      onClick={(e) => {
+      style={{ position: 'relative' }}
+      onClick={isPreviewMode ? undefined : (e) => {
         e.stopPropagation();
         e.preventDefault();
         onSelect?.();
       }}
-      onMouseEnter={(e) => {
+      onMouseEnter={isPreviewMode ? undefined : (e) => {
         e.stopPropagation();
         onHover?.();
       }}
-      onMouseLeave={(e) => {
+      onMouseLeave={isPreviewMode ? undefined : (e) => {
         e.stopPropagation();
         onHoverEnd?.();
       }}
-      onContextMenu={onContextMenu}
+      onContextMenu={isPreviewMode ? undefined : onContextMenu}
     >
       {instance.props.children || 'Button'}
     </button>

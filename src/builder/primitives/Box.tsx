@@ -1,7 +1,6 @@
 import React from 'react';
 import { ComponentInstance } from '../store/types';
 import { useStyleStore } from '../store/useStyleStore';
-import { stylesToObject } from '../utils/style';
 
 interface BoxProps {
   instance: ComponentInstance;

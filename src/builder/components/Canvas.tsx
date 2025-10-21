@@ -107,43 +107,60 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
       instance,
       isSelected,
       isHovered,
-      onSelect: () => setSelectedInstanceId(instance.id),
-      onHover: () => setHoveredInstanceId(instance.id),
-      onHoverEnd: () => setHoveredInstanceId(null),
-      onContextMenu: (e: React.MouseEvent) => handleContextMenu(e, instance),
-    };
+      onSelect: isPreviewMode ? undefined : () => setSelectedInstanceId(instance.id),
+      onHover: isPreviewMode ? undefined : () => setHoveredInstanceId(instance.id),
+      onHoverEnd: isPreviewMode ? undefined : () => setHoveredInstanceId(null),
+      onContextMenu: isPreviewMode ? undefined : (e: React.MouseEvent) => handleContextMenu(e, instance),
+      isPreviewMode,
+    } as any;
 
     const wrapWithDraggable = (content: React.ReactNode) => (
-      <DraggableInstance instance={instance} isContainer={isContainer}>
-        {content}
-      </DraggableInstance>
+      isPreviewMode ? (
+        <>{content}</>
+      ) : (
+        <DraggableInstance instance={instance} isContainer={isContainer}>
+          {content}
+        </DraggableInstance>
+      )
     );
 
     switch (instance.type) {
-      case 'Box':
-        return wrapWithDraggable(
+      case 'Box': {
+        const content = (
+          <Box {...commonProps}>
+            {instance.children.map((child) => renderInstance(child))}
+          </Box>
+        );
+        return isPreviewMode ? content : (
           <DroppableContainer key={instance.id} instance={instance} {...commonProps}>
-            <Box {...commonProps}>
-              {instance.children.map((child) => renderInstance(child))}
-            </Box>
+            {content}
           </DroppableContainer>
         );
-      case 'Container':
-        return wrapWithDraggable(
+      }
+      case 'Container': {
+        const content = (
+          <Container {...commonProps}>
+            {instance.children.map((child) => renderInstance(child))}
+          </Container>
+        );
+        return isPreviewMode ? content : (
           <DroppableContainer key={instance.id} instance={instance} {...commonProps}>
-            <Container {...commonProps}>
-              {instance.children.map((child) => renderInstance(child))}
-            </Container>
+            {content}
           </DroppableContainer>
         );
-      case 'Section':
-        return wrapWithDraggable(
+      }
+      case 'Section': {
+        const content = (
+          <Section {...commonProps}>
+            {instance.children.map((child) => renderInstance(child))}
+          </Section>
+        );
+        return isPreviewMode ? content : (
           <DroppableContainer key={instance.id} instance={instance} {...commonProps}>
-            <Section {...commonProps}>
-              {instance.children.map((child) => renderInstance(child))}
-            </Section>
+            {content}
           </DroppableContainer>
         );
+      }
       case 'Text':
         return wrapWithDraggable(<Text key={instance.id} {...commonProps} />);
       case 'Heading':
@@ -236,18 +253,14 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
         ))}
       </div>
       
-      {/* Hover Overlay */}
-      {hoveredElement && (
+      {/* Hover/Selection Overlays and Context Menu disabled in Preview */}
+      {!isPreviewMode && hoveredElement && (
         <HoverOverlay element={hoveredElement} />
       )}
-      
-      {/* Selection Overlay */}
-      {selectedElement && selectedInstance && (
+      {!isPreviewMode && selectedElement && selectedInstance && (
         <SelectionOverlay instance={selectedInstance} element={selectedElement} />
       )}
-      
-      {/* Context Menu */}
-      {contextMenu && (
+      {!isPreviewMode && contextMenu && (
         <ContextMenu
           x={contextMenu.x}
           y={contextMenu.y}
