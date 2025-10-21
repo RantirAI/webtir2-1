@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { EditableText } from '../components/EditableText';
 import { useBuilderStore } from '../store/useBuilderStore';
 import { Menu, X } from 'lucide-react';
@@ -35,7 +35,18 @@ export const NavigationPrimitive: React.FC<NavigationPrimitiveProps> = ({
   style = {},
 }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMobileView, setIsMobileView] = useState(false);
   const { updateInstance } = useBuilderStore();
+
+  useEffect(() => {
+    const checkViewport = () => {
+      setIsMobileView(window.innerWidth < 768);
+    };
+    
+    checkViewport();
+    window.addEventListener('resize', checkViewport);
+    return () => window.removeEventListener('resize', checkViewport);
+  }, []);
 
   const handleLogoChange = (newValue: string) => {
     updateInstance(instanceId, {
@@ -142,54 +153,60 @@ export const NavigationPrimitive: React.FC<NavigationPrimitiveProps> = ({
         </div>
 
         {/* Desktop Menu */}
-        <div className="hidden md:flex items-center gap-8">
-          {menuItems.map((item) => (
-            <EditableText
-              key={item.id}
-              value={item.text}
-              onChange={(newValue) => handleMenuItemChange(item.id, newValue)}
-              as="a"
-              className="hover:opacity-70 transition-opacity cursor-pointer"
-              isSelected={isSelected}
-            />
-          ))}
-        </div>
+        {!isMobileView && (
+          <div className="flex items-center gap-8">
+            {menuItems.map((item) => (
+              <EditableText
+                key={item.id}
+                value={item.text}
+                onChange={(newValue) => handleMenuItemChange(item.id, newValue)}
+                as="a"
+                className="hover:opacity-70 transition-opacity cursor-pointer"
+                isSelected={isSelected}
+              />
+            ))}
+          </div>
+        )}
 
         {/* Mobile Menu Toggle */}
-        <button
-          className="md:hidden flex-shrink-0 p-2 -mr-2"
-          onClick={toggleMobileMenu}
-          aria-expanded={isMobileMenuOpen}
-          aria-controls="mobile-menu"
-          aria-label="Toggle navigation menu"
-        >
-          {hamburgerIcon()}
-        </button>
+        {isMobileView && (
+          <button
+            className="flex-shrink-0 p-2 -mr-2"
+            onClick={toggleMobileMenu}
+            aria-expanded={isMobileMenuOpen}
+            aria-controls="mobile-menu"
+            aria-label="Toggle navigation menu"
+          >
+            {hamburgerIcon()}
+          </button>
+        )}
       </div>
 
       {/* Mobile Menu */}
-      <div
-        id="mobile-menu"
-        className={`md:hidden overflow-hidden transition-all ${getInitialMobileClasses()} ${getMobileAnimationClasses()}`}
-        style={{ 
-          transitionDuration: `${animationDuration}ms`,
-          transitionProperty: 'opacity, transform'
-        }}
-        aria-hidden={!isMobileMenuOpen}
-      >
-        <div className="flex flex-col px-6 py-4 border-t border-border">
-          {menuItems.map((item) => (
-            <EditableText
-              key={item.id}
-              value={item.text}
-              onChange={(newValue) => handleMenuItemChange(item.id, newValue)}
-              as="a"
-              className="py-3 hover:opacity-70 transition-opacity cursor-pointer border-b border-border last:border-b-0"
-              isSelected={isSelected}
-            />
-          ))}
+      {isMobileView && (
+        <div
+          id="mobile-menu"
+          className={`overflow-hidden transition-all ${getInitialMobileClasses()} ${getMobileAnimationClasses()}`}
+          style={{ 
+            transitionDuration: `${animationDuration}ms`,
+            transitionProperty: 'opacity, transform'
+          }}
+          aria-hidden={!isMobileMenuOpen}
+        >
+          <div className="flex flex-col px-6 py-4 border-t border-border">
+            {menuItems.map((item) => (
+              <EditableText
+                key={item.id}
+                value={item.text}
+                onChange={(newValue) => handleMenuItemChange(item.id, newValue)}
+                as="a"
+                className="py-3 hover:opacity-70 transition-opacity cursor-pointer border-b border-border last:border-b-0"
+                isSelected={isSelected}
+              />
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </nav>
   );
 };
