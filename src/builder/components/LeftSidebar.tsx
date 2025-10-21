@@ -63,34 +63,34 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
         className="w-64 h-full border border-border rounded-lg shadow-xl flex flex-col overflow-hidden backdrop-blur-md bg-white/70 dark:bg-zinc-900/70"
       >
         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
-          <TabsList className="w-full grid grid-cols-4 rounded-none border-b bg-transparent h-10 p-1 gap-1">
+          <TabsList className="w-full flex rounded-none border-b bg-transparent h-10 p-1 gap-1 overflow-x-auto overflow-y-hidden scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
             <TabsTrigger 
               value="components" 
-              className="gap-1 text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none flex items-center"
+              className="gap-1.5 text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none flex items-center whitespace-nowrap px-3 flex-shrink-0"
             >
               <Box className="w-3 h-3" />
-              <span className="hidden sm:inline">Components</span>
+              <span>Components</span>
             </TabsTrigger>
             <TabsTrigger 
               value="elements" 
-              className="gap-1 text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none flex items-center"
+              className="gap-1.5 text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none flex items-center whitespace-nowrap px-3 flex-shrink-0"
             >
               <Sparkles className="w-3 h-3" />
-              <span className="hidden sm:inline">Elements</span>
+              <span>Elements</span>
             </TabsTrigger>
             <TabsTrigger 
               value="navigator" 
-              className="gap-1 text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none flex items-center"
+              className="gap-1.5 text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none flex items-center whitespace-nowrap px-3 flex-shrink-0"
             >
               <Layers className="w-3 h-3" />
-              <span className="hidden sm:inline">Layers</span>
+              <span>Layers</span>
             </TabsTrigger>
             <TabsTrigger 
               value="pages" 
-              className="gap-1 text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none flex items-center"
+              className="gap-1.5 text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none flex items-center whitespace-nowrap px-3 flex-shrink-0"
             >
               <FileText className="w-3 h-3" />
-              <span className="hidden sm:inline">Pages</span>
+              <span>Pages</span>
             </TabsTrigger>
           </TabsList>
 
