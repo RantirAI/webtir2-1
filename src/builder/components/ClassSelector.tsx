@@ -24,8 +24,10 @@ export const ClassSelector: React.FC<ClassSelectorProps> = ({
   const [inputValue, setInputValue] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-  const { styleSources, isClassEditable, getClassDependents, setClassDependency, removeClassDependency } = useStyleStore();
-  
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingValue, setEditingValue] = useState('');
+  const { styleSources, isClassEditable, getClassDependents, setClassDependency, removeClassDependency, renameStyleSource } = useStyleStore();
+
   // Get all existing class names for autocomplete
   const allClassNames = Object.values(styleSources)
     .filter(source => source.type === 'local')
@@ -97,6 +99,28 @@ export const ClassSelector: React.FC<ClassSelectorProps> = ({
     onRemoveClass(classId);
   };
 
+  // Inline rename helpers
+  const startRename = (id: string, currentName: string) => {
+    setEditingId(id);
+    setEditingValue(currentName);
+  };
+
+  const commitRename = () => {
+    if (!editingId) return;
+    const original = editingValue.trim();
+    const safeBase = original.toLowerCase().replace(/[^a-z0-9-_]/g, '-');
+    if (!safeBase) { setEditingId(null); return; }
+    // Ensure uniqueness
+    let candidate = safeBase;
+    const existingNames = Object.values(styleSources).map(s => s.name);
+    let counter = 2;
+    while (existingNames.includes(candidate) && styleSources[editingId]?.name !== candidate) {
+      candidate = `${safeBase}-${counter++}`;
+    }
+    renameStyleSource(editingId, candidate);
+    setEditingId(null);
+  };
+
   useEffect(() => {
     // Show dropdown when typing
     if (inputValue.length > 0) {
@@ -139,68 +163,88 @@ export const ClassSelector: React.FC<ClassSelectorProps> = ({
                 const isLastClass = index === selectedClasses.length - 1;
                 
                 return (
-                  <Tooltip key={cls.id}>
-                    <TooltipTrigger asChild>
-                      <div
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onClassClick(cls.id, index);
-                        }}
-                        className={`
-                          inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-mono cursor-pointer
-                          transition-all relative
-                          ${isPrimary 
-                            ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-300 dark:border-blue-700' 
-                            : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 border border-yellow-300 dark:border-yellow-700'
-                          }
-                          ${isActive ? 'ring-2 ring-offset-1 ring-primary' : ''}
-                          ${!editable ? 'opacity-60' : 'hover:opacity-80'}
-                        `}
-                      >
-                        {!editable && (
-                          <Lock className="w-3 h-3 mr-0.5 text-muted-foreground" />
-                        )}
-                        <span className="select-none">.{cls.name}</span>
-                        {isPrimary && (
-                          <span className="text-[9px] opacity-60 font-sans">CLASS {index + 1}</span>
-                        )}
-                        {!isPrimary && (
-                          <span className="text-[9px] opacity-60 font-sans">CLASS {index + 1}</span>
-                        )}
-                        {isLastClass && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleRemoveClass(cls.id, index);
-                            }}
-                            className="ml-0.5 hover:bg-black/10 dark:hover:bg-white/10 rounded p-0.5"
-                            disabled={!editable}
-                          >
-                            <X className="w-3 h-3" />
-                          </button>
-                        )}
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom" className="text-xs">
-                      {editable ? (
-                        <div>
-                          <div className="font-semibold">Class {index + 1}: Editable</div>
-                          {index > 0 && <div className="text-muted-foreground">Inherits from Class {index}</div>}
-                          {isLastClass && <div className="text-muted-foreground">Click X to remove</div>}
+                    <Tooltip key={cls.id}>
+                      <TooltipTrigger asChild>
+                        <div
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onClassClick(cls.id, index);
+                          }}
+                          onDoubleClick={(e) => {
+                            e.stopPropagation();
+                            const currentName = styleSources[cls.id]?.name || cls.name;
+                            startRename(cls.id, currentName);
+                          }}
+                          className={`
+                            inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-mono cursor-pointer
+                            transition-all relative
+                            ${isPrimary 
+                              ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-300 dark:border-blue-700' 
+                              : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 border border-yellow-300 dark:border-yellow-700'
+                            }
+                            ${isActive ? 'ring-2 ring-offset-1 ring-primary' : ''}
+                            ${!editable ? 'opacity-60' : 'hover:opacity-80'}
+                          `}
+                        >
+                          {!editable && (
+                            <Lock className="w-3 h-3 mr-0.5 text-muted-foreground" />
+                          )}
+                          {editingId === cls.id ? (
+                            <input
+                              value={editingValue}
+                              onChange={(e) => setEditingValue(e.target.value)}
+                              onBlur={commitRename}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') commitRename();
+                                if (e.key === 'Escape') { setEditingId(null); }
+                              }}
+                              autoFocus
+                              className="bg-transparent outline-none text-xs font-mono px-0 py-0 m-0"
+                              style={{ minWidth: '40px' }}
+                            />
+                          ) : (
+                            <span className="select-none">.{cls.name}</span>
+                          )}
+                          {isPrimary && (
+                            <span className="text-[9px] opacity-60 font-sans">CLASS {index + 1}</span>
+                          )}
+                          {!isPrimary && (
+                            <span className="text-[9px] opacity-60 font-sans">CLASS {index + 1}</span>
+                          )}
+                          {isLastClass && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleRemoveClass(cls.id, index);
+                              }}
+                              className="ml-0.5 hover:bg-black/10 dark:hover:bg-white/10 rounded p-0.5"
+                              disabled={!editable}
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          )}
                         </div>
-                      ) : (
-                        <div>
-                          <div className="font-semibold">Class {index + 1}: Read-Only</div>
-                          <div className="text-muted-foreground">
-                            Protected by {dependents.length} dependent class{dependents.length > 1 ? 'es' : ''}
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" className="text-xs">
+                        {editable ? (
+                          <div>
+                            <div className="font-semibold">Class {index + 1}: Editable</div>
+                            {index > 0 && <div className="text-muted-foreground">Inherits from Class {index}</div>}
+                            {isLastClass && <div className="text-muted-foreground">Click X to remove</div>}
                           </div>
-                          <div className="text-muted-foreground text-[10px] mt-1">
-                            Remove Class {index + 2} to edit this class
+                        ) : (
+                          <div>
+                            <div className="font-semibold">Class {index + 1}: Read-Only</div>
+                            <div className="text-muted-foreground">
+                              Protected by {dependents.length} dependent class{dependents.length > 1 ? 'es' : ''}
+                            </div>
+                            <div className="text-muted-foreground text-[10px] mt-1">
+                              Remove Class {index + 2} to edit this class
+                            </div>
                           </div>
-                        </div>
-                      )}
-                    </TooltipContent>
-                  </Tooltip>
+                        )}
+                      </TooltipContent>
+                    </Tooltip>
                 );
               })}
               

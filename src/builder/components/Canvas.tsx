@@ -327,7 +327,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
         setNodeRef(node);
         onCanvasRef?.(node);
       }}
-      className="absolute inset-0 overflow-hidden bg-[#e5e7eb] dark:bg-zinc-800"
+      className="absolute inset-0 overflow-hidden bg-[#e5e7eb] dark:bg-zinc-800 builder-canvas"
       style={{
         backgroundImage: `radial-gradient(circle, #9ca3af 1px, transparent 1px)`,
         backgroundSize: '20px 20px',
@@ -350,6 +350,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
         {pages.map((page, index) => (
           <div 
             key={page}
+            className="builder-page"
             style={{ 
               backgroundColor: '#ffffff',
               color: '#000000',
