@@ -422,7 +422,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
                 style={{ pointerEvents: 'none' }}
               >
                 <span>{pageNames[page] || page}</span>
-                <span className="opacity-70">|</span>
+                <span className="opacity-70">•</span>
                 <span>{displayWidth}px</span>
               </div>
             )}
