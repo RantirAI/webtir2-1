@@ -7,8 +7,10 @@ import { generateId } from '../utils/instance';
 import * as Icons from 'lucide-react';
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
-import { Search } from 'lucide-react';
+import { Search, ChevronDown } from 'lucide-react';
 import { useDebounce } from '@/hooks/useDebounce';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 const DraggableComponent: React.FC<{ type: string; label: string; icon: string }> = ({ type, label, icon }) => {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
@@ -37,11 +39,7 @@ const DraggableComponent: React.FC<{ type: string; label: string; icon: string }
   );
 };
 
-interface ComponentsPanelProps {
-  mode?: 'basic' | 'advanced';
-}
-
-export const ComponentsPanel: React.FC<ComponentsPanelProps> = ({ mode = 'basic' }) => {
+export const ComponentsPanel: React.FC = () => {
   const addInstance = useBuilderStore((state) => state.addInstance);
   const selectedInstanceId = useBuilderStore((state) => state.selectedInstanceId);
 
@@ -84,6 +82,21 @@ export const ComponentsPanel: React.FC<ComponentsPanelProps> = ({ mode = 'basic'
 
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearch = useDebounce(searchQuery, 300);
+  const [activeSubTab, setActiveSubTab] = useState('elements');
+  const [openCategories, setOpenCategories] = useState<Record<string, boolean>>({
+    'Layouts': true,
+    'Typography': true,
+    'Media': true,
+    'Forms': true,
+    'Data': true,
+    'Navigation': true,
+    'Charts': true,
+    'Presentation': true,
+    'Advanced Inputs': true,
+    'Containers': true,
+    'Interactive': true,
+    'Localization': true,
+  });
 
   // Basic components (foundational UI)
   const basicCategories = [
@@ -141,14 +154,12 @@ export const ComponentsPanel: React.FC<ComponentsPanelProps> = ({ mode = 'basic'
     },
   ];
 
-  const categories = mode === 'basic' ? basicCategories : advancedCategories;
-
   // Filter categories based on search
-  const filteredCategories = useMemo(() => {
-    if (!debouncedSearch.trim()) return categories;
+  const filteredBasicCategories = useMemo(() => {
+    if (!debouncedSearch.trim()) return basicCategories;
 
     const searchLower = debouncedSearch.toLowerCase();
-    return categories
+    return basicCategories
       .map(category => ({
         ...category,
         types: category.types.filter(type => {
@@ -159,63 +170,117 @@ export const ComponentsPanel: React.FC<ComponentsPanelProps> = ({ mode = 'basic'
       .filter(category => category.types.length > 0);
   }, [debouncedSearch]);
 
+  const filteredAdvancedCategories = useMemo(() => {
+    if (!debouncedSearch.trim()) return advancedCategories;
+
+    const searchLower = debouncedSearch.toLowerCase();
+    return advancedCategories
+      .map(category => ({
+        ...category,
+        types: category.types.filter(type => {
+          const component = componentRegistry[type];
+          return component?.label.toLowerCase().includes(searchLower);
+        }),
+      }))
+      .filter(category => category.types.length > 0);
+  }, [debouncedSearch]);
+
+  const toggleCategory = (categoryName: string) => {
+    setOpenCategories(prev => ({
+      ...prev,
+      [categoryName]: !prev[categoryName]
+    }));
+  };
+
+  const renderCategorySection = (categories: typeof basicCategories) => (
+    <div className="space-y-3">
+      {categories.map((category) => {
+        const components = category.types
+          .map(type => componentRegistry[type])
+          .filter(Boolean);
+        
+        if (components.length === 0) return null;
+        
+        return (
+          <Collapsible
+            key={category.name}
+            open={openCategories[category.name]}
+            onOpenChange={() => toggleCategory(category.name)}
+            className="backdrop-blur-md bg-white/40 dark:bg-zinc-900/40 rounded-lg border border-border/50 overflow-hidden animate-fade-in"
+          >
+            <CollapsibleTrigger className="w-full flex items-center justify-between p-3 hover:bg-white/60 dark:hover:bg-zinc-900/60 transition-colors">
+              <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
+                {category.name}
+              </h3>
+              <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${openCategories[category.name] ? 'rotate-180' : ''}`} />
+            </CollapsibleTrigger>
+            <CollapsibleContent className="p-3 pt-0">
+              <div className="grid grid-cols-3 gap-2">
+                {components.map((component) => (
+                  <div 
+                    key={component.type} 
+                    onDoubleClick={() => handleAddComponent(component.type)}
+                    className="animate-scale-in"
+                  >
+                    <DraggableComponent type={component.type} label={component.label} icon={component.icon} />
+                  </div>
+                ))}
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
+        );
+      })}
+    </div>
+  );
+
   return (
     <div className="w-full h-full flex flex-col">
       <div className="p-4 pb-2 shrink-0">
         {/* Search input */}
-        <div className="relative">
+        <div className="relative mb-3">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
           <input
             type="text"
-            placeholder={mode === 'basic' ? 'Search components...' : 'Search elements...'}
+            placeholder="Search components..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full h-9 pl-9 pr-3 text-sm rounded-lg border border-border bg-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
           />
         </div>
+
+        {/* Subtabs */}
+        <Tabs value={activeSubTab} onValueChange={setActiveSubTab}>
+          <TabsList className="w-full grid grid-cols-2 h-8 bg-muted/30">
+            <TabsTrigger value="elements" className="text-xs">Elements</TabsTrigger>
+            <TabsTrigger value="blocks" className="text-xs">Blocks</TabsTrigger>
+          </TabsList>
+        </Tabs>
       </div>
 
       <div className="flex-1 overflow-auto px-4 pb-6" style={{ maxHeight: 'calc(100vh - 200px)' }}>
-        <div className="space-y-5">
-          {/* Categories */}
-          {filteredCategories.map((category) => {
-            const components = category.types
-              .map(type => componentRegistry[type])
-              .filter(Boolean);
-            
-            if (components.length === 0) return null;
-            
-            return (
-              <div key={category.name} className="space-y-2.5 animate-fade-in">
-                <div className="flex items-center gap-2 sticky top-0 bg-background/95 backdrop-blur-sm py-1 -mx-4 px-4 z-10">
-                  <h3 className="text-[11px] font-bold text-foreground uppercase tracking-wider">
-                    {category.name}
-                  </h3>
-                  <div className="flex-1 h-px bg-border/50"></div>
-                </div>
-                <div className="grid grid-cols-3 gap-2">
-                  {components.map((component) => (
-                    <div 
-                      key={component.type} 
-                      onDoubleClick={() => handleAddComponent(component.type)}
-                      className="animate-scale-in"
-                    >
-                      <DraggableComponent type={component.type} label={component.label} icon={component.icon} />
-                    </div>
-                  ))}
-                </div>
+        {activeSubTab === 'elements' ? (
+          <>
+            {renderCategorySection(filteredBasicCategories)}
+            {filteredBasicCategories.length === 0 && (
+              <div className="flex flex-col items-center justify-center py-12 text-center space-y-2">
+                <Search className="w-8 h-8 text-muted-foreground/50" />
+                <p className="text-sm text-muted-foreground">No elements found</p>
+                <p className="text-xs text-muted-foreground/70">Try a different search term</p>
               </div>
-            );
-          })}
-
-          {filteredCategories.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-12 text-center space-y-2">
-              <Search className="w-8 h-8 text-muted-foreground/50" />
-              <p className="text-sm text-muted-foreground">No {mode === 'basic' ? 'components' : 'elements'} found</p>
-              <p className="text-xs text-muted-foreground/70">Try a different search term</p>
-            </div>
-          )}
-        </div>
+            )}
+          </>
+        ) : (
+          <>
+            {renderCategorySection(filteredAdvancedCategories)}
+            {filteredAdvancedCategories.length === 0 && (
+              <div className="flex flex-col items-center justify-center py-12 text-center space-y-2">
+                <Search className="w-8 h-8 text-muted-foreground/50" />
+                <p className="text-sm text-muted-foreground">No blocks found</p>
+                <p className="text-xs text-muted-foreground/70">Try a different search term</p>
+              </div>
+            )}
+          </>
+        )}
       </div>
     </div>
   );

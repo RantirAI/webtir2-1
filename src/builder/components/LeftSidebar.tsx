@@ -60,34 +60,27 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
   return (
     <>
       <div 
-        className="w-64 h-full border border-border rounded-lg shadow-xl flex flex-col overflow-hidden backdrop-blur-md bg-white/70 dark:bg-zinc-900/70"
+        className="w-64 h-full border border-border rounded-lg shadow-xl flex flex-col overflow-hidden bg-background"
       >
         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
           <TabsList className="w-full flex rounded-none border-b bg-transparent h-10 pl-2 pr-2 py-1 gap-1 overflow-x-auto overflow-y-hidden scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent justify-start">
             <TabsTrigger 
               value="components" 
-              className="gap-1.5 text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none flex items-center whitespace-nowrap px-3 flex-shrink-0"
+              className="gap-1.5 text-xs h-full rounded-md data-[state=active]:bg-accent data-[state=active]:shadow-none flex items-center whitespace-nowrap px-3 flex-shrink-0"
             >
               <Box className="w-3 h-3" />
               <span>Components</span>
             </TabsTrigger>
             <TabsTrigger 
-              value="elements" 
-              className="gap-1.5 text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none flex items-center whitespace-nowrap px-3 flex-shrink-0"
-            >
-              <Sparkles className="w-3 h-3" />
-              <span>Elements</span>
-            </TabsTrigger>
-            <TabsTrigger 
               value="navigator" 
-              className="gap-1.5 text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none flex items-center whitespace-nowrap px-3 flex-shrink-0"
+              className="gap-1.5 text-xs h-full rounded-md data-[state=active]:bg-accent data-[state=active]:shadow-none flex items-center whitespace-nowrap px-3 flex-shrink-0"
             >
               <Layers className="w-3 h-3" />
               <span>Layers</span>
             </TabsTrigger>
             <TabsTrigger 
               value="pages" 
-              className="gap-1.5 text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none flex items-center whitespace-nowrap px-3 flex-shrink-0"
+              className="gap-1.5 text-xs h-full rounded-md data-[state=active]:bg-accent data-[state=active]:shadow-none flex items-center whitespace-nowrap px-3 flex-shrink-0"
             >
               <FileText className="w-3 h-3" />
               <span>Pages</span>
@@ -95,11 +88,7 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
           </TabsList>
 
           <TabsContent value="components" className="flex-1 m-0">
-            <ComponentsPanel mode="basic" />
-          </TabsContent>
-
-          <TabsContent value="elements" className="flex-1 m-0">
-            <ComponentsPanel mode="advanced" />
+            <ComponentsPanel />
           </TabsContent>
 
           <TabsContent value="navigator" className="flex-1 m-0">
@@ -111,8 +100,8 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
               {pages.map((page) => (
                 <div
                   key={page}
-                  className={`flex items-center justify-between p-2 rounded cursor-pointer hover:bg-[#F5F5F5] dark:hover:bg-zinc-800 ${
-                    currentPage === page ? 'bg-[#F5F5F5] dark:bg-zinc-800' : ''
+                  className={`flex items-center justify-between p-2 rounded cursor-pointer hover:bg-accent ${
+                    currentPage === page ? 'bg-accent' : ''
                   }`}
                   onClick={() => onPageChange(page)}
                 >
