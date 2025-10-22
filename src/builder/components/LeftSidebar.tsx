@@ -57,7 +57,7 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
   };
 
   return (
-    <div className="relative h-full">
+    <div className="relative h-full w-fit overflow-visible">
       {/* Overlay */}
       {pageSettingsOpen && (
         <div 
