@@ -65,12 +65,19 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; instance: ComponentInstance } | null>(null);
   const [headingSettings, setHeadingSettings] = useState<{ isOpen: boolean; position: { x: number; y: number } } | null>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
+  const [customWidth, setCustomWidth] = useState<number | null>(null);
+  const [isResizing, setIsResizing] = useState<'left' | 'right' | null>(null);
+  const [resizeStart, setResizeStart] = useState({ x: 0, width: 0 });
 
   const { setNodeRef } = useDroppable({
     id: 'canvas-drop-zone',
   });
 
-  const currentBreakpointWidth = isPreviewMode ? '100%' : (breakpoints.find(bp => bp.id === currentBreakpoint)?.width || 960);
+  const currentBreakpointWidth = isPreviewMode 
+    ? '100%' 
+    : (customWidth || breakpoints.find(bp => bp.id === currentBreakpoint)?.width || 960);
+  
+  const displayWidth = typeof currentBreakpointWidth === 'number' ? currentBreakpointWidth : 960;
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if (isPanMode) {
@@ -90,6 +97,23 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
 
   const handleMouseUp = () => {
     setIsPanning(false);
+    setIsResizing(null);
+  };
+
+  const handleResizeStart = (e: React.MouseEvent, side: 'left' | 'right') => {
+    if (isPreviewMode) return;
+    e.preventDefault();
+    e.stopPropagation();
+    setIsResizing(side);
+    const currentWidth = customWidth || (typeof currentBreakpointWidth === 'number' ? currentBreakpointWidth : 960);
+    setResizeStart({ x: e.clientX, width: currentWidth });
+  };
+
+  const handleResizeMove = (e: React.MouseEvent) => {
+    if (!isResizing) return;
+    const delta = isResizing === 'right' ? (e.clientX - resizeStart.x) : (resizeStart.x - e.clientX);
+    const newWidth = Math.max(320, Math.min(1920, resizeStart.width + delta * 2));
+    setCustomWidth(newWidth);
   };
 
   const handleContextMenu = (e: React.MouseEvent, instance: ComponentInstance) => {
@@ -359,7 +383,10 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
         cursor: isPanMode ? (isPanning ? 'grabbing' : 'grab') : 'default',
       }}
       onMouseDown={handleMouseDown}
-      onMouseMove={handleMouseMove}
+      onMouseMove={(e) => {
+        handleMouseMove(e);
+        handleResizeMove(e);
+      }}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
     >
@@ -382,42 +409,46 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
               width: isPreviewMode ? '100%' : `${currentBreakpointWidth}px`,
               minHeight: isPreviewMode ? '100vh' : '1200px',
               boxShadow: isPreviewMode ? 'none' : '0 2px 8px rgba(0,0,0,0.1)',
-              transition: 'width 0.3s ease',
+              transition: isResizing ? 'none' : 'width 0.3s ease',
               position: 'relative',
-              resize: isPreviewMode ? 'none' : 'horizontal',
               overflow: 'auto',
               maxWidth: '100%',
             }}
           >
-            {/* Page Name Label */}
+            {/* Breakpoint Width Indicator */}
             {!isPreviewMode && (
               <div 
-                className="absolute -top-8 left-0 flex items-center gap-2"
-                onClick={(e) => e.stopPropagation()}
+                className="absolute -top-10 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-blue-500 text-white px-3 py-1.5 rounded-md shadow-lg text-xs font-semibold z-10"
+                style={{ pointerEvents: 'none' }}
               >
-              {editingPageId === page ? (
-                <input
-                  type="text"
-                  value={pageNames[page] || page}
-                  onChange={(e) => onPageNameChange(page, e.target.value)}
-                  onBlur={() => setEditingPageId(null)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') setEditingPageId(null);
-                  }}
-                  autoFocus
-                  className="text-xs px-2 py-1 rounded bg-white border border-border"
-                  style={{ minWidth: '80px' }}
-                />
-              ) : (
-                <div
-                  onClick={() => setEditingPageId(page)}
-                  className="text-xs px-2 py-1 rounded bg-white border border-border cursor-pointer hover:bg-[#F5F5F5]"
-                >
-                  {pageNames[page] || page}
-                </div>
-              )}
+                <span>{pageNames[page] || page}</span>
+                <span className="opacity-70">|</span>
+                <span>{displayWidth}px</span>
               </div>
             )}
+
+            {/* Left Resize Handle */}
+            {!isPreviewMode && (
+              <div
+                className="absolute left-0 top-0 bottom-0 w-1 cursor-ew-resize hover:bg-blue-500 transition-colors z-20"
+                style={{
+                  backgroundColor: isResizing === 'left' ? '#3b82f6' : 'transparent',
+                }}
+                onMouseDown={(e) => handleResizeStart(e, 'left')}
+              />
+            )}
+
+            {/* Right Resize Handle */}
+            {!isPreviewMode && (
+              <div
+                className="absolute right-0 top-0 bottom-0 w-1 cursor-ew-resize hover:bg-blue-500 transition-colors z-20"
+                style={{
+                  backgroundColor: isResizing === 'right' ? '#3b82f6' : 'transparent',
+                }}
+                onMouseDown={(e) => handleResizeStart(e, 'right')}
+              />
+            )}
+
             {index === 0 && rootInstance && renderInstance(rootInstance)}
           </div>
         ))}
