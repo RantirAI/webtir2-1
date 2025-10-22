@@ -31,10 +31,10 @@ const DraggableComponent: React.FC<{ type: string; label: string; icon: string }
       style={style}
       {...listeners}
       {...attributes}
-      className="group w-full aspect-square flex flex-col items-center justify-center gap-1.5 p-2.5 rounded-lg border border-border bg-card hover:bg-accent hover:border-primary hover:shadow-lg transition-all duration-200 text-center cursor-grab active:cursor-grabbing active:scale-95 hover:scale-[1.03]"
+      className="group w-full h-20 flex flex-col items-center justify-center gap-1.5 p-2.5 rounded-lg border border-border bg-card hover:bg-accent hover:border-primary hover:shadow-lg transition-all duration-200 text-center cursor-grab active:cursor-grabbing active:scale-95 hover:scale-[1.03]"
     >
       {IconComponent && <IconComponent className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />}
-      <span className="text-[9px] leading-tight font-medium text-foreground">{label}</span>
+      <span className="text-[9px] leading-tight font-medium text-foreground line-clamp-2">{label}</span>
     </button>
   );
 };
@@ -209,7 +209,7 @@ export const ComponentsPanel: React.FC = () => {
             className="animate-fade-in"
           >
             <CollapsibleTrigger className="w-full flex items-center justify-between py-2 transition-colors">
-              <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
+              <h3 className="text-[10px] font-bold text-foreground uppercase tracking-[0.5px]">
                 {category.name}
               </h3>
               <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${openCategories[category.name] ? 'rotate-180' : ''}`} />
