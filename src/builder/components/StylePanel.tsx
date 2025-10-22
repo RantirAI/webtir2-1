@@ -1066,7 +1066,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
           {selectedInstance.type === 'Heading' && (
             <div>
               <label className="Label" style={{ fontSize: '10px', marginBottom: '4px', display: 'block' }}>Tag</label>
-              <div style={{ display: 'flex', gap: '2px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '2px' }}>
                 {['1', '2', '3', '4', '5', '6'].map((num) => {
                   const tag = `h${num}`;
                   const isActive = (selectedInstance.props.level || 'h1') === tag;
@@ -1078,7 +1078,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
                           props: { ...selectedInstance.props, level: tag },
                         });
                       }}
-                      className={`flex-1 h-7 flex items-center justify-center rounded border text-xs font-medium transition-colors ${
+                      className={`h-7 flex items-center justify-center rounded border text-xs font-medium transition-colors ${
                         isActive
                           ? 'bg-accent border-primary text-foreground'
                           : 'bg-[#F5F5F5] dark:bg-[#09090b] border-input text-muted-foreground hover:bg-accent hover:text-foreground'
