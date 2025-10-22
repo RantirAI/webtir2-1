@@ -288,7 +288,7 @@ const Builder: React.FC = () => {
 
         {/* Floating Left Sidebar */}
         {!isPreviewMode && (
-          <div className="absolute left-4 top-4 bottom-4 z-10 overflow-visible">
+          <div className="absolute left-4 top-4 bottom-4 z-10">
             <LeftSidebar
               pages={pages}
               currentPage={currentPage}
