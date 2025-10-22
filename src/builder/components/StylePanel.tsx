@@ -3,8 +3,9 @@ import { useBuilderStore } from '../store/useBuilderStore';
 import { useStyleStore } from '../store/useStyleStore';
 import { PseudoState } from '../store/types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Paintbrush, Plus, Square, Type, Heading as HeadingIcon, MousePointerClick, Image as ImageIcon, Link as LinkIcon, X, ChevronDown, Settings, Zap, Database, RotateCcw, Info, AlignLeft, AlignCenter, AlignRight, AlignJustify } from 'lucide-react';
+import { Paintbrush, Plus, Square, Type, Heading as HeadingIcon, MousePointerClick, Image as ImageIcon, Link as LinkIcon, X, ChevronDown, Settings, Zap, Database, RotateCcw, Info, AlignLeft, AlignCenter, AlignRight, AlignJustify, ArrowRight, ArrowDown, ArrowLeft, ArrowUp } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Input } from '@/components/ui/input';
 import { componentRegistry } from '../primitives/registry';
 import { UnitInput } from './UnitInput';
@@ -547,108 +548,140 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
 
       {/* Layout */}
       <AccordionSection title="Layout" section="layout" properties={['display', 'flexDirection', 'justifyContent', 'alignItems', 'flexWrap', 'gap', 'gridTemplateColumns', 'gridTemplateRows', 'gridAutoFlow', 'placeItems', 'placeContent']}>
-        <div className="Col">
-          <div className="Row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-            <label className="Label" style={{ fontWeight: 600 }}>Display</label>
-            <select
-              className="Select"
-              value={computedStyles.display || 'block'}
-              onChange={(e) => updateStyle('display', e.target.value)}
-              style={{ flex: 1, marginLeft: 'var(--space-2)' }}
+        <div className="Col" style={{ gap: 'var(--space-2)' }}>
+          {/* Display Type Toggle Group */}
+          <div className="Col" style={{ gap: 'var(--space-1)' }}>
+            <label className="Label" style={{ fontWeight: 600, fontSize: '10px' }}>Display</label>
+            <ToggleGroup 
+              type="single" 
+              value={computedStyles.display || 'flex'} 
+              onValueChange={(val) => val && updateStyle('display', val)}
+              className="grid grid-cols-3 gap-1"
             >
-              <option value="block">Block</option>
-              <option value="flex">Flex</option>
-              <option value="grid">Grid</option>
-              <option value="inline">Inline</option>
-              <option value="inline-block">Inline Block</option>
-              <option value="none">None</option>
-            </select>
+              <ToggleGroupItem value="block" className="text-[10px] px-2 py-1 h-6">Block</ToggleGroupItem>
+              <ToggleGroupItem value="flex" className="text-[10px] px-2 py-1 h-6">Flex</ToggleGroupItem>
+              <ToggleGroupItem value="grid" className="text-[10px] px-2 py-1 h-6">Grid</ToggleGroupItem>
+              <ToggleGroupItem value="inline" className="text-[10px] px-2 py-1 h-6">Inline</ToggleGroupItem>
+              <ToggleGroupItem value="inline-block" className="text-[10px] px-2 py-1 h-6">I-Block</ToggleGroupItem>
+              <ToggleGroupItem value="none" className="text-[10px] px-2 py-1 h-6">None</ToggleGroupItem>
+            </ToggleGroup>
           </div>
 
           {isFlexDisplay && (
-            <div className="FlexControls" style={{ marginTop: 'var(--space-3)' }}>
-              <div className="AlignGrid">
-                {Array.from({ length: 9 }).map((_, i) => {
-                  const row = Math.floor(i / 3);
-                  const col = i % 3;
-                  const isActive = 
-                    (computedStyles.justifyContent === 'flex-start' && col === 0) ||
-                    (computedStyles.justifyContent === 'center' && col === 1) ||
-                    (computedStyles.justifyContent === 'flex-end' && col === 2);
-                  
-                  return (
-                    <button 
-                      key={i} 
-                      className="AlignBtn"
-                      data-state={row === 1 && isActive ? "on" : "off"}
-                      onClick={() => {
-                        if (col === 0) updateStyle('justifyContent', 'flex-start');
-                        if (col === 1) updateStyle('justifyContent', 'center');
-                        if (col === 2) updateStyle('justifyContent', 'flex-end');
-                      }}
-                    />
-                  );
-                })}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', marginTop: 'var(--space-1)' }}>
+              {/* Direction Icons */}
+              <div className="Col" style={{ gap: 'var(--space-1)' }}>
+                <label className="Label" style={{ fontSize: '10px' }}>Direction</label>
+                <ToggleGroup 
+                  type="single" 
+                  value={computedStyles.flexDirection || 'row'} 
+                  onValueChange={(val) => val && updateStyle('flexDirection', val)}
+                  className="grid grid-cols-4 gap-1"
+                >
+                  <ToggleGroupItem value="row" className="px-2 py-1 h-7">
+                    <ArrowRight className="w-3 h-3" />
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="column" className="px-2 py-1 h-7">
+                    <ArrowDown className="w-3 h-3" />
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="row-reverse" className="px-2 py-1 h-7">
+                    <ArrowLeft className="w-3 h-3" />
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="column-reverse" className="px-2 py-1 h-7">
+                    <ArrowUp className="w-3 h-3" />
+                  </ToggleGroupItem>
+                </ToggleGroup>
               </div>
 
-              <div className="FlexControlsColumn">
-                <div className="Col">
-                  <label className="Label">Direction</label>
-                  <select
-                    className="Select"
-                    value={computedStyles.flexDirection || 'row'}
-                    onChange={(e) => updateStyle('flexDirection', e.target.value)}
-                  >
-                    <option value="row">row</option>
-                    <option value="column">column</option>
-                  </select>
+              {/* Alignment Grid - Enhanced with visual dots */}
+              <div className="Col" style={{ gap: 'var(--space-1)' }}>
+                <label className="Label" style={{ fontSize: '10px' }}>Align</label>
+                <div className="AlignGrid">
+                  {Array.from({ length: 9 }).map((_, i) => {
+                    const row = Math.floor(i / 3);
+                    const col = i % 3;
+                    
+                    // Determine alignment states
+                    const justifyMap = ['flex-start', 'center', 'flex-end'];
+                    const alignMap = ['flex-start', 'center', 'flex-end'];
+                    
+                    const isJustifyActive = computedStyles.justifyContent === justifyMap[col] || 
+                      (col === 0 && !computedStyles.justifyContent);
+                    const isAlignActive = computedStyles.alignItems === alignMap[row] ||
+                      (row === 0 && !computedStyles.alignItems);
+                    
+                    const isActive = isJustifyActive && isAlignActive;
+                    
+                    return (
+                      <button 
+                        key={i} 
+                        className="AlignBtn"
+                        data-state={isActive ? "on" : "off"}
+                        onClick={() => {
+                          updateStyle('justifyContent', justifyMap[col]);
+                          updateStyle('alignItems', alignMap[row]);
+                        }}
+                        onDoubleClick={() => {
+                          // Double click for advanced options
+                          if (col === 1 && row === 1) {
+                            // Center - cycle through space options
+                            const current = computedStyles.justifyContent;
+                            if (current === 'center') updateStyle('justifyContent', 'space-between');
+                            else if (current === 'space-between') updateStyle('justifyContent', 'space-around');
+                            else if (current === 'space-around') updateStyle('justifyContent', 'space-evenly');
+                            else updateStyle('justifyContent', 'center');
+                          }
+                        }}
+                      />
+                    );
+                  })}
                 </div>
+              </div>
 
-                <div className="Col">
-                  <label className="Label">Justify</label>
+              {/* Detailed Controls */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-2)' }}>
+                <div className="Col" style={{ gap: '2px' }}>
+                  <label className="Label" style={{ fontSize: '9px' }}>Justify</label>
                   <select
                     className="Select"
                     value={computedStyles.justifyContent || 'flex-start'}
                     onChange={(e) => updateStyle('justifyContent', e.target.value)}
+                    style={{ fontSize: '9px', padding: '2px 4px', height: '22px' }}
                   >
-                    <option value="flex-start">start</option>
-                    <option value="center">center</option>
-                    <option value="flex-end">end</option>
-                    <option value="space-between">space-between</option>
+                    <option value="flex-start">Start</option>
+                    <option value="center">Center</option>
+                    <option value="flex-end">End</option>
+                    <option value="space-between">Space Between</option>
+                    <option value="space-around">Space Around</option>
+                    <option value="space-evenly">Space Evenly</option>
                   </select>
                 </div>
 
-                <div className="Col">
-                  <label className="Label">Align</label>
+                <div className="Col" style={{ gap: '2px' }}>
+                  <label className="Label" style={{ fontSize: '9px' }}>Align</label>
                   <select
                     className="Select"
                     value={computedStyles.alignItems || 'stretch'}
                     onChange={(e) => updateStyle('alignItems', e.target.value)}
+                    style={{ fontSize: '9px', padding: '2px 4px', height: '22px' }}
                   >
-                    <option value="stretch">stretch</option>
-                    <option value="flex-start">start</option>
-                    <option value="center">center</option>
-                    <option value="flex-end">end</option>
+                    <option value="stretch">Stretch</option>
+                    <option value="flex-start">Start</option>
+                    <option value="center">Center</option>
+                    <option value="flex-end">End</option>
+                    <option value="baseline">Baseline</option>
                   </select>
                 </div>
+              </div>
 
-                <div className="Row" style={{ gap: 'var(--space-2)' }}>
-                  <input
-                    className="Input SpaceInputSmall"
-                    type="text"
-                    value={computedStyles.gap?.replace(/[a-z%]/gi, '') || '0'}
-                    onChange={(e) => updateStyle('gap', e.target.value + 'px')}
-                  />
-                  <span className="Label">PX</span>
-                  <span style={{ fontSize: '18px', color: 'var(--subtle)' }}>🔗</span>
-                  <input
-                    className="Input SpaceInputSmall"
-                    type="text"
-                    value={computedStyles.gap?.replace(/[a-z%]/gi, '') || '0'}
-                    onChange={(e) => updateStyle('gap', e.target.value + 'px')}
-                  />
-                  <span className="Label">PX</span>
-                </div>
+              {/* Gap Control */}
+              <div className="Col" style={{ gap: '2px' }}>
+                <label className="Label" style={{ fontSize: '9px' }}>Gap</label>
+                <UnitInput
+                  value={computedStyles.gap || ''}
+                  onChange={(val) => updateStyle('gap', val)}
+                  placeholder="0px"
+                />
               </div>
             </div>
           )}

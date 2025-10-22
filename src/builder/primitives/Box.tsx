@@ -28,8 +28,7 @@ export const Box: React.FC<BoxProps> = ({
   const isRoot = instance.id === 'root';
 
   // No inline computed styles - use CSS classes only
-
-  // Default styles
+  // Only essential non-layout defaults - let CSS classes control display/flex/grid
   const defaultStyles: React.CSSProperties = {
     width: '100%',
     minWidth: isRoot ? undefined : '100%',
@@ -37,10 +36,6 @@ export const Box: React.FC<BoxProps> = ({
     height: isRoot ? undefined : '100%',
     position: 'relative',
     backgroundColor: isRoot ? '#ffffff' : 'transparent',
-    display: 'flex',
-    flexDirection: isRoot ? 'column' : 'row',
-    flexWrap: 'wrap',
-    alignItems: 'flex-start',
   };
 
   const finalStyles = defaultStyles;
@@ -48,7 +43,7 @@ export const Box: React.FC<BoxProps> = ({
   return (
     <div
       data-instance-id={instance.id}
-      className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
+      className={`builder-box ${(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}`}
       style={finalStyles}
       onClick={isPreviewMode ? undefined : (e) => {
         e.stopPropagation();

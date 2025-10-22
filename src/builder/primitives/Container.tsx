@@ -36,16 +36,11 @@ export const Container: React.FC<ContainerProps> = ({
   }, []);
 
   // No inline computed styles - use CSS classes only
-
-  // Default styles
+  // Only essential non-layout defaults - let CSS classes control display/flex/grid
   const defaultStyles: React.CSSProperties = {
     width: '100%',
     height: '100%',
     minHeight: '100px',
-    display: 'flex',
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    alignItems: 'flex-start',
     outline: isNewlyAdded ? '2px dashed hsl(var(--primary) / 0.5)' : 'none',
     outlineOffset: '-2px',
     transition: 'outline 0.3s ease-out',
@@ -56,7 +51,7 @@ export const Container: React.FC<ContainerProps> = ({
   return (
     <div
       data-instance-id={instance.id}
-      className={`${containerType} ${(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')} ${isNewlyAdded ? 'animate-fade-in' : ''}`}
+      className={`builder-container ${containerType} ${(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')} ${isNewlyAdded ? 'animate-fade-in' : ''}`}
       style={finalStyles}
       onClick={isPreviewMode ? undefined : (e) => {
         e.stopPropagation();

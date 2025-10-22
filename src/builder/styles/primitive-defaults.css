@@ -1,0 +1,16 @@
+/* Default styles for primitive components - lower specificity than user classes */
+
+.builder-box,
+.builder-container,
+.builder-section {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+/* Root-specific styles */
+[data-instance-id="root"] {
+  flex-direction: column !important;
+  align-items: stretch !important;
+}

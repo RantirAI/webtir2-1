@@ -35,15 +35,11 @@ export const Section: React.FC<SectionProps> = ({
   }, []);
 
   // No inline computed styles - use CSS classes only
-
-  // Default styles - use column to allow children to fill height
+  // Only essential non-layout defaults - let CSS classes control display/flex/grid
   const defaultStyles: React.CSSProperties = {
     width: '100%',
     minWidth: '100%',
     flexBasis: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'stretch',
     position: 'relative',
     minHeight: '100px',
     outline: isNewlyAdded ? '2px dashed hsl(var(--primary) / 0.5)' : 'none',
@@ -56,7 +52,7 @@ export const Section: React.FC<SectionProps> = ({
   return (
     <section
       data-instance-id={instance.id}
-      className={`${(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')} ${isNewlyAdded ? 'animate-fade-in' : ''}`}
+      className={`builder-section ${(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')} ${isNewlyAdded ? 'animate-fade-in' : ''}`}
       style={finalStyles}
       onClick={isPreviewMode ? undefined : (e) => {
         e.stopPropagation();
