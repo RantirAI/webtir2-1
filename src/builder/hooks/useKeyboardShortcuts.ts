@@ -51,6 +51,35 @@ export const useKeyboardShortcuts = () => {
         return;
       }
 
+      // Duplicate: Ctrl/Cmd + D
+      if (modifier && e.key === 'd' && !isInput) {
+        e.preventDefault();
+        const { selectedInstanceId, findInstance, addInstance, rootInstance } = useBuilderStore.getState();
+        if (selectedInstanceId && selectedInstanceId !== 'root') {
+          const instance = findInstance(selectedInstanceId);
+          if (instance) {
+            // Find parent
+            const findParent = (root: any, childId: string): any => {
+              if (root.children?.some((c: any) => c.id === childId)) return root;
+              for (const child of root.children || []) {
+                const result = findParent(child, childId);
+                if (result) return result;
+              }
+              return null;
+            };
+            
+            const parent = findParent(rootInstance, selectedInstanceId);
+            if (parent) {
+              const index = parent.children.findIndex((c: any) => c.id === selectedInstanceId);
+              const duplicate = JSON.parse(JSON.stringify(instance));
+              duplicate.id = `${instance.type.toLowerCase()}-${Date.now()}`;
+              addInstance(duplicate, parent.id, index + 1);
+            }
+          }
+        }
+        return;
+      }
+
       // Delete: Delete or Backspace
       if ((e.key === 'Delete' || e.key === 'Backspace') && !isInput) {
         e.preventDefault();
