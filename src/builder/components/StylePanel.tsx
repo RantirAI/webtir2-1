@@ -546,9 +546,9 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
               )}
             </div>
 
-      {/* Layout */}
-      <AccordionSection title="Layout" section="layout" properties={['display', 'flexDirection', 'justifyContent', 'alignItems', 'flexWrap', 'gap', 'gridTemplateColumns', 'gridTemplateRows', 'gridAutoFlow', 'placeItems', 'placeContent']}>
-        <div className="Col" style={{ gap: 'var(--space-2)' }}>
+            {/* Layout */}
+            <AccordionSection title="Layout" section="layout" properties={['display', 'flexDirection', 'justifyContent', 'alignItems', 'flexWrap', 'gap', 'gridTemplateColumns', 'gridTemplateRows', 'gridAutoFlow', 'placeItems', 'placeContent']}>
+              <div className="Col" style={{ gap: 'var(--space-2)' }}>
           {/* Display Type Toggle Group */}
           <div className="Col" style={{ gap: 'var(--space-1)' }}>
             <label className="Label" style={{ fontWeight: 600, fontSize: '10px' }}>Display</label>
@@ -828,10 +828,10 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
             </div>
           )}
         </div>
-      </AccordionSection>
+            </AccordionSection>
 
-      {/* Space */}
-      <AccordionSection title="Space" section="space" properties={['marginTop', 'marginRight', 'marginBottom', 'marginLeft', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft']}>
+            {/* Space */}
+            <AccordionSection title="Space" section="space" properties={['marginTop', 'marginRight', 'marginBottom', 'marginLeft', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft']}>
         <SpacingControl
           marginTop={computedStyles.marginTop}
           marginRight={computedStyles.marginRight}
@@ -849,10 +849,10 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
           onMarginLinkChange={setIsMarginLinked}
           onPaddingLinkChange={setIsPaddingLinked}
         />
-      </AccordionSection>
+            </AccordionSection>
 
-      {/* Size */}
-      <AccordionSection title="Size" section="size" properties={['width', 'height', 'minWidth', 'minHeight', 'maxWidth', 'maxHeight']}>
+            {/* Size */}
+            <AccordionSection title="Size" section="size" properties={['width', 'height', 'minWidth', 'minHeight', 'maxWidth', 'maxHeight']}>
         <div className="Col" style={{ gap: '4px' }}>
           {/* Width and Height */}
           <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr 32px 1fr', gap: '4px', alignItems: 'center' }}>
@@ -917,10 +917,10 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
             </select>
           </div>
         </div>
-      </AccordionSection>
+            </AccordionSection>
 
-      {/* Position */}
-      <AccordionSection title="Position" section="position" properties={['position', 'top', 'right', 'bottom', 'left', 'zIndex']}>
+            {/* Position */}
+            <AccordionSection title="Position" section="position" properties={['position', 'top', 'right', 'bottom', 'left', 'zIndex']}>
         <div className="Col" style={{ gap: '4px' }}>
           {/* Position Type */}
           <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr', gap: '4px', alignItems: 'center' }}>
@@ -1006,10 +1006,10 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
             </>
           )}
         </div>
-      </AccordionSection>
+            </AccordionSection>
 
-      {/* Typography */}
-      <AccordionSection title="Typography" section="typography" properties={['fontFamily', 'fontSize', 'fontWeight', 'lineHeight', 'letterSpacing', 'textAlign', 'textDecoration', 'textTransform', 'color', 'textIndent', 'wordBreak', 'whiteSpace', 'textOverflow']}>
+            {/* Typography */}
+            <AccordionSection title="Typography" section="typography" properties={['fontFamily', 'fontSize', 'fontWeight', 'lineHeight', 'letterSpacing', 'textAlign', 'textDecoration', 'textTransform', 'color', 'textIndent', 'wordBreak', 'whiteSpace', 'textOverflow']}>
         <div className="Col" style={{ gap: '8px' }}>
           <div>
             <label className="Label" style={{ fontSize: '10px', marginBottom: '4px', display: 'block' }}>Font</label>
@@ -1155,10 +1155,10 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
             </select>
           </div>
         </div>
-      </AccordionSection>
+            </AccordionSection>
 
-      {/* Backgrounds */}
-      <AccordionSection title="Backgrounds" section="backgrounds" properties={['backgroundColor', 'backgroundImage', 'backgroundSize', 'backgroundPosition', 'backgroundRepeat', 'backgroundClip']}>
+            {/* Backgrounds */}
+            <AccordionSection title="Backgrounds" section="backgrounds" properties={['backgroundColor', 'backgroundImage', 'backgroundSize', 'backgroundPosition', 'backgroundRepeat', 'backgroundClip']}>
         <div className="Col" style={{ gap: '4px' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr', gap: '4px', alignItems: 'center' }}>
             <label className="Label" style={{ fontSize: '10px' }}>Color</label>
@@ -1181,10 +1181,10 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
             </select>
           </div>
         </div>
-      </AccordionSection>
+            </AccordionSection>
 
-      {/* Borders */}
-      <AccordionSection title="Borders" section="borders" properties={['borderWidth', 'borderStyle', 'borderColor', 'borderRadius', 'borderTopLeftRadius', 'borderTopRightRadius', 'borderBottomRightRadius', 'borderBottomLeftRadius']}>
+            {/* Borders */}
+            <AccordionSection title="Borders" section="borders" properties={['borderWidth', 'borderStyle', 'borderColor', 'borderRadius', 'borderTopLeftRadius', 'borderTopRightRadius', 'borderBottomRightRadius', 'borderBottomLeftRadius']}>
         <div className="Col" style={{ gap: '4px' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr', gap: '4px', alignItems: 'center' }}>
             <label className="Label" style={{ fontSize: '10px' }}>Radius</label>
@@ -1224,10 +1224,10 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
             />
           </div>
         </div>
-      </AccordionSection>
+            </AccordionSection>
 
-      {/* Effects */}
-      <AccordionSection title="Effects" section="effects" properties={['opacity', 'mixBlendMode', 'boxShadow', 'filter', 'backdropFilter', 'transform', 'transition', 'cursor', 'outline', 'outlineWidth', 'outlineStyle', 'outlineColor']}>
+            {/* Effects */}
+            <AccordionSection title="Effects" section="effects" properties={['opacity', 'mixBlendMode', 'boxShadow', 'filter', 'backdropFilter', 'transform', 'transition', 'cursor', 'outline', 'outlineWidth', 'outlineStyle', 'outlineColor']}>
         <div className="Col" style={{ gap: '4px' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr', gap: '4px', alignItems: 'center' }}>
             <label className="Label" style={{ fontSize: '10px' }}>Blend</label>
