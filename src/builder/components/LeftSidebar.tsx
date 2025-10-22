@@ -60,10 +60,10 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
   return (
     <>
       <div 
-        className="w-64 h-full border border-border rounded-lg shadow-xl flex flex-col overflow-hidden bg-background"
+        className="w-64 h-full border border-border rounded-lg shadow-xl flex flex-col overflow-hidden backdrop-blur-md bg-white/70 dark:bg-zinc-900/70"
       >
         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
-          <TabsList className="w-full flex rounded-none border-b bg-transparent h-9 p-0.5 gap-[2px] overflow-x-auto overflow-y-hidden scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent justify-start flex-shrink-0">
+          <TabsList className="w-full flex rounded-none border-b bg-transparent h-10 p-1 gap-1 overflow-x-auto overflow-y-hidden scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent justify-start flex-shrink-0">
             <TabsTrigger 
               value="components" 
               className="text-xs h-full rounded-md data-[state=active]:shadow-none flex items-center gap-1 whitespace-nowrap flex-shrink-0"
