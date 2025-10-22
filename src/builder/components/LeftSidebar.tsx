@@ -98,29 +98,25 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
           <TabsContent value="pages" className="flex-1 m-0 p-0 overflow-y-auto">
             <div className="p-1.5">
               {pages.map((page) => (
-                <div
-                  key={page}
-                  className={`flex items-center justify-between p-1.5 rounded cursor-pointer hover:bg-accent ${
-                    currentPage === page ? 'bg-accent' : ''
-                  }`}
-                  onClick={() => onPageChange(page)}
-                >
-                  <div className="flex items-center gap-2">
-                    {homePage === page ? (
-                      <Home className="w-4 h-4 text-primary" />
-                    ) : (
-                      <FileText className="w-4 h-4" />
-                    )}
-                    <span className="text-xs">{pageNames[page] || page}</span>
-                  </div>
-                  <ChevronRight 
-                    className="w-4 h-4 text-muted-foreground hover:text-foreground" 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handlePageClick(page);
-                    }}
-                  />
+              <div
+                key={page}
+                className={`flex items-center justify-between p-1.5 rounded cursor-pointer hover:bg-accent ${
+                  currentPage === page ? 'bg-accent' : ''
+                }`}
+                onClick={() => handlePageClick(page)}
+              >
+                <div className="flex items-center gap-2">
+                  {homePage === page ? (
+                    <Home className="w-4 h-4 text-primary" />
+                  ) : (
+                    <FileText className="w-4 h-4" />
+                  )}
+                  <span className="text-xs">{pageNames[page] || page}</span>
                 </div>
+                <ChevronRight 
+                  className="w-4 h-4 text-muted-foreground hover:text-foreground"
+                />
+              </div>
               ))}
             </div>
           </TabsContent>
