@@ -3,7 +3,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Link2, Link2Off } from 'lucide-react';
+import { Link2, Link2Off, AlignCenter } from 'lucide-react';
 import { useStyleStore } from '../store/useStyleStore';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
@@ -202,6 +202,9 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
   };
 
   const parseValue = (value: string): { num: number; unit: string } => {
+    if (value === 'auto') {
+      return { num: 0, unit: 'auto' };
+    }
     const match = value.match(/^(-?\d+(?:\.\d+)?)(px|rem|em|%|vh|vw)?$/);
     if (match) {
       return { num: parseFloat(match[1]), unit: match[2] || 'px' };
@@ -210,6 +213,18 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
   };
 
   const handleMouseDown = (e: React.MouseEvent, property: string, currentValue: string) => {
+    // Don't allow dragging for "auto" values
+    if (currentValue === 'auto') {
+      // Just open the popover for editing
+      const { num, unit } = parseValue(currentValue);
+      setEditingProperty({
+        property,
+        value: num.toString(),
+        unit,
+      });
+      return;
+    }
+    
     // Only handle left click
     if (e.button !== 0) return;
     
@@ -290,16 +305,21 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
       const isMargin = editingProperty.property.startsWith('margin');
       const shouldLinkAll = (isMargin && isMarginLinked) || (!isMargin && isPaddingLinked) || isShiftPressed;
       
+      // Handle 'auto' unit separately
+      const finalValue = editingProperty.unit === 'auto' 
+        ? 'auto' 
+        : `${editingProperty.value}${editingProperty.unit}`;
+      
       // If chainlink is active or Shift is pressed, update all sides
       if (shouldLinkAll) {
         const propertyType = isMargin ? 'margin' : 'padding';
         const sides = ['Top', 'Right', 'Bottom', 'Left'];
         
         sides.forEach(side => {
-          onUpdate(`${propertyType}${side}`, `${editingProperty.value}${editingProperty.unit}`);
+          onUpdate(`${propertyType}${side}`, finalValue);
         });
       } else {
-        onUpdate(editingProperty.property, `${editingProperty.value}${editingProperty.unit}`);
+        onUpdate(editingProperty.property, finalValue);
       }
     }
     setEditingProperty(null);
@@ -418,8 +438,9 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
                     onKeyDown={handleKeyDown}
                     className="flex-1"
                     autoFocus
+                    disabled={editingProperty?.unit === 'auto'}
                   />
-                  <Select
+                   <Select
                     value={editingProperty?.unit || 'px'}
                     onValueChange={handlePopoverUnitChange}
                   >
@@ -427,6 +448,7 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="bg-background">
+                      <SelectItem value="auto">auto</SelectItem>
                       <SelectItem value="px">px</SelectItem>
                       <SelectItem value="rem">rem</SelectItem>
                       <SelectItem value="em">em</SelectItem>
@@ -525,6 +547,41 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
             {isMarginLinked ? <Link2 className="w-3 h-3" /> : <Link2Off className="w-3 h-3" />}
           </button>
         </div>
+
+        {/* Auto-Center Button - Top right of margin area */}
+        <TooltipProvider delayDuration={300}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => {
+                  onUpdate('marginLeft', 'auto');
+                  onUpdate('marginRight', 'auto');
+                }}
+                style={{
+                  position: 'absolute',
+                  top: '4px',
+                  right: '8px',
+                  background: (marginLeft === 'auto' && marginRight === 'auto') ? '#3b82f6' : '#6b7280',
+                  border: 'none',
+                  borderRadius: '3px',
+                  padding: '4px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  color: '#fff',
+                  transition: 'all 0.2s ease',
+                  zIndex: 10
+                }}
+              >
+                <AlignCenter className="w-3 h-3" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="left" className="text-xs">
+              <div className="font-medium">Auto Center</div>
+              <div className="text-muted-foreground">Set left/right margins to auto</div>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
 
         {/* PADDING Label with Chainlink - Inside inner box */}
         <div style={{ 
