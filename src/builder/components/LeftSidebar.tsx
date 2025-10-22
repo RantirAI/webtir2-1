@@ -63,24 +63,24 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
         className="w-64 h-full border border-border rounded-lg shadow-xl flex flex-col overflow-hidden bg-background"
       >
         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
-          <TabsList className="w-full flex rounded-none border-b bg-transparent h-10 pl-2 pr-2 py-1 gap-1 overflow-x-auto overflow-y-hidden scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent justify-start">
+          <TabsList className="w-full flex rounded-none border-b bg-transparent h-10 p-1 gap-1 overflow-x-auto overflow-y-hidden scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent justify-start flex-shrink-0">
             <TabsTrigger 
               value="components" 
-              className="gap-1.5 text-xs h-full rounded-md data-[state=active]:bg-accent data-[state=active]:shadow-none flex items-center whitespace-nowrap px-3 flex-shrink-0"
+              className="text-xs h-full rounded-md data-[state=active]:bg-muted data-[state=active]:shadow-none flex items-center gap-1 whitespace-nowrap px-3 flex-shrink-0"
             >
               <Box className="w-3 h-3" />
               <span>Components</span>
             </TabsTrigger>
             <TabsTrigger 
               value="navigator" 
-              className="gap-1.5 text-xs h-full rounded-md data-[state=active]:bg-accent data-[state=active]:shadow-none flex items-center whitespace-nowrap px-3 flex-shrink-0"
+              className="text-xs h-full rounded-md data-[state=active]:bg-muted data-[state=active]:shadow-none flex items-center gap-1 whitespace-nowrap px-3 flex-shrink-0"
             >
               <Layers className="w-3 h-3" />
               <span>Layers</span>
             </TabsTrigger>
             <TabsTrigger 
               value="pages" 
-              className="gap-1.5 text-xs h-full rounded-md data-[state=active]:bg-accent data-[state=active]:shadow-none flex items-center whitespace-nowrap px-3 flex-shrink-0"
+              className="text-xs h-full rounded-md data-[state=active]:bg-muted data-[state=active]:shadow-none flex items-center gap-1 whitespace-nowrap px-3 flex-shrink-0"
             >
               <FileText className="w-3 h-3" />
               <span>Pages</span>
