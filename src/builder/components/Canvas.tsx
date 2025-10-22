@@ -7,6 +7,11 @@ import { Container } from '../primitives/Container';
 import { Section } from '../primitives/Section';
 import { Text } from '../primitives/Text';
 import { Heading } from '../primitives/Heading';
+import { RichText } from '../primitives/RichText';
+import { Blockquote } from '../primitives/Blockquote';
+import { OrderedList } from '../primitives/OrderedList';
+import { UnorderedList } from '../primitives/UnorderedList';
+import { CodeBlock } from '../primitives/CodeBlock';
 import { ButtonPrimitive } from '../primitives/ButtonPrimitive';
 import { ImagePrimitive } from '../primitives/ImagePrimitive';
 import { LinkPrimitive } from '../primitives/LinkPrimitive';
@@ -178,6 +183,26 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
         return wrapWithDraggable(<Text key={instance.id} {...commonProps} />);
       case 'Heading':
         return wrapWithDraggable(<Heading key={instance.id} {...commonProps} />);
+      case 'RichText': {
+        const content = (
+          <RichText {...commonProps}>
+            {instance.children.map((child) => renderInstance(child))}
+          </RichText>
+        );
+        return isPreviewMode ? content : (
+          <DroppableContainer key={instance.id} instance={instance} {...commonProps}>
+            {content}
+          </DroppableContainer>
+        );
+      }
+      case 'Blockquote':
+        return wrapWithDraggable(<Blockquote key={instance.id} {...commonProps} />);
+      case 'OrderedList':
+        return wrapWithDraggable(<OrderedList key={instance.id} {...commonProps} />);
+      case 'UnorderedList':
+        return wrapWithDraggable(<UnorderedList key={instance.id} {...commonProps} />);
+      case 'CodeBlock':
+        return wrapWithDraggable(<CodeBlock key={instance.id} {...commonProps} />);
       case 'Button':
         return wrapWithDraggable(<ButtonPrimitive key={instance.id} {...commonProps} />);
       case 'Image':

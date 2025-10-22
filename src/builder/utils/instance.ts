@@ -25,6 +25,18 @@ export function canDropInside(instanceType: string, draggedType?: string): boole
     return false;
   }
   
+  // RichText can only contain rich text elements
+  if (instanceType === 'RichText') {
+    const richTextTypes = ['Heading', 'Text', 'Blockquote', 'OrderedList', 'UnorderedList', 'CodeBlock', 'Link', 'Image'];
+    return !draggedType || richTextTypes.includes(draggedType);
+  }
+  
+  // Rich text elements cannot contain other elements
+  const richTextTypes = ['Blockquote', 'OrderedList', 'UnorderedList', 'CodeBlock'];
+  if (richTextTypes.includes(instanceType)) {
+    return false;
+  }
+  
   // Determine which components can have children
   const containerTypes = ['Box', 'Container', 'Section'];
   return containerTypes.includes(instanceType);

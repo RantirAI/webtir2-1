@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect } from 'react';
 interface EditableTextProps {
   value: string;
   onChange: (value: string) => void;
-  as?: 'p' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'span' | 'div' | 'a';
+  as?: 'p' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'span' | 'div' | 'a' | 'blockquote';
   className?: string;
   style?: React.CSSProperties;
   isSelected?: boolean;

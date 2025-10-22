@@ -105,6 +105,98 @@ export const componentRegistry: Record<string, ComponentMeta> = {
       },
     },
   },
+  RichText: {
+    type: 'RichText',
+    label: 'Rich Text',
+    icon: 'FileText',
+    defaultProps: {},
+    defaultStyles: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '16px',
+      width: '100%',
+    },
+    propsDefinition: {},
+  },
+  Blockquote: {
+    type: 'Blockquote',
+    label: 'Blockquote',
+    icon: 'Quote',
+    defaultProps: {
+      children: 'Block quote',
+    },
+    defaultStyles: {
+      fontSize: '16px',
+      fontStyle: 'italic',
+      borderLeft: '4px solid hsl(var(--border))',
+      paddingLeft: '16px',
+      marginLeft: '0',
+      color: 'hsl(var(--muted-foreground))',
+    },
+    propsDefinition: {
+      children: {
+        type: 'string',
+        label: 'Content',
+        control: 'textarea',
+        defaultValue: 'Block quote',
+      },
+    },
+  },
+  OrderedList: {
+    type: 'OrderedList',
+    label: 'Numbered List',
+    icon: 'ListOrdered',
+    defaultProps: {
+      items: ['Item 1', 'Item 2', 'Item 3'],
+    },
+    defaultStyles: {
+      fontSize: '16px',
+      lineHeight: '1.5',
+      paddingLeft: '24px',
+      color: 'hsl(var(--foreground))',
+    },
+    propsDefinition: {},
+  },
+  UnorderedList: {
+    type: 'UnorderedList',
+    label: 'Bulleted List',
+    icon: 'List',
+    defaultProps: {
+      items: ['Item A', 'Item B', 'Item C'],
+    },
+    defaultStyles: {
+      fontSize: '16px',
+      lineHeight: '1.5',
+      paddingLeft: '24px',
+      color: 'hsl(var(--foreground))',
+    },
+    propsDefinition: {},
+  },
+  CodeBlock: {
+    type: 'CodeBlock',
+    label: 'Code Block',
+    icon: 'Code',
+    defaultProps: {
+      children: '// Code goes here',
+    },
+    defaultStyles: {
+      fontSize: '14px',
+      fontFamily: 'monospace',
+      backgroundColor: 'hsl(var(--muted))',
+      padding: '16px',
+      borderRadius: '8px',
+      overflow: 'auto',
+      color: 'hsl(var(--foreground))',
+    },
+    propsDefinition: {
+      children: {
+        type: 'string',
+        label: 'Code',
+        control: 'textarea',
+        defaultValue: '// Code goes here',
+      },
+    },
+  },
   Button: {
     type: 'Button',
     label: 'Button',

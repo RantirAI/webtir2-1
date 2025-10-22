@@ -49,6 +49,91 @@ export const ComponentsPanel: React.FC = () => {
 
     const newId = generateId();
     
+    // Create default children for RichText component
+    const defaultChildren: ComponentInstance[] = [];
+    if (type === 'RichText') {
+      const headingId = generateId();
+      const textId = generateId();
+      const blockquoteId = generateId();
+      const orderedListId = generateId();
+      const unorderedListId = generateId();
+      
+      defaultChildren.push(
+        {
+          id: headingId,
+          type: 'Heading',
+          label: 'Heading',
+          props: { level: 'h2', children: 'Heading 2' },
+          styleSourceIds: [],
+          children: [],
+        },
+        {
+          id: `${headingId}-2`,
+          type: 'Heading',
+          label: 'Heading',
+          props: { level: 'h3', children: 'Heading 3' },
+          styleSourceIds: [],
+          children: [],
+        },
+        {
+          id: `${headingId}-3`,
+          type: 'Heading',
+          label: 'Heading',
+          props: { level: 'h4', children: 'Heading 4' },
+          styleSourceIds: [],
+          children: [],
+        },
+        {
+          id: `${headingId}-4`,
+          type: 'Heading',
+          label: 'Heading',
+          props: { level: 'h5', children: 'Heading 5' },
+          styleSourceIds: [],
+          children: [],
+        },
+        {
+          id: `${headingId}-5`,
+          type: 'Heading',
+          label: 'Heading',
+          props: { level: 'h6', children: 'Heading 6' },
+          styleSourceIds: [],
+          children: [],
+        },
+        {
+          id: textId,
+          type: 'Text',
+          label: 'Text',
+          props: { children: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.' },
+          styleSourceIds: [],
+          children: [],
+        },
+        {
+          id: blockquoteId,
+          type: 'Blockquote',
+          label: 'Blockquote',
+          props: { children: 'Block quote' },
+          styleSourceIds: [],
+          children: [],
+        },
+        {
+          id: orderedListId,
+          type: 'OrderedList',
+          label: 'Numbered List',
+          props: { items: ['Item 1', 'Item 2', 'Item 3'] },
+          styleSourceIds: [],
+          children: [],
+        },
+        {
+          id: unorderedListId,
+          type: 'UnorderedList',
+          label: 'Bulleted List',
+          props: { items: ['Item A', 'Item B', 'Item C'] },
+          styleSourceIds: [],
+          children: [],
+        }
+      );
+    }
+    
     // Only create style source with default styles for Button component
     let styleSourceId: string | undefined;
     if (type === 'Button' && meta.defaultStyles && Object.keys(meta.defaultStyles).length > 0) {
@@ -68,7 +153,7 @@ export const ComponentsPanel: React.FC = () => {
       label: meta.label,
       props: { ...meta.defaultProps },
       styleSourceIds: styleSourceId ? [styleSourceId] : [],
-      children: [],
+      children: defaultChildren,
     };
 
     // Add to selected instance if it's a container type, otherwise add to root
@@ -106,7 +191,7 @@ export const ComponentsPanel: React.FC = () => {
     },
     { 
       name: 'Typography', 
-      types: ['Heading', 'Text'] 
+      types: ['Heading', 'Text', 'RichText', 'Blockquote', 'OrderedList', 'UnorderedList', 'CodeBlock'] 
     },
     { 
       name: 'Media', 

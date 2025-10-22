@@ -111,6 +111,36 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, instance, onClos
     { label: 'Button', value: 'Button' },
   ];
 
+  const richTextElements = [
+    { label: 'Heading 1', value: 'Heading', props: { level: 'h1', children: 'Heading 1' } },
+    { label: 'Heading 2', value: 'Heading', props: { level: 'h2', children: 'Heading 2' } },
+    { label: 'Heading 3', value: 'Heading', props: { level: 'h3', children: 'Heading 3' } },
+    { label: 'Heading 4', value: 'Heading', props: { level: 'h4', children: 'Heading 4' } },
+    { label: 'Heading 5', value: 'Heading', props: { level: 'h5', children: 'Heading 5' } },
+    { label: 'Heading 6', value: 'Heading', props: { level: 'h6', children: 'Heading 6' } },
+    { label: 'Paragraph', value: 'Text', props: { children: 'Text content goes here' } },
+    { label: 'Numbered list', value: 'OrderedList', props: { items: ['Item 1', 'Item 2', 'Item 3'] } },
+    { label: 'Bulleted list', value: 'UnorderedList', props: { items: ['Item A', 'Item B', 'Item C'] } },
+    { label: 'Blockquote', value: 'Blockquote', props: { children: 'Block quote' } },
+    { label: 'Code block', value: 'CodeBlock', props: { children: '// Code goes here' } },
+    { label: 'Link', value: 'Link', props: { href: '#', children: 'Link text' } },
+    { label: 'Image', value: 'Image', props: { src: 'https://via.placeholder.com/400x300', alt: 'Image' } },
+  ];
+
+  const isInRichText = instance.type === 'RichText' || (() => {
+    const parent = useBuilderStore.getState().rootInstance;
+    const findParent = (root: ComponentInstance): ComponentInstance | null => {
+      for (const child of root.children) {
+        if (child.id === instance.id) return root;
+        const found = findParent(child);
+        if (found) return found;
+      }
+      return null;
+    };
+    const parentInstance = parent ? findParent(parent) : null;
+    return parentInstance?.type === 'RichText';
+  })();
+
   return (
     <div
       ref={menuRef}
@@ -170,6 +200,45 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, instance, onClos
       >
         Wrap in Box
       </button>
+      
+      {isInRichText && (
+        <>
+          <div className="border-t border-zinc-700 my-1" />
+          <div className="px-3 py-2 text-xs text-zinc-400">
+            Add rich text element
+          </div>
+          <div className="max-h-60 overflow-y-auto">
+            {richTextElements.map((element) => (
+              <button
+                key={element.label}
+                className="w-full px-3 py-1.5 text-left hover:bg-zinc-700"
+                onClick={() => {
+                  const { componentRegistry } = require('../primitives/registry');
+                  const { generateId } = require('../utils/instance');
+                  const { useStyleStore } = require('../store/useStyleStore');
+                  const meta = componentRegistry[element.value];
+                  if (!meta) return;
+                  
+                  const newId = generateId();
+                  const newInstance: ComponentInstance = {
+                    id: newId,
+                    type: element.value as any,
+                    label: meta.label,
+                    props: element.props || { ...meta.defaultProps },
+                    styleSourceIds: [],
+                    children: [],
+                  };
+                  
+                  addInstance(newInstance, instance.id);
+                  onClose();
+                }}
+              >
+                {element.label}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
       
       <div className="border-t border-zinc-700 my-1" />
       

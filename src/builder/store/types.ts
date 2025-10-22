@@ -3,6 +3,8 @@
 export type ComponentType = 
   // Core/Layout
   | 'Box' | 'Container' | 'Section' | 'Text' | 'Heading' | 'Image' | 'Button' | 'Link'
+  // Rich Text
+  | 'RichText' | 'Blockquote' | 'OrderedList' | 'UnorderedList' | 'CodeBlock'
   // Commonly Used
   | 'Table' | 'NumberInput' | 'TabbedContainer' | 'MixedChart' | 'KeyValue' | 'Navigation'
   // Text Inputs
