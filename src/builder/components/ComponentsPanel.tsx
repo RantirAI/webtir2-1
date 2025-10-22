@@ -206,15 +206,15 @@ export const ComponentsPanel: React.FC = () => {
             key={category.name}
             open={openCategories[category.name]}
             onOpenChange={() => toggleCategory(category.name)}
-            className="backdrop-blur-md bg-white/40 dark:bg-zinc-900/40 rounded-lg border border-border/50 overflow-hidden animate-fade-in"
+            className="animate-fade-in"
           >
-            <CollapsibleTrigger className="w-full flex items-center justify-between p-3 hover:bg-white/60 dark:hover:bg-zinc-900/60 transition-colors">
+            <CollapsibleTrigger className="w-full flex items-center justify-between py-2 transition-colors">
               <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
                 {category.name}
               </h3>
               <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${openCategories[category.name] ? 'rotate-180' : ''}`} />
             </CollapsibleTrigger>
-            <CollapsibleContent className="p-3 pt-0">
+            <CollapsibleContent className="pb-3">
               <div className="grid grid-cols-3 gap-2">
                 {components.map((component) => (
                   <div 
