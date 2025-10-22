@@ -63,13 +63,13 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
         className="w-64 h-full border border-border rounded-lg shadow-xl flex flex-col overflow-hidden bg-background"
       >
         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
-          <TabsList className="w-full flex rounded-none border-b bg-transparent h-10 p-1 gap-[2px] overflow-x-auto overflow-y-hidden scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent justify-start flex-shrink-0">
+          <TabsList className="w-full flex rounded-none border-b bg-transparent h-9 p-0.5 gap-[2px] overflow-x-auto overflow-y-hidden scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent justify-start flex-shrink-0">
             <TabsTrigger 
               value="components" 
               className="text-xs h-full rounded-md data-[state=active]:shadow-none flex items-center gap-1 whitespace-nowrap flex-shrink-0"
             >
               <Box className="w-3 h-3" />
-              <span>Components</span>
+              <span>Elements</span>
             </TabsTrigger>
             <TabsTrigger 
               value="navigator" 
@@ -96,11 +96,11 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
           </TabsContent>
 
           <TabsContent value="pages" className="flex-1 m-0 p-0 overflow-y-auto">
-            <div className="p-2">
+            <div className="p-1.5">
               {pages.map((page) => (
                 <div
                   key={page}
-                  className={`flex items-center justify-between p-2 rounded cursor-pointer hover:bg-accent ${
+                  className={`flex items-center justify-between p-1.5 rounded cursor-pointer hover:bg-accent ${
                     currentPage === page ? 'bg-accent' : ''
                   }`}
                   onClick={() => onPageChange(page)}

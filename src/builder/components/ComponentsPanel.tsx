@@ -193,7 +193,7 @@ export const ComponentsPanel: React.FC = () => {
   };
 
   const renderCategorySection = (categories: typeof basicCategories) => (
-    <div className="space-y-3">
+    <div className="space-y-2">
       {categories.map((category) => {
         const components = category.types
           .map(type => componentRegistry[type])
@@ -208,13 +208,13 @@ export const ComponentsPanel: React.FC = () => {
             onOpenChange={() => toggleCategory(category.name)}
             className="animate-fade-in"
           >
-            <CollapsibleTrigger className="w-full flex items-center justify-between py-2 transition-colors">
+            <CollapsibleTrigger className="w-full flex items-center justify-between py-1.5 transition-colors">
               <h3 className="text-[10px] font-bold text-foreground uppercase tracking-[0.5px]">
                 {category.name}
               </h3>
               <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${openCategories[category.name] ? 'rotate-180' : ''}`} />
             </CollapsibleTrigger>
-            <CollapsibleContent className="pb-3">
+            <CollapsibleContent className="pb-2">
               <div className="grid grid-cols-3 gap-2">
                 {components.map((component) => (
                   <div 
@@ -235,9 +235,9 @@ export const ComponentsPanel: React.FC = () => {
 
   return (
     <div className="w-full h-full flex flex-col">
-      <div className="p-4 pb-2 shrink-0">
+      <div className="p-2 pb-1.5 shrink-0">
         {/* Search input */}
-        <div className="relative mb-3">
+        <div className="relative mb-2">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
           <input
             type="text"
@@ -257,7 +257,7 @@ export const ComponentsPanel: React.FC = () => {
         </Tabs>
       </div>
 
-      <div className="flex-1 overflow-auto px-4 pb-6" style={{ maxHeight: 'calc(100vh - 200px)' }}>
+      <div className="flex-1 overflow-auto px-2 pb-4" style={{ maxHeight: 'calc(100vh - 200px)' }}>
         {activeSubTab === 'elements' ? (
           <>
             {renderCategorySection(filteredBasicCategories)}
