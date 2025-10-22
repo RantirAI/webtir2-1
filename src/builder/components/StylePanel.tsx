@@ -3,7 +3,7 @@ import { useBuilderStore } from '../store/useBuilderStore';
 import { useStyleStore } from '../store/useStyleStore';
 import { PseudoState } from '../store/types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Paintbrush, Plus, Square, Type, Heading as HeadingIcon, MousePointerClick, Image as ImageIcon, Link as LinkIcon, X, ChevronDown, Settings, Zap, Database, RotateCcw, Info, AlignLeft, AlignCenter, AlignRight, AlignJustify, ArrowRight, ArrowDown, ArrowLeft, ArrowUp } from 'lucide-react';
+import { Paintbrush, Plus, Square, Type, Heading as HeadingIcon, MousePointerClick, Image as ImageIcon, Link as LinkIcon, X, ChevronDown, Settings, Zap, Database, RotateCcw, Info, AlignLeft, AlignCenter, AlignRight, AlignJustify, ArrowRight, ArrowDown, ArrowLeft, ArrowUp, Box, LayoutList, LayoutGrid, Minus, EyeOff } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Input } from '@/components/ui/input';
@@ -549,22 +549,53 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
             {/* Layout */}
             <AccordionSection title="Layout" section="layout" properties={['display', 'flexDirection', 'justifyContent', 'alignItems', 'flexWrap', 'gap', 'gridTemplateColumns', 'gridTemplateRows', 'gridAutoFlow', 'placeItems', 'placeContent']}>
               <div className="Col" style={{ gap: 'var(--space-2)' }}>
-          {/* Display Type Toggle Group */}
+          {/* Display Type with Icon Buttons */}
           <div className="Col" style={{ gap: 'var(--space-1)' }}>
             <label className="Label" style={{ fontWeight: 600, fontSize: '10px' }}>Display</label>
-            <ToggleGroup 
-              type="single" 
-              value={computedStyles.display || 'flex'} 
-              onValueChange={(val) => val && updateStyle('display', val)}
-              className="grid grid-cols-3 gap-1"
-            >
-              <ToggleGroupItem value="block" className="text-[10px] px-2 py-1 h-6">Block</ToggleGroupItem>
-              <ToggleGroupItem value="flex" className="text-[10px] px-2 py-1 h-6">Flex</ToggleGroupItem>
-              <ToggleGroupItem value="grid" className="text-[10px] px-2 py-1 h-6">Grid</ToggleGroupItem>
-              <ToggleGroupItem value="inline" className="text-[10px] px-2 py-1 h-6">Inline</ToggleGroupItem>
-              <ToggleGroupItem value="inline-block" className="text-[10px] px-2 py-1 h-6">I-Block</ToggleGroupItem>
-              <ToggleGroupItem value="none" className="text-[10px] px-2 py-1 h-6">None</ToggleGroupItem>
-            </ToggleGroup>
+            <div style={{ display: 'flex', gap: '2px' }}>
+              <button
+                className={`flex-1 h-7 flex items-center justify-center rounded border ${computedStyles.display === 'block' ? 'bg-accent border-primary' : 'bg-[#F5F5F5] dark:bg-[#09090b] border-input hover:bg-accent'}`}
+                onClick={() => updateStyle('display', 'block')}
+                title="Block"
+              >
+                <Box className="w-3.5 h-3.5 text-foreground" />
+              </button>
+              <button
+                className={`flex-1 h-7 flex items-center justify-center rounded border ${computedStyles.display === 'flex' || !computedStyles.display ? 'bg-accent border-primary' : 'bg-[#F5F5F5] dark:bg-[#09090b] border-input hover:bg-accent'}`}
+                onClick={() => updateStyle('display', 'flex')}
+                title="Flex"
+              >
+                <LayoutList className="w-3.5 h-3.5 text-foreground" />
+              </button>
+              <button
+                className={`flex-1 h-7 flex items-center justify-center rounded border ${computedStyles.display === 'grid' ? 'bg-accent border-primary' : 'bg-[#F5F5F5] dark:bg-[#09090b] border-input hover:bg-accent'}`}
+                onClick={() => updateStyle('display', 'grid')}
+                title="Grid"
+              >
+                <LayoutGrid className="w-3.5 h-3.5 text-foreground" />
+              </button>
+              <button
+                className={`flex-1 h-7 flex items-center justify-center rounded border ${computedStyles.display === 'inline' ? 'bg-accent border-primary' : 'bg-[#F5F5F5] dark:bg-[#09090b] border-input hover:bg-accent'}`}
+                onClick={() => updateStyle('display', 'inline')}
+                title="Inline"
+              >
+                <Minus className="w-3.5 h-3.5 text-foreground" />
+              </button>
+              <button
+                className={`flex-1 h-7 flex items-center justify-center rounded border ${computedStyles.display === 'inline-block' ? 'bg-accent border-primary' : 'bg-[#F5F5F5] dark:bg-[#09090b] border-input hover:bg-accent'}`}
+                onClick={() => updateStyle('display', 'inline-block')}
+                title="Inline Block"
+              >
+                <Square className="w-3.5 h-3.5 text-foreground" />
+              </button>
+              <button
+                className={`flex-1 h-7 flex items-center justify-center rounded border ${computedStyles.display === 'none' ? 'bg-accent border-primary' : 'bg-[#F5F5F5] dark:bg-[#09090b] border-input hover:bg-accent'}`}
+                onClick={() => updateStyle('display', 'none')}
+                title="None"
+              >
+                <EyeOff className="w-3.5 h-3.5 text-foreground" />
+              </button>
+            </div>
           </div>
 
           {isFlexDisplay && (
@@ -572,25 +603,36 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
               {/* Direction Icons */}
               <div className="Col" style={{ gap: 'var(--space-1)' }}>
                 <label className="Label" style={{ fontSize: '10px' }}>Direction</label>
-                <ToggleGroup 
-                  type="single" 
-                  value={computedStyles.flexDirection || 'row'} 
-                  onValueChange={(val) => val && updateStyle('flexDirection', val)}
-                  className="grid grid-cols-4 gap-1"
-                >
-                  <ToggleGroupItem value="row" className="px-2 py-1 h-7">
-                    <ArrowRight className="w-3 h-3" />
-                  </ToggleGroupItem>
-                  <ToggleGroupItem value="column" className="px-2 py-1 h-7">
-                    <ArrowDown className="w-3 h-3" />
-                  </ToggleGroupItem>
-                  <ToggleGroupItem value="row-reverse" className="px-2 py-1 h-7">
-                    <ArrowLeft className="w-3 h-3" />
-                  </ToggleGroupItem>
-                  <ToggleGroupItem value="column-reverse" className="px-2 py-1 h-7">
-                    <ArrowUp className="w-3 h-3" />
-                  </ToggleGroupItem>
-                </ToggleGroup>
+                <div style={{ display: 'flex', gap: '2px' }}>
+                  <button
+                    className={`flex-1 h-7 flex items-center justify-center rounded border ${computedStyles.flexDirection === 'row' || !computedStyles.flexDirection ? 'bg-accent border-primary' : 'bg-[#F5F5F5] dark:bg-[#09090b] border-input hover:bg-accent'}`}
+                    onClick={() => updateStyle('flexDirection', 'row')}
+                    title="Row"
+                  >
+                    <ArrowRight className="w-3.5 h-3.5 text-foreground" />
+                  </button>
+                  <button
+                    className={`flex-1 h-7 flex items-center justify-center rounded border ${computedStyles.flexDirection === 'column' ? 'bg-accent border-primary' : 'bg-[#F5F5F5] dark:bg-[#09090b] border-input hover:bg-accent'}`}
+                    onClick={() => updateStyle('flexDirection', 'column')}
+                    title="Column"
+                  >
+                    <ArrowDown className="w-3.5 h-3.5 text-foreground" />
+                  </button>
+                  <button
+                    className={`flex-1 h-7 flex items-center justify-center rounded border ${computedStyles.flexDirection === 'row-reverse' ? 'bg-accent border-primary' : 'bg-[#F5F5F5] dark:bg-[#09090b] border-input hover:bg-accent'}`}
+                    onClick={() => updateStyle('flexDirection', 'row-reverse')}
+                    title="Row Reverse"
+                  >
+                    <ArrowLeft className="w-3.5 h-3.5 text-foreground" />
+                  </button>
+                  <button
+                    className={`flex-1 h-7 flex items-center justify-center rounded border ${computedStyles.flexDirection === 'column-reverse' ? 'bg-accent border-primary' : 'bg-[#F5F5F5] dark:bg-[#09090b] border-input hover:bg-accent'}`}
+                    onClick={() => updateStyle('flexDirection', 'column-reverse')}
+                    title="Column Reverse"
+                  >
+                    <ArrowUp className="w-3.5 h-3.5 text-foreground" />
+                  </button>
+                </div>
               </div>
 
               {/* Alignment Grid - Enhanced with visual dots */}
@@ -1052,25 +1094,25 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
                 className={`flex-1 h-6 flex items-center justify-center rounded border ${computedStyles.textAlign === 'left' || !computedStyles.textAlign ? 'bg-accent border-primary' : 'bg-[#F5F5F5] dark:bg-[#09090b] border-input hover:bg-accent'}`}
                 onClick={() => updateStyle('textAlign', 'left')}
               >
-                <AlignLeft className="w-3.5 h-3.5" />
+                <AlignLeft className="w-3.5 h-3.5 text-foreground" />
               </button>
               <button
                 className={`flex-1 h-6 flex items-center justify-center rounded border ${computedStyles.textAlign === 'center' ? 'bg-accent border-primary' : 'bg-[#F5F5F5] dark:bg-[#09090b] border-input hover:bg-accent'}`}
                 onClick={() => updateStyle('textAlign', 'center')}
               >
-                <AlignCenter className="w-3.5 h-3.5" />
+                <AlignCenter className="w-3.5 h-3.5 text-foreground" />
               </button>
               <button
                 className={`flex-1 h-6 flex items-center justify-center rounded border ${computedStyles.textAlign === 'right' ? 'bg-accent border-primary' : 'bg-[#F5F5F5] dark:bg-[#09090b] border-input hover:bg-accent'}`}
                 onClick={() => updateStyle('textAlign', 'right')}
               >
-                <AlignRight className="w-3.5 h-3.5" />
+                <AlignRight className="w-3.5 h-3.5 text-foreground" />
               </button>
               <button
                 className={`flex-1 h-6 flex items-center justify-center rounded border ${computedStyles.textAlign === 'justify' ? 'bg-accent border-primary' : 'bg-[#F5F5F5] dark:bg-[#09090b] border-input hover:bg-accent'}`}
                 onClick={() => updateStyle('textAlign', 'justify')}
               >
-                <AlignJustify className="w-3.5 h-3.5" />
+                <AlignJustify className="w-3.5 h-3.5 text-foreground" />
               </button>
             </div>
           </div>
