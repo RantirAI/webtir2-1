@@ -80,7 +80,7 @@ export const componentRegistry: Record<string, ComponentMeta> = {
     label: 'Heading',
     icon: 'Heading',
     defaultProps: {
-      level: 'h2',
+      level: 'h1',
       children: 'The future of AI-first hyper-personalized Websites.',
     },
     defaultStyles: {
@@ -95,7 +95,7 @@ export const componentRegistry: Record<string, ComponentMeta> = {
         label: 'Level',
         control: 'select',
         options: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
-        defaultValue: 'h2',
+        defaultValue: 'h1',
       },
       children: {
         type: 'string',

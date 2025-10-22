@@ -26,7 +26,29 @@ export const Heading: React.FC<HeadingProps> = ({
   isPreviewMode,
 }) => {
   const { updateInstance } = useBuilderStore();
-  const level = instance.props.level || 'h2';
+  const { setStyle } = useStyleStore();
+  const level = instance.props.level || 'h1';
+
+  // Set default font size based on heading level when level changes
+  React.useEffect(() => {
+    const fontSizeMap: Record<string, string> = {
+      h1: '48px',
+      h2: '32px',
+      h3: '24px',
+      h4: '18px',
+      h5: '14px',
+      h6: '12px',
+    };
+
+    // Only set if the instance has a style source
+    if (instance.styleSourceIds && instance.styleSourceIds.length > 0) {
+      const primaryClassId = instance.styleSourceIds[0];
+      const targetFontSize = fontSizeMap[level];
+      
+      // Update font size when tag changes
+      setStyle(primaryClassId, 'fontSize', targetFontSize);
+    }
+  }, [level, instance.styleSourceIds, setStyle]);
 
   const handleTextChange = (newText: string) => {
     updateInstance(instance.id, {

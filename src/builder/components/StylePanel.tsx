@@ -3,7 +3,7 @@ import { useBuilderStore } from '../store/useBuilderStore';
 import { useStyleStore } from '../store/useStyleStore';
 import { PseudoState } from '../store/types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Paintbrush, Plus, Square, Type, Heading as HeadingIcon, MousePointerClick, Image as ImageIcon, Link as LinkIcon, X, ChevronDown, Settings, Zap, Database, RotateCcw, Info, AlignLeft, AlignCenter, AlignRight, AlignJustify, ArrowRight, ArrowDown, ArrowLeft, ArrowUp, Box, LayoutList, LayoutGrid, Minus, EyeOff } from 'lucide-react';
+import { Paintbrush, Plus, Square, Type, Heading as HeadingIcon, MousePointerClick, Image as ImageIcon, Link as LinkIcon, X, ChevronDown, Settings as SettingsIcon, Zap, Database, RotateCcw, Info, AlignLeft, AlignCenter, AlignRight, AlignJustify, ArrowRight, ArrowDown, ArrowLeft, ArrowUp, Box, LayoutList, LayoutGrid, Minus, EyeOff } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Input } from '@/components/ui/input';
@@ -16,6 +16,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { Button } from '@/components/ui/button';
 import { ClassSelector } from './ClassSelector';
 import { ImageUpload } from './ImageUpload';
+import { HeadingSettings } from './HeadingSettings';
 import '../styles/style-panel.css';
 import '../styles/tokens.css';
 
@@ -44,6 +45,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
   const [activeClassIndex, setActiveClassIndex] = useState<number | null>(null);
   const [isMarginLinked, setIsMarginLinked] = useState(false);
   const [isPaddingLinked, setIsPaddingLinked] = useState(false);
+  const [isHeadingSettingsOpen, setIsHeadingSettingsOpen] = useState(false);
   
   // Initialize label input and active class when selectedInstance changes
   useEffect(() => {
@@ -99,7 +101,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
               value="settings" 
               className="gap-1 text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none"
             >
-              <Settings className="w-3 h-3" />
+              <SettingsIcon className="w-3 h-3" />
               Settings
             </TabsTrigger>
           </TabsList>
@@ -366,7 +368,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
             value="settings" 
             className="text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none flex items-center gap-1"
           >
-            <Settings className="w-3 h-3" />
+            <SettingsIcon className="w-3 h-3" />
             Settings
           </TabsTrigger>
         </TabsList>
@@ -417,13 +419,26 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
               </div>
             </div>
 
-            {/* Class Selector - Multi-class support */}
+              {/* Class Selector - Multi-class support */}
             <div style={{ padding: 'var(--space-3)', borderBottom: '1px solid hsl(var(--border))' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-2)' }}>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-2">
                   <div style={{ fontSize: '10px', fontWeight: 600, color: 'hsl(var(--muted-foreground))', letterSpacing: '0.5px' }}>
                     STYLE SOURCES
                   </div>
+                  {selectedInstance.type === 'Heading' && (
+                    <div className="flex items-center gap-1">
+                      <span className="text-[9px] text-muted-foreground uppercase">
+                        {selectedInstance.props.level || 'h1'}
+                      </span>
+                      <button
+                        onClick={() => setIsHeadingSettingsOpen(true)}
+                        className="h-4 w-4 flex items-center justify-center rounded hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        <SettingsIcon className="w-3 h-3" />
+                      </button>
+                    </div>
+                  )}
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -1053,6 +1068,36 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
             {/* Typography */}
             <AccordionSection title="Typography" section="typography" properties={['fontFamily', 'fontSize', 'fontWeight', 'lineHeight', 'letterSpacing', 'textAlign', 'textDecoration', 'textTransform', 'color', 'textIndent', 'wordBreak', 'whiteSpace', 'textOverflow']}>
         <div className="Col" style={{ gap: '8px' }}>
+          {/* Heading Tag Selector - Only for Heading components */}
+          {selectedInstance.type === 'Heading' && (
+            <div>
+              <label className="Label" style={{ fontSize: '10px', marginBottom: '4px', display: 'block' }}>Tag</label>
+              <div style={{ display: 'flex', gap: '2px' }}>
+                {['1', '2', '3', '4', '5', '6'].map((num) => {
+                  const tag = `h${num}`;
+                  const isActive = (selectedInstance.props.level || 'h1') === tag;
+                  return (
+                    <button
+                      key={num}
+                      onClick={() => {
+                        updateInstance(selectedInstance.id, {
+                          props: { ...selectedInstance.props, level: tag },
+                        });
+                      }}
+                      className={`flex-1 h-7 flex items-center justify-center rounded border text-xs font-medium transition-colors ${
+                        isActive
+                          ? 'bg-accent border-primary text-foreground'
+                          : 'bg-[#F5F5F5] dark:bg-[#09090b] border-input text-muted-foreground hover:bg-accent hover:text-foreground'
+                      }`}
+                    >
+                      {num}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+          
           <div>
             <label className="Label" style={{ fontSize: '10px', marginBottom: '4px', display: 'block' }}>Font</label>
             <FontPicker
@@ -2255,6 +2300,29 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* Heading Settings Dialog */}
+      {selectedInstance.type === 'Heading' && (
+        <HeadingSettings
+          open={isHeadingSettingsOpen}
+          onOpenChange={setIsHeadingSettingsOpen}
+          currentTag={selectedInstance.props.level || 'h1'}
+          currentText={selectedInstance.props.children || ''}
+          onTagChange={(tag) => {
+            updateInstance(selectedInstance.id, {
+              props: { ...selectedInstance.props, level: tag },
+            });
+          }}
+          onTextChange={(text) => {
+            updateInstance(selectedInstance.id, {
+              props: { ...selectedInstance.props, children: text },
+            });
+          }}
+          onShowAllSettings={() => {
+            setActiveTab('settings');
+          }}
+        />
+      )}
     </div>
   );
 };
