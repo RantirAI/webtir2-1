@@ -1,14 +1,15 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { ComponentInstance } from '../store/types';
-import { ArrowUp, ArrowDown } from 'lucide-react';
+import { ArrowUp, ArrowDown, Settings } from 'lucide-react';
 import { useBuilderStore } from '../store/useBuilderStore';
 
 interface SelectionOverlayProps {
   instance: ComponentInstance;
   element: HTMLElement;
+  onOpenHeadingSettings?: (position: { x: number; y: number }) => void;
 }
 
-export const SelectionOverlay: React.FC<SelectionOverlayProps> = ({ instance, element }) => {
+export const SelectionOverlay: React.FC<SelectionOverlayProps> = ({ instance, element, onOpenHeadingSettings }) => {
   const [rect, setRect] = useState<DOMRect | null>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
   const { moveInstance, findInstance } = useBuilderStore();
@@ -92,6 +93,17 @@ export const SelectionOverlay: React.FC<SelectionOverlayProps> = ({ instance, el
   };
 
   const label = instance.label || instance.type;
+  const isHeading = instance.type === 'Heading';
+  
+  const handleSettingsClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onOpenHeadingSettings && rect) {
+      onOpenHeadingSettings({ 
+        x: rect.left + rect.width + 10, 
+        y: rect.top 
+      });
+    }
+  };
   
   return (
     <div
@@ -107,11 +119,25 @@ export const SelectionOverlay: React.FC<SelectionOverlayProps> = ({ instance, el
       {/* Blue border */}
       <div className="absolute inset-0 border-2 border-blue-500 rounded pointer-events-none" />
       
-      {/* Label badge with arrows */}
+      {/* Label badge with arrows and settings */}
       <div className="absolute -top-7 left-0 flex items-center gap-0.5 pointer-events-auto">
         <div className="bg-blue-500 text-white px-2 py-0.5 rounded text-[10px] font-medium flex items-center gap-1">
           {label}
+          {isHeading && (
+            <span className="text-[9px] opacity-80">
+              {instance.props.level || 'h1'}
+            </span>
+          )}
         </div>
+        {isHeading && (
+          <button
+            onClick={handleSettingsClick}
+            className="bg-blue-500 hover:bg-blue-600 text-white p-0.5 rounded transition-colors"
+            title="Heading settings"
+          >
+            <Settings className="w-3 h-3" />
+          </button>
+        )}
         <button
           onClick={handleMoveUp}
           className="bg-blue-500 hover:bg-blue-600 text-white p-0.5 rounded transition-colors"

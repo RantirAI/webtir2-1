@@ -16,7 +16,6 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { Button } from '@/components/ui/button';
 import { ClassSelector } from './ClassSelector';
 import { ImageUpload } from './ImageUpload';
-import { HeadingSettings } from './HeadingSettings';
 import '../styles/style-panel.css';
 import '../styles/tokens.css';
 
@@ -45,7 +44,6 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
   const [activeClassIndex, setActiveClassIndex] = useState<number | null>(null);
   const [isMarginLinked, setIsMarginLinked] = useState(false);
   const [isPaddingLinked, setIsPaddingLinked] = useState(false);
-  const [isHeadingSettingsOpen, setIsHeadingSettingsOpen] = useState(false);
   
   // Initialize label input and active class when selectedInstance changes
   useEffect(() => {
@@ -426,19 +424,6 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
                   <div style={{ fontSize: '10px', fontWeight: 600, color: 'hsl(var(--muted-foreground))', letterSpacing: '0.5px' }}>
                     STYLE SOURCES
                   </div>
-                  {selectedInstance.type === 'Heading' && (
-                    <div className="flex items-center gap-1">
-                      <span className="text-[9px] text-muted-foreground uppercase">
-                        {selectedInstance.props.level || 'h1'}
-                      </span>
-                      <button
-                        onClick={() => setIsHeadingSettingsOpen(true)}
-                        className="h-4 w-4 flex items-center justify-center rounded hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
-                      >
-                        <SettingsIcon className="w-3 h-3" />
-                      </button>
-                    </div>
-                  )}
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -650,95 +635,97 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
                 </div>
               </div>
 
-              {/* Alignment Grid - Enhanced with visual dots */}
+              {/* Alignment Section - 50/50 Grid Layout */}
               <div className="Col" style={{ gap: 'var(--space-1)' }}>
                 <label className="Label" style={{ fontSize: '10px' }}>Align</label>
-                <div className="AlignGrid">
-                  {Array.from({ length: 9 }).map((_, i) => {
-                    const row = Math.floor(i / 3);
-                    const col = i % 3;
-                    
-                    // Determine alignment states
-                    const justifyMap = ['flex-start', 'center', 'flex-end'];
-                    const alignMap = ['flex-start', 'center', 'flex-end'];
-                    
-                    const isJustifyActive = computedStyles.justifyContent === justifyMap[col] || 
-                      (col === 0 && !computedStyles.justifyContent);
-                    const isAlignActive = computedStyles.alignItems === alignMap[row] ||
-                      (row === 0 && !computedStyles.alignItems);
-                    
-                    const isActive = isJustifyActive && isAlignActive;
-                    
-                    return (
-                      <button 
-                        key={i} 
-                        className="AlignBtn"
-                        data-state={isActive ? "on" : "off"}
-                        onClick={() => {
-                          updateStyle('justifyContent', justifyMap[col]);
-                          updateStyle('alignItems', alignMap[row]);
-                        }}
-                        onDoubleClick={() => {
-                          // Double click for advanced options
-                          if (col === 1 && row === 1) {
-                            // Center - cycle through space options
-                            const current = computedStyles.justifyContent;
-                            if (current === 'center') updateStyle('justifyContent', 'space-between');
-                            else if (current === 'space-between') updateStyle('justifyContent', 'space-around');
-                            else if (current === 'space-around') updateStyle('justifyContent', 'space-evenly');
-                            else updateStyle('justifyContent', 'center');
-                          }
-                        }}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-2)' }}>
+                  {/* Left: Alignment Grid */}
+                  <div className="AlignGrid">
+                    {Array.from({ length: 9 }).map((_, i) => {
+                      const row = Math.floor(i / 3);
+                      const col = i % 3;
+                      
+                      // Determine alignment states
+                      const justifyMap = ['flex-start', 'center', 'flex-end'];
+                      const alignMap = ['flex-start', 'center', 'flex-end'];
+                      
+                      const isJustifyActive = computedStyles.justifyContent === justifyMap[col] || 
+                        (col === 0 && !computedStyles.justifyContent);
+                      const isAlignActive = computedStyles.alignItems === alignMap[row] ||
+                        (row === 0 && !computedStyles.alignItems);
+                      
+                      const isActive = isJustifyActive && isAlignActive;
+                      
+                      return (
+                        <button 
+                          key={i} 
+                          className="AlignBtn"
+                          data-state={isActive ? "on" : "off"}
+                          onClick={() => {
+                            updateStyle('justifyContent', justifyMap[col]);
+                            updateStyle('alignItems', alignMap[row]);
+                          }}
+                          onDoubleClick={() => {
+                            // Double click for advanced options
+                            if (col === 1 && row === 1) {
+                              // Center - cycle through space options
+                              const current = computedStyles.justifyContent;
+                              if (current === 'center') updateStyle('justifyContent', 'space-between');
+                              else if (current === 'space-between') updateStyle('justifyContent', 'space-around');
+                              else if (current === 'space-around') updateStyle('justifyContent', 'space-evenly');
+                              else updateStyle('justifyContent', 'center');
+                            }
+                          }}
+                        />
+                      );
+                    })}
+                  </div>
+
+                  {/* Right: Stacked Controls */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
+                    <div className="Col" style={{ gap: '2px' }}>
+                      <label className="Label" style={{ fontSize: '9px' }}>Justify</label>
+                      <select
+                        className="Select"
+                        value={computedStyles.justifyContent || 'flex-start'}
+                        onChange={(e) => updateStyle('justifyContent', e.target.value)}
+                        style={{ fontSize: '9px', padding: '2px 4px', height: '22px' }}
+                      >
+                        <option value="flex-start">Start</option>
+                        <option value="center">Center</option>
+                        <option value="flex-end">End</option>
+                        <option value="space-between">Between</option>
+                        <option value="space-around">Around</option>
+                        <option value="space-evenly">Evenly</option>
+                      </select>
+                    </div>
+
+                    <div className="Col" style={{ gap: '2px' }}>
+                      <label className="Label" style={{ fontSize: '9px' }}>Align</label>
+                      <select
+                        className="Select"
+                        value={computedStyles.alignItems || 'stretch'}
+                        onChange={(e) => updateStyle('alignItems', e.target.value)}
+                        style={{ fontSize: '9px', padding: '2px 4px', height: '22px' }}
+                      >
+                        <option value="stretch">Stretch</option>
+                        <option value="flex-start">Start</option>
+                        <option value="center">Center</option>
+                        <option value="flex-end">End</option>
+                        <option value="baseline">Baseline</option>
+                      </select>
+                    </div>
+
+                    <div className="Col" style={{ gap: '2px' }}>
+                      <label className="Label" style={{ fontSize: '9px' }}>Gap</label>
+                      <UnitInput
+                        value={computedStyles.gap || ''}
+                        onChange={(val) => updateStyle('gap', val)}
+                        placeholder="0px"
                       />
-                    );
-                  })}
+                    </div>
+                  </div>
                 </div>
-              </div>
-
-              {/* Detailed Controls */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-2)' }}>
-                <div className="Col" style={{ gap: '2px' }}>
-                  <label className="Label" style={{ fontSize: '9px' }}>Justify</label>
-                  <select
-                    className="Select"
-                    value={computedStyles.justifyContent || 'flex-start'}
-                    onChange={(e) => updateStyle('justifyContent', e.target.value)}
-                    style={{ fontSize: '9px', padding: '2px 4px', height: '22px' }}
-                  >
-                    <option value="flex-start">Start</option>
-                    <option value="center">Center</option>
-                    <option value="flex-end">End</option>
-                    <option value="space-between">Space Between</option>
-                    <option value="space-around">Space Around</option>
-                    <option value="space-evenly">Space Evenly</option>
-                  </select>
-                </div>
-
-                <div className="Col" style={{ gap: '2px' }}>
-                  <label className="Label" style={{ fontSize: '9px' }}>Align</label>
-                  <select
-                    className="Select"
-                    value={computedStyles.alignItems || 'stretch'}
-                    onChange={(e) => updateStyle('alignItems', e.target.value)}
-                    style={{ fontSize: '9px', padding: '2px 4px', height: '22px' }}
-                  >
-                    <option value="stretch">Stretch</option>
-                    <option value="flex-start">Start</option>
-                    <option value="center">Center</option>
-                    <option value="flex-end">End</option>
-                    <option value="baseline">Baseline</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Gap Control */}
-              <div className="Col" style={{ gap: '2px' }}>
-                <label className="Label" style={{ fontSize: '9px' }}>Gap</label>
-                <UnitInput
-                  value={computedStyles.gap || ''}
-                  onChange={(val) => updateStyle('gap', val)}
-                  placeholder="0px"
-                />
               </div>
             </div>
           )}
@@ -2300,29 +2287,6 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
           </div>
         </TabsContent>
       </Tabs>
-
-      {/* Heading Settings Dialog */}
-      {selectedInstance.type === 'Heading' && (
-        <HeadingSettings
-          open={isHeadingSettingsOpen}
-          onOpenChange={setIsHeadingSettingsOpen}
-          currentTag={selectedInstance.props.level || 'h1'}
-          currentText={selectedInstance.props.children || ''}
-          onTagChange={(tag) => {
-            updateInstance(selectedInstance.id, {
-              props: { ...selectedInstance.props, level: tag },
-            });
-          }}
-          onTextChange={(text) => {
-            updateInstance(selectedInstance.id, {
-              props: { ...selectedInstance.props, children: text },
-            });
-          }}
-          onShowAllSettings={() => {
-            setActiveTab('settings');
-          }}
-        />
-      )}
     </div>
   );
 };

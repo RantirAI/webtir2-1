@@ -24,6 +24,7 @@ import { breakpoints } from './PageNavigation';
 import { ContextMenu } from './ContextMenu';
 import { SelectionOverlay } from './SelectionOverlay';
 import { HoverOverlay } from './HoverOverlay';
+import { HeadingSettingsPopover } from './HeadingSettingsPopover';
 import { useDroppable } from '@dnd-kit/core';
 import { componentRegistry } from '../primitives/registry';
 import { generateId } from '../utils/instance';
@@ -49,6 +50,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
   const setSelectedInstanceId = useBuilderStore((state) => state.setSelectedInstanceId);
   const setHoveredInstanceId = useBuilderStore((state) => state.setHoveredInstanceId);
   const addInstance = useBuilderStore((state) => state.addInstance);
+  const updateInstance = useBuilderStore((state) => state.updateInstance);
   const { findInstance } = useBuilderStore();
   const { getComputedStyles } = useStyleStore();
   const [editingPageId, setEditingPageId] = useState<string | null>(null);
@@ -56,6 +58,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; instance: ComponentInstance } | null>(null);
+  const [headingSettings, setHeadingSettings] = useState<{ isOpen: boolean; position: { x: number; y: number } } | null>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
 
   const { setNodeRef } = useDroppable({
@@ -399,7 +402,11 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
         <HoverOverlay element={hoveredElement} />
       )}
       {!isPreviewMode && selectedElement && selectedInstance && (
-        <SelectionOverlay instance={selectedInstance} element={selectedElement} />
+        <SelectionOverlay 
+          instance={selectedInstance} 
+          element={selectedElement}
+          onOpenHeadingSettings={(position) => setHeadingSettings({ isOpen: true, position })}
+        />
       )}
       {!isPreviewMode && contextMenu && (
         <ContextMenu
@@ -407,6 +414,29 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
           y={contextMenu.y}
           instance={contextMenu.instance}
           onClose={() => setContextMenu(null)}
+        />
+      )}
+      {!isPreviewMode && headingSettings?.isOpen && selectedInstance?.type === 'Heading' && (
+        <HeadingSettingsPopover
+          isOpen={headingSettings.isOpen}
+          onClose={() => setHeadingSettings(null)}
+          position={headingSettings.position}
+          currentTag={selectedInstance.props.level || 'h1'}
+          currentText={selectedInstance.props.children || ''}
+          onTagChange={(tag) => {
+            updateInstance(selectedInstance.id, {
+              props: { ...selectedInstance.props, level: tag },
+            });
+          }}
+          onTextChange={(text) => {
+            updateInstance(selectedInstance.id, {
+              props: { ...selectedInstance.props, children: text },
+            });
+          }}
+          onShowAllSettings={() => {
+            setHeadingSettings(null);
+            // Could trigger Settings tab switch here if needed
+          }}
         />
       )}
     </div>
