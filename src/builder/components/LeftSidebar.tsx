@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Navigator } from './Navigator';
 import { ComponentsPanel } from './ComponentsPanel';
-import { Layers, Plus, FileText, ChevronRight, Home, Box, Sparkles } from 'lucide-react';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
+import { Layers, Plus, FileText, ChevronRight, Home, Box, Sparkles, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -58,7 +57,16 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
   };
 
   return (
-    <>
+    <div className="relative h-full">
+      {/* Overlay */}
+      {pageSettingsOpen && (
+        <div 
+          className="absolute inset-0 bg-black/20 z-40 rounded-lg"
+          onClick={() => setPageSettingsOpen(false)}
+        />
+      )}
+
+      {/* Main Sidebar */}
       <div 
         className="w-64 h-full border border-border rounded-lg shadow-xl flex flex-col overflow-hidden backdrop-blur-md bg-white/70 dark:bg-zinc-900/70"
       >
@@ -127,225 +135,244 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
         </Tabs>
       </div>
 
-      {/* Page Settings Drawer - from left side */}
-      <Sheet open={pageSettingsOpen} onOpenChange={setPageSettingsOpen}>
-        <SheetContent side="left" className="w-[340px] overflow-y-auto p-4">
-          <SheetHeader className="pb-3 space-y-1">
-            <SheetTitle className="text-sm">Page Settings</SheetTitle>
-            <SheetDescription className="text-xs">Configure settings for this page</SheetDescription>
-          </SheetHeader>
-          <div className="mt-3 space-y-3">
-            {/* Page Name */}
-            <div className="space-y-1.5">
-              <Label htmlFor="page-name" className="text-xs">Page Name</Label>
-              <Input
-                id="page-name"
-                value={pageNames[selectedPageForSettings] || ''}
-                onChange={(e) => onPageNameChange(selectedPageForSettings, e.target.value)}
-                className="h-7 text-xs"
-              />
-              <div className="flex items-center gap-2 mt-1.5">
-                <Checkbox 
-                  id="home-page"
-                  checked={homePage === selectedPageForSettings}
-                  onCheckedChange={(checked) => {
-                    if (checked) onSetHomePage(selectedPageForSettings);
-                  }}
-                  className="h-3 w-3"
-                />
-                <Label htmlFor="home-page" className="text-xs font-normal">
-                  Make "{pageNames[selectedPageForSettings]}" the home page
-                </Label>
-              </div>
+      {/* Custom Page Settings Drawer - slides from sidebar's right edge */}
+      <div 
+        className={`absolute top-0 left-64 h-full w-[340px] bg-white dark:bg-zinc-900 border border-border rounded-r-lg shadow-2xl z-50 transition-transform duration-300 ease-out ${
+          pageSettingsOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        <div className="h-full flex flex-col">
+          {/* Header */}
+          <div className="flex items-center justify-between p-4 border-b">
+            <div>
+              <h2 className="text-sm font-semibold">Page Settings</h2>
+              <p className="text-xs text-muted-foreground">Configure settings for this page</p>
             </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6"
+              onClick={() => setPageSettingsOpen(false)}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
 
-            {/* Path */}
-            <div className="space-y-1.5">
-              <Label htmlFor="page-path" className="text-xs">Path</Label>
-              <Input
-                id="page-path"
-                value={`/${pageNames[selectedPageForSettings]?.toLowerCase().replace(/\s+/g, '-') || ''}`}
-                disabled
-                className="bg-muted h-7 text-xs"
-              />
-            </div>
-
-            {/* Status Code */}
-            <div className="space-y-1.5">
-              <Label htmlFor="status-code" className="text-xs">Status Code</Label>
-              <Input
-                id="status-code"
-                value={statusCode}
-                onChange={(e) => setStatusCode(e.target.value)}
-                placeholder="200"
-                className="h-7 text-xs"
-              />
-            </div>
-
-            {/* Redirect */}
-            <div className="space-y-1.5">
-              <Label htmlFor="redirect" className="text-xs">Redirect</Label>
-              <Input
-                id="redirect"
-                value={redirect}
-                onChange={(e) => setRedirect(e.target.value)}
-                placeholder="/another-path"
-                className="h-7 text-xs"
-              />
-              <p className="text-[10px] text-muted-foreground">Dynamic routing and redirect are a part of the CMS functionality.</p>
-            </div>
-
-            {/* Document Type */}
-            <div className="space-y-1.5">
-              <Label htmlFor="document-type" className="text-xs">Document Type</Label>
-              <Select defaultValue="html">
-                <SelectTrigger id="document-type" className="h-7 text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="html">HTML</SelectItem>
-                  <SelectItem value="xml">XML</SelectItem>
-                  <SelectItem value="json">JSON</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <Separator className="my-3" />
-
-            {/* Search Section */}
-            <div className="space-y-2.5">
-              <div>
-                <h3 className="text-xs font-semibold mb-0.5">Search</h3>
-                <p className="text-[10px] text-muted-foreground">Optimize the way this page appears in search engine results pages.</p>
-              </div>
-
-              {/* Search Result Preview */}
+          {/* Content - scrollable */}
+          <div className="flex-1 overflow-y-auto p-4">
+            <div className="space-y-3">
+              {/* Page Name */}
               <div className="space-y-1.5">
-                <Label className="text-xs">Search Result Preview</Label>
-                <div className="border rounded p-2 bg-muted/30">
-                  <div className="flex items-start gap-1.5">
-                    <div className="w-3 h-3 bg-primary rounded-sm flex-shrink-0 mt-0.5" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[10px] text-muted-foreground truncate">
-                        https://marketplace-ai-startup-office...
-                      </p>
-                      <p className="text-xs text-primary font-medium mt-0.5">
-                        {pageMetaTitle || 'Untitled'}
-                      </p>
-                      <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-2">
-                        {pageMetaDescription || 'No description provided'}
-                      </p>
-                    </div>
-                  </div>
+                <Label htmlFor="page-name" className="text-xs">Page Name</Label>
+                <Input
+                  id="page-name"
+                  value={pageNames[selectedPageForSettings] || ''}
+                  onChange={(e) => onPageNameChange(selectedPageForSettings, e.target.value)}
+                  className="h-7 text-xs"
+                />
+                <div className="flex items-center gap-2 mt-1.5">
+                  <Checkbox 
+                    id="home-page"
+                    checked={homePage === selectedPageForSettings}
+                    onCheckedChange={(checked) => {
+                      if (checked) onSetHomePage(selectedPageForSettings);
+                    }}
+                    className="h-3 w-3"
+                  />
+                  <Label htmlFor="home-page" className="text-xs font-normal">
+                    Make "{pageNames[selectedPageForSettings]}" the home page
+                  </Label>
                 </div>
               </div>
 
-              {/* Title */}
+              {/* Path */}
               <div className="space-y-1.5">
-                <Label htmlFor="meta-title" className="text-xs">Title</Label>
+                <Label htmlFor="page-path" className="text-xs">Path</Label>
                 <Input
-                  id="meta-title"
-                  value={pageMetaTitle}
-                  onChange={(e) => setPageMetaTitle(e.target.value)}
-                  placeholder="Untitled"
+                  id="page-path"
+                  value={`/${pageNames[selectedPageForSettings]?.toLowerCase().replace(/\s+/g, '-') || ''}`}
+                  disabled
+                  className="bg-muted h-7 text-xs"
+                />
+              </div>
+
+              {/* Status Code */}
+              <div className="space-y-1.5">
+                <Label htmlFor="status-code" className="text-xs">Status Code</Label>
+                <Input
+                  id="status-code"
+                  value={statusCode}
+                  onChange={(e) => setStatusCode(e.target.value)}
+                  placeholder="200"
                   className="h-7 text-xs"
                 />
               </div>
 
-              {/* Description */}
+              {/* Redirect */}
               <div className="space-y-1.5">
-                <Label htmlFor="meta-description" className="text-xs">Description</Label>
+                <Label htmlFor="redirect" className="text-xs">Redirect</Label>
+                <Input
+                  id="redirect"
+                  value={redirect}
+                  onChange={(e) => setRedirect(e.target.value)}
+                  placeholder="/another-path"
+                  className="h-7 text-xs"
+                />
+                <p className="text-[10px] text-muted-foreground">Dynamic routing and redirect are a part of the CMS functionality.</p>
+              </div>
+
+              {/* Document Type */}
+              <div className="space-y-1.5">
+                <Label htmlFor="document-type" className="text-xs">Document Type</Label>
+                <Select defaultValue="html">
+                  <SelectTrigger id="document-type" className="h-7 text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="html">HTML</SelectItem>
+                    <SelectItem value="xml">XML</SelectItem>
+                    <SelectItem value="json">JSON</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <Separator className="my-3" />
+
+              {/* Search Section */}
+              <div className="space-y-2.5">
+                <div>
+                  <h3 className="text-xs font-semibold mb-0.5">Search</h3>
+                  <p className="text-[10px] text-muted-foreground">Optimize the way this page appears in search engine results pages.</p>
+                </div>
+
+                {/* Search Result Preview */}
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Search Result Preview</Label>
+                  <div className="border rounded p-2 bg-muted/30">
+                    <div className="flex items-start gap-1.5">
+                      <div className="w-3 h-3 bg-primary rounded-sm flex-shrink-0 mt-0.5" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[10px] text-muted-foreground truncate">
+                          https://marketplace-ai-startup-office...
+                        </p>
+                        <p className="text-xs text-primary font-medium mt-0.5">
+                          {pageMetaTitle || 'Untitled'}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-2">
+                          {pageMetaDescription || 'No description provided'}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Title */}
+                <div className="space-y-1.5">
+                  <Label htmlFor="meta-title" className="text-xs">Title</Label>
+                  <Input
+                    id="meta-title"
+                    value={pageMetaTitle}
+                    onChange={(e) => setPageMetaTitle(e.target.value)}
+                    placeholder="Untitled"
+                    className="h-7 text-xs"
+                  />
+                </div>
+
+                {/* Description */}
+                <div className="space-y-1.5">
+                  <Label htmlFor="meta-description" className="text-xs">Description</Label>
+                  <Textarea
+                    id="meta-description"
+                    value={pageMetaDescription}
+                    onChange={(e) => setPageMetaDescription(e.target.value)}
+                    placeholder="Enter page description"
+                    rows={3}
+                    className="text-xs resize-none"
+                  />
+                </div>
+
+                {/* Exclude from search */}
+                <div className="flex items-center gap-2">
+                  <Checkbox id="exclude-search" className="h-3 w-3" />
+                  <Label htmlFor="exclude-search" className="text-xs font-normal">
+                    Exclude this page from search results
+                  </Label>
+                </div>
+
+                {/* Language */}
+                <div className="space-y-1.5">
+                  <Label htmlFor="language" className="text-xs">Language</Label>
+                  <Input
+                    id="language"
+                    value={language}
+                    onChange={(e) => setLanguage(e.target.value)}
+                    placeholder="en-US"
+                    className="h-7 text-xs"
+                  />
+                </div>
+              </div>
+
+              <Separator className="my-3" />
+
+              {/* Social Image */}
+              <div className="space-y-1.5">
+                <Label className="text-xs">Social Image</Label>
+                <p className="text-[10px] text-muted-foreground mb-1.5">
+                  This image appears when you share a link to this page on social media sites.
+                </p>
+                <Input placeholder="https://www.url.com" className="h-7 text-xs" />
+                <Button variant="outline" size="sm" className="w-full mt-1.5 h-7 text-xs">
+                  Choose Image From Assets
+                </Button>
+              </div>
+
+              <Separator className="my-3" />
+
+              {/* Custom Code */}
+              <div className="space-y-1.5">
+                <Label htmlFor="custom-code" className="text-xs">Custom Code</Label>
                 <Textarea
-                  id="meta-description"
-                  value={pageMetaDescription}
-                  onChange={(e) => setPageMetaDescription(e.target.value)}
-                  placeholder="Enter page description"
-                  rows={3}
-                  className="text-xs resize-none"
+                  id="custom-code"
+                  value={customCode}
+                  onChange={(e) => setCustomCode(e.target.value)}
+                  placeholder="Add custom HTML, CSS, or JavaScript"
+                  rows={4}
+                  className="font-mono text-[10px] resize-none"
                 />
               </div>
 
-              {/* Exclude from search */}
-              <div className="flex items-center gap-2">
-                <Checkbox id="exclude-search" className="h-3 w-3" />
-                <Label htmlFor="exclude-search" className="text-xs font-normal">
-                  Exclude this page from search results
-                </Label>
+              <Separator className="my-3" />
+
+              {/* Action Buttons */}
+              <div className="flex gap-2 pt-2">
+                <Button
+                  variant="outline"
+                  className="flex items-center gap-1.5 h-7 text-xs"
+                  onClick={() => {
+                    onDuplicatePage(selectedPageForSettings);
+                    setPageSettingsOpen(false);
+                  }}
+                >
+                  <Copy className="w-3 h-3" />
+                  Duplicate
+                </Button>
+                <Button
+                  variant="destructive"
+                  className="flex items-center gap-1.5 h-7 text-xs"
+                  onClick={() => {
+                    onDeletePage(selectedPageForSettings);
+                    setPageSettingsOpen(false);
+                  }}
+                  disabled={pages.length === 1}
+                >
+                  <Trash2 className="w-3 h-3" />
+                  Delete
+                </Button>
               </div>
-
-              {/* Language */}
-              <div className="space-y-1.5">
-                <Label htmlFor="language" className="text-xs">Language</Label>
-                <Input
-                  id="language"
-                  value={language}
-                  onChange={(e) => setLanguage(e.target.value)}
-                  placeholder="en-US"
-                  className="h-7 text-xs"
-                />
-              </div>
-            </div>
-
-            <Separator className="my-3" />
-
-            {/* Social Image */}
-            <div className="space-y-1.5">
-              <Label className="text-xs">Social Image</Label>
-              <p className="text-[10px] text-muted-foreground mb-1.5">
-                This image appears when you share a link to this page on social media sites.
-              </p>
-              <Input placeholder="https://www.url.com" className="h-7 text-xs" />
-              <Button variant="outline" size="sm" className="w-full mt-1.5 h-7 text-xs">
-                Choose Image From Assets
-              </Button>
-            </div>
-
-            <Separator className="my-3" />
-
-            {/* Custom Code */}
-            <div className="space-y-1.5">
-              <Label htmlFor="custom-code" className="text-xs">Custom Code</Label>
-              <Textarea
-                id="custom-code"
-                value={customCode}
-                onChange={(e) => setCustomCode(e.target.value)}
-                placeholder="Add custom HTML, CSS, or JavaScript"
-                rows={4}
-                className="font-mono text-[10px] resize-none"
-              />
-            </div>
-
-            <Separator className="my-3" />
-
-            {/* Action Buttons */}
-            <div className="flex gap-2 pt-2">
-              <Button
-                variant="outline"
-                className="flex items-center gap-1.5 h-7 text-xs"
-                onClick={() => {
-                  onDuplicatePage(selectedPageForSettings);
-                  setPageSettingsOpen(false);
-                }}
-              >
-                <Copy className="w-3 h-3" />
-                Duplicate
-              </Button>
-              <Button
-                variant="destructive"
-                className="flex items-center gap-1.5 h-7 text-xs"
-                onClick={() => {
-                  onDeletePage(selectedPageForSettings);
-                  setPageSettingsOpen(false);
-                }}
-                disabled={pages.length === 1}
-              >
-                <Trash2 className="w-3 h-3" />
-                Delete
-              </Button>
             </div>
           </div>
-        </SheetContent>
-      </Sheet>
-    </>
+        </div>
+      </div>
+    </div>
   );
 };
