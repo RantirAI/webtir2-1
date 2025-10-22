@@ -638,9 +638,16 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
               {/* Alignment Section - 50/50 Grid Layout */}
               <div className="Col" style={{ gap: 'var(--space-1)' }}>
                 <label className="Label" style={{ fontSize: '10px' }}>Align</label>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-2)' }}>
-                  {/* Left: Alignment Grid */}
-                  <div className="AlignGrid">
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-2)', alignItems: 'start' }}>
+                  {/* Left: Alignment Grid - Full Height */}
+                  <div 
+                    className="AlignGrid"
+                    style={{
+                      height: 'auto',
+                      aspectRatio: '1',
+                      width: '100%',
+                    }}
+                  >
                     {Array.from({ length: 9 }).map((_, i) => {
                       const row = Math.floor(i / 3);
                       const col = i % 3;

@@ -143,16 +143,21 @@
 
 /* layout grid (3x3 align diagram) */
 .AlignGrid {
-  width: 92px;
-  height: 92px;
+  width: 100%;
+  aspect-ratio: 1;
   padding: var(--space-2);
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(3, 1fr);
   gap: 2px;
   background: hsl(var(--background));
-  border: 2px solid hsl(var(--primary));
+  border: 1px solid hsl(var(--border) / 0.3);
   border-radius: 4px;
+}
+
+/* Dark mode - slightly more visible border */
+.dark .AlignGrid {
+  border-color: hsl(var(--border) / 0.5);
 }
 
 .AlignBtn {
