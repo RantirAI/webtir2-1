@@ -1,15 +1,16 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { ComponentInstance } from '../store/types';
-import { ArrowUp, ArrowDown, Settings } from 'lucide-react';
+import { ArrowUp, ArrowDown, Settings, Plus } from 'lucide-react';
 import { useBuilderStore } from '../store/useBuilderStore';
 
 interface SelectionOverlayProps {
   instance: ComponentInstance;
   element: HTMLElement;
   onOpenHeadingSettings?: (position: { x: number; y: number }) => void;
+  onAddElement?: (position: { x: number; y: number }) => void;
 }
 
-export const SelectionOverlay: React.FC<SelectionOverlayProps> = ({ instance, element, onOpenHeadingSettings }) => {
+export const SelectionOverlay: React.FC<SelectionOverlayProps> = ({ instance, element, onOpenHeadingSettings, onAddElement }) => {
   const [rect, setRect] = useState<DOMRect | null>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
   const { moveInstance, findInstance } = useBuilderStore();
@@ -94,11 +95,22 @@ export const SelectionOverlay: React.FC<SelectionOverlayProps> = ({ instance, el
 
   const label = instance.label || instance.type;
   const isHeading = instance.type === 'Heading';
+  const isRichText = instance.type === 'RichText';
   
   const handleSettingsClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (onOpenHeadingSettings && rect) {
       onOpenHeadingSettings({ 
+        x: rect.left + rect.width + 10, 
+        y: rect.top 
+      });
+    }
+  };
+
+  const handleAddElementClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onAddElement && rect) {
+      onAddElement({ 
         x: rect.left + rect.width + 10, 
         y: rect.top 
       });
@@ -136,6 +148,15 @@ export const SelectionOverlay: React.FC<SelectionOverlayProps> = ({ instance, el
             title="Heading settings"
           >
             <Settings className="w-3 h-3" />
+          </button>
+        )}
+        {isRichText && (
+          <button
+            onClick={handleAddElementClick}
+            className="bg-blue-500 hover:bg-blue-600 text-white p-0.5 rounded transition-colors"
+            title="Add element"
+          >
+            <Plus className="w-3 h-3" />
           </button>
         )}
         <button

@@ -64,6 +64,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; instance: ComponentInstance } | null>(null);
   const [headingSettings, setHeadingSettings] = useState<{ isOpen: boolean; position: { x: number; y: number } } | null>(null);
+  const [richTextAddMenu, setRichTextAddMenu] = useState<{ isOpen: boolean; position: { x: number; y: number }; instanceId: string } | null>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
   const [customWidth, setCustomWidth] = useState<number | null>(null);
   const [isResizing, setIsResizing] = useState<'left' | 'right' | null>(null);
@@ -140,6 +141,19 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
     ? document.querySelector(`[data-instance-id="${hoveredInstanceId}"]`) as HTMLElement
     : null;
 
+  // Close menus when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (richTextAddMenu?.isOpen && !target.closest('.rich-text-add-menu')) {
+        setRichTextAddMenu(null);
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [richTextAddMenu]);
+
   const renderInstance = (instance: ComponentInstance): React.ReactNode => {
     const isSelected = instance.id === selectedInstanceId;
     const isHovered = instance.id === hoveredInstanceId;
@@ -209,7 +223,12 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
         return wrapWithDraggable(<Heading key={instance.id} {...commonProps} />);
       case 'RichText': {
         const content = (
-          <RichText {...commonProps}>
+          <RichText 
+            {...commonProps}
+            showAddMenu={richTextAddMenu?.isOpen && richTextAddMenu.instanceId === instance.id}
+            addMenuPosition={richTextAddMenu?.position}
+            onCloseAddMenu={() => setRichTextAddMenu(null)}
+          >
             {instance.children.map((child) => renderInstance(child))}
           </RichText>
         );
@@ -463,6 +482,11 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
           instance={selectedInstance} 
           element={selectedElement}
           onOpenHeadingSettings={(position) => setHeadingSettings({ isOpen: true, position })}
+          onAddElement={(position) => setRichTextAddMenu({ 
+            isOpen: true, 
+            position,
+            instanceId: selectedInstance.id 
+          })}
         />
       )}
       {!isPreviewMode && contextMenu && (

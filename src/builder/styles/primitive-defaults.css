@@ -15,6 +15,16 @@
   align-items: stretch !important;
 }
 
+/* Hide scrollbar globally but keep functionality */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
 /* Rich Text Typography Defaults */
 .builder-richtext h1 {
   font-size: 3rem;
@@ -63,37 +73,48 @@
   margin-bottom: 1em;
 }
 
-.builder-richtext ul {
+.builder-richtext ul,
+.builder-richtext > div > ul {
   list-style-type: disc;
   padding-left: 1.5em;
   margin-bottom: 1em;
+  display: block;
 }
 
-.builder-richtext ul li {
+.builder-richtext ul li,
+.builder-richtext > div > ul li {
   margin-bottom: 0.5em;
   line-height: 1.6;
+  display: list-item;
 }
 
-.builder-richtext ol {
+.builder-richtext ol,
+.builder-richtext > div > ol {
   list-style-type: decimal;
   padding-left: 1.5em;
   margin-bottom: 1em;
+  display: block;
 }
 
-.builder-richtext ol li {
+.builder-richtext ol li,
+.builder-richtext > div > ol li {
   margin-bottom: 0.5em;
   line-height: 1.6;
+  display: list-item;
 }
 
-.builder-richtext blockquote {
+.builder-richtext blockquote,
+.builder-richtext > div > div blockquote {
   border-left: 4px solid #e5e7eb;
   padding-left: 1em;
   margin: 1em 0;
   font-style: italic;
   color: #6b7280;
+  display: block;
 }
 
-.builder-richtext blockquote::before {
+.builder-richtext blockquote::before,
+.builder-richtext > div > div blockquote::before {
   content: '"';
   font-size: 2em;
   line-height: 0.1em;
@@ -102,7 +123,8 @@
   color: #e5e7eb;
 }
 
-.builder-richtext blockquote::after {
+.builder-richtext blockquote::after,
+.builder-richtext > div > div blockquote::after {
   content: '"';
   font-size: 2em;
   line-height: 0.1em;
