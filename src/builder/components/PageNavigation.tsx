@@ -5,7 +5,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { Separator } from '@/components/ui/separator';
 import { useTheme } from 'next-themes';
 import { useBuilderStore } from '@/builder/store/useBuilderStore';
-import { exportReactComponent, exportHTML, exportStylesheet, downloadFile } from '@/builder/utils/export';
+import { exportReactComponent, exportHTML, exportStylesheet, downloadFile, exportProject } from '@/builder/utils/export';
 import { useToast } from '@/hooks/use-toast';
 
 interface PageNavigationProps {
@@ -83,20 +83,14 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
     });
   };
 
-  const handleExportAll = () => {
+  const handleExportAll = async () => {
     if (!rootInstance) return;
     
-    const css = exportStylesheet();
-    const react = exportReactComponent(rootInstance, 'App');
-    const html = exportHTML(rootInstance, projectName);
-    
-    downloadFile('styles.css', css);
-    downloadFile('App.jsx', react);
-    downloadFile('index.html', html);
+    await exportProject(rootInstance, projectName || 'my-project');
     
     toast({
       title: 'Project Exported',
-      description: 'Downloaded all files successfully',
+      description: 'Downloaded project.zip with all files successfully',
     });
   };
 

@@ -1,3 +1,4 @@
+import JSZip from 'jszip';
 import { ComponentInstance, StyleDeclaration } from '../store/types';
 import { useStyleStore } from '../store/useStyleStore';
 import { componentRegistry } from '../primitives/registry';
@@ -17,7 +18,23 @@ function styleObjectToCSS(styles: StyleDeclaration): string {
 // Generate CSS stylesheet from all style sources
 export function exportStylesheet(): string {
   const { styleSources, styles, breakpoints } = useStyleStore.getState();
-  let css = '/* Auto-generated styles from Visual Builder */\n\n';
+  let css = `/* Auto-generated styles from Visual Builder */
+/* Bootstrap 4 Compatible */
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  color: #212529;
+  background-color: #fff;
+}
+
+`;
 
   const states = ['default', 'hover', 'focus', 'active', 'visited'];
 
@@ -85,7 +102,7 @@ function instanceToReact(instance: ComponentInstance, indent: number = 0): strin
               instance.type === 'Container' ? 'div' :
               instance.type === 'Section' ? 'section' :
               instance.type === 'Text' ? 'p' :
-              instance.type === 'Heading' ? 'h2' :
+              instance.type === 'Heading' ? (instance.props.level || 'h2') :
               instance.type === 'Button' ? 'button' :
               instance.type === 'Image' ? 'img' :
               instance.type === 'Link' ? 'a' : 'div';
@@ -168,10 +185,13 @@ function instanceToHTML(instance: ComponentInstance, indent: number = 0): string
               instance.type === 'Container' ? 'div' :
               instance.type === 'Section' ? 'section' :
               instance.type === 'Text' ? 'p' :
-              instance.type === 'Heading' ? 'h2' :
+              instance.type === 'Heading' ? (instance.props.level || 'h2') :
               instance.type === 'Button' ? 'button' :
               instance.type === 'Image' ? 'img' :
-              instance.type === 'Link' ? 'a' : 'div';
+              instance.type === 'Link' ? 'a' :
+              instance.type === 'Video' ? 'video' :
+              instance.type === 'Youtube' ? 'div' :
+              instance.type === 'Lottie' ? 'div' : 'div';
 
   // Get class names
   const { styleSources } = useStyleStore.getState();
@@ -194,6 +214,17 @@ function instanceToHTML(instance: ComponentInstance, indent: number = 0): string
   if (instance.type === 'Link' && instance.props.href) {
     attrs.push(`href="${instance.props.href}"`);
   }
+  if (instance.type === 'Video' && instance.props.src) {
+    attrs.push(`src="${instance.props.src}"`);
+    if (instance.props.controls) attrs.push('controls');
+    if (instance.props.autoplay) attrs.push('autoplay');
+    if (instance.props.loop) attrs.push('loop');
+    if (instance.props.muted) attrs.push('muted');
+  }
+  if (instance.type === 'Youtube' && instance.props.videoId) {
+    attrs.push(`data-video-id="${instance.props.videoId}"`);
+    attrs.push('class="youtube-embed"');
+  }
 
   const attrsString = attrs.length > 0 ? ' ' + attrs.join(' ') : '';
 
@@ -203,6 +234,13 @@ function instanceToHTML(instance: ComponentInstance, indent: number = 0): string
 
   if (instance.type === 'Image') {
     return `${spaces}<${tag}${attrsString}>`;
+  }
+
+  if (instance.type === 'Youtube') {
+    const videoId = instance.props.videoId || 'dQw4w9WgXcQ';
+    return `${spaces}<div${attrsString}>
+${spaces}  <iframe src="https://www.youtube.com/embed/${videoId}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="width: 100%; aspect-ratio: 16/9;"></iframe>
+${spaces}</div>`;
   }
 
   if (!hasChildren && !textContent) {
@@ -221,7 +259,7 @@ function instanceToHTML(instance: ComponentInstance, indent: number = 0): string
   return `${spaces}<${tag}${attrsString}>${content}</${tag}>`;
 }
 
-// Export as HTML
+// Export as HTML with embedded CSS
 export function exportHTML(rootInstance: ComponentInstance, title: string = 'My Page'): string {
   const bodyContent = rootInstance.children.map(child => instanceToHTML(child, 2)).join('\n');
   const { styleSources } = useStyleStore.getState();
@@ -229,6 +267,8 @@ export function exportHTML(rootInstance: ComponentInstance, title: string = 'My 
     ?.map(id => styleSources[id]?.name)
     .filter(Boolean)
     .join(' ') || '';
+  
+  const css = exportStylesheet();
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -247,8 +287,8 @@ ${bodyContent}
 }
 
 // Download file helper
-export function downloadFile(filename: string, content: string) {
-  const blob = new Blob([content], { type: 'text/plain' });
+export function downloadFile(filename: string, content: string | Blob) {
+  const blob = content instanceof Blob ? content : new Blob([content], { type: 'text/plain' });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
@@ -259,16 +299,65 @@ export function downloadFile(filename: string, content: string) {
   URL.revokeObjectURL(url);
 }
 
-// Export project as zip (requires JSZip library)
-export function exportProject(rootInstance: ComponentInstance, projectName: string = 'my-project') {
-  // For now, download individual files
-  // TODO: Integrate JSZip for proper zip export
+// Export project as zip
+export async function exportProject(rootInstance: ComponentInstance, projectName: string = 'my-project') {
+  const zip = new JSZip();
   
+  // Generate files
   const css = exportStylesheet();
-  const react = exportReactComponent(rootInstance, 'App');
   const html = exportHTML(rootInstance, projectName);
+  
+  // Create a simple JS file for Bootstrap 4 compatibility
+  const js = `// Bootstrap 4 Compatible JavaScript
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('${projectName} loaded successfully');
+  
+  // Initialize YouTube embeds
+  const youtubeEmbeds = document.querySelectorAll('.youtube-embed');
+  youtubeEmbeds.forEach(function(embed) {
+    const videoId = embed.getAttribute('data-video-id');
+    if (videoId) {
+      const iframe = embed.querySelector('iframe');
+      if (iframe) {
+        iframe.src = 'https://www.youtube.com/embed/' + videoId;
+      }
+    }
+  });
+});
+`;
 
-  downloadFile(`${projectName}.css`, css);
-  downloadFile(`${projectName}.jsx`, react);
-  downloadFile(`${projectName}.html`, html);
+  // Add files to zip
+  zip.file('index.html', html);
+  zip.file('styles.css', css);
+  zip.file('script.js', js);
+  
+  // Add README
+  const readme = `# ${projectName}
+
+This project was generated using Visual Builder.
+
+## Files Included
+- index.html - Main HTML file
+- styles.css - All compiled styles (Bootstrap 4 compatible)
+- script.js - JavaScript for interactivity
+
+## Usage
+Simply open index.html in your web browser to view your website.
+
+## Deployment
+You can deploy these files to any static hosting service like:
+- GitHub Pages
+- Netlify
+- Vercel
+- Amazon S3
+- Or any web server
+
+Enjoy your website!
+`;
+  
+  zip.file('README.md', readme);
+  
+  // Generate and download zip
+  const content = await zip.generateAsync({ type: 'blob' });
+  downloadFile(`${projectName}.zip`, content);
 }

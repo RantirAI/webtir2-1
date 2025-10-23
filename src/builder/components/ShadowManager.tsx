@@ -78,7 +78,7 @@ export const ShadowManager: React.FC<ShadowManagerProps> = ({ shadows, onChange 
                   }}
                   className="w-3 h-3"
                 />
-                <span className="text-[9px] text-foreground">
+                <span className="text-[10pt] text-foreground">
                   {shadow.inset ? 'Inner' : 'Outer'}: {shadow.x} {shadow.y} {shadow.blur}
                 </span>
               </div>
@@ -100,17 +100,25 @@ export const ShadowManager: React.FC<ShadowManagerProps> = ({ shadows, onChange 
               <div className="p-2 space-y-2 bg-background">
                 {/* Type Toggle */}
                 <div className="space-y-0.5">
-                  <label className="text-[9px] font-medium text-foreground">Type</label>
+                  <label className="text-[10pt] font-medium text-foreground">Type</label>
                   <div className="grid grid-cols-2 gap-1">
                     <button
-                      className={`text-[9px] py-1 px-2 rounded border ${!shadow.inset ? 'bg-primary text-primary-foreground border-primary' : 'bg-background text-foreground border-border hover:bg-muted'}`}
-                      onClick={() => updateShadow(shadow.id, { inset: false })}
+                      className={`text-[10pt] py-1 px-2 rounded border transition-colors ${!shadow.inset ? 'bg-primary text-primary-foreground border-primary' : 'bg-background text-foreground border-border hover:bg-muted'}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        updateShadow(shadow.id, { inset: false });
+                      }}
+                      onPointerDown={(e) => e.stopPropagation()}
                     >
                       Outside
                     </button>
                     <button
-                      className={`text-[9px] py-1 px-2 rounded border ${shadow.inset ? 'bg-primary text-primary-foreground border-primary' : 'bg-background text-foreground border-border hover:bg-muted'}`}
-                      onClick={() => updateShadow(shadow.id, { inset: true })}
+                      className={`text-[10pt] py-1 px-2 rounded border transition-colors ${shadow.inset ? 'bg-primary text-primary-foreground border-primary' : 'bg-background text-foreground border-border hover:bg-muted'}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        updateShadow(shadow.id, { inset: true });
+                      }}
+                      onPointerDown={(e) => e.stopPropagation()}
                     >
                       Inside
                     </button>
@@ -120,12 +128,13 @@ export const ShadowManager: React.FC<ShadowManagerProps> = ({ shadows, onChange 
                 {/* X Offset */}
                 <div className="space-y-0.5">
                   <div className="flex items-center justify-between">
-                    <label className="text-[9px] font-medium text-foreground">X</label>
+                    <label className="text-[10pt] font-medium text-foreground">X</label>
                     <Input
                       type="number"
                       value={parsePixelValue(shadow.x)}
                       onChange={(e) => updateShadow(shadow.id, { x: formatPixelValue(parseFloat(e.target.value) || 0) })}
-                      className="w-12 h-5 text-[9px] px-1"
+                      onPointerDown={(e) => e.stopPropagation()}
+                      className="w-12 h-5 text-[10pt] px-1"
                     />
                   </div>
                   <Slider
@@ -140,12 +149,13 @@ export const ShadowManager: React.FC<ShadowManagerProps> = ({ shadows, onChange 
                 {/* Y Offset */}
                 <div className="space-y-0.5">
                   <div className="flex items-center justify-between">
-                    <label className="text-[9px] font-medium text-foreground">Y</label>
+                    <label className="text-[10pt] font-medium text-foreground">Y</label>
                     <Input
                       type="number"
                       value={parsePixelValue(shadow.y)}
                       onChange={(e) => updateShadow(shadow.id, { y: formatPixelValue(parseFloat(e.target.value) || 0) })}
-                      className="w-12 h-5 text-[9px] px-1"
+                      onPointerDown={(e) => e.stopPropagation()}
+                      className="w-12 h-5 text-[10pt] px-1"
                     />
                   </div>
                   <Slider
@@ -160,12 +170,13 @@ export const ShadowManager: React.FC<ShadowManagerProps> = ({ shadows, onChange 
                 {/* Blur */}
                 <div className="space-y-0.5">
                   <div className="flex items-center justify-between">
-                    <label className="text-[9px] font-medium text-foreground">Blur</label>
+                    <label className="text-[10pt] font-medium text-foreground">Blur</label>
                     <Input
                       type="number"
                       value={parsePixelValue(shadow.blur)}
                       onChange={(e) => updateShadow(shadow.id, { blur: formatPixelValue(parseFloat(e.target.value) || 0) })}
-                      className="w-12 h-5 text-[9px] px-1"
+                      onPointerDown={(e) => e.stopPropagation()}
+                      className="w-12 h-5 text-[10pt] px-1"
                     />
                   </div>
                   <Slider
@@ -180,12 +191,13 @@ export const ShadowManager: React.FC<ShadowManagerProps> = ({ shadows, onChange 
                 {/* Size (Spread) */}
                 <div className="space-y-0.5">
                   <div className="flex items-center justify-between">
-                    <label className="text-[9px] font-medium text-foreground">Size</label>
+                    <label className="text-[10pt] font-medium text-foreground">Size</label>
                     <Input
                       type="number"
                       value={parsePixelValue(shadow.spread)}
                       onChange={(e) => updateShadow(shadow.id, { spread: formatPixelValue(parseFloat(e.target.value) || 0) })}
-                      className="w-12 h-5 text-[9px] px-1"
+                      onPointerDown={(e) => e.stopPropagation()}
+                      className="w-12 h-5 text-[10pt] px-1"
                     />
                   </div>
                   <Slider
@@ -199,7 +211,7 @@ export const ShadowManager: React.FC<ShadowManagerProps> = ({ shadows, onChange 
 
                 {/* Color */}
                 <div className="space-y-0.5">
-                  <label className="text-[9px] font-medium text-foreground">Color</label>
+                  <label className="text-[10pt] font-medium text-foreground">Color</label>
                   <div className="flex items-center gap-1.5">
                     <input
                       type="color"
@@ -208,14 +220,16 @@ export const ShadowManager: React.FC<ShadowManagerProps> = ({ shadows, onChange 
                         const hex = e.target.value;
                         updateShadow(shadow.id, { color: `${hex}33` });
                       }}
+                      onPointerDown={(e) => e.stopPropagation()}
                       className="w-5 h-5 rounded border border-border cursor-pointer"
                     />
                     <Input
                       type="text"
                       value={shadow.color}
                       onChange={(e) => updateShadow(shadow.id, { color: e.target.value })}
+                      onPointerDown={(e) => e.stopPropagation()}
                       placeholder="rgba(0, 0, 0, 0.2)"
-                      className="flex-1 h-5 text-[9px] px-1.5"
+                      className="flex-1 h-5 text-[10pt] px-1.5"
                     />
                   </div>
                 </div>
@@ -225,7 +239,7 @@ export const ShadowManager: React.FC<ShadowManagerProps> = ({ shadows, onChange 
         ))}
 
         {shadows.length === 0 && (
-          <div className="text-[9px] text-muted-foreground text-center py-3">
+          <div className="text-[10pt] text-muted-foreground text-center py-3">
             No shadows. Click + to add one.
           </div>
         )}
