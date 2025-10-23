@@ -87,12 +87,12 @@ export const UnitInput: React.FC<UnitInputProps> = ({
             }}
           />
           <Select value={unit} onValueChange={(newUnit) => onChange(number ? `${number}${newUnit}` : '')}>
-            <SelectTrigger className="w-9 h-6 text-[9px] border-border px-0.5 bg-[#F5F5F5] dark:bg-[#09090b] text-foreground">
+            <SelectTrigger className="w-8 h-6 text-[8px] border-border px-0 bg-[#F5F5F5] dark:bg-[#09090b] text-foreground">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent className="min-w-[50px] bg-background z-[9999]" align="end" side="bottom" sideOffset={2}>
+            <SelectContent className="min-w-[40px] bg-background z-[9999]" align="end" side="bottom" sideOffset={2}>
               {units.map((u) => (
-                <SelectItem key={u} value={u} className="text-[10px] py-0.5">
+                <SelectItem key={u} value={u} className="text-[8px] py-0.5">
                   {u}
                 </SelectItem>
               ))}

@@ -64,8 +64,8 @@
 /* compact "small form" controls */
 .Label {
   color: hsl(var(--muted-foreground));
-  font-size: 9px;
-  min-width: 26px;
+  font-size: 8px;
+  min-width: 22px;
 }
 
 .Input,
@@ -295,8 +295,9 @@
 }
 
 .IconButton[data-state="active"] {
-  background: hsl(var(--primary));
+  background: hsl(var(--accent));
   border-color: hsl(var(--primary));
+  border-width: 2px;
 }
 
 /* Gap tokens */
