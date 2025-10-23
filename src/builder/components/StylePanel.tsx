@@ -16,6 +16,9 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { Button } from '@/components/ui/button';
 import { ClassSelector } from './ClassSelector';
 import { ImageUpload } from './ImageUpload';
+import { ShadowManager } from './ShadowManager';
+import { ShadowItem } from '../store/types';
+import { compileMetadataToCSS } from '../utils/cssCompiler';
 import '../styles/style-panel.css';
 import '../styles/tokens.css';
 
@@ -33,7 +36,7 @@ interface StylePanelProps {
 
 export const StylePanel: React.FC<StylePanelProps> = ({}) => {
   const { getSelectedInstance, updateInstance } = useBuilderStore();
-  const { setStyle, getComputedStyles, styleSources, createStyleSource, nextLocalClassName, renameStyleSource, deleteStyleSource, currentPseudoState, setCurrentPseudoState, resetStyles } = useStyleStore();
+  const { setStyle, getComputedStyles, styleSources, createStyleSource, nextLocalClassName, renameStyleSource, deleteStyleSource, currentPseudoState, setCurrentPseudoState, resetStyles, setStyleMetadata, getStyleMetadata } = useStyleStore();
   const selectedInstance = getSelectedInstance();
   
   // ALL useState hooks MUST be at the top, before any conditional logic
@@ -1337,16 +1340,27 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
               onChange={(e) => updateStyle('opacity', e.target.value)}
             />
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '26px 1fr', gap: '2px', alignItems: 'center' }}>
-            <label className="Label">Shadow</label>
-            <input
-              className="Input"
-              type="text"
-              placeholder="0 4px 6px rgba(0,0,0,0.1)"
-              value={computedStyles.boxShadow || ''}
-              onChange={(e) => updateStyle('boxShadow', e.target.value)}
+          
+          {/* Shadow Manager */}
+          <div className="pt-2">
+            <ShadowManager
+              shadows={(() => {
+                if (!selectedInstance.styleSourceIds || selectedInstance.styleSourceIds.length === 0) return [];
+                const activeClassId = selectedInstance.styleSourceIds[activeClassIndex ?? 0];
+                if (!activeClassId) return [];
+                const metadata = getStyleMetadata(activeClassId);
+                return metadata?.shadows || [];
+              })()}
+              onChange={(shadows) => {
+                if (!selectedInstance.styleSourceIds || selectedInstance.styleSourceIds.length === 0) return;
+                const activeClassId = selectedInstance.styleSourceIds[activeClassIndex ?? 0];
+                if (!activeClassId) return;
+                const metadata = getStyleMetadata(activeClassId) || {};
+                setStyleMetadata(activeClassId, { ...metadata, shadows });
+              }}
             />
           </div>
+          
           <div style={{ display: 'grid', gridTemplateColumns: '26px 1fr', gap: '2px', alignItems: 'center' }}>
             <label className="Label">Filter</label>
             <input

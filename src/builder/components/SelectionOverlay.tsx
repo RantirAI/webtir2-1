@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { ComponentInstance } from '../store/types';
 import { ArrowUp, ArrowDown, Settings, Plus } from 'lucide-react';
 import { useBuilderStore } from '../store/useBuilderStore';
+import { useStyleStore } from '../store/useStyleStore';
 
 interface SelectionOverlayProps {
   instance: ComponentInstance;
@@ -14,6 +15,11 @@ export const SelectionOverlay: React.FC<SelectionOverlayProps> = ({ instance, el
   const [rect, setRect] = useState<DOMRect | null>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
   const { moveInstance, findInstance } = useBuilderStore();
+  const { getComputedStyles } = useStyleStore();
+  
+  // Get computed styles to check if element has grid display
+  const computedStyles = getComputedStyles(instance.styleSourceIds || []);
+  const isGrid = computedStyles.display === 'grid';
   
   useEffect(() => {
     const updateRect = () => {
@@ -96,6 +102,20 @@ export const SelectionOverlay: React.FC<SelectionOverlayProps> = ({ instance, el
   const label = instance.label || instance.type;
   const isHeading = instance.type === 'Heading';
   const isRichText = instance.type === 'RichText';
+
+  // Parse grid template columns/rows for grid overlay
+  const parseGridTemplate = (template: string | undefined): number => {
+    if (!template) return 0;
+    // Handle repeat() notation
+    const repeatMatch = template.match(/repeat\((\d+),/);
+    if (repeatMatch) return parseInt(repeatMatch[1]);
+    // Handle space-separated values
+    const values = template.split(' ').filter(v => v.trim());
+    return values.length;
+  };
+
+  const gridCols = isGrid ? parseGridTemplate(computedStyles.gridTemplateColumns) : 0;
+  const gridRows = isGrid ? parseGridTemplate(computedStyles.gridTemplateRows) : 0;
   
   const handleSettingsClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -130,6 +150,50 @@ export const SelectionOverlay: React.FC<SelectionOverlayProps> = ({ instance, el
     >
       {/* Blue border */}
       <div className="absolute inset-0 border-2 border-blue-500 rounded pointer-events-none" />
+      
+      {/* Grid overlay for grid layouts */}
+      {isGrid && gridCols > 0 && gridRows > 0 && (
+        <svg 
+          className="absolute inset-0 pointer-events-none"
+          style={{ width: '100%', height: '100%' }}
+        >
+          {/* Vertical lines for columns */}
+          {Array.from({ length: gridCols + 1 }).map((_, i) => {
+            const x = (i / gridCols) * 100;
+            return (
+              <line
+                key={`col-${i}`}
+                x1={`${x}%`}
+                y1="0"
+                x2={`${x}%`}
+                y2="100%"
+                stroke="hsl(var(--primary))"
+                strokeWidth="1"
+                strokeDasharray="4 4"
+                opacity="0.4"
+              />
+            );
+          })}
+          
+          {/* Horizontal lines for rows */}
+          {Array.from({ length: gridRows + 1 }).map((_, i) => {
+            const y = (i / gridRows) * 100;
+            return (
+              <line
+                key={`row-${i}`}
+                x1="0"
+                y1={`${y}%`}
+                x2="100%"
+                y2={`${y}%`}
+                stroke="hsl(var(--primary))"
+                strokeWidth="1"
+                strokeDasharray="4 4"
+                opacity="0.4"
+              />
+            );
+          })}
+        </svg>
+      )}
       
       {/* Label badge with arrows and settings */}
       <div className="absolute -top-7 left-0 flex items-center gap-0.5 pointer-events-auto">
