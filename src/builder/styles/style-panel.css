@@ -403,3 +403,15 @@
   color: hsl(var(--muted-foreground));
 }
 
+/* Tighter layout for compact triggers (e.g., unit inputs) */
+.StylePanel .sp-trigger-compact {
+  padding-left: 1px;
+  padding-right: 1px;
+  justify-content: flex-start;
+  gap: 0;
+}
+.StylePanel .sp-trigger-compact svg {
+  width: 9px;
+  height: 9px;
+  margin-left: 1px;
+}
