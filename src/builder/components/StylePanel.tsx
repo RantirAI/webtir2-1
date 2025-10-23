@@ -698,7 +698,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
                         className="Select"
                         value={computedStyles.justifyContent || 'flex-start'}
                         onChange={(e) => updateStyle('justifyContent', e.target.value)}
-                        style={{ fontSize: '9px', padding: '2px 4px', height: '22px', maxWidth: '48px' }}
+                        style={{ fontSize: '9px', padding: '2px 4px', height: '22px', maxWidth: '90px' }}
                       >
                         <option value="flex-start">Start</option>
                         <option value="center">Center</option>
@@ -715,7 +715,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
                         className="Select"
                         value={computedStyles.alignItems || 'stretch'}
                         onChange={(e) => updateStyle('alignItems', e.target.value)}
-                        style={{ fontSize: '9px', padding: '2px 4px', height: '22px', maxWidth: '48px' }}
+                        style={{ fontSize: '9px', padding: '2px 4px', height: '22px', maxWidth: '90px' }}
                       >
                         <option value="stretch">Stretch</option>
                         <option value="flex-start">Start</option>
@@ -828,6 +828,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
                   className="Select"
                   value={computedStyles.alignItems || 'stretch'}
                   onChange={(e) => updateStyle('alignItems', e.target.value)}
+                  style={{ maxWidth: '90px' }}
                 >
                   <option value="stretch">Stretch</option>
                   <option value="start">Start</option>
@@ -842,6 +843,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
                   className="Select"
                   value={computedStyles.justifyItems || 'stretch'}
                   onChange={(e) => updateStyle('justifyItems', e.target.value)}
+                  style={{ maxWidth: '90px' }}
                 >
                   <option value="stretch">Stretch</option>
                   <option value="start">Start</option>
@@ -867,6 +869,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
                   className="Select"
                   value={computedStyles.placeContent || 'normal'}
                   onChange={(e) => updateStyle('placeContent', e.target.value)}
+                  style={{ maxWidth: '90px' }}
                 >
                   <option value="normal">Normal</option>
                   <option value="start">Start</option>
@@ -962,6 +965,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
               className="Select"
               value={computedStyles.overflow || 'visible'}
               onChange={(e) => updateStyle('overflow', e.target.value)}
+              style={{ maxWidth: '90px' }}
             >
               <option value="visible">Visible</option>
               <option value="hidden">Hidden</option>
@@ -1167,6 +1171,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
               className="Select"
               value={computedStyles.textDecoration || 'none'}
               onChange={(e) => updateStyle('textDecoration', e.target.value)}
+              style={{ maxWidth: '90px' }}
             >
               <option value="none">None</option>
               <option value="underline">Under</option>
@@ -1178,6 +1183,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
               className="Select"
               value={computedStyles.textTransform || 'none'}
               onChange={(e) => updateStyle('textTransform', e.target.value)}
+              style={{ maxWidth: '90px' }}
             >
               <option value="none">None</option>
               <option value="uppercase">Upper</option>
@@ -1209,6 +1215,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
               className="Select"
               value={computedStyles.wordBreak || 'normal'}
               onChange={(e) => updateStyle('wordBreak', e.target.value)}
+              style={{ maxWidth: '90px' }}
             >
               <option value="normal">Normal</option>
               <option value="break-all">All</option>
@@ -1223,6 +1230,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
               className="Select"
               value={computedStyles.whiteSpace || 'normal'}
               onChange={(e) => updateStyle('whiteSpace', e.target.value)}
+              style={{ maxWidth: '90px' }}
             >
               <option value="normal">Normal</option>
               <option value="nowrap">None</option>
@@ -1234,6 +1242,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
               className="Select"
               value={computedStyles.textOverflow || 'clip'}
               onChange={(e) => updateStyle('textOverflow', e.target.value)}
+              style={{ maxWidth: '90px' }}
             >
               <option value="clip">Clip</option>
               <option value="ellipsis">...</option>
@@ -1258,6 +1267,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
               className="Select"
               value={computedStyles.backgroundClip || 'border-box'}
               onChange={(e) => updateStyle('backgroundClip', e.target.value)}
+              style={{ maxWidth: '90px' }}
             >
               <option value="border-box">Border</option>
               <option value="padding-box">Padding</option>
@@ -1285,6 +1295,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
               className="Select"
               value={computedStyles.borderStyle || 'none'}
               onChange={(e) => updateStyle('borderStyle', e.target.value)}
+              style={{ maxWidth: '90px' }}
             >
               <option value="none">None</option>
               <option value="solid">Solid</option>
@@ -1318,6 +1329,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
               className="Select"
               value={computedStyles.mixBlendMode || 'normal'}
               onChange={(e) => updateStyle('mixBlendMode', e.target.value)}
+              style={{ maxWidth: '90px' }}
             >
               <option value="normal">Normal</option>
               <option value="multiply">Multiply</option>
@@ -1375,6 +1387,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
               className="Select"
               value={computedStyles.cursor || 'auto'}
               onChange={(e) => updateStyle('cursor', e.target.value)}
+              style={{ maxWidth: '90px' }}
             >
               <option value="auto">Auto</option>
               <option value="pointer">Pointer</option>
