@@ -34,14 +34,8 @@ export const Section: React.FC<SectionProps> = ({
     return () => clearTimeout(timer);
   }, []);
 
-  // No inline computed styles - use CSS classes only
-  // Only essential non-layout defaults - let CSS classes control display/flex/grid
+  // Only essential inline styles - let CSS classes control all layout/sizing
   const defaultStyles: React.CSSProperties = {
-    width: '100%',
-    minWidth: '100%',
-    flexBasis: '100%',
-    position: 'relative',
-    minHeight: '100px',
     outline: isNewlyAdded ? '2px dashed hsl(var(--primary) / 0.5)' : 'none',
     outlineOffset: '-2px',
     transition: 'outline 0.3s ease-out',

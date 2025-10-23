@@ -7,12 +7,29 @@
   flex-direction: row;
   flex-wrap: wrap;
   align-items: flex-start;
+  position: relative;
 }
 
 /* Root-specific styles */
 [data-instance-id="root"] {
   flex-direction: column !important;
   align-items: stretch !important;
+  width: 100%;
+  background-color: #ffffff;
+}
+
+/* Container defaults */
+.builder-container {
+  width: 100%;
+  min-height: 100px;
+}
+
+/* Section defaults */
+.builder-section {
+  width: 100%;
+  min-width: 100%;
+  flex-basis: 100%;
+  min-height: 100px;
 }
 
 /* Hide scrollbar globally but keep functionality */

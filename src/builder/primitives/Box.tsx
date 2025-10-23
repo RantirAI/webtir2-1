@@ -27,15 +27,9 @@ export const Box: React.FC<BoxProps> = ({
 }) => {
   const isRoot = instance.id === 'root';
 
-  // No inline computed styles - use CSS classes only
-  // Only essential non-layout defaults - let CSS classes control display/flex/grid
+  // Only essential inline styles - let CSS classes control all layout/sizing
   const defaultStyles: React.CSSProperties = {
-    width: '100%',
-    minWidth: isRoot ? undefined : '100%',
-    flexBasis: isRoot ? undefined : '100%',
-    height: isRoot ? undefined : '100%',
-    position: 'relative',
-    backgroundColor: isRoot ? '#ffffff' : 'transparent',
+    backgroundColor: isRoot ? '#ffffff' : undefined,
   };
 
   const finalStyles = defaultStyles;

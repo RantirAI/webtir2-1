@@ -73,10 +73,6 @@ export const RichText: React.FC<RichTextProps> = ({
     <div
       data-instance-id={instance.id}
       className={`builder-richtext ${(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}`}
-      style={{
-        position: 'relative',
-        width: '100%',
-      }}
       onClick={isPreviewMode ? undefined : (e) => {
         e.stopPropagation();
         onSelect?.();

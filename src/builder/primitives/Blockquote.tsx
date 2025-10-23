@@ -37,9 +37,6 @@ export const Blockquote: React.FC<BlockquoteProps> = ({
     <div
       data-instance-id={instance.id}
       className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
-      style={{
-        position: 'relative',
-      }}
       onClick={isPreviewMode ? undefined : (e) => {
         e.stopPropagation();
         onSelect?.();

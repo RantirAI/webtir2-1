@@ -35,12 +35,8 @@ export const Container: React.FC<ContainerProps> = ({
     return () => clearTimeout(timer);
   }, []);
 
-  // No inline computed styles - use CSS classes only
-  // Only essential non-layout defaults - let CSS classes control display/flex/grid
+  // Only essential inline styles - let CSS classes control all layout/sizing
   const defaultStyles: React.CSSProperties = {
-    width: '100%',
-    height: '100%',
-    minHeight: '100px',
     outline: isNewlyAdded ? '2px dashed hsl(var(--primary) / 0.5)' : 'none',
     outlineOffset: '-2px',
     transition: 'outline 0.3s ease-out',
