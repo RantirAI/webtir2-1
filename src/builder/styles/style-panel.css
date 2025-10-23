@@ -398,8 +398,15 @@
 
 /* Compact select chevrons for small triggers */
 .StylePanel .sp-trigger svg {
-  width: 10px;
-  height: 10px;
+  width: 9px;
+  height: 9px;
   color: hsl(var(--muted-foreground));
+  margin-left: 1px;
+}
+
+/* Max width constraint for number inputs and small selects */
+.StylePanel .Input[type="number"],
+.StylePanel .Select {
+  max-width: 60px;
 }
 

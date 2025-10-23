@@ -218,6 +218,7 @@ export const FontPicker: React.FC<FontPickerProps> = ({ value, weight, onChange,
           value={weight || '400'}
           onChange={(e) => onWeightChange(e.target.value)}
           disabled={!currentFont && !isCustomFont}
+          style={{ maxWidth: '60px' }}
         >
           {availableWeights.map(w => (
             <option key={w} value={w}>
