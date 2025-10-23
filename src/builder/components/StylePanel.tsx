@@ -698,7 +698,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
                         className="Select"
                         value={computedStyles.justifyContent || 'flex-start'}
                         onChange={(e) => updateStyle('justifyContent', e.target.value)}
-                        style={{ fontSize: '9px', padding: '2px 4px', height: '22px', maxWidth: '60px' }}
+                        style={{ fontSize: '9px', padding: '2px 4px', height: '22px', maxWidth: '48px' }}
                       >
                         <option value="flex-start">Start</option>
                         <option value="center">Center</option>
@@ -715,7 +715,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
                         className="Select"
                         value={computedStyles.alignItems || 'stretch'}
                         onChange={(e) => updateStyle('alignItems', e.target.value)}
-                        style={{ fontSize: '9px', padding: '2px 4px', height: '22px', maxWidth: '60px' }}
+                        style={{ fontSize: '9px', padding: '2px 4px', height: '22px', maxWidth: '48px' }}
                       >
                         <option value="stretch">Stretch</option>
                         <option value="flex-start">Start</option>
@@ -758,7 +758,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
                       const count = Math.max(1, parseInt(e.target.value) || 1);
                       updateStyle('gridTemplateColumns', `repeat(${count}, 1fr)`);
                     }}
-                    style={{ textAlign: 'center', flex: 1, maxWidth: '60px' }}
+                    style={{ textAlign: 'center', flex: 1, maxWidth: '48px' }}
                   />
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
@@ -776,7 +776,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
                       const count = Math.max(1, parseInt(e.target.value) || 1);
                       updateStyle('gridTemplateRows', `repeat(${count}, auto)`);
                     }}
-                    style={{ textAlign: 'center', flex: 1, maxWidth: '60px' }}
+                    style={{ textAlign: 'center', flex: 1, maxWidth: '48px' }}
                   />
                 </div>
               </div>
@@ -1054,7 +1054,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
                   value={computedStyles.zIndex?.toString() || ''}
                   onChange={(e) => updateStyle('zIndex', e.target.value)}
                   placeholder="Auto"
-                  style={{ maxWidth: '60px' }}
+                  style={{ maxWidth: '48px' }}
                 />
               </div>
             </>

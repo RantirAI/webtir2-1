@@ -86,7 +86,7 @@ export const UnitInput: React.FC<UnitInputProps> = ({
             }}
           />
           <Select value={unit} onValueChange={(newUnit) => onChange(number ? `${number}${newUnit}` : '')}>
-            <SelectTrigger className="w-8 h-6 text-[8px] border-border px-1 gap-0 bg-[#F5F5F5] dark:bg-[#09090b] text-foreground sp-trigger flex items-center justify-center">
+            <SelectTrigger className="w-8 h-6 text-[8px] border-border px-1 gap-0.5 bg-[#F5F5F5] dark:bg-[#09090b] sp-trigger-compact flex items-center justify-center" style={{ color: 'hsl(var(--muted-foreground))' }}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent className="min-w-[40px] bg-background z-[9999]" align="end" side="bottom" sideOffset={2}>

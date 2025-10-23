@@ -38,6 +38,25 @@
   align-items: center;
   gap: var(--space-2);
   font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.SectionTitle.text-blue-600 {
+  background: hsl(217, 91%, 60%, 0.1);
+}
+
+.dark .SectionTitle.text-blue-400 {
+  background: hsl(217, 91%, 60%, 0.15);
+}
+
+.SectionTitle.text-yellow-600 {
+  background: hsl(45, 93%, 47%, 0.1);
+}
+
+.dark .SectionTitle.text-yellow-400 {
+  background: hsl(45, 93%, 47%, 0.15);
 }
 
 .SectionIcon {
@@ -397,11 +416,16 @@
 }
 
 /* Compact select chevrons for small triggers */
-.StylePanel .sp-trigger svg {
+.StylePanel .sp-trigger-compact svg {
   width: 9px;
   height: 9px;
   color: hsl(var(--muted-foreground));
-  margin-left: 1px;
+  margin-left: 2px;
+}
+
+/* Ensure dropdown chevron inherits muted color */
+.StylePanel .sp-trigger-compact {
+  color: hsl(var(--muted-foreground));
 }
 
 /* Max width constraint for all inputs and selects */
@@ -410,6 +434,19 @@
 .StylePanel input[type="text"],
 .StylePanel input[type="number"],
 .StylePanel .Select {
-  max-width: 60px;
+  max-width: 48px;
+}
+
+/* Dropdown chevron styling - match colors */
+.StylePanel .Select {
+  color: hsl(var(--foreground));
+}
+
+.StylePanel .Select option {
+  color: hsl(var(--foreground));
+}
+
+.dark .StylePanel .Select option {
+  color: #ffffff;
 }
 
