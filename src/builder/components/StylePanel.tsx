@@ -300,47 +300,50 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
   }> = ({ title, section, children, hasAddButton, indicator, properties }) => {
     const hasStyles = properties ? hasStylesInSection(properties) : indicator;
     const isPrimary = activeClassIndex === null || activeClassIndex === 0;
+    const [isHovered, setIsHovered] = useState(false);
     
     return (
       <div className="Section">
-        <div className="SectionHeader" onClick={() => toggleSection(section)}>
+        <div 
+          className="SectionHeader group" 
+          onClick={() => toggleSection(section)}
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+        >
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
             <span className={`SectionTitle ${hasStyles ? (isPrimary ? 'text-blue-600 dark:text-blue-400' : 'text-yellow-600 dark:text-yellow-400') : ''}`}>
               {title}
             </span>
             {hasStyles && (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span style={{ 
-                      width: '8px', 
-                      height: '8px', 
-                      borderRadius: '50%', 
-                      background: isPrimary ? 'hsl(217, 91%, 60%)' : 'hsl(45, 93%, 47%)'
-                    }} />
-                  </TooltipTrigger>
-                  <TooltipContent side="right" className="bg-popover border border-border">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs">
-                        {isPrimary ? 'Primary class styles' : 'Combo class overrides'}
-                      </span>
-                      {properties && (
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-5 px-2 text-xs"
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <span style={{ 
+                  width: '8px', 
+                  height: '8px', 
+                  borderRadius: '50%', 
+                  background: isPrimary ? 'hsl(217, 91%, 60%)' : 'hsl(45, 93%, 47%)'
+                }} />
+                {isHovered && properties && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
                           onClick={(e) => {
                             e.stopPropagation();
                             clearSectionStyles(properties);
                           }}
+                          className="w-4 h-4 flex items-center justify-center rounded hover:bg-accent transition-colors"
+                          style={{ padding: '2px' }}
                         >
-                          Clear
-                        </Button>
-                      )}
-                    </div>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+                          <RotateCcw className="w-3 h-3 text-muted-foreground hover:text-foreground" />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="right" className="bg-popover border border-border">
+                        <span className="text-xs">Reset {title} styles</span>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
+              </div>
             )}
           </div>
           {hasAddButton && <Plus className={`SectionIcon ${openSections[section] ? 'open' : ''}`} size={18} />}

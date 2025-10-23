@@ -421,12 +421,13 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
         {pages.map((page, index) => (
           <div 
             key={page}
-            className="builder-page"
+            className="builder-page scrollbar-thin"
             style={{ 
               backgroundColor: '#ffffff',
               color: '#000000',
               width: isPreviewMode ? '100%' : `${currentBreakpointWidth}px`,
               minHeight: isPreviewMode ? '100vh' : '1200px',
+              maxHeight: isPreviewMode ? 'none' : 'calc(100vh - 8rem)',
               boxShadow: isPreviewMode ? 'none' : '0 2px 8px rgba(0,0,0,0.1)',
               transition: isResizing ? 'none' : 'width 0.3s ease',
               position: 'relative',

@@ -341,7 +341,7 @@ const Builder: React.FC = () => {
         {/* Global stylesheet for builder classes */}
         <StyleSheetInjector />
         {/* Main content - Full screen canvas */}
-        <div className="flex-1 relative overflow-hidden">
+        <div className={`flex-1 relative ${isPreviewMode ? 'overflow-auto' : 'overflow-hidden'}`}>
         {/* Canvas Background */}
         <Canvas 
           zoom={zoom} 
@@ -366,17 +366,13 @@ const Builder: React.FC = () => {
 
         {/* Preview Mode Exit Button */}
         {isPreviewMode && (
-          <div className="absolute left-4 top-4 z-20">
-            <Button
-              variant="default"
-              size="sm"
-              className="h-10 px-3 gap-2 shadow-lg"
-              onClick={() => setIsPreviewMode(false)}
-            >
-              <Icons.Eye className="w-4 h-4" />
-              Exit Preview
-            </Button>
-          </div>
+          <button
+            onClick={() => setIsPreviewMode(false)}
+            className="fixed top-0 left-0 z-[100] w-8 h-8 flex items-center justify-center bg-background/95 hover:bg-accent border border-border shadow-lg transition-colors rounded-br-lg"
+            title="Exit Preview"
+          >
+            <Icons.EyeOff className="w-4 h-4 text-foreground" />
+          </button>
         )}
 
         {/* Floating Left Sidebar */}
