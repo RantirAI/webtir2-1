@@ -374,8 +374,8 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="style" className="flex-1 min-h-0 m-0 overflow-y-auto overflow-x-hidden">
-          <div className="StylePanel" style={{ overflowX: 'hidden' }}>
+        <TabsContent value="style" className="flex-1 min-h-0 m-0 overflow-y-auto">
+          <div className="StylePanel">
             <div style={{ 
               padding: 'var(--space-1) var(--space-2)',
               borderBottom: '1px solid hsl(var(--border))'
@@ -557,42 +557,42 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
             <label className="Label" style={{ fontWeight: 600, fontSize: '10px' }}>Display</label>
             <div style={{ display: 'flex', gap: '2px' }}>
               <button
-                className={`flex-1 h-7 flex items-center justify-center rounded border ${computedStyles.display === 'block' ? 'bg-accent border-primary' : 'bg-[#F5F5F5] dark:bg-[#09090b] border-input hover:bg-accent'}`}
+                className={`flex-1 h-7 flex items-center justify-center rounded ${computedStyles.display === 'block' ? 'bg-accent border-2 border-blue-600' : 'border border-input bg-[#F5F5F5] dark:bg-[#09090b] hover:bg-accent'}`}
                 onClick={() => updateStyle('display', 'block')}
                 title="Block"
               >
                 <Box className="w-3.5 h-3.5 text-foreground" />
               </button>
               <button
-                className={`flex-1 h-7 flex items-center justify-center rounded border ${computedStyles.display === 'flex' || !computedStyles.display ? 'bg-accent border-primary' : 'bg-[#F5F5F5] dark:bg-[#09090b] border-input hover:bg-accent'}`}
+                className={`flex-1 h-7 flex items-center justify-center rounded ${computedStyles.display === 'flex' ? 'bg-accent border-2 border-blue-600' : 'border border-input bg-[#F5F5F5] dark:bg-[#09090b] hover:bg-accent'}`}
                 onClick={() => updateStyle('display', 'flex')}
                 title="Flex"
               >
                 <LayoutList className="w-3.5 h-3.5 text-foreground" />
               </button>
               <button
-                className={`flex-1 h-7 flex items-center justify-center rounded border ${computedStyles.display === 'grid' ? 'bg-accent border-primary' : 'bg-[#F5F5F5] dark:bg-[#09090b] border-input hover:bg-accent'}`}
+                className={`flex-1 h-7 flex items-center justify-center rounded ${computedStyles.display === 'grid' ? 'bg-accent border-2 border-blue-600' : 'border border-input bg-[#F5F5F5] dark:bg-[#09090b] hover:bg-accent'}`}
                 onClick={() => updateStyle('display', 'grid')}
                 title="Grid"
               >
                 <LayoutGrid className="w-3.5 h-3.5 text-foreground" />
               </button>
               <button
-                className={`flex-1 h-7 flex items-center justify-center rounded border ${computedStyles.display === 'inline' ? 'bg-accent border-primary' : 'bg-[#F5F5F5] dark:bg-[#09090b] border-input hover:bg-accent'}`}
+                className={`flex-1 h-7 flex items-center justify-center rounded ${computedStyles.display === 'inline' ? 'bg-accent border-2 border-blue-600' : 'border border-input bg-[#F5F5F5] dark:bg-[#09090b] hover:bg-accent'}`}
                 onClick={() => updateStyle('display', 'inline')}
                 title="Inline"
               >
                 <Minus className="w-3.5 h-3.5 text-foreground" />
               </button>
               <button
-                className={`flex-1 h-7 flex items-center justify-center rounded border ${computedStyles.display === 'inline-block' ? 'bg-accent border-primary' : 'bg-[#F5F5F5] dark:bg-[#09090b] border-input hover:bg-accent'}`}
+                className={`flex-1 h-7 flex items-center justify-center rounded ${computedStyles.display === 'inline-block' ? 'bg-accent border-2 border-blue-600' : 'border border-input bg-[#F5F5F5] dark:bg-[#09090b] hover:bg-accent'}`}
                 onClick={() => updateStyle('display', 'inline-block')}
                 title="Inline Block"
               >
                 <Square className="w-3.5 h-3.5 text-foreground" />
               </button>
               <button
-                className={`flex-1 h-7 flex items-center justify-center rounded border ${computedStyles.display === 'none' ? 'bg-accent border-primary' : 'bg-[#F5F5F5] dark:bg-[#09090b] border-input hover:bg-accent'}`}
+                className={`flex-1 h-7 flex items-center justify-center rounded ${computedStyles.display === 'none' ? 'bg-accent border-2 border-blue-600' : 'border border-input bg-[#F5F5F5] dark:bg-[#09090b] hover:bg-accent'}`}
                 onClick={() => updateStyle('display', 'none')}
                 title="None"
               >
