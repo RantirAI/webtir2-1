@@ -8,9 +8,7 @@ export const initializeRootStyles = () => {
   if (!styleSources['root-style']) {
     createStyleSource('local', 'root-style');
     
-    // Set root styles
-    setStyle('root-style', 'display', 'flex');
-    setStyle('root-style', 'flexDirection', 'column');
-    setStyle('root-style', 'minHeight', '100vh');
+    // Set root styles - white background, no flex
+    setStyle('root-style', 'backgroundColor', '#ffffff');
   }
 };

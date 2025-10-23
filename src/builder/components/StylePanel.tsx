@@ -784,7 +784,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
 
               {/* Grid Template Columns */}
               <div className="Col">
-                <label className="Label" style={{ fontSize: '10px' }}>Template Cols</label>
+                <label className="Label">Template Cols</label>
                 <input
                   className="Input"
                   type="text"
@@ -796,7 +796,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
 
               {/* Grid Template Rows */}
               <div className="Col">
-                <label className="Label" style={{ fontSize: '10px' }}>Template Rows</label>
+                <label className="Label">Template Rows</label>
                 <input
                   className="Input"
                   type="text"
@@ -808,7 +808,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
 
               {/* Grid Auto Flow */}
               <div className="Col">
-                <label className="Label" style={{ fontSize: '10px' }}>Direction</label>
+                <label className="Label">Direction</label>
                 <select
                   className="Select"
                   value={computedStyles.gridAutoFlow || 'row'}
@@ -823,8 +823,8 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
               </div>
 
               {/* Place Items (align + justify items) */}
-              <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr', gap: '4px', alignItems: 'center' }}>
-                <label className="Label" style={{ fontSize: '10px' }}>Align</label>
+              <div style={{ display: 'grid', gridTemplateColumns: '26px 1fr', gap: '2px', alignItems: 'center' }}>
+                <label className="Label">Align</label>
                 <select
                   className="Select"
                   value={computedStyles.alignItems || 'stretch'}
@@ -837,8 +837,8 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
                 </select>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr', gap: '4px', alignItems: 'center' }}>
-                <label className="Label" style={{ fontSize: '10px' }}>Justify</label>
+              <div style={{ display: 'grid', gridTemplateColumns: '26px 1fr', gap: '2px', alignItems: 'center' }}>
+                <label className="Label">Justify</label>
                 <select
                   className="Select"
                   value={computedStyles.justifyItems || 'stretch'}
@@ -853,7 +853,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
 
               {/* Gap */}
               <div className="Col">
-                <label className="Label" style={{ fontSize: '10px' }}>Gap</label>
+                <label className="Label">Gap</label>
                 <UnitInput
                   value={computedStyles.gap || ''}
                   onChange={(val) => updateStyle('gap', val)}
@@ -862,8 +862,8 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
               </div>
 
               {/* Place Content */}
-              <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr', gap: '4px', alignItems: 'center' }}>
-                <label className="Label" style={{ fontSize: '10px' }}>Place</label>
+              <div style={{ display: 'grid', gridTemplateColumns: '26px 1fr', gap: '2px', alignItems: 'center' }}>
+                <label className="Label">Place</label>
                 <select
                   className="Select"
                   value={computedStyles.placeContent || 'normal'}
@@ -873,9 +873,9 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
                   <option value="start">Start</option>
                   <option value="center">Center</option>
                   <option value="end">End</option>
-                  <option value="space-between">Space Between</option>
-                  <option value="space-around">Space Around</option>
-                  <option value="space-evenly">Space Evenly</option>
+                  <option value="space-between">Between</option>
+                  <option value="space-around">Around</option>
+                  <option value="space-evenly">Evenly</option>
                   <option value="stretch">Stretch</option>
                 </select>
               </div>
@@ -909,14 +909,14 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
             <AccordionSection title="Size" section="size" properties={['width', 'height', 'minWidth', 'minHeight', 'maxWidth', 'maxHeight']}>
         <div className="Col" style={{ gap: '4px' }}>
           {/* Width and Height */}
-          <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr 32px 1fr', gap: '4px', alignItems: 'center' }}>
-            <label className="Label" style={{ fontSize: '10px' }}>Width</label>
+          <div style={{ display: 'grid', gridTemplateColumns: '26px 1fr 26px 1fr', gap: '2px', alignItems: 'center' }}>
+            <label className="Label">Width</label>
             <UnitInput
               value={computedStyles.width || ''}
               onChange={(val) => updateStyle('width', val)}
               placeholder="Auto"
             />
-            <label className="Label" style={{ fontSize: '10px' }}>Height</label>
+            <label className="Label">Height</label>
             <UnitInput
               value={computedStyles.height || ''}
               onChange={(val) => updateStyle('height', val)}
@@ -925,14 +925,14 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
           </div>
 
           {/* Min Width and Min Height */}
-          <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr 32px 1fr', gap: '4px', alignItems: 'center' }}>
-            <label className="Label" style={{ fontSize: '10px' }}>Min W</label>
+          <div style={{ display: 'grid', gridTemplateColumns: '26px 1fr 26px 1fr', gap: '2px', alignItems: 'center' }}>
+            <label className="Label">Min W</label>
             <UnitInput
               value={computedStyles.minWidth || ''}
               onChange={(val) => updateStyle('minWidth', val)}
               placeholder="auto"
             />
-            <label className="Label" style={{ fontSize: '10px' }}>Min H</label>
+            <label className="Label">Min H</label>
             <UnitInput
               value={computedStyles.minHeight || ''}
               onChange={(val) => updateStyle('minHeight', val)}
@@ -941,14 +941,14 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
           </div>
 
           {/* Max Width and Max Height */}
-          <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr 32px 1fr', gap: '4px', alignItems: 'center' }}>
-            <label className="Label" style={{ fontSize: '10px' }}>Max W</label>
+          <div style={{ display: 'grid', gridTemplateColumns: '26px 1fr 26px 1fr', gap: '2px', alignItems: 'center' }}>
+            <label className="Label">Max W</label>
             <UnitInput
               value={computedStyles.maxWidth || ''}
               onChange={(val) => updateStyle('maxWidth', val)}
               placeholder="none"
             />
-            <label className="Label" style={{ fontSize: '10px' }}>Max H</label>
+            <label className="Label">Max H</label>
             <UnitInput
               value={computedStyles.maxHeight || ''}
               onChange={(val) => updateStyle('maxHeight', val)}
@@ -957,8 +957,8 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
           </div>
 
           {/* Overflow */}
-          <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr', gap: '4px', alignItems: 'center' }}>
-            <label className="Label" style={{ fontSize: '10px' }}>Overflow</label>
+          <div style={{ display: 'grid', gridTemplateColumns: '26px 1fr', gap: '2px', alignItems: 'center' }}>
+            <label className="Label">Over</label>
             <select
               className="Select"
               value={computedStyles.overflow || 'visible'}
@@ -977,8 +977,8 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
             <AccordionSection title="Position" section="position" properties={['position', 'top', 'right', 'bottom', 'left', 'zIndex']}>
         <div className="Col" style={{ gap: '4px' }}>
           {/* Position Type */}
-          <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr', gap: '4px', alignItems: 'center' }}>
-            <label className="Label" style={{ fontSize: '10px' }}>Position</label>
+          <div style={{ display: 'grid', gridTemplateColumns: '26px 1fr', gap: '2px', alignItems: 'center' }}>
+            <label className="Label">Pos</label>
             <select
               className="Select"
               value={computedStyles.position || 'static'}
@@ -1047,8 +1047,8 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
               </div>
 
               {/* Z-Index */}
-              <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr', gap: '4px', alignItems: 'center' }}>
-                <label className="Label" style={{ fontSize: '10px' }}>Z-Index</label>
+              <div style={{ display: 'grid', gridTemplateColumns: '26px 1fr', gap: '2px', alignItems: 'center' }}>
+                <label className="Label">Z</label>
                 <input
                   className="Input"
                   type="number"
@@ -1105,14 +1105,14 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
             />
           </div>
           
-          <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr 32px 1fr', gap: '4px', alignItems: 'center' }}>
-            <label className="Label" style={{ fontSize: '10px' }}>Size</label>
+          <div style={{ display: 'grid', gridTemplateColumns: '26px 1fr 26px 1fr', gap: '2px', alignItems: 'center' }}>
+            <label className="Label">Size</label>
             <UnitInput
               value={computedStyles.fontSize || ''}
               onChange={(val) => updateStyle('fontSize', val)}
               placeholder="16px"
             />
-            <label className="Label" style={{ fontSize: '10px' }}>Height</label>
+            <label className="Label">Height</label>
             <UnitInput
               value={computedStyles.lineHeight || ''}
               onChange={(val) => updateStyle('lineHeight', val)}
@@ -1120,8 +1120,8 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
             />
           </div>
           
-          <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr', gap: '4px', alignItems: 'center' }}>
-            <label className="Label" style={{ fontSize: '10px' }}>Color</label>
+          <div style={{ display: 'grid', gridTemplateColumns: '26px 1fr', gap: '2px', alignItems: 'center' }}>
+            <label className="Label">Color</label>
             <ColorPicker
               value={computedStyles.color || 'hsl(var(--foreground))'}
               onChange={(val) => updateStyle('color', val)}
@@ -1129,8 +1129,8 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
           </div>
 
           {/* Text Align with Icons */}
-          <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr', gap: '4px', alignItems: 'center' }}>
-            <label className="Label" style={{ fontSize: '10px' }}>Align</label>
+          <div style={{ display: 'grid', gridTemplateColumns: '26px 1fr', gap: '2px', alignItems: 'center' }}>
+            <label className="Label">Align</label>
             <div style={{ display: 'flex', gap: '2px' }}>
               <button
                 className={`flex-1 h-6 flex items-center justify-center rounded border ${computedStyles.textAlign === 'left' || !computedStyles.textAlign ? 'bg-accent border-primary' : 'bg-[#F5F5F5] dark:bg-[#09090b] border-input hover:bg-accent'}`}
@@ -1160,19 +1160,19 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
           </div>
 
           {/* Decor and Transform side by side */}
-          <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr 32px 1fr', gap: '4px', alignItems: 'center' }}>
-            <label className="Label" style={{ fontSize: '10px' }}>Decor</label>
+          <div style={{ display: 'grid', gridTemplateColumns: '26px 1fr 26px 1fr', gap: '2px', alignItems: 'center' }}>
+            <label className="Label">Decor</label>
             <select
               className="Select"
               value={computedStyles.textDecoration || 'none'}
               onChange={(e) => updateStyle('textDecoration', e.target.value)}
             >
               <option value="none">None</option>
-              <option value="underline">Underline</option>
-              <option value="overline">Overline</option>
+              <option value="underline">Under</option>
+              <option value="overline">Over</option>
               <option value="line-through">Strike</option>
             </select>
-            <label className="Label" style={{ fontSize: '10px' }}>Transform</label>
+            <label className="Label">Trans</label>
             <select
               className="Select"
               value={computedStyles.textTransform || 'none'}
@@ -1186,14 +1186,14 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
           </div>
 
           {/* Letter Spacing and Text Indent */}
-          <div style={{ display: 'grid', gridTemplateColumns: '45px 1fr 32px 1fr', gap: '4px', alignItems: 'center' }}>
-            <label className="Label" style={{ fontSize: '10px' }}>Letter</label>
+          <div style={{ display: 'grid', gridTemplateColumns: '26px 1fr 26px 1fr', gap: '2px', alignItems: 'center' }}>
+            <label className="Label">Letter</label>
             <UnitInput
               value={computedStyles.letterSpacing || ''}
               onChange={(val) => updateStyle('letterSpacing', val)}
               placeholder="0"
             />
-            <label className="Label" style={{ fontSize: '10px' }}>Indent</label>
+            <label className="Label">Indent</label>
             <UnitInput
               value={computedStyles.textIndent || ''}
               onChange={(val) => updateStyle('textIndent', val)}
@@ -1202,8 +1202,8 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
           </div>
 
           {/* Break, Wrap, Overflow side by side */}
-          <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr', gap: '4px', alignItems: 'center' }}>
-            <label className="Label" style={{ fontSize: '10px' }}>Break</label>
+          <div style={{ display: 'grid', gridTemplateColumns: '26px 1fr', gap: '2px', alignItems: 'center' }}>
+            <label className="Label">Break</label>
             <select
               className="Select"
               value={computedStyles.wordBreak || 'normal'}
@@ -1216,8 +1216,8 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
             </select>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr 32px 1fr', gap: '4px', alignItems: 'center' }}>
-            <label className="Label" style={{ fontSize: '10px' }}>Wrap</label>
+          <div style={{ display: 'grid', gridTemplateColumns: '26px 1fr 26px 1fr', gap: '2px', alignItems: 'center' }}>
+            <label className="Label">Wrap</label>
             <select
               className="Select"
               value={computedStyles.whiteSpace || 'normal'}
@@ -1226,9 +1226,9 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
               <option value="normal">Normal</option>
               <option value="nowrap">None</option>
               <option value="pre">Pre</option>
-              <option value="pre-wrap">Pre Wrap</option>
+              <option value="pre-wrap">Wrap</option>
             </select>
-            <label className="Label" style={{ fontSize: '10px' }}>Overflow</label>
+            <label className="Label">Over</label>
             <select
               className="Select"
               value={computedStyles.textOverflow || 'clip'}
@@ -1244,23 +1244,23 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
             {/* Backgrounds */}
             <AccordionSection title="Backgrounds" section="backgrounds" properties={['backgroundColor', 'backgroundImage', 'backgroundSize', 'backgroundPosition', 'backgroundRepeat', 'backgroundClip']}>
         <div className="Col" style={{ gap: '4px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr', gap: '4px', alignItems: 'center' }}>
-            <label className="Label" style={{ fontSize: '10px' }}>Color</label>
+          <div style={{ display: 'grid', gridTemplateColumns: '26px 1fr', gap: '2px', alignItems: 'center' }}>
+            <label className="Label">Color</label>
             <ColorPicker
               value={computedStyles.backgroundColor || 'transparent'}
               onChange={(val) => updateStyle('backgroundColor', val)}
             />
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr', gap: '4px', alignItems: 'center' }}>
-            <label className="Label" style={{ fontSize: '10px' }}>Clip</label>
+          <div style={{ display: 'grid', gridTemplateColumns: '26px 1fr', gap: '2px', alignItems: 'center' }}>
+            <label className="Label">Clip</label>
             <select
               className="Select"
               value={computedStyles.backgroundClip || 'border-box'}
               onChange={(e) => updateStyle('backgroundClip', e.target.value)}
             >
-              <option value="border-box">Border Box</option>
-              <option value="padding-box">Padding Box</option>
-              <option value="content-box">Content Box</option>
+              <option value="border-box">Border</option>
+              <option value="padding-box">Padding</option>
+              <option value="content-box">Content</option>
               <option value="text">Text</option>
             </select>
           </div>
@@ -1270,16 +1270,16 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
             {/* Borders */}
             <AccordionSection title="Borders" section="borders" properties={['borderWidth', 'borderStyle', 'borderColor', 'borderRadius', 'borderTopLeftRadius', 'borderTopRightRadius', 'borderBottomRightRadius', 'borderBottomLeftRadius']}>
         <div className="Col" style={{ gap: '4px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr', gap: '4px', alignItems: 'center' }}>
-            <label className="Label" style={{ fontSize: '10px' }}>Radius</label>
+          <div style={{ display: 'grid', gridTemplateColumns: '26px 1fr', gap: '2px', alignItems: 'center' }}>
+            <label className="Label">Radius</label>
             <UnitInput
               value={computedStyles.borderRadius || ''}
               onChange={(val) => updateStyle('borderRadius', val)}
               placeholder="0"
             />
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr 32px 1fr', gap: '4px', alignItems: 'center' }}>
-            <label className="Label" style={{ fontSize: '10px' }}>Style</label>
+          <div style={{ display: 'grid', gridTemplateColumns: '26px 1fr 26px 1fr', gap: '2px', alignItems: 'center' }}>
+            <label className="Label">Style</label>
             <select
               className="Select"
               value={computedStyles.borderStyle || 'none'}
@@ -1287,21 +1287,19 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
             >
               <option value="none">None</option>
               <option value="solid">Solid</option>
-              <option value="dashed">Dashed</option>
-              <option value="dotted">Dotted</option>
+              <option value="dashed">Dash</option>
+              <option value="dotted">Dot</option>
               <option value="double">Double</option>
-              <option value="groove">Groove</option>
-              <option value="ridge">Ridge</option>
             </select>
-            <label className="Label" style={{ fontSize: '10px' }}>Width</label>
+            <label className="Label">Width</label>
             <UnitInput
               value={computedStyles.borderWidth || ''}
               onChange={(val) => updateStyle('borderWidth', val)}
               placeholder="0"
             />
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr', gap: '4px', alignItems: 'center' }}>
-            <label className="Label" style={{ fontSize: '10px' }}>Color</label>
+          <div style={{ display: 'grid', gridTemplateColumns: '26px 1fr', gap: '2px', alignItems: 'center' }}>
+            <label className="Label">Color</label>
             <ColorPicker
               value={computedStyles.borderColor || 'hsl(var(--border))'}
               onChange={(val) => updateStyle('borderColor', val)}
@@ -1313,8 +1311,8 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
             {/* Effects */}
             <AccordionSection title="Effects" section="effects" properties={['opacity', 'mixBlendMode', 'boxShadow', 'filter', 'backdropFilter', 'transform', 'transition', 'cursor', 'outline', 'outlineWidth', 'outlineStyle', 'outlineColor']}>
         <div className="Col" style={{ gap: '4px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr', gap: '4px', alignItems: 'center' }}>
-            <label className="Label" style={{ fontSize: '10px' }}>Blend</label>
+          <div style={{ display: 'grid', gridTemplateColumns: '26px 1fr', gap: '2px', alignItems: 'center' }}>
+            <label className="Label">Blend</label>
             <select
               className="Select"
               value={computedStyles.mixBlendMode || 'normal'}
@@ -1326,14 +1324,10 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
               <option value="overlay">Overlay</option>
               <option value="darken">Darken</option>
               <option value="lighten">Lighten</option>
-              <option value="color-dodge">Color Dodge</option>
-              <option value="color-burn">Color Burn</option>
-              <option value="difference">Difference</option>
-              <option value="exclusion">Exclusion</option>
             </select>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr', gap: '4px', alignItems: 'center' }}>
-            <label className="Label" style={{ fontSize: '10px' }}>Opacity</label>
+          <div style={{ display: 'grid', gridTemplateColumns: '26px 1fr', gap: '2px', alignItems: 'center' }}>
+            <label className="Label">Opac</label>
             <input
               className="Input"
               type="range"
@@ -1344,8 +1338,8 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
               onChange={(e) => updateStyle('opacity', e.target.value)}
             />
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr', gap: '4px', alignItems: 'center' }}>
-            <label className="Label" style={{ fontSize: '10px' }}>Shadow</label>
+          <div style={{ display: 'grid', gridTemplateColumns: '26px 1fr', gap: '2px', alignItems: 'center' }}>
+            <label className="Label">Shadow</label>
             <input
               className="Input"
               type="text"
@@ -1354,8 +1348,8 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
               onChange={(e) => updateStyle('boxShadow', e.target.value)}
             />
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr', gap: '4px', alignItems: 'center' }}>
-            <label className="Label" style={{ fontSize: '10px' }}>Filter</label>
+          <div style={{ display: 'grid', gridTemplateColumns: '26px 1fr', gap: '2px', alignItems: 'center' }}>
+            <label className="Label">Filter</label>
             <input
               className="Input"
               type="text"
@@ -1364,8 +1358,8 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
               onChange={(e) => updateStyle('filter', e.target.value)}
             />
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr', gap: '4px', alignItems: 'center' }}>
-            <label className="Label" style={{ fontSize: '10px' }}>Transform</label>
+          <div style={{ display: 'grid', gridTemplateColumns: '26px 1fr', gap: '2px', alignItems: 'center' }}>
+            <label className="Label">Trans</label>
             <input
               className="Input"
               type="text"
@@ -1374,8 +1368,8 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
               onChange={(e) => updateStyle('transform', e.target.value)}
             />
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr', gap: '4px', alignItems: 'center' }}>
-            <label className="Label" style={{ fontSize: '10px' }}>Cursor</label>
+          <div style={{ display: 'grid', gridTemplateColumns: '26px 1fr', gap: '2px', alignItems: 'center' }}>
+            <label className="Label">Cursor</label>
             <select
               className="Select"
               value={computedStyles.cursor || 'auto'}
@@ -1386,7 +1380,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
               <option value="text">Text</option>
               <option value="move">Move</option>
               <option value="grab">Grab</option>
-              <option value="not-allowed">Not Allowed</option>
+              <option value="not-allowed">Not Allow</option>
             </select>
           </div>
         </div>
