@@ -14,6 +14,9 @@ import { UnorderedList } from '../primitives/UnorderedList';
 import { CodeBlock } from '../primitives/CodeBlock';
 import { ButtonPrimitive } from '../primitives/ButtonPrimitive';
 import { ImagePrimitive } from '../primitives/ImagePrimitive';
+import { VideoPrimitive } from '../primitives/VideoPrimitive';
+import { YoutubePrimitive } from '../primitives/YoutubePrimitive';
+import { LottiePrimitive } from '../primitives/LottiePrimitive';
 import { LinkPrimitive } from '../primitives/LinkPrimitive';
 import { TablePrimitive } from '../primitives/TablePrimitive';
 import { FormPrimitive } from '../primitives/FormPrimitive';
@@ -250,6 +253,49 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
         return wrapWithDraggable(<ButtonPrimitive key={instance.id} {...commonProps} />);
       case 'Image':
         return wrapWithDraggable(<ImagePrimitive key={instance.id} {...commonProps} />);
+      case 'Video':
+        return wrapWithDraggable(
+          <VideoPrimitive
+            key={instance.id}
+            instanceId={instance.id}
+            src={instance.props.src}
+            autoplay={instance.props.autoplay}
+            loop={instance.props.loop}
+            muted={instance.props.muted}
+            controls={instance.props.controls}
+            isSelected={isSelected}
+            className=""
+            style={getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties}
+          />
+        );
+      case 'Youtube':
+        return wrapWithDraggable(
+          <YoutubePrimitive
+            key={instance.id}
+            instanceId={instance.id}
+            videoId={instance.props.videoId}
+            autoplay={instance.props.autoplay}
+            loop={instance.props.loop}
+            muted={instance.props.muted}
+            controls={instance.props.controls}
+            isSelected={isSelected}
+            className=""
+            style={getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties}
+          />
+        );
+      case 'Lottie':
+        return wrapWithDraggable(
+          <LottiePrimitive
+            key={instance.id}
+            instanceId={instance.id}
+            src={instance.props.src}
+            autoplay={instance.props.autoplay}
+            loop={instance.props.loop}
+            isSelected={isSelected}
+            className=""
+            style={getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties}
+          />
+        );
       case 'Link':
         return wrapWithDraggable(<LinkPrimitive key={instance.id} {...commonProps} />);
       case 'Table':
