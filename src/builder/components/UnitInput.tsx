@@ -78,8 +78,7 @@ export const UnitInput: React.FC<UnitInputProps> = ({
             onClick={handleInputClick}
             readOnly
             style={{ 
-              minWidth: '32px',
-              maxWidth: '60px',
+              minWidth: '48px',
               height: '24px',
               fontSize: '11px',
               padding: '0 4px',
@@ -87,7 +86,7 @@ export const UnitInput: React.FC<UnitInputProps> = ({
             }}
           />
           <Select value={unit} onValueChange={(newUnit) => onChange(number ? `${number}${newUnit}` : '')}>
-            <SelectTrigger className="w-8 h-6 text-[8px] border-border px-0 bg-[#F5F5F5] dark:bg-[#09090b] text-foreground">
+            <SelectTrigger className="w-8 h-6 text-[8px] border-border px-0 bg-input text-foreground sp-trigger">
               <SelectValue />
             </SelectTrigger>
             <SelectContent className="min-w-[40px] bg-background z-[9999]" align="end" side="bottom" sideOffset={2}>
@@ -117,7 +116,7 @@ export const UnitInput: React.FC<UnitInputProps> = ({
               autoFocus
             />
             <Select value={popoverUnit} onValueChange={handlePopoverUnitChange}>
-              <SelectTrigger className="w-20">
+              <SelectTrigger className="w-20 h-8 sp-trigger">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="bg-background z-[99999]">

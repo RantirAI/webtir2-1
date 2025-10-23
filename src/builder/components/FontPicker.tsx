@@ -104,7 +104,7 @@ export const FontPicker: React.FC<FontPickerProps> = ({ value, weight, onChange,
     <div className="space-y-2">
       <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '4px', alignItems: 'center' }}>
         <Select value={currentFontName || 'inherit'} onValueChange={handleFontSelect}>
-          <SelectTrigger className="h-6 text-xs bg-[#F5F5F5] dark:bg-[#09090b] border-input">
+          <SelectTrigger className="h-6 text-xs bg-input border-input sp-trigger">
             <SelectValue 
               placeholder={currentFontName || 'Default'}
               className="placeholder:text-foreground placeholder:opacity-100"
@@ -165,7 +165,7 @@ export const FontPicker: React.FC<FontPickerProps> = ({ value, weight, onChange,
 
         <Popover open={isUploadOpen} onOpenChange={setIsUploadOpen}>
           <PopoverTrigger asChild>
-            <Button variant="outline" size="sm" className="h-6 w-8 p-0 bg-[#F5F5F5] dark:bg-[#09090b] border-input hover:bg-accent">
+            <Button variant="outline" size="sm" className="h-6 w-8 p-0 bg-input border-input hover:bg-accent">
               <Upload className="h-3.5 w-3.5 text-foreground" />
             </Button>
           </PopoverTrigger>

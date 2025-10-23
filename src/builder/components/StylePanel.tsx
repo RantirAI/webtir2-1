@@ -502,7 +502,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
                         className={`absolute right-0 top-0 h-9 w-6 p-0 justify-center border border-border ${currentPseudoState !== 'default' ? 'bg-green-500/10 border-green-500/50' : ''}`}
                         title={`State: ${currentPseudoState}`}
                       >
-                        <ChevronDown className="w-3 h-3 text-foreground" />
+                        <ChevronDown className="w-2.5 h-2.5 text-muted-foreground" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" side="bottom" className="w-32 bg-popover border border-border z-[10000]">
