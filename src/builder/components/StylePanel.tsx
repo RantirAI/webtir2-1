@@ -982,6 +982,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
               className="Select"
               value={computedStyles.position || 'static'}
               onChange={(e) => updateStyle('position', e.target.value)}
+              style={{ maxWidth: '120px' }}
             >
               <option value="static">Static</option>
               <option value="relative">Relative</option>
