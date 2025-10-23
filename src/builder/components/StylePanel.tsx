@@ -7,6 +7,8 @@ import { Paintbrush, Plus, Square, Type, Heading as HeadingIcon, MousePointerCli
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
+import { toast } from '@/hooks/use-toast';
 import { componentRegistry } from '../primitives/registry';
 import { UnitInput } from './UnitInput';
 import { ColorPicker } from './ColorPicker';
@@ -16,6 +18,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { Button } from '@/components/ui/button';
 import { ClassSelector } from './ClassSelector';
 import { ImageUpload } from './ImageUpload';
+import { VideoUpload } from './VideoUpload';
 import { ShadowManager } from './ShadowManager';
 import { ShadowItem } from '../store/types';
 import { compileMetadataToCSS } from '../utils/cssCompiler';
@@ -1503,7 +1506,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
               />
               
               <div className="space-y-2">
-                <label className="text-xs font-semibold text-foreground">Alt Text</label>
+                <label className="text-[10pt] font-semibold text-foreground">Alt Text</label>
                 <Input
                   type="text"
                   placeholder="Image description"
@@ -1513,11 +1516,249 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
                       props: { ...selectedInstance.props, alt: e.target.value }
                     });
                   }}
-                  className="h-8 text-xs"
+                  className="h-8 text-[10pt]"
                 />
-                <p className="text-xs text-muted-foreground">
+                <p className="text-[10pt] text-muted-foreground">
                   Describe the image for accessibility and SEO
                 </p>
+              </div>
+            </div>
+          )}
+
+          {selectedInstance.type === 'Video' && (
+            <div className="space-y-4">
+              <VideoUpload
+                currentValue={selectedInstance.props.src || ''}
+                onVideoChange={(url) => {
+                  updateInstance(selectedInstance.id, {
+                    props: { ...selectedInstance.props, src: url }
+                  });
+                }}
+                loop={selectedInstance.props.loop || false}
+                autoplay={selectedInstance.props.autoplay || false}
+                showControls={selectedInstance.props.controls || false}
+                onLoopChange={(loop) => {
+                  updateInstance(selectedInstance.id, {
+                    props: { ...selectedInstance.props, loop }
+                  });
+                }}
+                onAutoplayChange={(autoplay) => {
+                  updateInstance(selectedInstance.id, {
+                    props: { ...selectedInstance.props, autoplay }
+                  });
+                }}
+                onShowControlsChange={(controls) => {
+                  updateInstance(selectedInstance.id, {
+                    props: { ...selectedInstance.props, controls }
+                  });
+                }}
+                label="Background Video"
+              />
+            </div>
+          )}
+
+          {selectedInstance.type === 'Youtube' && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-[10pt] font-semibold text-foreground">YouTube Video ID</label>
+                <Input
+                  type="text"
+                  placeholder="dQw4w9WgXcQ"
+                  value={selectedInstance.props.videoId || ''}
+                  onChange={(e) => {
+                    updateInstance(selectedInstance.id, {
+                      props: { ...selectedInstance.props, videoId: e.target.value }
+                    });
+                  }}
+                  className="h-8 text-[10pt]"
+                />
+                <p className="text-[10pt] text-muted-foreground">
+                  Enter the video ID from the YouTube URL (e.g., youtube.com/watch?v=<strong>dQw4w9WgXcQ</strong>)
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[10pt] font-semibold text-foreground">Or paste full YouTube URL</label>
+                <div className="flex gap-2">
+                  <Input
+                    type="text"
+                    placeholder="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+                    onChange={(e) => {
+                      const url = e.target.value;
+                      // Extract video ID from various YouTube URL formats
+                      const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+                      if (match) {
+                        updateInstance(selectedInstance.id, {
+                          props: { ...selectedInstance.props, videoId: match[1] }
+                        });
+                        toast({
+                          title: 'Video ID extracted',
+                          description: `Using video ID: ${match[1]}`,
+                        });
+                      }
+                    }}
+                    className="h-8 text-[10pt]"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2 pt-2 border-t border-border">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="youtube-autoplay"
+                    checked={selectedInstance.props.autoplay || false}
+                    onCheckedChange={(checked) => {
+                      updateInstance(selectedInstance.id, {
+                        props: { ...selectedInstance.props, autoplay: checked }
+                      });
+                    }}
+                  />
+                  <label htmlFor="youtube-autoplay" className="text-[10pt] font-medium cursor-pointer">
+                    Autoplay video
+                  </label>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="youtube-loop"
+                    checked={selectedInstance.props.loop || false}
+                    onCheckedChange={(checked) => {
+                      updateInstance(selectedInstance.id, {
+                        props: { ...selectedInstance.props, loop: checked }
+                      });
+                    }}
+                  />
+                  <label htmlFor="youtube-loop" className="text-[10pt] font-medium cursor-pointer">
+                    Loop video
+                  </label>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="youtube-muted"
+                    checked={selectedInstance.props.muted || false}
+                    onCheckedChange={(checked) => {
+                      updateInstance(selectedInstance.id, {
+                        props: { ...selectedInstance.props, muted: checked }
+                      });
+                    }}
+                  />
+                  <label htmlFor="youtube-muted" className="text-[10pt] font-medium cursor-pointer">
+                    Muted
+                  </label>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="youtube-controls"
+                    checked={selectedInstance.props.controls !== false}
+                    onCheckedChange={(checked) => {
+                      updateInstance(selectedInstance.id, {
+                        props: { ...selectedInstance.props, controls: checked }
+                      });
+                    }}
+                  />
+                  <label htmlFor="youtube-controls" className="text-[10pt] font-medium cursor-pointer">
+                    Show controls
+                  </label>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {selectedInstance.type === 'Lottie' && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-[10pt] font-semibold text-foreground">Lottie Animation JSON</label>
+                <input
+                  ref={(input) => {
+                    if (input) {
+                      input.onclick = () => {
+                        const fileInput = document.createElement('input');
+                        fileInput.type = 'file';
+                        fileInput.accept = '.json,application/json';
+                        fileInput.onchange = async (e: any) => {
+                          const file = e.target?.files?.[0];
+                          if (file) {
+                            try {
+                              const text = await file.text();
+                              const json = JSON.parse(text);
+                              const blob = new Blob([JSON.stringify(json)], { type: 'application/json' });
+                              const url = URL.createObjectURL(blob);
+                              updateInstance(selectedInstance.id, {
+                                props: { ...selectedInstance.props, src: url }
+                              });
+                              toast({
+                                title: 'Lottie JSON uploaded',
+                                description: `${file.name} has been loaded`,
+                              });
+                            } catch (error) {
+                              toast({
+                                title: 'Invalid JSON',
+                                description: 'Please upload a valid Lottie JSON file',
+                                variant: 'destructive',
+                              });
+                            }
+                          }
+                        };
+                        fileInput.click();
+                      };
+                    }
+                  }}
+                  type="button"
+                  value="Upload Lottie JSON"
+                  className="w-full h-24 px-4 text-[10pt] border-2 border-dashed border-border rounded-md bg-background hover:border-primary hover:bg-primary/5 cursor-pointer transition-colors"
+                />
+                <p className="text-[10pt] text-muted-foreground">
+                  Upload a Lottie JSON file from your computer
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[10pt] font-semibold text-foreground">Or enter JSON URL</label>
+                <Input
+                  type="text"
+                  placeholder="https://example.com/animation.json"
+                  value={selectedInstance.props.src || ''}
+                  onChange={(e) => {
+                    updateInstance(selectedInstance.id, {
+                      props: { ...selectedInstance.props, src: e.target.value }
+                    });
+                  }}
+                  className="h-8 text-[10pt]"
+                />
+              </div>
+
+              <div className="space-y-2 pt-2 border-t border-border">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="lottie-autoplay"
+                    checked={selectedInstance.props.autoplay !== false}
+                    onCheckedChange={(checked) => {
+                      updateInstance(selectedInstance.id, {
+                        props: { ...selectedInstance.props, autoplay: checked }
+                      });
+                    }}
+                  />
+                  <label htmlFor="lottie-autoplay" className="text-[10pt] font-medium cursor-pointer">
+                    Autoplay animation
+                  </label>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="lottie-loop"
+                    checked={selectedInstance.props.loop !== false}
+                    onCheckedChange={(checked) => {
+                      updateInstance(selectedInstance.id, {
+                        props: { ...selectedInstance.props, loop: checked }
+                      });
+                    }}
+                  />
+                  <label htmlFor="lottie-loop" className="text-[10pt] font-medium cursor-pointer">
+                    Loop animation
+                  </label>
+                </div>
               </div>
             </div>
           )}

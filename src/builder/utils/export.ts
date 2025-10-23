@@ -334,25 +334,42 @@ document.addEventListener('DOMContentLoaded', function() {
   // Add README
   const readme = `# ${projectName}
 
-This project was generated using Visual Builder.
+## Webtir by Rantir
+
+This project was generated using **Webtir**, a powerful visual website builder by Rantir.
+
+For more information about Webtir and our versions, visit:
+**[www.rantir.com/documentation](https://www.rantir.com/documentation)**
 
 ## Files Included
-- index.html - Main HTML file
-- styles.css - All compiled styles (Bootstrap 4 compatible)
-- script.js - JavaScript for interactivity
+- **index.html** - Main HTML file
+- **styles.css** - All compiled styles (Bootstrap 4 compatible)
+- **script.js** - JavaScript for interactivity
 
 ## Usage
 Simply open index.html in your web browser to view your website.
 
 ## Deployment
-You can deploy these files to any static hosting service like:
+You can deploy these files to any static hosting service:
 - GitHub Pages
 - Netlify
 - Vercel
 - Amazon S3
-- Or any web server
+- Any web hosting service
 
-Enjoy your website!
+## Features
+- Bootstrap 4 compatible code structure
+- Responsive design
+- Clean, semantic HTML
+- Optimized CSS with media queries
+- Cross-browser compatible
+
+## Support
+For documentation, tutorials, and support:
+- Visit: [www.rantir.com/documentation](https://www.rantir.com/documentation)
+- Built with Webtir by Rantir
+
+Enjoy building with Webtir! 🚀
 `;
   
   zip.file('README.md', readme);
