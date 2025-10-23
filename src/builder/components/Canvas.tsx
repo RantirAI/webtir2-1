@@ -388,6 +388,9 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
     }
   };
 
+  // Get root instance styles for page body
+  const rootStyles = rootInstance ? getComputedStyles(rootInstance.styleSourceIds || []) : {};
+  
   return (
     <div 
       ref={(node) => {
@@ -395,9 +398,9 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
         setNodeRef(node);
         onCanvasRef?.(node);
       }}
-      className="absolute inset-0 overflow-hidden bg-[#e5e7eb] dark:bg-zinc-800 builder-canvas"
+      className={`absolute inset-0 ${isPreviewMode ? 'overflow-auto' : 'overflow-hidden'} bg-[#e5e7eb] dark:bg-zinc-800 builder-canvas`}
       style={{
-        backgroundImage: `radial-gradient(circle, #9ca3af 1px, transparent 1px)`,
+        backgroundImage: isPreviewMode ? 'none' : `radial-gradient(circle, #9ca3af 1px, transparent 1px)`,
         backgroundSize: '20px 20px',
         cursor: isPanMode ? (isPanning ? 'grabbing' : 'grab') : 'default',
       }}
@@ -414,24 +417,25 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
         style={{
           transform: isPreviewMode ? 'none' : `scale(${zoom / 100}) translate(${panOffset.x / (zoom / 100)}px, ${panOffset.y / (zoom / 100)}px)`,
           padding: isPreviewMode ? '0' : '4rem',
-          minHeight: '100vh',
+          minHeight: isPreviewMode ? 'auto' : '100vh',
           minWidth: '100%',
         }}
       >
-        {pages.map((page, index) => (
+        {pages.map((page, index) => {
+          const pageStyles = rootStyles as React.CSSProperties;
+          return (
           <div 
             key={page}
-            className="builder-page scrollbar-thin"
+            className={`builder-page ${!isPreviewMode ? 'scrollbar-thin' : ''}`}
             style={{ 
-              backgroundColor: '#ffffff',
-              color: '#000000',
+              ...pageStyles,
               width: isPreviewMode ? '100%' : `${currentBreakpointWidth}px`,
               minHeight: isPreviewMode ? '100vh' : '1200px',
               maxHeight: isPreviewMode ? 'none' : 'calc(100vh - 8rem)',
               boxShadow: isPreviewMode ? 'none' : '0 2px 8px rgba(0,0,0,0.1)',
               transition: isResizing ? 'none' : 'width 0.3s ease',
               position: 'relative',
-              overflow: 'auto',
+              overflow: isPreviewMode ? 'visible' : 'auto',
               maxWidth: '100%',
             }}
           >
@@ -471,7 +475,8 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
 
             {index === 0 && rootInstance && renderInstance(rootInstance)}
           </div>
-        ))}
+          );
+        })}
       </div>
       
       {/* Hover/Selection Overlays and Context Menu disabled in Preview */}
