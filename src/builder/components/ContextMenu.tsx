@@ -18,6 +18,8 @@ import {
   Image as ImageIcon,
   MousePointer
 } from 'lucide-react';
+import { componentRegistry } from '../primitives/registry';
+import { generateId } from '../utils/instance';
 
 interface ContextMenuProps {
   x: number;
@@ -239,8 +241,6 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, instance, onClos
                   key={element.label}
                   className="w-full px-2 py-1.5 text-left hover:bg-accent hover:text-accent-foreground flex items-center gap-2"
                   onClick={() => {
-                    const { componentRegistry } = require('../primitives/registry');
-                    const { generateId } = require('../utils/instance');
                     const newId = generateId();
                     const meta = componentRegistry[element.value];
                     

@@ -157,7 +157,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
   const renderInstance = (instance: ComponentInstance): React.ReactNode => {
     const isSelected = instance.id === selectedInstanceId;
     const isHovered = instance.id === hoveredInstanceId;
-    const isContainer = ['Box', 'Container', 'Section'].includes(instance.type);
+    const isContainer = ['Box', 'Container', 'Section', 'Navigation'].includes(instance.type);
 
     const commonProps = {
       instance,
@@ -366,8 +366,8 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
             style={getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties}
           />
         );
-      case 'Navigation':
-        return wrapWithDraggable(
+      case 'Navigation': {
+        const content = (
           <NavigationPrimitive
             key={instance.id}
             instanceId={instance.id}
@@ -381,8 +381,17 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
             isSelected={isSelected}
             className=""
             style={getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties}
-          />
+          >
+            {instance.children.map((child) => renderInstance(child))}
+          </NavigationPrimitive>
         );
+        return isPreviewMode ? content : (
+          <DroppableContainer key={instance.id} instance={instance} {...commonProps}>
+            {content}
+          </DroppableContainer>
+        );
+      }
+
       default:
         return null;
     }
