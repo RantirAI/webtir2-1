@@ -15,6 +15,7 @@ interface NavigationPrimitiveProps {
   isSelected?: boolean;
   className?: string;
   style?: React.CSSProperties;
+  children?: React.ReactNode;
 }
 
 export const NavigationPrimitive: React.FC<NavigationPrimitiveProps> = ({
@@ -33,6 +34,7 @@ export const NavigationPrimitive: React.FC<NavigationPrimitiveProps> = ({
   isSelected = false,
   className = '',
   style = {},
+  children,
 }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobileView, setIsMobileView] = useState(false);
@@ -140,21 +142,26 @@ export const NavigationPrimitive: React.FC<NavigationPrimitiveProps> = ({
       style={style}
       data-instance-id={instanceId}
     >
-      <div className={`flex items-center ${getFlexAlignment()} px-6 py-4`}>
-        {/* Logo */}
-        <div className="flex-shrink-0">
-          <EditableText
-            value={logo}
-            onChange={handleLogoChange}
-            as="span"
-            className="text-lg font-bold"
-            isSelected={isSelected}
-          />
-        </div>
+      <div className={`flex items-center ${getFlexAlignment()} px-6 py-4 gap-6`}>
+        {/* Custom children (Images, Buttons, Links, etc.) */}
+        {children}
+        
+        {/* Logo - only show if no children or explicitly set */}
+        {(!children || logo !== 'Logo') && (
+          <div className="flex-shrink-0">
+            <EditableText
+              value={logo}
+              onChange={handleLogoChange}
+              as="span"
+              className="text-lg font-bold"
+              isSelected={isSelected}
+            />
+          </div>
+        )}
 
         {/* Desktop Menu */}
-        {!isMobileView && (
-          <div className="flex items-center gap-8">
+        {!isMobileView && menuItems.length > 0 && (
+          <div className="flex items-center gap-8 ml-auto">
             {menuItems.map((item) => (
               <EditableText
                 key={item.id}
@@ -171,7 +178,7 @@ export const NavigationPrimitive: React.FC<NavigationPrimitiveProps> = ({
         {/* Mobile Menu Toggle */}
         {isMobileView && (
           <button
-            className="flex-shrink-0 p-2 -mr-2"
+            className="flex-shrink-0 p-2 -mr-2 ml-auto"
             onClick={toggleMobileMenu}
             aria-expanded={isMobileMenuOpen}
             aria-controls="mobile-menu"
