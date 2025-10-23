@@ -1,7 +1,23 @@
 import React, { useEffect, useRef } from 'react';
 import { useBuilderStore } from '../store/useBuilderStore';
 import { ComponentInstance } from '../store/types';
-import { ChevronRight } from 'lucide-react';
+import { 
+  ChevronRight, 
+  Copy, 
+  Trash2, 
+  RefreshCw, 
+  Box as BoxIcon, 
+  Settings,
+  Heading as HeadingIcon,
+  Type,
+  Link as LinkIcon,
+  List,
+  ListOrdered,
+  Quote,
+  Code,
+  Image as ImageIcon,
+  MousePointer
+} from 'lucide-react';
 
 interface ContextMenuProps {
   x: number;
@@ -65,7 +81,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, instance, onClos
   };
 
   const handleWrapInBox = () => {
-    const { rootInstance, updateInstance } = useBuilderStore.getState();
+    const { rootInstance, addInstance, deleteInstance } = useBuilderStore.getState();
     if (!rootInstance) return;
     
     const findParent = (root: ComponentInstance): ComponentInstance | null => {
@@ -81,25 +97,25 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, instance, onClos
     if (parentInstance) {
       const index = parentInstance.children.findIndex(c => c.id === instance.id);
       
-      // Create a proper Box component using addInstance
+      // Clone the instance
+      const clonedInstance = JSON.parse(JSON.stringify(instance));
+      clonedInstance.id = `${instance.type.toLowerCase()}-${Date.now()}`;
+      
+      // Create a proper Box component with the cloned instance as its child
       const wrapperBox: ComponentInstance = {
         id: `box-${Date.now()}`,
         type: 'Box',
         label: 'Wrapper Box',
         props: {},
-        styleSourceIds: [], // Will be assigned default styles when selected
-        children: [],
+        styleSourceIds: [],
+        children: [clonedInstance],
       };
       
-      // Use addInstance to properly create the box with the instance as its child
+      // Delete the original instance
+      deleteInstance(instance.id);
+      
+      // Add the wrapper box with the cloned instance
       addInstance(wrapperBox, parentInstance.id, index);
-      
-      // Remove the instance from its current parent
-      const newParentChildren = parentInstance.children.filter(c => c.id !== instance.id);
-      updateInstance(parentInstance.id, { children: newParentChildren });
-      
-      // Add instance to the new wrapper box
-      addInstance(instance, wrapperBox.id, 0);
     }
     onClose();
   };
@@ -112,19 +128,19 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, instance, onClos
   ];
 
   const richTextElements = [
-    { label: 'Heading 1', value: 'Heading', props: { level: 'h1', children: 'Heading 1' } },
-    { label: 'Heading 2', value: 'Heading', props: { level: 'h2', children: 'Heading 2' } },
-    { label: 'Heading 3', value: 'Heading', props: { level: 'h3', children: 'Heading 3' } },
-    { label: 'Heading 4', value: 'Heading', props: { level: 'h4', children: 'Heading 4' } },
-    { label: 'Heading 5', value: 'Heading', props: { level: 'h5', children: 'Heading 5' } },
-    { label: 'Heading 6', value: 'Heading', props: { level: 'h6', children: 'Heading 6' } },
-    { label: 'Paragraph', value: 'Text', props: { children: 'Text content goes here' } },
-    { label: 'Numbered list', value: 'OrderedList', props: { items: ['Item 1', 'Item 2', 'Item 3'] } },
-    { label: 'Bulleted list', value: 'UnorderedList', props: { items: ['Item A', 'Item B', 'Item C'] } },
-    { label: 'Blockquote', value: 'Blockquote', props: { children: 'Block quote' } },
-    { label: 'Code block', value: 'CodeBlock', props: { children: '// Code goes here' } },
-    { label: 'Link', value: 'Link', props: { href: '#', children: 'Link text' } },
-    { label: 'Image', value: 'Image', props: { src: 'https://via.placeholder.com/400x300', alt: 'Image' } },
+    { label: 'Heading 1', value: 'Heading', icon: HeadingIcon, props: { level: 'h1', children: 'Heading 1' } },
+    { label: 'Heading 2', value: 'Heading', icon: HeadingIcon, props: { level: 'h2', children: 'Heading 2' } },
+    { label: 'Heading 3', value: 'Heading', icon: HeadingIcon, props: { level: 'h3', children: 'Heading 3' } },
+    { label: 'Heading 4', value: 'Heading', icon: HeadingIcon, props: { level: 'h4', children: 'Heading 4' } },
+    { label: 'Heading 5', value: 'Heading', icon: HeadingIcon, props: { level: 'h5', children: 'Heading 5' } },
+    { label: 'Heading 6', value: 'Heading', icon: HeadingIcon, props: { level: 'h6', children: 'Heading 6' } },
+    { label: 'Paragraph', value: 'Text', icon: Type, props: { children: 'Text content goes here' } },
+    { label: 'Numbered list', value: 'OrderedList', icon: ListOrdered, props: { items: ['Item 1', 'Item 2', 'Item 3'] } },
+    { label: 'Bulleted list', value: 'UnorderedList', icon: List, props: { items: ['Item A', 'Item B', 'Item C'] } },
+    { label: 'Blockquote', value: 'Blockquote', icon: Quote, props: { children: 'Block quote' } },
+    { label: 'Code block', value: 'CodeBlock', icon: Code, props: { children: '// Code goes here' } },
+    { label: 'Link', value: 'Link', icon: LinkIcon, props: { href: '#', children: 'Link text' } },
+    { label: 'Image', value: 'Image', icon: ImageIcon, props: { src: 'https://via.placeholder.com/400x300', alt: 'Image' } },
   ];
 
   const isInRichText = instance.type === 'RichText' || (() => {
@@ -144,50 +160,57 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, instance, onClos
   return (
     <div
       ref={menuRef}
-      className="fixed bg-zinc-800 text-white rounded-lg shadow-2xl py-1 z-[10000] min-w-[220px] text-sm"
+      className="fixed bg-popover text-popover-foreground rounded-md shadow-lg border py-1 z-[10000] min-w-[180px] text-sm"
       style={{
         left: `${x}px`,
         top: `${y}px`,
       }}
     >
-      <div className="px-3 py-2 text-xs text-zinc-400 border-b border-zinc-700">
+      <div className="px-2 py-1.5 text-xs text-muted-foreground border-b font-medium">
         {instance.label || instance.type}
       </div>
       
       <button
-        className="w-full px-3 py-1.5 text-left hover:bg-zinc-700 flex items-center justify-between"
+        className="w-full px-2 py-1.5 text-left hover:bg-accent hover:text-accent-foreground flex items-center gap-2"
         onClick={handleDuplicate}
       >
-        <span>Duplicate</span>
-        <span className="text-xs text-zinc-400">Ctrl + D</span>
+        <Copy className="w-3.5 h-3.5" />
+        <span className="flex-1">Duplicate</span>
+        <span className="text-xs text-muted-foreground">⌘D</span>
       </button>
       
       <button
-        className="w-full px-3 py-1.5 text-left hover:bg-zinc-700 flex items-center justify-between text-red-400"
+        className="w-full px-2 py-1.5 text-left hover:bg-accent hover:text-accent-foreground flex items-center gap-2 text-destructive disabled:opacity-50"
         onClick={handleDelete}
         disabled={instance.id === 'root'}
       >
-        <span>Delete</span>
-        <span className="text-xs text-zinc-400">Backspace</span>
+        <Trash2 className="w-3.5 h-3.5" />
+        <span className="flex-1">Delete</span>
+        <span className="text-xs text-muted-foreground">⌫</span>
       </button>
       
-      <div className="border-t border-zinc-700 my-1" />
+      <div className="border-t my-1" />
       
       <div className="relative group">
-        <button className="w-full px-3 py-1.5 text-left hover:bg-zinc-700 flex items-center justify-between">
-          <span>Convert to</span>
+        <button className="w-full px-2 py-1.5 text-left hover:bg-accent hover:text-accent-foreground flex items-center gap-2">
+          <RefreshCw className="w-3.5 h-3.5" />
+          <span className="flex-1">Convert to</span>
           <ChevronRight className="w-3 h-3" />
         </button>
-        <div className="hidden group-hover:block absolute left-full top-0 ml-1 bg-zinc-800 rounded-lg shadow-2xl py-1 min-w-[160px]">
+        <div className="hidden group-hover:block absolute left-full top-0 ml-1 bg-popover border rounded-md shadow-lg py-1 min-w-[140px]">
           {convertOptions.map((option) => (
             <button
               key={option.value}
-              className="w-full px-3 py-1.5 text-left hover:bg-zinc-700"
+              className="w-full px-2 py-1.5 text-left hover:bg-accent hover:text-accent-foreground flex items-center gap-2"
               onClick={() => {
                 updateInstance(instance.id, { type: option.value as any });
                 onClose();
               }}
             >
+              {option.value === 'Heading' && <HeadingIcon className="w-3.5 h-3.5" />}
+              {option.value === 'Text' && <Type className="w-3.5 h-3.5" />}
+              {option.value === 'Link' && <LinkIcon className="w-3.5 h-3.5" />}
+              {option.value === 'Button' && <MousePointer className="w-3.5 h-3.5" />}
               {option.label}
             </button>
           ))}
@@ -195,57 +218,61 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, instance, onClos
       </div>
       
       <button
-        className="w-full px-3 py-1.5 text-left hover:bg-zinc-700"
+        className="w-full px-2 py-1.5 text-left hover:bg-accent hover:text-accent-foreground flex items-center gap-2"
         onClick={handleWrapInBox}
       >
-        Wrap in Box
+        <BoxIcon className="w-3.5 h-3.5" />
+        <span>Wrap in Box</span>
       </button>
       
       {isInRichText && (
         <>
-          <div className="border-t border-zinc-700 my-1" />
-          <div className="px-3 py-2 text-xs text-zinc-400">
+          <div className="border-t my-1" />
+          <div className="px-2 py-1.5 text-xs text-muted-foreground font-medium">
             Add rich text element
           </div>
-          <div className="max-h-60 overflow-y-auto">
-            {richTextElements.map((element) => (
-              <button
-                key={element.label}
-                className="w-full px-3 py-1.5 text-left hover:bg-zinc-700"
-                onClick={() => {
-                  const { componentRegistry } = require('../primitives/registry');
-                  const { generateId } = require('../utils/instance');
-                  const { useStyleStore } = require('../store/useStyleStore');
-                  const meta = componentRegistry[element.value];
-                  if (!meta) return;
-                  
-                  const newId = generateId();
-                  const newInstance: ComponentInstance = {
-                    id: newId,
-                    type: element.value as any,
-                    label: meta.label,
-                    props: element.props || { ...meta.defaultProps },
-                    styleSourceIds: [],
-                    children: [],
-                  };
-                  
-                  addInstance(newInstance, instance.id);
-                  onClose();
-                }}
-              >
-                {element.label}
-              </button>
-            ))}
+          <div className="max-h-60 overflow-y-auto scrollbar-thin">
+            {richTextElements.map((element) => {
+              const Icon = element.icon;
+              return (
+                <button
+                  key={element.label}
+                  className="w-full px-2 py-1.5 text-left hover:bg-accent hover:text-accent-foreground flex items-center gap-2"
+                  onClick={() => {
+                    const { componentRegistry } = require('../primitives/registry');
+                    const { generateId } = require('../utils/instance');
+                    const newId = generateId();
+                    const meta = componentRegistry[element.value];
+                    
+                    const newInstance: ComponentInstance = {
+                      id: newId,
+                      type: element.value as any,
+                      label: element.label,
+                      props: element.props || { ...meta?.defaultProps },
+                      styleSourceIds: [],
+                      children: [],
+                    };
+                    
+                    addInstance(newInstance, instance.id);
+                    onClose();
+                  }}
+                >
+                  <Icon className="w-3.5 h-3.5" />
+                  {element.label}
+                </button>
+              );
+            })}
           </div>
         </>
       )}
       
-      <div className="border-t border-zinc-700 my-1" />
+      <div className="border-t my-1" />
       
       <button
-        className="w-full px-3 py-1.5 text-left hover:bg-zinc-700 flex items-center justify-between"
+        className="w-full px-2 py-1.5 text-left hover:bg-accent hover:text-accent-foreground flex items-center gap-2"
         onClick={onClose}
       >
+        <Settings className="w-3.5 h-3.5" />
         <span>Open settings</span>
       </button>
     </div>
