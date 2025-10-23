@@ -278,8 +278,8 @@
 
 /* Icon buttons for flex direction/align */
 .IconButton {
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   display: grid;
   place-items: center;
   background: hsl(var(--input));
@@ -404,8 +404,11 @@
   margin-left: 1px;
 }
 
-/* Max width constraint for number inputs and small selects */
-.StylePanel .Input[type="number"],
+/* Max width constraint for all inputs and selects */
+.StylePanel .Input,
+.StylePanel .Number,
+.StylePanel input[type="text"],
+.StylePanel input[type="number"],
 .StylePanel .Select {
   max-width: 60px;
 }
