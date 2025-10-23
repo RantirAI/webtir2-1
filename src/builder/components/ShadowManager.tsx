@@ -47,28 +47,28 @@ export const ShadowManager: React.FC<ShadowManagerProps> = ({ shadows, onChange 
   const formatPixelValue = (value: number): string => `${value}px`;
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-1.5">
       <div className="flex items-center justify-between">
         <label className="Label">Box shadows</label>
         <Button
           size="sm"
           variant="ghost"
-          className="h-5 w-5 p-0"
+          className="h-5 w-5 p-0 text-foreground hover:text-foreground"
           onClick={addShadow}
         >
-          <Plus className="w-3 h-3" />
+          <Plus className="w-3.5 h-3.5" />
         </Button>
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-1.5">
         {shadows.map((shadow, index) => (
           <div key={shadow.id} className="border border-border rounded-md overflow-hidden">
             {/* Shadow Header */}
             <div 
-              className="flex items-center justify-between p-2 bg-muted/30 cursor-pointer hover:bg-muted/50"
+              className="flex items-center justify-between p-1.5 bg-muted/30 cursor-pointer hover:bg-muted/50"
               onClick={() => setExpandedShadow(expandedShadow === shadow.id ? null : shadow.id)}
             >
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5">
                 <input
                   type="checkbox"
                   checked={shadow.enabled}
@@ -78,14 +78,14 @@ export const ShadowManager: React.FC<ShadowManagerProps> = ({ shadows, onChange 
                   }}
                   className="w-3 h-3"
                 />
-                <span className="text-xs">
-                  {shadow.inset ? 'Inner' : 'Outer'} shadow: {shadow.x} {shadow.y} {shadow.blur} {shadow.spread}
+                <span className="text-[9px] text-foreground">
+                  {shadow.inset ? 'Inner' : 'Outer'}: {shadow.x} {shadow.y} {shadow.blur}
                 </span>
               </div>
               <Button
                 size="sm"
                 variant="ghost"
-                className="h-5 w-5 p-0"
+                className="h-4 w-4 p-0 text-foreground hover:text-foreground"
                 onClick={(e) => {
                   e.stopPropagation();
                   removeShadow(shadow.id);
@@ -97,19 +97,19 @@ export const ShadowManager: React.FC<ShadowManagerProps> = ({ shadows, onChange 
 
             {/* Shadow Controls */}
             {expandedShadow === shadow.id && (
-              <div className="p-3 space-y-3 bg-background">
+              <div className="p-2 space-y-2 bg-background">
                 {/* Type Toggle */}
-                <div className="space-y-1">
-                  <label className="text-[9px] font-medium">Type</label>
+                <div className="space-y-0.5">
+                  <label className="text-[9px] font-medium text-foreground">Type</label>
                   <div className="grid grid-cols-2 gap-1">
                     <button
-                      className={`text-[9px] py-1 px-2 rounded border ${!shadow.inset ? 'bg-primary text-primary-foreground' : 'bg-background border-border'}`}
+                      className={`text-[9px] py-1 px-2 rounded border ${!shadow.inset ? 'bg-primary text-primary-foreground border-primary' : 'bg-background text-foreground border-border hover:bg-muted'}`}
                       onClick={() => updateShadow(shadow.id, { inset: false })}
                     >
                       Outside
                     </button>
                     <button
-                      className={`text-[9px] py-1 px-2 rounded border ${shadow.inset ? 'bg-primary text-primary-foreground' : 'bg-background border-border'}`}
+                      className={`text-[9px] py-1 px-2 rounded border ${shadow.inset ? 'bg-primary text-primary-foreground border-primary' : 'bg-background text-foreground border-border hover:bg-muted'}`}
                       onClick={() => updateShadow(shadow.id, { inset: true })}
                     >
                       Inside
@@ -118,9 +118,9 @@ export const ShadowManager: React.FC<ShadowManagerProps> = ({ shadows, onChange 
                 </div>
 
                 {/* X Offset */}
-                <div className="space-y-1">
+                <div className="space-y-0.5">
                   <div className="flex items-center justify-between">
-                    <label className="text-[9px] font-medium">X</label>
+                    <label className="text-[9px] font-medium text-foreground">X</label>
                     <Input
                       type="number"
                       value={parsePixelValue(shadow.x)}
@@ -138,9 +138,9 @@ export const ShadowManager: React.FC<ShadowManagerProps> = ({ shadows, onChange 
                 </div>
 
                 {/* Y Offset */}
-                <div className="space-y-1">
+                <div className="space-y-0.5">
                   <div className="flex items-center justify-between">
-                    <label className="text-[9px] font-medium">Y</label>
+                    <label className="text-[9px] font-medium text-foreground">Y</label>
                     <Input
                       type="number"
                       value={parsePixelValue(shadow.y)}
@@ -158,9 +158,9 @@ export const ShadowManager: React.FC<ShadowManagerProps> = ({ shadows, onChange 
                 </div>
 
                 {/* Blur */}
-                <div className="space-y-1">
+                <div className="space-y-0.5">
                   <div className="flex items-center justify-between">
-                    <label className="text-[9px] font-medium">Blur</label>
+                    <label className="text-[9px] font-medium text-foreground">Blur</label>
                     <Input
                       type="number"
                       value={parsePixelValue(shadow.blur)}
@@ -178,9 +178,9 @@ export const ShadowManager: React.FC<ShadowManagerProps> = ({ shadows, onChange 
                 </div>
 
                 {/* Size (Spread) */}
-                <div className="space-y-1">
+                <div className="space-y-0.5">
                   <div className="flex items-center justify-between">
-                    <label className="text-[9px] font-medium">Size</label>
+                    <label className="text-[9px] font-medium text-foreground">Size</label>
                     <Input
                       type="number"
                       value={parsePixelValue(shadow.spread)}
@@ -198,24 +198,24 @@ export const ShadowManager: React.FC<ShadowManagerProps> = ({ shadows, onChange 
                 </div>
 
                 {/* Color */}
-                <div className="space-y-1">
-                  <label className="text-[9px] font-medium">Color</label>
-                  <div className="flex items-center gap-2">
+                <div className="space-y-0.5">
+                  <label className="text-[9px] font-medium text-foreground">Color</label>
+                  <div className="flex items-center gap-1.5">
                     <input
                       type="color"
                       value={shadow.color.match(/#[0-9a-fA-F]{6}/) ? shadow.color : '#000000'}
                       onChange={(e) => {
                         const hex = e.target.value;
-                        updateShadow(shadow.id, { color: `${hex}33` }); // Add 20% opacity
+                        updateShadow(shadow.id, { color: `${hex}33` });
                       }}
-                      className="w-8 h-8 rounded border border-border cursor-pointer"
+                      className="w-5 h-5 rounded border border-border cursor-pointer"
                     />
                     <Input
                       type="text"
                       value={shadow.color}
                       onChange={(e) => updateShadow(shadow.id, { color: e.target.value })}
                       placeholder="rgba(0, 0, 0, 0.2)"
-                      className="flex-1 h-8 text-[9px]"
+                      className="flex-1 h-5 text-[9px] px-1.5"
                     />
                   </div>
                 </div>
@@ -225,7 +225,7 @@ export const ShadowManager: React.FC<ShadowManagerProps> = ({ shadows, onChange 
         ))}
 
         {shadows.length === 0 && (
-          <div className="text-xs text-muted-foreground text-center py-4">
+          <div className="text-[9px] text-muted-foreground text-center py-3">
             No shadows. Click + to add one.
           </div>
         )}

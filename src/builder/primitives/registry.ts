@@ -290,6 +290,138 @@ export const componentRegistry: Record<string, ComponentMeta> = {
       },
     },
   },
+  Video: {
+    type: 'Video',
+    label: 'Video',
+    icon: 'Play',
+    defaultProps: {
+      src: '',
+      autoplay: false,
+      loop: false,
+      muted: true,
+      controls: true,
+    },
+    defaultStyles: {
+      width: '100%',
+      height: 'auto',
+      borderRadius: '8px',
+    },
+    propsDefinition: {
+      src: {
+        type: 'string',
+        label: 'Video URL',
+        control: 'text',
+        defaultValue: '',
+      },
+      autoplay: {
+        type: 'boolean',
+        label: 'Autoplay',
+        control: 'checkbox',
+        defaultValue: false,
+      },
+      loop: {
+        type: 'boolean',
+        label: 'Loop',
+        control: 'checkbox',
+        defaultValue: false,
+      },
+      muted: {
+        type: 'boolean',
+        label: 'Muted',
+        control: 'checkbox',
+        defaultValue: true,
+      },
+      controls: {
+        type: 'boolean',
+        label: 'Show Controls',
+        control: 'checkbox',
+        defaultValue: true,
+      },
+    },
+  },
+  Youtube: {
+    type: 'Youtube',
+    label: 'YouTube',
+    icon: 'Youtube',
+    defaultProps: {
+      videoId: 'dQw4w9WgXcQ',
+      autoplay: false,
+      loop: false,
+      muted: false,
+      controls: true,
+    },
+    defaultStyles: {
+      width: '100%',
+      borderRadius: '8px',
+    },
+    propsDefinition: {
+      videoId: {
+        type: 'string',
+        label: 'Video ID',
+        control: 'text',
+        defaultValue: 'dQw4w9WgXcQ',
+      },
+      autoplay: {
+        type: 'boolean',
+        label: 'Autoplay',
+        control: 'checkbox',
+        defaultValue: false,
+      },
+      loop: {
+        type: 'boolean',
+        label: 'Loop',
+        control: 'checkbox',
+        defaultValue: false,
+      },
+      muted: {
+        type: 'boolean',
+        label: 'Muted',
+        control: 'checkbox',
+        defaultValue: false,
+      },
+      controls: {
+        type: 'boolean',
+        label: 'Show Controls',
+        control: 'checkbox',
+        defaultValue: true,
+      },
+    },
+  },
+  Lottie: {
+    type: 'Lottie',
+    label: 'Lottie Animation',
+    icon: 'Zap',
+    defaultProps: {
+      src: '',
+      autoplay: true,
+      loop: true,
+    },
+    defaultStyles: {
+      width: '100%',
+      height: 'auto',
+      minHeight: '200px',
+    },
+    propsDefinition: {
+      src: {
+        type: 'string',
+        label: 'JSON URL',
+        control: 'text',
+        defaultValue: '',
+      },
+      autoplay: {
+        type: 'boolean',
+        label: 'Autoplay',
+        control: 'checkbox',
+        defaultValue: true,
+      },
+      loop: {
+        type: 'boolean',
+        label: 'Loop',
+        control: 'checkbox',
+        defaultValue: true,
+      },
+    },
+  },
   
   // Commonly Used Components
   Table: {
@@ -972,14 +1104,6 @@ export const componentRegistry: Record<string, ComponentMeta> = {
     type: 'Timeline',
     label: 'Timeline',
     icon: 'Timeline',
-    defaultProps: {},
-    defaultStyles: {},
-    propsDefinition: {},
-  },
-  Video: {
-    type: 'Video',
-    label: 'Video',
-    icon: 'Video',
     defaultProps: {},
     defaultStyles: {},
     propsDefinition: {},

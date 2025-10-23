@@ -12,7 +12,7 @@ export type ComponentType =
   // Charts
   | 'BarChart' | 'BubbleChart' | 'FunnelChart' | 'HeatMap' | 'LineChart' | 'PieChart' | 'PlotlyJSONChart' | 'SankeyChart' | 'ScatterChart' | 'Sparkline' | 'StackedBarChart' | 'SunburstChart' | 'Treemap' | 'WaterfallChart'
   // Presentation
-  | 'Alert' | 'Avatar' | 'AvatarGroup' | 'Calendar' | 'CircularImage' | 'Divider' | 'EventList' | 'Icon' | 'IconText' | 'ImageGrid' | 'PDF' | 'ProgressBar' | 'ProgressCircle' | 'QRCode' | 'Spacer' | 'Statistic' | 'Status' | 'Tags' | 'Timeline' | 'Video'
+  | 'Alert' | 'Avatar' | 'AvatarGroup' | 'Calendar' | 'CircularImage' | 'Divider' | 'EventList' | 'Icon' | 'IconText' | 'ImageGrid' | 'PDF' | 'ProgressBar' | 'ProgressCircle' | 'QRCode' | 'Spacer' | 'Statistic' | 'Status' | 'Tags' | 'Timeline' | 'Video' | 'Youtube' | 'Lottie'
   // Forms
   | 'Form' | 'FormButton' | 'InputLabel' | 'Select' | 'RadioGroup' | 'CheckboxField'
   // Localization

@@ -194,8 +194,12 @@ export const ComponentsPanel: React.FC = () => {
       types: ['Heading', 'Text', 'RichText', 'Blockquote', 'OrderedList', 'UnorderedList', 'CodeBlock'] 
     },
     { 
+      name: 'Navigation', 
+      types: ['Navigation', 'Button', 'Link'] 
+    },
+    { 
       name: 'Media', 
-      types: ['Image', 'Link'] 
+      types: ['Image', 'Video', 'Youtube', 'Lottie'] 
     },
     { 
       name: 'Forms', 
@@ -204,10 +208,6 @@ export const ComponentsPanel: React.FC = () => {
     { 
       name: 'Data', 
       types: ['Table', 'KeyValue'] 
-    },
-    { 
-      name: 'Navigation', 
-      types: ['Navigation', 'Button'] 
     },
   ];
 
