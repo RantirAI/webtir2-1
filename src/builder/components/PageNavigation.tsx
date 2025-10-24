@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Plus, ChevronDown, Monitor, Tablet, Smartphone, Download, Save, Eye, ZoomIn, ZoomOut, Sun, Moon, Hand, FileCode, FileText, Palette } from 'lucide-react';
+import { Plus, ChevronDown, Monitor, Tablet, Smartphone, Download, Save, Eye, ZoomIn, ZoomOut, Sun, Moon, Hand, FileCode, FileText, Palette, Zap } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Separator } from '@/components/ui/separator';
 import { useTheme } from 'next-themes';
 import { useBuilderStore } from '@/builder/store/useBuilderStore';
 import { exportReactComponent, exportHTML, exportStylesheet, downloadFile, exportProject } from '@/builder/utils/export';
+import { exportRantirProject } from '@/builder/utils/rantirExport';
 import { useToast } from '@/hooks/use-toast';
 
 interface PageNavigationProps {
@@ -91,6 +92,17 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
     toast({
       title: 'Project Exported',
       description: 'Downloaded project.zip with all files successfully',
+    });
+  };
+
+  const handleExportRantir = async () => {
+    if (!rootInstance) return;
+    
+    await exportRantirProject(rootInstance, projectName || 'my-project');
+    
+    toast({
+      title: 'Rantir Framework Exported',
+      description: 'Downloaded Rantir/Astro project successfully',
     });
   };
 
@@ -277,7 +289,11 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={handleExportAll} className="gap-2 font-semibold">
             <Download className="w-4 h-4" />
-            Export All Files
+            Export All Files (Legacy)
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={handleExportRantir} className="gap-2 font-semibold">
+            <Zap className="w-4 h-4" />
+            Export Rantir Framework
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
