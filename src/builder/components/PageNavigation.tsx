@@ -8,6 +8,7 @@ import { useBuilderStore } from '@/builder/store/useBuilderStore';
 import { exportReactComponent, exportHTML, exportStylesheet, downloadFile, exportProject } from '@/builder/utils/export';
 import { exportRantirProject } from '@/builder/utils/rantirExport';
 import { useToast } from '@/hooks/use-toast';
+import { RantirExportModal } from './RantirExportModal';
 
 interface PageNavigationProps {
   currentPage: string;
@@ -54,6 +55,7 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
   const { rootInstance } = useBuilderStore();
   const [isEditingName, setIsEditingName] = useState(false);
   const [nameInput, setNameInput] = useState(projectName);
+  const [showRantirModal, setShowRantirModal] = useState(false);
 
   const handleExportReact = () => {
     if (!rootInstance) return;
@@ -97,6 +99,7 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
 
   const handleExportRantir = async () => {
     if (!rootInstance) return;
+    setShowRantirModal(false);
     
     await exportRantirProject(rootInstance, projectName || 'my-project');
     
@@ -291,12 +294,19 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
             <Download className="w-4 h-4" />
             Export All Files (Legacy)
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={handleExportRantir} className="gap-2 font-semibold">
-            <Zap className="w-4 h-4" />
-            Export Rantir Framework
-          </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setShowRantirModal(true)} className="gap-2 font-semibold">
+                <Zap className="w-4 h-4" />
+                Export Rantir Framework
+              </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+
+      <RantirExportModal
+        open={showRantirModal}
+        onOpenChange={setShowRantirModal}
+        onExport={handleExportRantir}
+        projectName={projectName}
+      />
     </div>
   );
 };

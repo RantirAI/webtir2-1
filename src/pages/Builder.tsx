@@ -3,6 +3,7 @@ import { Canvas } from '@/builder/components/Canvas';
 import { LeftSidebar } from '@/builder/components/LeftSidebar';
 import { StylePanel } from '@/builder/components/StylePanel';
 import { PageNavigation } from '@/builder/components/PageNavigation';
+import { PageFooter } from '@/builder/components/PageFooter';
 import { StyleSheetInjector } from '@/builder/components/StyleSheetInjector';
 import { ProjectSettingsModal } from '@/builder/components/ProjectSettingsModal';
 import { Toaster } from '@/components/ui/toaster';
@@ -477,6 +478,7 @@ const Builder: React.FC = () => {
         )}
       </DragOverlay>
       <Toaster />
+      <PageFooter />
       </div>
     </DndContext>
   );
