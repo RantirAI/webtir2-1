@@ -83,7 +83,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, instance, onClos
   };
 
   const handleWrapInBox = () => {
-    const { rootInstance, addInstance, deleteInstance } = useBuilderStore.getState();
+    const { rootInstance, addInstance, moveInstance } = useBuilderStore.getState();
     if (!rootInstance) return;
     
     const findParent = (root: ComponentInstance): ComponentInstance | null => {
@@ -99,25 +99,22 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, instance, onClos
     if (parentInstance) {
       const index = parentInstance.children.findIndex(c => c.id === instance.id);
       
-      // Clone the instance
-      const clonedInstance = JSON.parse(JSON.stringify(instance));
-      clonedInstance.id = `${instance.type.toLowerCase()}-${Date.now()}`;
-      
-      // Create a proper Box component with the cloned instance as its child
+      // Create a proper Box component
+      const boxId = generateId();
       const wrapperBox: ComponentInstance = {
-        id: `box-${Date.now()}`,
+        id: boxId,
         type: 'Box',
-        label: 'Wrapper Box',
+        label: 'Box',
         props: {},
         styleSourceIds: [],
-        children: [clonedInstance],
+        children: [],
       };
       
-      // Delete the original instance
-      deleteInstance(instance.id);
-      
-      // Add the wrapper box with the cloned instance
+      // Add the wrapper box at the same position
       addInstance(wrapperBox, parentInstance.id, index);
+      
+      // Move the original instance into the box
+      moveInstance(instance.id, boxId, 0);
     }
     onClose();
   };
