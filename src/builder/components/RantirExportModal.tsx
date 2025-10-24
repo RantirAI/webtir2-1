@@ -43,7 +43,7 @@ export function RantirExportModal({ open, onOpenChange, onExport, projectName }:
           <div className="mb-4">
             <RantirLogo isDark={isDark} />
           </div>
-          <DialogTitle className="text-xl font-bold">Export Rantir Framework</DialogTitle>
+          <DialogTitle className="text-xl font-bold">Export an Modified Astro Compiled Export by Rantir</DialogTitle>
           <DialogDescription className="text-sm leading-relaxed pt-2">
             Astro is a web framework that takes the best from the early internet (think HTML and CSS) and puts it to work in a next-gen architecture to make every Astro site, and the whole web, faster. Rantir is a modified framework that extends this with TIR template capabilities.
           </DialogDescription>
