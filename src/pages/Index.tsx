@@ -16,12 +16,12 @@ const Index = () => {
 
       {/* Main Content with Dotted Background */}
       <div className="min-h-[calc(100vh-40px)] relative">
-        {/* Dotted Background Pattern */}
+        {/* Dotted Background Pattern - More Visible */}
         <div 
-          className="absolute inset-0 opacity-30"
+          className="absolute inset-0 opacity-50"
           style={{
-            backgroundImage: 'radial-gradient(circle, #d1d5db 1px, transparent 1px)',
-            backgroundSize: '24px 24px'
+            backgroundImage: 'radial-gradient(circle, #9ca3af 1.5px, transparent 1.5px)',
+            backgroundSize: '20px 20px'
           }}
         />
 
@@ -39,7 +39,7 @@ const Index = () => {
         {/* Builder Interface Mockup */}
         <div className="relative z-10 px-8 py-8 flex gap-4 max-w-[1600px] mx-auto">
           {/* Left Sidebar - Elements Panel */}
-          <div className="w-64 bg-white border border-border rounded-xl shadow-lg p-4 space-y-4 h-[600px] overflow-y-auto">
+          <div className="w-64 bg-white border border-border rounded-xl shadow-lg p-4 space-y-4 h-[600px] overflow-y-auto cursor-move hover:shadow-xl transition-shadow">
             <div>
               <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
                 <Layout className="w-4 h-4" />
@@ -97,9 +97,18 @@ const Index = () => {
           </div>
 
           {/* Center Canvas */}
-          <div className="flex-1 bg-white border-2 border-primary rounded-xl shadow-2xl p-8 min-h-[600px]">
+          <div className="flex-1 bg-white border-2 border-primary rounded-xl shadow-2xl p-8 min-h-[600px] relative">
+            {/* Section Badge */}
+            <div className="absolute top-4 left-4 bg-primary text-primary-foreground px-3 py-1 rounded text-xs font-medium flex items-center gap-1">
+              Section
+              <div className="flex gap-0.5">
+                <button className="hover:bg-primary-foreground/20 p-0.5 rounded">↑</button>
+                <button className="hover:bg-primary-foreground/20 p-0.5 rounded">↓</button>
+              </div>
+            </div>
+
             {/* Canvas with selected section */}
-            <div className="border-2 border-primary rounded-lg p-8 bg-muted/10">
+            <div className="border-2 border-primary rounded-lg p-8 bg-muted/10 relative">
               <div className="text-center space-y-6">
                 <h2 className="text-3xl font-bold">Build Beautiful Websites</h2>
                 <p className="text-lg text-muted-foreground">
@@ -107,8 +116,9 @@ const Index = () => {
                 </p>
               </div>
 
-              {/* Three Features */}
-              <div className="grid grid-cols-3 gap-6 mt-12">
+              {/* Bento Grid Layout */}
+              <div className="grid grid-cols-3 gap-4 mt-12">
+                {/* Top Row - 3 equal cards */}
                 <div className="bg-background border border-border rounded-xl p-6 text-center space-y-3">
                   <div className="w-12 h-12 bg-primary/10 rounded-lg mx-auto flex items-center justify-center">
                     <Layout className="w-6 h-6 text-primary" />
@@ -140,8 +150,8 @@ const Index = () => {
                 </div>
               </div>
 
-              {/* Two Feature Cards Below */}
-              <div className="grid grid-cols-2 gap-6 mt-8">
+              {/* Bottom Row - 2 wider cards */}
+              <div className="grid grid-cols-2 gap-4 mt-4">
                 <div className="bg-background border border-border rounded-xl p-8 space-y-3">
                   <h3 className="font-semibold text-lg">Open source</h3>
                   <p className="text-sm text-muted-foreground">
@@ -160,7 +170,7 @@ const Index = () => {
           </div>
 
           {/* Right Sidebar - Layers Panel */}
-          <div className="w-64 bg-white border border-border rounded-xl shadow-lg p-4 space-y-3 h-[600px] overflow-y-auto">
+          <div className="w-64 bg-white border border-border rounded-xl shadow-lg p-4 space-y-3 h-[600px] overflow-y-auto cursor-move hover:shadow-xl transition-shadow">
             <h3 className="text-sm font-semibold flex items-center gap-2">
               <Layers className="w-4 h-4" />
               Layers
