@@ -14,40 +14,33 @@ const WebtirLogo = ({ isDark }: { isDark: boolean }) => (
 
 const footerLinks = [
   { label: "License", href: "https://www.rantir.com/license" },
-  { label: "Pricing", href: "https://www.rantir.com/pricing" },
-  { label: "Embed", href: "https://www.rantir.com/embed" },
+  { label: "Terms and Conditions", href: "https://www.rantir.com/terms" },
   { label: "Documentation", href: "https://www.rantir.com/documentation" },
-  { label: "Terms", href: "https://www.rantir.com/terms" },
+  { label: "Embed", href: "https://www.rantir.com/embed" },
+  { label: "Roadmap", href: "https://www.rantir.com/roadmap" },
 ];
 
-export function PageFooter() {
+export const PageFooter = () => {
   const { theme } = useTheme();
   const isDark = theme === "dark";
 
   return (
-    <div className="fixed bottom-4 right-4 z-50">
-      <div className="bg-background/95 backdrop-blur-sm border rounded-lg shadow-lg px-3 py-2">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2">
-            {footerLinks.map((link, index) => (
-              <a
-                key={link.label}
-                href={link.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-              >
-                {link.label}
-                {index < footerLinks.length - 1 && (
-                  <span className="ml-2 text-muted-foreground/50">•</span>
-                )}
-              </a>
-            ))}
-          </div>
-          <div className="h-4 w-px bg-border" />
-          <WebtirLogo isDark={isDark} />
-        </div>
+    <footer className="fixed bottom-4 right-4 z-50 bg-background/95 backdrop-blur-sm border border-border rounded-lg shadow-lg px-4 py-2">
+      <div className="flex items-center gap-4">
+        <WebtirLogo isDark={isDark} />
+        <div className="h-4 w-px bg-border" />
+        {footerLinks.map((link) => (
+          <a
+            key={link.label}
+            href={link.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+          >
+            {link.label}
+          </a>
+        ))}
       </div>
-    </div>
+    </footer>
   );
-}
+};
