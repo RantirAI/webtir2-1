@@ -756,9 +756,7 @@ const Builder: React.FC = () => {
 
         {/* Code View Sidebar */}
         {!isPreviewMode && isCodeViewOpen && (
-          <div className="absolute left-4 top-16 bottom-4 w-[45%] z-10 transition-all duration-300 animate-slide-in-left">
-            <CodeView onClose={() => setIsCodeViewOpen(false)} />
-          </div>
+          <CodeView onClose={() => setIsCodeViewOpen(false)} />
         )}
       </div>
 

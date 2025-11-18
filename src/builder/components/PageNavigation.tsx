@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Plus, ChevronDown, Monitor, Tablet, Smartphone, Download, Save, Eye, ZoomIn, ZoomOut, Sun, Moon, Hand, FileCode, FileText, Palette, Zap } from 'lucide-react';
+import { Plus, ChevronDown, Monitor, Tablet, Smartphone, Download, Save, Eye, ZoomIn, ZoomOut, Sun, Moon, Hand, FileCode, FileText, Palette, Zap, X } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Separator } from '@/components/ui/separator';
 import { useTheme } from 'next-themes';
@@ -222,9 +222,9 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
         size="sm"
         className={`h-8 px-2 ${isCodeViewOpen ? 'bg-[#F5F5F5] dark:bg-zinc-800' : ''}`}
         onClick={onCodeViewToggle}
-        title="Toggle Code View"
+        title={isCodeViewOpen ? "Close Code View" : "Open Code View"}
       >
-        <FileCode className="w-4 h-4" />
+        {isCodeViewOpen ? <X className="w-4 h-4" /> : <FileCode className="w-4 h-4" />}
       </Button>
 
       <Separator orientation="vertical" className="h-6" />
