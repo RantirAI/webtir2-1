@@ -173,7 +173,7 @@ const Builder: React.FC = () => {
       };
 
       // Composite components inserted via drag-and-drop
-      // 1) Navigation
+      // 1) Navigation - use existing Image, Link, Button components
       if (componentType === 'Navigation') {
         const navId = generateId();
         const logoBoxId = generateId();
@@ -222,7 +222,7 @@ const Builder: React.FC = () => {
               { id: link3Id, type: 'Link' as ComponentType, label: 'Contact Link', props: { href: '#', children: 'Contact' }, styleSourceIds: [], children: [] },
             ]},
             { id: buttonBoxId, type: 'Box' as ComponentType, label: 'Button Container', props: {}, styleSourceIds: [], children: [
-              { id: buttonId, type: 'FormButton' as ComponentType, label: 'CTA Button', props: { text: 'Get Started', type: 'button' }, styleSourceIds: [], children: [] },
+              { id: buttonId, type: 'Button' as ComponentType, label: 'CTA Button', props: { children: 'Get Started' }, styleSourceIds: [], children: [] },
             ]},
           ],
         };
@@ -230,7 +230,7 @@ const Builder: React.FC = () => {
         return;
       }
 
-      // 2) Dropdown
+      // 2) Dropdown - use existing Button and Link components
       if (componentType === 'Dropdown') {
         const dropdownId = generateId();
         const triggerId = generateId();
@@ -373,7 +373,7 @@ const Builder: React.FC = () => {
         return;
       }
 
-      // 5) Table composite
+      // 5) Table composite - use existing Cell components
       if (componentType === 'Table') {
         const containerId = generateId();
         const tableId = generateId();
@@ -391,6 +391,7 @@ const Builder: React.FC = () => {
         const cell4Id = generateId();
         const cell5Id = generateId();
         const cell6Id = generateId();
+        
         const { createStyleSource, setStyle } = useStyleStore.getState();
         const tableStyleId = createStyleSource('local', `table-${tableId}`);
         setStyle(tableStyleId, 'width', '100%');
@@ -399,18 +400,26 @@ const Builder: React.FC = () => {
         setStyle(tableStyleId, 'border', '1px solid hsl(var(--border))');
         setStyle(tableStyleId, 'borderRadius', '8px');
         setStyle(tableStyleId, 'overflow', 'hidden');
+        
         const headerRowStyleId = createStyleSource('local', `header-row-${headerRowId}`);
         setStyle(headerRowStyleId, 'display', 'flex');
-        setStyle(headerRowStyleId, 'gap', '16px');
-        setStyle(headerRowStyleId, 'padding', '12px');
+        setStyle(headerRowStyleId, 'gap', '0');
+        setStyle(headerRowStyleId, 'padding', '0');
         setStyle(headerRowStyleId, 'backgroundColor', 'hsl(var(--muted))');
         setStyle(headerRowStyleId, 'fontWeight', '600');
         setStyle(headerRowStyleId, 'borderBottom', '2px solid hsl(var(--border))');
+        
         const rowStyleId = createStyleSource('local', `row-${row1Id}`);
         setStyle(rowStyleId, 'display', 'flex');
-        setStyle(rowStyleId, 'gap', '16px');
-        setStyle(rowStyleId, 'padding', '12px');
+        setStyle(rowStyleId, 'gap', '0');
+        setStyle(rowStyleId, 'padding', '0');
         setStyle(rowStyleId, 'borderBottom', '1px solid hsl(var(--border))');
+
+        const cellStyleId = createStyleSource('local', `cell-${cell1Id}`);
+        setStyle(cellStyleId, 'flex', '1');
+        setStyle(cellStyleId, 'padding', '12px');
+        setStyle(cellStyleId, 'borderRight', '1px solid hsl(var(--border))');
+        
         const containerInstance: ComponentInstance = {
           id: containerId,
           type: 'Container' as ComponentType,
@@ -421,21 +430,21 @@ const Builder: React.FC = () => {
             { id: tableId, type: 'Box' as ComponentType, label: 'Table', props: {}, styleSourceIds: [tableStyleId], children: [
               { id: theadId, type: 'Box' as ComponentType, label: 'Table Head', props: {}, styleSourceIds: [], children: [
                 { id: headerRowId, type: 'Box' as ComponentType, label: 'Header Row', props: {}, styleSourceIds: [headerRowStyleId], children: [
-                  { id: th1Id, type: 'Text' as ComponentType, label: 'Column 1', props: { children: 'Column 1' }, styleSourceIds: [], children: [] },
-                  { id: th2Id, type: 'Text' as ComponentType, label: 'Column 2', props: { children: 'Column 2' }, styleSourceIds: [], children: [] },
-                  { id: th3Id, type: 'Text' as ComponentType, label: 'Column 3', props: { children: 'Column 3' }, styleSourceIds: [], children: [] },
+                  { id: th1Id, type: 'Cell' as ComponentType, label: 'Header Cell 1', props: { children: 'Column 1' }, styleSourceIds: [cellStyleId], children: [] },
+                  { id: th2Id, type: 'Cell' as ComponentType, label: 'Header Cell 2', props: { children: 'Column 2' }, styleSourceIds: [cellStyleId], children: [] },
+                  { id: th3Id, type: 'Cell' as ComponentType, label: 'Header Cell 3', props: { children: 'Column 3' }, styleSourceIds: [cellStyleId], children: [] },
                 ] },
               ] },
               { id: tbodyId, type: 'Box' as ComponentType, label: 'Table Body', props: {}, styleSourceIds: [], children: [
                 { id: row1Id, type: 'Box' as ComponentType, label: 'Row 1', props: {}, styleSourceIds: [rowStyleId], children: [
-                  { id: cell1Id, type: 'Text' as ComponentType, label: 'Cell', props: { children: 'Data 1' }, styleSourceIds: [], children: [] },
-                  { id: cell2Id, type: 'Text' as ComponentType, label: 'Cell', props: { children: 'Data 2' }, styleSourceIds: [], children: [] },
-                  { id: cell3Id, type: 'Text' as ComponentType, label: 'Cell', props: { children: 'Data 3' }, styleSourceIds: [], children: [] },
+                  { id: cell1Id, type: 'Cell' as ComponentType, label: 'Cell', props: { children: 'Data 1' }, styleSourceIds: [cellStyleId], children: [] },
+                  { id: cell2Id, type: 'Cell' as ComponentType, label: 'Cell', props: { children: 'Data 2' }, styleSourceIds: [cellStyleId], children: [] },
+                  { id: cell3Id, type: 'Cell' as ComponentType, label: 'Cell', props: { children: 'Data 3' }, styleSourceIds: [cellStyleId], children: [] },
                 ] },
                 { id: row2Id, type: 'Box' as ComponentType, label: 'Row 2', props: {}, styleSourceIds: [rowStyleId], children: [
-                  { id: cell4Id, type: 'Text' as ComponentType, label: 'Cell', props: { children: 'Data 4' }, styleSourceIds: [], children: [] },
-                  { id: cell5Id, type: 'Text' as ComponentType, label: 'Cell', props: { children: 'Data 5' }, styleSourceIds: [], children: [] },
-                  { id: cell6Id, type: 'Text' as ComponentType, label: 'Cell', props: { children: 'Data 6' }, styleSourceIds: [], children: [] },
+                  { id: cell4Id, type: 'Cell' as ComponentType, label: 'Cell', props: { children: 'Data 4' }, styleSourceIds: [cellStyleId], children: [] },
+                  { id: cell5Id, type: 'Cell' as ComponentType, label: 'Cell', props: { children: 'Data 5' }, styleSourceIds: [cellStyleId], children: [] },
+                  { id: cell6Id, type: 'Cell' as ComponentType, label: 'Cell', props: { children: 'Data 6' }, styleSourceIds: [cellStyleId], children: [] },
                 ] },
               ] },
             ] },

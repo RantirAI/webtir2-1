@@ -28,6 +28,7 @@ import { SelectPrimitive } from '../primitives/SelectPrimitive';
 import { RadioPrimitive } from '../primitives/RadioPrimitive';
 import { CheckboxPrimitive } from '../primitives/CheckboxPrimitive';
 import { NavigationPrimitive } from '../primitives/NavigationPrimitive';
+import { CellPrimitive } from '../primitives/CellPrimitive';
 import { breakpoints } from './PageNavigation';
 import { ContextMenu } from './ContextMenu';
 import { SelectionOverlay } from './SelectionOverlay';
@@ -427,6 +428,8 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
             style={getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties}
           />
         );
+      case 'Cell':
+        return wrapWithDraggable(<CellPrimitive key={instance.id} {...commonProps} />);
       case 'Navigation': {
         // If Navigation has children (new composite structure), render as Box container
         if (instance.children && instance.children.length > 0) {

@@ -6,7 +6,7 @@ export type ComponentType =
   // Rich Text
   | 'RichText' | 'Blockquote' | 'OrderedList' | 'UnorderedList' | 'CodeBlock'
   // Commonly Used
-  | 'Table' | 'NumberInput' | 'TabbedContainer' | 'MixedChart' | 'KeyValue' | 'Navigation' | 'Dropdown'
+  | 'Table' | 'Cell' | 'NumberInput' | 'TabbedContainer' | 'MixedChart' | 'KeyValue' | 'Navigation' | 'Dropdown'
   // Text Inputs
   | 'EditableText' | 'EditableTextArea' | 'Email' | 'JSONEditor' | 'Password' | 'RichTextEditor' | 'TextArea' | 'TextInput' | 'URL'
   // Charts
