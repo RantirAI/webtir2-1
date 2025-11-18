@@ -755,7 +755,7 @@ const Builder: React.FC = () => {
         )}
 
         {/* Code View Sidebar */}
-        {!isPreviewMode && isCodeViewOpen && (
+        {isCodeViewOpen && (
           <CodeView 
             onClose={() => setIsCodeViewOpen(false)} 
             currentBreakpoint={currentBreakpoint}
