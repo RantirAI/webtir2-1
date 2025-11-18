@@ -30,7 +30,15 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, currentBreakpoint }
   const [astroCode, setAstroCode] = useState('');
 
   useEffect(() => {
-    // Generate code exports
+    // Generate code exports safely (handle empty canvas)
+    if (!rootInstance) {
+      setHtmlCode("<!-- No content yet -->");
+      setCssCode(exportCSS());
+      setJsCode("// No interactive code yet");
+      setAstroCode("<!-- No Astro content yet -->");
+      return;
+    }
+
     setHtmlCode(exportHTML(rootInstance));
     setCssCode(exportCSS());
     setJsCode(exportJS(rootInstance));
