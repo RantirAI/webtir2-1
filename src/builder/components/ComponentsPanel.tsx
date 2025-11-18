@@ -49,6 +49,149 @@ export const ComponentsPanel: React.FC = () => {
 
     const newId = generateId();
     
+    // Create composite structure for Form
+    if (type === 'Form') {
+      const formId = generateId();
+      const headingId = generateId();
+      const textInputBoxId = generateId();
+      const textInputLabelId = generateId();
+      const textInputId = generateId();
+      const textAreaBoxId = generateId();
+      const textAreaLabelId = generateId();
+      const textAreaId = generateId();
+      const selectBoxId = generateId();
+      const selectLabelId = generateId();
+      const selectId = generateId();
+      const buttonId = generateId();
+      
+      const { createStyleSource, setStyle } = useStyleStore.getState();
+      
+      const formStyleId = createStyleSource('local', `form-${formId}`);
+      setStyle(formStyleId, 'display', 'flex');
+      setStyle(formStyleId, 'flexDirection', 'column');
+      setStyle(formStyleId, 'gap', '16px');
+      setStyle(formStyleId, 'padding', '24px');
+      setStyle(formStyleId, 'backgroundColor', 'hsl(var(--background))');
+      setStyle(formStyleId, 'border', '1px solid hsl(var(--border))');
+      setStyle(formStyleId, 'borderRadius', '8px');
+      
+      const inputBoxStyleId = createStyleSource('local', `input-box-${textInputBoxId}`);
+      setStyle(inputBoxStyleId, 'display', 'flex');
+      setStyle(inputBoxStyleId, 'flexDirection', 'column');
+      setStyle(inputBoxStyleId, 'gap', '8px');
+      
+      const container: ComponentInstance = {
+        id: formId,
+        type: 'Form',
+        label: 'Form',
+        props: {},
+        styleSourceIds: [formStyleId],
+        children: [
+          {
+            id: headingId,
+            type: 'Heading',
+            label: 'Form Title',
+            props: { level: 'h2', children: 'Contact Form' },
+            styleSourceIds: [],
+            children: [],
+          },
+          {
+            id: textInputBoxId,
+            type: 'Box',
+            label: 'Name Input',
+            props: {},
+            styleSourceIds: [inputBoxStyleId],
+            children: [
+              {
+                id: textInputLabelId,
+                type: 'Text',
+                label: 'Label',
+                props: { children: 'Name' },
+                styleSourceIds: [],
+                children: [],
+              },
+              {
+                id: textInputId,
+                type: 'TextInput',
+                label: 'Input Field',
+                props: { placeholder: 'Enter your name...' },
+                styleSourceIds: [],
+                children: [],
+              },
+            ],
+          },
+          {
+            id: textAreaBoxId,
+            type: 'Box',
+            label: 'Message Input',
+            props: {},
+            styleSourceIds: [inputBoxStyleId],
+            children: [
+              {
+                id: textAreaLabelId,
+                type: 'Text',
+                label: 'Label',
+                props: { children: 'Message' },
+                styleSourceIds: [],
+                children: [],
+              },
+              {
+                id: textAreaId,
+                type: 'TextArea',
+                label: 'Textarea Field',
+                props: { placeholder: 'Enter your message...', rows: 4 },
+                styleSourceIds: [],
+                children: [],
+              },
+            ],
+          },
+          {
+            id: selectBoxId,
+            type: 'Box',
+            label: 'Category Select',
+            props: {},
+            styleSourceIds: [inputBoxStyleId],
+            children: [
+              {
+                id: selectLabelId,
+                type: 'Text',
+                label: 'Label',
+                props: { children: 'Category' },
+                styleSourceIds: [],
+                children: [],
+              },
+              {
+                id: selectId,
+                type: 'Select',
+                label: 'Select Field',
+                props: { 
+                  placeholder: 'Select a category...',
+                  options: [
+                    { id: '1', label: 'General', value: 'general' },
+                    { id: '2', label: 'Support', value: 'support' },
+                    { id: '3', label: 'Feedback', value: 'feedback' },
+                  ]
+                },
+                styleSourceIds: [],
+                children: [],
+              },
+            ],
+          },
+          {
+            id: buttonId,
+            type: 'FormButton',
+            label: 'Submit Button',
+            props: { text: 'Submit', type: 'submit' },
+            styleSourceIds: [],
+            children: [],
+          },
+        ],
+      };
+      
+      addInstance(container, selectedInstanceId || 'root');
+      return;
+    }
+    
     // Create composite structure for Navigation
     if (type === 'Navigation') {
       const containerId = generateId();
@@ -560,7 +703,7 @@ export const ComponentsPanel: React.FC = () => {
   const debouncedSearch = useDebounce(searchQuery, 300);
 
   const basicCategories = [
-    { name: 'Layout', types: ['Section', 'Container', 'Box'] },
+    { name: 'Layout', types: ['Section', 'Container', 'Box', 'Navigation'] },
     { name: 'Typography', types: ['Heading', 'Text', 'RichText', 'Button', 'Link'] },
     { name: 'Media', types: ['Image', 'Video', 'Youtube', 'Lottie'] },
     { name: 'Forms', types: ['Form', 'FormButton', 'InputLabel', 'TextInput', 'TextArea', 'Select', 'RadioGroup', 'CheckboxField'] },
