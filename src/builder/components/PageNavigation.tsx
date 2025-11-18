@@ -25,6 +25,8 @@ interface PageNavigationProps {
   projectName: string;
   onProjectNameChange: (name: string) => void;
   onProjectSettingsOpen: () => void;
+  isCodeViewOpen?: boolean;
+  onCodeViewToggle?: () => void;
 }
 
 export const breakpoints = [
@@ -49,6 +51,8 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
   projectName,
   onProjectNameChange,
   onProjectSettingsOpen,
+  isCodeViewOpen = false,
+  onCodeViewToggle,
 }) => {
   const { theme, setTheme } = useTheme();
   const { toast } = useToast();
@@ -210,6 +214,17 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
         ) : (
           <Moon className="w-4 h-4" />
         )}
+      </Button>
+
+      {/* Code View Toggle */}
+      <Button
+        variant="ghost"
+        size="sm"
+        className={`h-8 px-2 ${isCodeViewOpen ? 'bg-[#F5F5F5] dark:bg-zinc-800' : ''}`}
+        onClick={onCodeViewToggle}
+        title="Toggle Code View"
+      >
+        <FileCode className="w-4 h-4" />
       </Button>
 
       <Separator orientation="vertical" className="h-6" />

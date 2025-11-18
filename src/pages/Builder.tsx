@@ -6,6 +6,7 @@ import { PageNavigation } from '@/builder/components/PageNavigation';
 import { PageFooter } from '@/builder/components/PageFooter';
 import { StyleSheetInjector } from '@/builder/components/StyleSheetInjector';
 import { ProjectSettingsModal } from '@/builder/components/ProjectSettingsModal';
+import { CodeView } from '@/builder/components/CodeView';
 import { Toaster } from '@/components/ui/toaster';
 import { Button } from '@/components/ui/button';
 import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, DragOverEvent, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
@@ -37,6 +38,7 @@ const Builder: React.FC = () => {
   const [draggedComponent, setDraggedComponent] = useState<{ type: string; label: string; icon: string } | null>(null);
   const [dragOverEvent, setDragOverEvent] = useState<any>(null);
   const [canvasElement, setCanvasElement] = useState<HTMLElement | null>(null);
+  const [isCodeViewOpen, setIsCodeViewOpen] = useState(false);
   
   const addInstance = useBuilderStore((state) => state.addInstance);
   const moveInstance = useBuilderStore((state) => state.moveInstance);
@@ -695,8 +697,8 @@ const Builder: React.FC = () => {
         )}
 
         {/* Floating Left Sidebar */}
-        {!isPreviewMode && (
-          <div className="absolute left-4 top-4 bottom-4 z-10">
+        {!isPreviewMode && !isCodeViewOpen && (
+          <div className="absolute left-4 top-4 bottom-4 z-10 transition-all duration-300 animate-slide-in-left">
             <LeftSidebar
               pages={pages}
               currentPage={currentPage}
@@ -729,13 +731,15 @@ const Builder: React.FC = () => {
               projectName={projectName}
               onProjectNameChange={setProjectName}
               onProjectSettingsOpen={() => setProjectSettingsOpen(true)}
+              isCodeViewOpen={isCodeViewOpen}
+              onCodeViewToggle={() => setIsCodeViewOpen(!isCodeViewOpen)}
             />
           </div>
         )}
 
         {/* Floating Right Sidebar */}
-        {!isPreviewMode && (
-          <div className="absolute right-4 top-4 bottom-4 z-10">
+        {!isPreviewMode && !isCodeViewOpen && (
+          <div className="absolute right-4 top-4 bottom-4 z-10 transition-all duration-300 animate-slide-in-right">
             <StylePanel
               pages={[]}
               currentPage={currentPage}
@@ -747,6 +751,13 @@ const Builder: React.FC = () => {
               onSetHomePage={() => {}}
               homePage={homePage}
             />
+          </div>
+        )}
+
+        {/* Code View Sidebar */}
+        {!isPreviewMode && isCodeViewOpen && (
+          <div className="absolute left-4 top-16 bottom-4 w-[45%] z-10 transition-all duration-300 animate-slide-in-left">
+            <CodeView onClose={() => setIsCodeViewOpen(false)} />
           </div>
         )}
       </div>
