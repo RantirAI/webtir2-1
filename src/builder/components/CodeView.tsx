@@ -63,7 +63,7 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, currentBreakpoint }
   };
 
   return (
-    <div className="fixed inset-0 z-40 bg-background animate-fade-in pt-16">
+    <div className="fixed inset-0 z-[55] bg-background animate-fade-in pt-16">
       {/* Top Bar */}
       <div className="h-12 border-b border-border flex items-center justify-between px-6">
         <div className="flex items-center gap-4">
@@ -110,7 +110,7 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, currentBreakpoint }
       {/* Main Content */}
       <div className="flex h-[calc(100vh-7rem)]">
         {/* Code Editor - Left Side */}
-        <div className="flex-1 border-r border-border overflow-hidden">
+        <div className="flex-1 min-w-[320px] border-r border-border overflow-hidden">
           <CodeEditor 
             code={getCode(activeTab)} 
             language={activeTab === 'astro' ? 'html' : activeTab}
