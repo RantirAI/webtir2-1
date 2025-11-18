@@ -456,6 +456,18 @@ export const componentRegistry: Record<string, ComponentMeta> = {
       },
     },
   },
+  Dropdown: {
+    type: 'Dropdown',
+    label: 'Dropdown',
+    icon: 'ChevronDown',
+    defaultProps: {},
+    defaultStyles: {
+      display: 'flex',
+      flexDirection: 'column',
+      position: 'relative',
+    },
+    propsDefinition: {},
+  },
   Form: {
     type: 'Form',
     label: 'Form',

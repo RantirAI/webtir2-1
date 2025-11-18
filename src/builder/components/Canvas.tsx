@@ -312,7 +312,21 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
             }}
           />
         );
-      case 'Form':
+      case 'Form': {
+        // If Form has children (new composite structure), render as Box container
+        if (instance.children && instance.children.length > 0) {
+          const content = (
+            <Box {...commonProps}>
+              {instance.children.map((child) => renderInstance(child))}
+            </Box>
+          );
+          return isPreviewMode ? content : (
+            <DroppableContainer key={instance.id} instance={instance} {...commonProps}>
+              {content}
+            </DroppableContainer>
+          );
+        }
+        // Otherwise fallback to legacy FormPrimitive
         return wrapWithDraggable(
           <FormPrimitive
             key={instance.id}
@@ -323,6 +337,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
             style={getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties}
           />
         );
+      }
       case 'FormButton':
         return wrapWithDraggable(
           <FormButtonPrimitive
@@ -413,6 +428,20 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
           />
         );
       case 'Navigation': {
+        // If Navigation has children (new composite structure), render as Box container
+        if (instance.children && instance.children.length > 0) {
+          const content = (
+            <Box {...commonProps}>
+              {instance.children.map((child) => renderInstance(child))}
+            </Box>
+          );
+          return isPreviewMode ? content : (
+            <DroppableContainer key={instance.id} instance={instance} {...commonProps}>
+              {content}
+            </DroppableContainer>
+          );
+        }
+        // Otherwise fallback to legacy NavigationPrimitive
         const content = (
           <NavigationPrimitive
             key={instance.id}

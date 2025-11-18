@@ -82,7 +82,7 @@ export const ComponentsPanel: React.FC = () => {
       
       const container: ComponentInstance = {
         id: formId,
-        type: 'Form',
+        type: 'Box' as ComponentType,
         label: 'Form',
         props: {},
         styleSourceIds: [formStyleId],
@@ -465,42 +465,121 @@ export const ComponentsPanel: React.FC = () => {
       
       const container: ComponentInstance = {
         id: boxId,
-        type: 'Box',
+        type: 'Box' as ComponentType,
         label: 'Radio Group',
         props: {},
         styleSourceIds: [boxStyleId],
         children: [
           {
             id: labelId,
-            type: 'Text',
+            type: 'Text' as ComponentType,
             label: 'Group Label',
-            props: { children: 'Radio Group' },
+            props: { children: 'Choose an option:' },
             styleSourceIds: [],
             children: [],
           },
           {
             id: radio1Id,
-            type: 'RadioGroup',
-            label: 'Radio Option 1',
-            props: { label: 'Option 1', value: 'option1' },
+            type: 'RadioGroup' as ComponentType,
+            label: 'Radio Options',
+            props: {
+              name: 'radio-group',
+              options: [
+                { id: '1', label: 'Option 1', value: 'option1' },
+                { id: '2', label: 'Option 2', value: 'option2' },
+                { id: '3', label: 'Option 3', value: 'option3' },
+              ],
+            },
+            styleSourceIds: [],
+            children: [],
+          },
+        ],
+      };
+      
+      addInstance(container, selectedInstanceId || 'root');
+      return;
+    }
+    
+    // Create composite structure for Dropdown
+    if (type === 'Dropdown') {
+      const dropdownId = generateId();
+      const triggerId = generateId();
+      const menuId = generateId();
+      const item1Id = generateId();
+      const item2Id = generateId();
+      const item3Id = generateId();
+      
+      const { createStyleSource, setStyle } = useStyleStore.getState();
+      
+      const dropdownStyleId = createStyleSource('local', `dropdown-${dropdownId}`);
+      setStyle(dropdownStyleId, 'display', 'flex');
+      setStyle(dropdownStyleId, 'flexDirection', 'column');
+      setStyle(dropdownStyleId, 'position', 'relative');
+      setStyle(dropdownStyleId, 'width', 'fit-content');
+      
+      const menuStyleId = createStyleSource('local', `dropdown-menu-${menuId}`);
+      setStyle(menuStyleId, 'display', 'flex');
+      setStyle(menuStyleId, 'flexDirection', 'column');
+      setStyle(menuStyleId, 'position', 'absolute');
+      setStyle(menuStyleId, 'top', '100%');
+      setStyle(menuStyleId, 'left', '0');
+      setStyle(menuStyleId, 'marginTop', '4px');
+      setStyle(menuStyleId, 'backgroundColor', 'hsl(var(--popover))');
+      setStyle(menuStyleId, 'border', '1px solid hsl(var(--border))');
+      setStyle(menuStyleId, 'borderRadius', '8px');
+      setStyle(menuStyleId, 'padding', '8px');
+      setStyle(menuStyleId, 'minWidth', '200px');
+      setStyle(menuStyleId, 'boxShadow', '0 10px 15px -3px rgba(0, 0, 0, 0.1)');
+      setStyle(menuStyleId, 'zIndex', '50');
+      setStyle(menuStyleId, 'gap', '4px');
+      
+      const container: ComponentInstance = {
+        id: dropdownId,
+        type: 'Box' as ComponentType,
+        label: 'Dropdown',
+        props: {},
+        styleSourceIds: [dropdownStyleId],
+        children: [
+          {
+            id: triggerId,
+            type: 'Button' as ComponentType,
+            label: 'Trigger Button',
+            props: { children: 'Open Menu' },
             styleSourceIds: [],
             children: [],
           },
           {
-            id: radio2Id,
-            type: 'RadioGroup',
-            label: 'Radio Option 2',
-            props: { label: 'Option 2', value: 'option2' },
-            styleSourceIds: [],
-            children: [],
-          },
-          {
-            id: radio3Id,
-            type: 'RadioGroup',
-            label: 'Radio Option 3',
-            props: { label: 'Option 3', value: 'option3' },
-            styleSourceIds: [],
-            children: [],
+            id: menuId,
+            type: 'Box' as ComponentType,
+            label: 'Menu',
+            props: {},
+            styleSourceIds: [menuStyleId],
+            children: [
+              {
+                id: item1Id,
+                type: 'Link' as ComponentType,
+                label: 'Menu Item 1',
+                props: { href: '#', children: 'Option 1' },
+                styleSourceIds: [],
+                children: [],
+              },
+              {
+                id: item2Id,
+                type: 'Link' as ComponentType,
+                label: 'Menu Item 2',
+                props: { href: '#', children: 'Option 2' },
+                styleSourceIds: [],
+                children: [],
+              },
+              {
+                id: item3Id,
+                type: 'Button' as ComponentType,
+                label: 'Menu CTA',
+                props: { children: 'Action' },
+                styleSourceIds: [],
+                children: [],
+              },
+            ],
           },
         ],
       };
@@ -703,7 +782,7 @@ export const ComponentsPanel: React.FC = () => {
   const debouncedSearch = useDebounce(searchQuery, 300);
 
   const basicCategories = [
-    { name: 'Layout', types: ['Section', 'Container', 'Box', 'Navigation'] },
+    { name: 'Layout', types: ['Section', 'Container', 'Box', 'Navigation', 'Dropdown'] },
     { name: 'Typography', types: ['Heading', 'Text', 'RichText', 'Button', 'Link'] },
     { name: 'Media', types: ['Image', 'Video', 'Youtube', 'Lottie'] },
     { name: 'Forms', types: ['Form', 'FormButton', 'InputLabel', 'TextInput', 'TextArea', 'Select', 'RadioGroup', 'CheckboxField'] },
