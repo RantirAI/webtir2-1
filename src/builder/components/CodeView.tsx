@@ -59,9 +59,9 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-background animate-fade-in">
+    <div className="fixed inset-0 top-20 z-50 bg-background animate-fade-in">
       {/* Top Bar */}
-      <div className="h-16 border-b border-border flex items-center justify-between px-6">
+      <div className="h-12 border-b border-border flex items-center justify-between px-6">
         <div className="flex items-center gap-4">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="h-10">
             <TabsList className="h-10 bg-muted/50">
@@ -104,7 +104,7 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose }) => {
       </div>
 
       {/* Main Content */}
-      <div className="flex h-[calc(100vh-4rem)]">
+      <div className="flex h-[calc(100vh-8rem)]">
         {/* Code Editor - Left Side */}
         <div className="flex-1 border-r border-border overflow-hidden">
           <CodeEditor 
@@ -155,15 +155,19 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose }) => {
           </div>
 
           {/* Preview Frame */}
-          <div className="flex-1 overflow-auto p-8 flex justify-center">
+          <div className="flex-1 overflow-hidden flex justify-center items-start p-4">
             <div 
-              className="bg-background border border-border rounded-lg shadow-xl transition-all duration-300 h-fit"
+              className="bg-white dark:bg-zinc-900 border border-border rounded-lg shadow-xl transition-all duration-300 overflow-hidden"
               style={{ 
                 width: getPreviewWidth(),
-                minHeight: '100%'
+                height: '100%',
+                transform: 'scale(0.8)',
+                transformOrigin: 'top center'
               }}
             >
-              <PreviewFrame htmlCode={htmlCode} cssCode={cssCode} jsCode={jsCode} />
+              <div className="w-full h-full overflow-auto">
+                <PreviewFrame htmlCode={htmlCode} cssCode={cssCode} jsCode={jsCode} />
+              </div>
             </div>
           </div>
         </div>
