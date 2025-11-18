@@ -63,8 +63,6 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose }) => {
       {/* Top Bar */}
       <div className="h-16 border-b border-border flex items-center justify-between px-6">
         <div className="flex items-center gap-4">
-          <h2 className="text-lg font-semibold text-foreground">Code Editor</h2>
-          <div className="h-6 w-px bg-border" />
           <Tabs value={activeTab} onValueChange={setActiveTab} className="h-10">
             <TabsList className="h-10 bg-muted/50">
               <TabsTrigger value="html" className="data-[state=active]:bg-background">
@@ -101,15 +99,6 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose }) => {
                 Copy
               </>
             )}
-          </Button>
-          <div className="h-6 w-px bg-border mx-2" />
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onClose}
-            className="h-9 w-9"
-          >
-            <X className="h-5 w-5" />
           </Button>
         </div>
       </div>

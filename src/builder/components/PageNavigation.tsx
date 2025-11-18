@@ -167,30 +167,34 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
         )}
       </div>
 
-      <Separator orientation="vertical" className="h-6" />
+      {!isCodeViewOpen && (
+        <>
+          <Separator orientation="vertical" className="h-6" />
 
-      {/* Zoom Controls */}
-      <div className="flex items-center gap-1">
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-8 px-2"
-          onClick={handleZoomOut}
-        >
-          <ZoomOut className="w-4 h-4" />
-        </Button>
-        <span className="text-xs font-medium min-w-[2.5rem] text-center">{zoom}%</span>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-8 px-2"
-          onClick={handleZoomIn}
-        >
-          <ZoomIn className="w-4 h-4" />
-        </Button>
-      </div>
+          {/* Zoom Controls */}
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 px-2"
+              onClick={handleZoomOut}
+            >
+              <ZoomOut className="w-4 h-4" />
+            </Button>
+            <span className="text-xs font-medium min-w-[2.5rem] text-center">{zoom}%</span>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 px-2"
+              onClick={handleZoomIn}
+            >
+              <ZoomIn className="w-4 h-4" />
+            </Button>
+          </div>
 
-      <Separator orientation="vertical" className="h-6" />
+          <Separator orientation="vertical" className="h-6" />
+        </>
+      )}
 
       {/* Pan Tool */}
       <Button
@@ -251,29 +255,33 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
         <Plus className="w-4 h-4" />
       </Button>
 
-      <Separator orientation="vertical" className="h-6" />
+      {!isCodeViewOpen && (
+        <>
+          <Separator orientation="vertical" className="h-6" />
 
-      {/* Breakpoint Selector */}
-      <div className="flex gap-1">
-        {breakpoints.map((bp) => {
-          const Icon = bp.icon;
-          return (
-            <Button
-              key={bp.id}
-              variant="ghost"
-              size="sm"
-              className={`h-8 px-2 ${
-                currentBreakpoint === bp.id ? 'bg-[#F5F5F5] dark:bg-zinc-800' : ''
-              }`}
-              onClick={() => onBreakpointChange(bp.id)}
-            >
-              <Icon className="w-3.5 h-3.5" />
-            </Button>
-          );
-        })}
-      </div>
+          {/* Breakpoint Selector */}
+          <div className="flex gap-1">
+            {breakpoints.map((bp) => {
+              const Icon = bp.icon;
+              return (
+                <Button
+                  key={bp.id}
+                  variant="ghost"
+                  size="sm"
+                  className={`h-8 px-2 ${
+                    currentBreakpoint === bp.id ? 'bg-[#F5F5F5] dark:bg-zinc-800' : ''
+                  }`}
+                  onClick={() => onBreakpointChange(bp.id)}
+                >
+                  <Icon className="w-3.5 h-3.5" />
+                </Button>
+              );
+            })}
+          </div>
 
-      <Separator orientation="vertical" className="h-6" />
+          <Separator orientation="vertical" className="h-6" />
+        </>
+      )}
 
       {/* Action Buttons */}
       <Button variant="ghost" size="sm" className="h-8 px-2" onClick={onPreviewToggle}>
