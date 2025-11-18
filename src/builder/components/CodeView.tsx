@@ -159,24 +159,26 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, currentBreakpoint }
           </div>
 
           {/* Canvas Preview */}
-          <div className="flex-1 overflow-auto flex items-center justify-center bg-background">
+          <div className="flex-1 overflow-hidden bg-background">
             <div 
-              className="transition-all duration-300"
+              className="h-full transition-all duration-300"
               style={{ 
                 width: getPreviewWidth(),
-                maxWidth: '100%'
+                margin: '0 auto'
               }}
             >
-              <Canvas 
-                isPreviewMode={true}
-                currentBreakpoint={previewSize}
-                zoom={100}
-                isPanMode={false}
-                pages={['preview-page']}
-                currentPage="preview-page"
-                pageNames={{ 'preview-page': 'Preview' }}
-                onPageNameChange={() => {}}
-              />
+              <div className="h-full [&_.builder-canvas]:bg-background [&_.builder-canvas]:dark:bg-background">
+                <Canvas 
+                  isPreviewMode={true}
+                  currentBreakpoint={previewSize}
+                  zoom={100}
+                  isPanMode={false}
+                  pages={['preview-page']}
+                  currentPage="preview-page"
+                  pageNames={{ 'preview-page': 'Preview' }}
+                  onPageNameChange={() => {}}
+                />
+              </div>
             </div>
           </div>
         </div>
