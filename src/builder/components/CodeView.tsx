@@ -172,9 +172,9 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, currentBreakpoint }
                 currentBreakpoint={previewSize}
                 zoom={100}
                 isPanMode={false}
-                pages={[]}
-                currentPage=""
-                pageNames={{}}
+                pages={['preview-page']}
+                currentPage="preview-page"
+                pageNames={{ 'preview-page': 'Preview' }}
                 onPageNameChange={() => {}}
               />
             </div>
