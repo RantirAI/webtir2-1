@@ -715,7 +715,11 @@ const Builder: React.FC = () => {
 
         {/* Floating Combined Navigation */}
         {!isPreviewMode && (
-          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[60]">
+          <div 
+            className={`absolute top-4 left-1/2 -translate-x-1/2 z-[60] transition-all duration-300 ${
+              isCodeViewOpen ? 'scale-[0.85] -translate-y-2' : 'scale-100'
+            }`}
+          >
             <PageNavigation
               currentPage={currentPage}
               pages={pages}

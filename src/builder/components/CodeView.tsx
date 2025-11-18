@@ -3,7 +3,8 @@ import { useBuilderStore } from '../store/useBuilderStore';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { exportHTML, exportCSS, exportJS, exportAstro } from '../utils/codeExport';
-import { Copy, Check, Monitor, Tablet, Smartphone, X } from 'lucide-react';
+import { Copy, Check, Monitor, Tablet, Smartphone, Upload } from 'lucide-react';
+import { ImportModal } from './ImportModal';
 import Prism from 'prismjs';
 import 'prismjs/themes/prism-tomorrow.css';
 import 'prismjs/components/prism-markup';
@@ -19,6 +20,7 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose }) => {
   const [activeTab, setActiveTab] = useState('html');
   const [copiedTab, setCopiedTab] = useState<string | null>(null);
   const [previewSize, setPreviewSize] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
+  const [showImportModal, setShowImportModal] = useState(false);
   
   const [htmlCode, setHtmlCode] = useState('');
   const [cssCode, setCssCode] = useState('');
@@ -37,6 +39,12 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose }) => {
     navigator.clipboard.writeText(code);
     setCopiedTab(tab);
     setTimeout(() => setCopiedTab(null), 2000);
+  };
+
+  const handleImport = (source: string, content: string | File) => {
+    console.log('Importing from:', source, content);
+    // TODO: Implement actual import logic
+    // This would parse the content and update the builder store
   };
 
   const getCode = (tab: string) => {
@@ -82,6 +90,15 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose }) => {
         </div>
         
         <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowImportModal(true)}
+            className="gap-2"
+          >
+            <Upload className="h-4 w-4" />
+            Import
+          </Button>
           <Button
             variant="ghost"
             size="sm"
@@ -172,6 +189,12 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose }) => {
           </div>
         </div>
       </div>
+
+      <ImportModal
+        open={showImportModal}
+        onOpenChange={setShowImportModal}
+        onImport={handleImport}
+      />
     </div>
   );
 };
