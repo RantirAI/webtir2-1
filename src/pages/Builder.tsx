@@ -714,8 +714,8 @@ const Builder: React.FC = () => {
         )}
 
         {/* Floating Combined Navigation */}
-        {(!isPreviewMode || isCodeViewOpen) && (
-          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[60] transition-all duration-200">
+        {!isPreviewMode && (
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20">
             <PageNavigation
               currentPage={currentPage}
               pages={pages}
@@ -755,11 +755,8 @@ const Builder: React.FC = () => {
         )}
 
         {/* Code View Sidebar */}
-        {isCodeViewOpen && (
-          <CodeView 
-            onClose={() => setIsCodeViewOpen(false)} 
-            currentBreakpoint={currentBreakpoint}
-          />
+        {!isPreviewMode && isCodeViewOpen && (
+          <CodeView onClose={() => setIsCodeViewOpen(false)} />
         )}
       </div>
 

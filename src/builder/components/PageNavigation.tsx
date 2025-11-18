@@ -125,7 +125,7 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
 
   return (
     <div 
-      className={`backdrop-blur-md border border-border rounded-lg shadow-lg flex items-center gap-2 bg-white/70 dark:bg-zinc-900/70 transition-all duration-200 ${isCodeViewOpen ? 'px-2 py-1 scale-95' : 'px-3 py-2'}`}
+      className="backdrop-blur-md border border-border rounded-lg shadow-lg px-3 py-2 flex items-center gap-2 bg-white/70 dark:bg-zinc-900/70"
     >
       {/* App Icon and Project Name */}
       <div className="flex items-center gap-2">
@@ -169,28 +169,26 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
 
       <Separator orientation="vertical" className="h-6" />
 
-      {/* Zoom Controls (hidden in Code View) */}
-      {!isCodeViewOpen && (
-        <div className="flex items-center gap-1">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 px-2"
-            onClick={handleZoomOut}
-          >
-            <ZoomOut className="w-4 h-4" />
-          </Button>
-          <span className="text-xs font-medium min-w-[2.5rem] text-center">{zoom}%</span>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 px-2"
-            onClick={handleZoomIn}
-          >
-            <ZoomIn className="w-4 h-4" />
-          </Button>
-        </div>
-      )}
+      {/* Zoom Controls */}
+      <div className="flex items-center gap-1">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-8 px-2"
+          onClick={handleZoomOut}
+        >
+          <ZoomOut className="w-4 h-4" />
+        </Button>
+        <span className="text-xs font-medium min-w-[2.5rem] text-center">{zoom}%</span>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-8 px-2"
+          onClick={handleZoomIn}
+        >
+          <ZoomIn className="w-4 h-4" />
+        </Button>
+      </div>
 
       <Separator orientation="vertical" className="h-6" />
 
@@ -255,27 +253,25 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
 
       <Separator orientation="vertical" className="h-6" />
 
-      {/* Breakpoint Selector (hidden in Code View) */}
-      {!isCodeViewOpen && (
-        <div className="flex gap-1">
-          {breakpoints.map((bp) => {
-            const Icon = bp.icon;
-            return (
-              <Button
-                key={bp.id}
-                variant="ghost"
-                size="sm"
-                className={`h-8 px-2 ${
-                  currentBreakpoint === bp.id ? 'bg-[#F5F5F5] dark:bg-zinc-800' : ''
-                }`}
-                onClick={() => onBreakpointChange(bp.id)}
-              >
-                <Icon className="w-3.5 h-3.5" />
-              </Button>
-            );
-          })}
-        </div>
-      )}
+      {/* Breakpoint Selector */}
+      <div className="flex gap-1">
+        {breakpoints.map((bp) => {
+          const Icon = bp.icon;
+          return (
+            <Button
+              key={bp.id}
+              variant="ghost"
+              size="sm"
+              className={`h-8 px-2 ${
+                currentBreakpoint === bp.id ? 'bg-[#F5F5F5] dark:bg-zinc-800' : ''
+              }`}
+              onClick={() => onBreakpointChange(bp.id)}
+            >
+              <Icon className="w-3.5 h-3.5" />
+            </Button>
+          );
+        })}
+      </div>
 
       <Separator orientation="vertical" className="h-6" />
 
