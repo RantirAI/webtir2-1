@@ -214,15 +214,15 @@ const Builder: React.FC = () => {
           styleSourceIds: [navStyleId],
           children: [
             { id: logoBoxId, type: 'Box' as ComponentType, label: 'Logo Container', props: {}, styleSourceIds: [logoBoxStyleId], children: [
-              { id: logoId, type: 'Image' as ComponentType, label: 'Logo', props: { src: '/placeholder.svg', alt: 'Logo' }, styleSourceIds: [], children: [] },
+              { id: logoId, type: 'Image' as ComponentType, label: 'Image', props: { src: '/placeholder.svg', alt: 'Image' }, styleSourceIds: [], children: [] },
             ]},
             { id: linksBoxId, type: 'Box' as ComponentType, label: 'Navigation Links', props: {}, styleSourceIds: [linksBoxStyleId], children: [
-              { id: link1Id, type: 'Link' as ComponentType, label: 'Home Link', props: { href: '#', children: 'Home' }, styleSourceIds: [], children: [] },
-              { id: link2Id, type: 'Link' as ComponentType, label: 'About Link', props: { href: '#', children: 'About' }, styleSourceIds: [], children: [] },
-              { id: link3Id, type: 'Link' as ComponentType, label: 'Contact Link', props: { href: '#', children: 'Contact' }, styleSourceIds: [], children: [] },
+              { id: link1Id, type: 'Link' as ComponentType, label: 'Link', props: { href: '#', children: 'Link' }, styleSourceIds: [], children: [] },
+              { id: link2Id, type: 'Link' as ComponentType, label: 'Link', props: { href: '#', children: 'Link' }, styleSourceIds: [], children: [] },
+              { id: link3Id, type: 'Link' as ComponentType, label: 'Link', props: { href: '#', children: 'Link' }, styleSourceIds: [], children: [] },
             ]},
             { id: buttonBoxId, type: 'Box' as ComponentType, label: 'Button Container', props: {}, styleSourceIds: [], children: [
-              { id: buttonId, type: 'Button' as ComponentType, label: 'CTA Button', props: { children: 'Get Started' }, styleSourceIds: [], children: [] },
+              { id: buttonId, type: 'Button' as ComponentType, label: 'Button', props: { children: 'Button' }, styleSourceIds: [], children: [] },
             ]},
           ],
         };
@@ -269,11 +269,11 @@ const Builder: React.FC = () => {
           props: {},
           styleSourceIds: [dropdownStyleId],
           children: [
-            { id: triggerId, type: 'Button' as ComponentType, label: 'Trigger Button', props: { children: 'Open Menu' }, styleSourceIds: [], children: [] },
-            { id: menuId, type: 'Box' as ComponentType, label: 'Menu', props: {}, styleSourceIds: [menuStyleId], children: [
-              { id: item1Id, type: 'Link' as ComponentType, label: 'Menu Item 1', props: { href: '#', children: 'Option 1' }, styleSourceIds: [], children: [] },
-              { id: item2Id, type: 'Link' as ComponentType, label: 'Menu Item 2', props: { href: '#', children: 'Option 2' }, styleSourceIds: [], children: [] },
-              { id: item3Id, type: 'Button' as ComponentType, label: 'Menu CTA', props: { children: 'Action' }, styleSourceIds: [], children: [] },
+            { id: triggerId, type: 'Button' as ComponentType, label: 'Button', props: { children: 'Button' }, styleSourceIds: [], children: [] },
+            { id: menuId, type: 'Box' as ComponentType, label: 'Box', props: {}, styleSourceIds: [menuStyleId], children: [
+              { id: item1Id, type: 'Link' as ComponentType, label: 'Link', props: { href: '#', children: 'Link' }, styleSourceIds: [], children: [] },
+              { id: item2Id, type: 'Link' as ComponentType, label: 'Link', props: { href: '#', children: 'Link' }, styleSourceIds: [], children: [] },
+              { id: item3Id, type: 'Button' as ComponentType, label: 'Button', props: { children: 'Button' }, styleSourceIds: [], children: [] },
             ]},
           ],
         };
@@ -322,25 +322,25 @@ const Builder: React.FC = () => {
           props: {},
           styleSourceIds: [formStyleId],
           children: [
-            { id: headingId, type: 'Heading' as ComponentType, label: 'Form Heading', props: { level: 'h2', children: 'Contact Us' }, styleSourceIds: [], children: [] },
-            { id: nameBoxId, type: 'Box' as ComponentType, label: 'Name Field', props: {}, styleSourceIds: [fieldBoxStyleId], children: [
-              { id: nameLabelId, type: 'Text' as ComponentType, label: 'Name Label', props: { children: 'Name' }, styleSourceIds: [], children: [] },
-              { id: nameInputId, type: 'TextInput' as ComponentType, label: 'Name Input', props: { placeholder: 'Enter your name', type: 'text' }, styleSourceIds: [], children: [] },
+            { id: headingId, type: 'Heading' as ComponentType, label: 'Heading', props: { level: 'h2', children: 'Heading' }, styleSourceIds: [], children: [] },
+            { id: nameBoxId, type: 'Box' as ComponentType, label: 'Box', props: {}, styleSourceIds: [fieldBoxStyleId], children: [
+              { id: nameLabelId, type: 'Text' as ComponentType, label: 'Text', props: { children: 'Label' }, styleSourceIds: [], children: [] },
+              { id: nameInputId, type: 'TextInput' as ComponentType, label: 'TextInput', props: { placeholder: 'Input', type: 'text' }, styleSourceIds: [], children: [] },
             ] },
-            { id: emailBoxId, type: 'Box' as ComponentType, label: 'Email Field', props: {}, styleSourceIds: [fieldBoxStyleId], children: [
-              { id: emailLabelId, type: 'Text' as ComponentType, label: 'Email Label', props: { children: 'Email' }, styleSourceIds: [], children: [] },
-              { id: emailInputId, type: 'TextInput' as ComponentType, label: 'Email Input', props: { placeholder: 'Enter your email', type: 'email' }, styleSourceIds: [], children: [] },
+            { id: emailBoxId, type: 'Box' as ComponentType, label: 'Box', props: {}, styleSourceIds: [fieldBoxStyleId], children: [
+              { id: emailLabelId, type: 'Text' as ComponentType, label: 'Text', props: { children: 'Label' }, styleSourceIds: [], children: [] },
+              { id: emailInputId, type: 'TextInput' as ComponentType, label: 'TextInput', props: { placeholder: 'Input', type: 'email' }, styleSourceIds: [], children: [] },
             ] },
-            { id: messageBoxId, type: 'Box' as ComponentType, label: 'Message Field', props: {}, styleSourceIds: [fieldBoxStyleId], children: [
-              { id: messageLabelId, type: 'Text' as ComponentType, label: 'Message Label', props: { children: 'Message' }, styleSourceIds: [], children: [] },
-              { id: messageTextareaId, type: 'TextArea' as ComponentType, label: 'Message Textarea', props: { placeholder: 'Enter your message', rows: 4 }, styleSourceIds: [], children: [] },
+            { id: messageBoxId, type: 'Box' as ComponentType, label: 'Box', props: {}, styleSourceIds: [fieldBoxStyleId], children: [
+              { id: messageLabelId, type: 'Text' as ComponentType, label: 'Text', props: { children: 'Label' }, styleSourceIds: [], children: [] },
+              { id: messageTextareaId, type: 'TextArea' as ComponentType, label: 'TextArea', props: { placeholder: 'Input', rows: 4 }, styleSourceIds: [], children: [] },
             ] },
-            { id: categoryBoxId, type: 'Box' as ComponentType, label: 'Category Field', props: {}, styleSourceIds: [fieldBoxStyleId], children: [
-              { id: categoryLabelId, type: 'Text' as ComponentType, label: 'Category Label', props: { children: 'Category' }, styleSourceIds: [], children: [] },
-              { id: categorySelectId, type: 'Select' as ComponentType, label: 'Category Select', props: { placeholder: 'Select a category', options: [
-                { id: '1', label: 'General', value: 'general' }, { id: '2', label: 'Support', value: 'support' }, { id: '3', label: 'Sales', value: 'sales' } ] }, styleSourceIds: [], children: [] },
+            { id: categoryBoxId, type: 'Box' as ComponentType, label: 'Box', props: {}, styleSourceIds: [fieldBoxStyleId], children: [
+              { id: categoryLabelId, type: 'Text' as ComponentType, label: 'Text', props: { children: 'Label' }, styleSourceIds: [], children: [] },
+              { id: categorySelectId, type: 'Select' as ComponentType, label: 'Select', props: { placeholder: 'Select', options: [
+                { id: '1', label: 'Option 1', value: 'option1' }, { id: '2', label: 'Option 2', value: 'option2' }, { id: '3', label: 'Option 3', value: 'option3' } ] }, styleSourceIds: [], children: [] },
             ] },
-            { id: buttonId, type: 'FormButton' as ComponentType, label: 'Submit Button', props: { text: 'Submit', type: 'submit' }, styleSourceIds: [], children: [] },
+            { id: buttonId, type: 'FormButton' as ComponentType, label: 'FormButton', props: { text: 'Button', type: 'submit' }, styleSourceIds: [], children: [] },
           ],
         };
         addInstance(formInstance, computeParentId());
