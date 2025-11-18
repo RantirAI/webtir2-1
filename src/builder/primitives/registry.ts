@@ -456,6 +456,27 @@ export const componentRegistry: Record<string, ComponentMeta> = {
       },
     },
   },
+  Cell: {
+    type: 'Cell',
+    label: 'Cell',
+    icon: 'Square',
+    defaultProps: {
+      children: 'Cell',
+    },
+    defaultStyles: {
+      flex: '1',
+      minWidth: '0',
+      padding: '8px',
+    },
+    propsDefinition: {
+      children: {
+        type: 'string',
+        label: 'Content',
+        control: 'text',
+        defaultValue: 'Cell',
+      },
+    },
+  },
   Dropdown: {
     type: 'Dropdown',
     label: 'Dropdown',

@@ -150,9 +150,9 @@ export const ComponentsPanel: React.FC = () => {
             children: [
               {
                 id: buttonId,
-                type: 'FormButton' as ComponentType,
+                type: 'Button' as ComponentType,
                 label: 'CTA Button',
-                props: { text: 'Get Started', type: 'button' },
+                props: { children: 'Get Started' },
                 styleSourceIds: [],
                 children: [],
               },
@@ -471,17 +471,22 @@ export const ComponentsPanel: React.FC = () => {
       
       const headerRowStyleId = createStyleSource('local', `header-row-${headerRowId}`);
       setStyle(headerRowStyleId, 'display', 'flex');
-      setStyle(headerRowStyleId, 'gap', '16px');
-      setStyle(headerRowStyleId, 'padding', '12px');
+      setStyle(headerRowStyleId, 'gap', '0');
+      setStyle(headerRowStyleId, 'padding', '0');
       setStyle(headerRowStyleId, 'backgroundColor', 'hsl(var(--muted))');
       setStyle(headerRowStyleId, 'fontWeight', '600');
       setStyle(headerRowStyleId, 'borderBottom', '2px solid hsl(var(--border))');
       
       const rowStyleId = createStyleSource('local', `row-${row1Id}`);
       setStyle(rowStyleId, 'display', 'flex');
-      setStyle(rowStyleId, 'gap', '16px');
-      setStyle(rowStyleId, 'padding', '12px');
+      setStyle(rowStyleId, 'gap', '0');
+      setStyle(rowStyleId, 'padding', '0');
       setStyle(rowStyleId, 'borderBottom', '1px solid hsl(var(--border))');
+
+      const cellStyleId = createStyleSource('local', `cell-${cell1Id}`);
+      setStyle(cellStyleId, 'flex', '1');
+      setStyle(cellStyleId, 'padding', '12px');
+      setStyle(cellStyleId, 'borderRight', '1px solid hsl(var(--border))');
       
       const container: ComponentInstance = {
         id: containerId,
@@ -513,26 +518,26 @@ export const ComponentsPanel: React.FC = () => {
                     children: [
                       {
                         id: th1Id,
-                        type: 'Text' as ComponentType,
-                        label: 'Column 1',
+                        type: 'Cell' as ComponentType,
+                        label: 'Header Cell 1',
                         props: { children: 'Column 1' },
-                        styleSourceIds: [],
+                        styleSourceIds: [cellStyleId],
                         children: [],
                       },
                       {
                         id: th2Id,
-                        type: 'Text' as ComponentType,
-                        label: 'Column 2',
+                        type: 'Cell' as ComponentType,
+                        label: 'Header Cell 2',
                         props: { children: 'Column 2' },
-                        styleSourceIds: [],
+                        styleSourceIds: [cellStyleId],
                         children: [],
                       },
                       {
                         id: th3Id,
-                        type: 'Text' as ComponentType,
-                        label: 'Column 3',
+                        type: 'Cell' as ComponentType,
+                        label: 'Header Cell 3',
                         props: { children: 'Column 3' },
-                        styleSourceIds: [],
+                        styleSourceIds: [cellStyleId],
                         children: [],
                       },
                     ],
@@ -555,26 +560,26 @@ export const ComponentsPanel: React.FC = () => {
                     children: [
                       {
                         id: cell1Id,
-                        type: 'Text' as ComponentType,
+                        type: 'Cell' as ComponentType,
                         label: 'Cell',
                         props: { children: 'Data 1' },
-                        styleSourceIds: [],
+                        styleSourceIds: [cellStyleId],
                         children: [],
                       },
                       {
                         id: cell2Id,
-                        type: 'Text' as ComponentType,
+                        type: 'Cell' as ComponentType,
                         label: 'Cell',
                         props: { children: 'Data 2' },
-                        styleSourceIds: [],
+                        styleSourceIds: [cellStyleId],
                         children: [],
                       },
                       {
                         id: cell3Id,
-                        type: 'Text' as ComponentType,
+                        type: 'Cell' as ComponentType,
                         label: 'Cell',
                         props: { children: 'Data 3' },
-                        styleSourceIds: [],
+                        styleSourceIds: [cellStyleId],
                         children: [],
                       },
                     ],
@@ -588,26 +593,26 @@ export const ComponentsPanel: React.FC = () => {
                     children: [
                       {
                         id: cell4Id,
-                        type: 'Text' as ComponentType,
+                        type: 'Cell' as ComponentType,
                         label: 'Cell',
                         props: { children: 'Data 4' },
-                        styleSourceIds: [],
+                        styleSourceIds: [cellStyleId],
                         children: [],
                       },
                       {
                         id: cell5Id,
-                        type: 'Text' as ComponentType,
+                        type: 'Cell' as ComponentType,
                         label: 'Cell',
                         props: { children: 'Data 5' },
-                        styleSourceIds: [],
+                        styleSourceIds: [cellStyleId],
                         children: [],
                       },
                       {
                         id: cell6Id,
-                        type: 'Text' as ComponentType,
+                        type: 'Cell' as ComponentType,
                         label: 'Cell',
                         props: { children: 'Data 6' },
-                        styleSourceIds: [],
+                        styleSourceIds: [cellStyleId],
                         children: [],
                       },
                     ],
