@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { componentRegistry } from '../primitives/registry';
 import { useBuilderStore } from '../store/useBuilderStore';
 import { useStyleStore } from '../store/useStyleStore';
-import { ComponentInstance } from '../store/types';
+import { ComponentInstance, ComponentType } from '../store/types';
 import { generateId } from '../utils/instance';
 import * as Icons from 'lucide-react';
 import { useDraggable } from '@dnd-kit/core';
@@ -544,7 +544,7 @@ export const ComponentsPanel: React.FC = () => {
 
     const newInstance: ComponentInstance = {
       id: newId,
-      type: meta.type,
+      type: type as ComponentType,
       label: meta.label,
       props: { ...meta.defaultProps },
       styleSourceIds: styleSourceId ? [styleSourceId] : [],
