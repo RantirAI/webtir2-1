@@ -47,156 +47,14 @@ export const ComponentsPanel: React.FC = () => {
     const meta = componentRegistry[type];
     if (!meta) return;
 
+    const parentId = selectedInstanceId || 'root';
     const newId = generateId();
     
-    // Create composite structure for Form
-    if (type === 'Form') {
-      const formId = generateId();
-      const headingId = generateId();
-      const textInputBoxId = generateId();
-      const textInputLabelId = generateId();
-      const textInputId = generateId();
-      const textAreaBoxId = generateId();
-      const textAreaLabelId = generateId();
-      const textAreaId = generateId();
-      const selectBoxId = generateId();
-      const selectLabelId = generateId();
-      const selectId = generateId();
-      const buttonId = generateId();
-      
-      const { createStyleSource, setStyle } = useStyleStore.getState();
-      
-      const formStyleId = createStyleSource('local', `form-${formId}`);
-      setStyle(formStyleId, 'display', 'flex');
-      setStyle(formStyleId, 'flexDirection', 'column');
-      setStyle(formStyleId, 'gap', '16px');
-      setStyle(formStyleId, 'padding', '24px');
-      setStyle(formStyleId, 'backgroundColor', 'hsl(var(--background))');
-      setStyle(formStyleId, 'border', '1px solid hsl(var(--border))');
-      setStyle(formStyleId, 'borderRadius', '8px');
-      
-      const inputBoxStyleId = createStyleSource('local', `input-box-${textInputBoxId}`);
-      setStyle(inputBoxStyleId, 'display', 'flex');
-      setStyle(inputBoxStyleId, 'flexDirection', 'column');
-      setStyle(inputBoxStyleId, 'gap', '8px');
-      
-      const container: ComponentInstance = {
-        id: formId,
-        type: 'Box' as ComponentType,
-        label: 'Form',
-        props: {},
-        styleSourceIds: [formStyleId],
-        children: [
-          {
-            id: headingId,
-            type: 'Heading',
-            label: 'Form Title',
-            props: { level: 'h2', children: 'Contact Form' },
-            styleSourceIds: [],
-            children: [],
-          },
-          {
-            id: textInputBoxId,
-            type: 'Box',
-            label: 'Name Input',
-            props: {},
-            styleSourceIds: [inputBoxStyleId],
-            children: [
-              {
-                id: textInputLabelId,
-                type: 'Text',
-                label: 'Label',
-                props: { children: 'Name' },
-                styleSourceIds: [],
-                children: [],
-              },
-              {
-                id: textInputId,
-                type: 'TextInput',
-                label: 'Input Field',
-                props: { placeholder: 'Enter your name...' },
-                styleSourceIds: [],
-                children: [],
-              },
-            ],
-          },
-          {
-            id: textAreaBoxId,
-            type: 'Box',
-            label: 'Message Input',
-            props: {},
-            styleSourceIds: [inputBoxStyleId],
-            children: [
-              {
-                id: textAreaLabelId,
-                type: 'Text',
-                label: 'Label',
-                props: { children: 'Message' },
-                styleSourceIds: [],
-                children: [],
-              },
-              {
-                id: textAreaId,
-                type: 'TextArea',
-                label: 'Textarea Field',
-                props: { placeholder: 'Enter your message...', rows: 4 },
-                styleSourceIds: [],
-                children: [],
-              },
-            ],
-          },
-          {
-            id: selectBoxId,
-            type: 'Box',
-            label: 'Category Select',
-            props: {},
-            styleSourceIds: [inputBoxStyleId],
-            children: [
-              {
-                id: selectLabelId,
-                type: 'Text',
-                label: 'Label',
-                props: { children: 'Category' },
-                styleSourceIds: [],
-                children: [],
-              },
-              {
-                id: selectId,
-                type: 'Select',
-                label: 'Select Field',
-                props: { 
-                  placeholder: 'Select a category...',
-                  options: [
-                    { id: '1', label: 'General', value: 'general' },
-                    { id: '2', label: 'Support', value: 'support' },
-                    { id: '3', label: 'Feedback', value: 'feedback' },
-                  ]
-                },
-                styleSourceIds: [],
-                children: [],
-              },
-            ],
-          },
-          {
-            id: buttonId,
-            type: 'FormButton',
-            label: 'Submit Button',
-            props: { text: 'Submit', type: 'submit' },
-            styleSourceIds: [],
-            children: [],
-          },
-        ],
-      };
-      
-      addInstance(container, selectedInstanceId || 'root');
-      return;
-    }
-    
-    // Create composite structure for Navigation
+    // NAVIGATION - Box wrapper with children
     if (type === 'Navigation') {
-      const containerId = generateId();
+      const navId = generateId();
       const logoBoxId = generateId();
-      const logoImageId = generateId();
+      const logoId = generateId();
       const linksBoxId = generateId();
       const link1Id = generateId();
       const link2Id = generateId();
@@ -206,301 +64,108 @@ export const ComponentsPanel: React.FC = () => {
       
       const { createStyleSource, setStyle } = useStyleStore.getState();
       
-      const containerStyleId = createStyleSource('local', `nav-${containerId}`);
-      setStyle(containerStyleId, 'display', 'flex');
-      setStyle(containerStyleId, 'flexDirection', 'row');
-      setStyle(containerStyleId, 'alignItems', 'center');
-      setStyle(containerStyleId, 'justifyContent', 'space-between');
-      setStyle(containerStyleId, 'padding', '16px');
-      setStyle(containerStyleId, 'backgroundColor', 'hsl(var(--background))');
-      setStyle(containerStyleId, 'borderBottom', '1px solid hsl(var(--border))');
+      const navStyleId = createStyleSource('local', `nav-${navId}`);
+      setStyle(navStyleId, 'display', 'flex');
+      setStyle(navStyleId, 'flexDirection', 'row');
+      setStyle(navStyleId, 'alignItems', 'center');
+      setStyle(navStyleId, 'justifyContent', 'space-between');
+      setStyle(navStyleId, 'padding', '16px 32px');
+      setStyle(navStyleId, 'backgroundColor', 'hsl(var(--background))');
+      setStyle(navStyleId, 'borderBottom', '1px solid hsl(var(--border))');
+      setStyle(navStyleId, 'width', '100%');
       
-      const logoBoxStyleId = createStyleSource('local', `logo-${logoBoxId}`);
+      const logoBoxStyleId = createStyleSource('local', `logo-box-${logoBoxId}`);
       setStyle(logoBoxStyleId, 'display', 'flex');
       setStyle(logoBoxStyleId, 'alignItems', 'center');
+      setStyle(logoBoxStyleId, 'gap', '8px');
       
-      const logoImageStyleId = createStyleSource('local', `img-${logoImageId}`);
-      setStyle(logoImageStyleId, 'width', '120px');
-      setStyle(logoImageStyleId, 'height', 'auto');
-      
-      const linksBoxStyleId = createStyleSource('local', `links-${linksBoxId}`);
+      const linksBoxStyleId = createStyleSource('local', `links-box-${linksBoxId}`);
       setStyle(linksBoxStyleId, 'display', 'flex');
       setStyle(linksBoxStyleId, 'gap', '24px');
       setStyle(linksBoxStyleId, 'alignItems', 'center');
       
-      const linkStyleId = createStyleSource('local', `link-${link1Id}`);
-      setStyle(linkStyleId, 'color', 'hsl(var(--foreground))');
-      setStyle(linkStyleId, 'textDecoration', 'none');
-      
       const container: ComponentInstance = {
-        id: containerId,
-        type: 'Box',
+        id: navId,
+        type: 'Box' as ComponentType,
         label: 'Navigation',
         props: {},
-        styleSourceIds: [containerStyleId],
+        styleSourceIds: [navStyleId],
         children: [
           {
             id: logoBoxId,
-            type: 'Box',
+            type: 'Box' as ComponentType,
             label: 'Logo Container',
             props: {},
             styleSourceIds: [logoBoxStyleId],
             children: [
               {
-                id: logoImageId,
-                type: 'Image',
+                id: logoId,
+                type: 'Image' as ComponentType,
                 label: 'Logo',
-                props: { src: 'https://via.placeholder.com/120x40', alt: 'Logo' },
-                styleSourceIds: [logoImageStyleId],
+                props: { src: '/placeholder.svg', alt: 'Logo' },
+                styleSourceIds: [],
                 children: [],
               },
             ],
           },
           {
             id: linksBoxId,
-            type: 'Box',
+            type: 'Box' as ComponentType,
             label: 'Navigation Links',
             props: {},
             styleSourceIds: [linksBoxStyleId],
             children: [
-              { id: link1Id, type: 'Link', label: 'Home Link', props: { href: '#', children: 'Home' }, styleSourceIds: [linkStyleId], children: [] },
-              { id: link2Id, type: 'Link', label: 'About Link', props: { href: '#', children: 'About' }, styleSourceIds: [linkStyleId], children: [] },
-              { id: link3Id, type: 'Link', label: 'Contact Link', props: { href: '#', children: 'Contact' }, styleSourceIds: [linkStyleId], children: [] },
+              {
+                id: link1Id,
+                type: 'Link' as ComponentType,
+                label: 'Home Link',
+                props: { href: '#', children: 'Home' },
+                styleSourceIds: [],
+                children: [],
+              },
+              {
+                id: link2Id,
+                type: 'Link' as ComponentType,
+                label: 'About Link',
+                props: { href: '#', children: 'About' },
+                styleSourceIds: [],
+                children: [],
+              },
+              {
+                id: link3Id,
+                type: 'Link' as ComponentType,
+                label: 'Contact Link',
+                props: { href: '#', children: 'Contact' },
+                styleSourceIds: [],
+                children: [],
+              },
             ],
           },
           {
             id: buttonBoxId,
-            type: 'Box',
+            type: 'Box' as ComponentType,
             label: 'Button Container',
             props: {},
             styleSourceIds: [],
-            children: [{ id: buttonId, type: 'FormButton', label: 'CTA Button', props: { text: 'Get Started' }, styleSourceIds: [], children: [] }],
+            children: [
+              {
+                id: buttonId,
+                type: 'FormButton' as ComponentType,
+                label: 'CTA Button',
+                props: { text: 'Get Started', type: 'button' },
+                styleSourceIds: [],
+                children: [],
+              },
+            ],
           },
         ],
       };
       
-      addInstance(container, selectedInstanceId || 'root');
+      addInstance(container, parentId);
       return;
     }
     
-    // Create composite structure for InputLabel
-    if (type === 'InputLabel') {
-      const boxId = generateId();
-      const labelId = generateId();
-      
-      const { createStyleSource, setStyle } = useStyleStore.getState();
-      const boxStyleId = createStyleSource('local', `input-label-${boxId}`);
-      setStyle(boxStyleId, 'display', 'flex');
-      setStyle(boxStyleId, 'flexDirection', 'column');
-      setStyle(boxStyleId, 'gap', '4px');
-      
-      const container: ComponentInstance = {
-        id: boxId,
-        type: 'Box',
-        label: 'Input Label',
-        props: {},
-        styleSourceIds: [boxStyleId],
-        children: [
-          {
-            id: labelId,
-            type: 'Text',
-            label: 'Label Text',
-            props: { children: 'Label' },
-            styleSourceIds: [],
-            children: [],
-          },
-        ],
-      };
-      
-      addInstance(container, selectedInstanceId || 'root');
-      return;
-    }
-    
-    // Create composite structure for TextInput
-    if (type === 'TextInput') {
-      const boxId = generateId();
-      const labelId = generateId();
-      const inputId = generateId();
-      
-      const { createStyleSource, setStyle } = useStyleStore.getState();
-      const boxStyleId = createStyleSource('local', `text-input-${boxId}`);
-      setStyle(boxStyleId, 'display', 'flex');
-      setStyle(boxStyleId, 'flexDirection', 'column');
-      setStyle(boxStyleId, 'gap', '8px');
-      
-      const container: ComponentInstance = {
-        id: boxId,
-        type: 'Box',
-        label: 'Text Input',
-        props: {},
-        styleSourceIds: [boxStyleId],
-        children: [
-          {
-            id: labelId,
-            type: 'Text',
-            label: 'Label',
-            props: { children: 'Text Input' },
-            styleSourceIds: [],
-            children: [],
-          },
-          {
-            id: inputId,
-            type: 'TextInput',
-            label: 'Input Field',
-            props: { placeholder: 'Enter text...' },
-            styleSourceIds: [],
-            children: [],
-          },
-        ],
-      };
-      
-      addInstance(container, selectedInstanceId || 'root');
-      return;
-    }
-    
-    // Create composite structure for TextArea
-    if (type === 'TextArea') {
-      const boxId = generateId();
-      const labelId = generateId();
-      const textareaId = generateId();
-      
-      const { createStyleSource, setStyle } = useStyleStore.getState();
-      const boxStyleId = createStyleSource('local', `textarea-${boxId}`);
-      setStyle(boxStyleId, 'display', 'flex');
-      setStyle(boxStyleId, 'flexDirection', 'column');
-      setStyle(boxStyleId, 'gap', '8px');
-      
-      const container: ComponentInstance = {
-        id: boxId,
-        type: 'Box',
-        label: 'Text Area',
-        props: {},
-        styleSourceIds: [boxStyleId],
-        children: [
-          {
-            id: labelId,
-            type: 'Text',
-            label: 'Label',
-            props: { children: 'Text Area' },
-            styleSourceIds: [],
-            children: [],
-          },
-          {
-            id: textareaId,
-            type: 'TextArea',
-            label: 'Textarea Field',
-            props: { placeholder: 'Enter text...', rows: 4 },
-            styleSourceIds: [],
-            children: [],
-          },
-        ],
-      };
-      
-      addInstance(container, selectedInstanceId || 'root');
-      return;
-    }
-    
-    // Create composite structure for Select
-    if (type === 'Select') {
-      const boxId = generateId();
-      const labelId = generateId();
-      const selectId = generateId();
-      
-      const { createStyleSource, setStyle } = useStyleStore.getState();
-      const boxStyleId = createStyleSource('local', `select-${boxId}`);
-      setStyle(boxStyleId, 'display', 'flex');
-      setStyle(boxStyleId, 'flexDirection', 'column');
-      setStyle(boxStyleId, 'gap', '8px');
-      
-      const container: ComponentInstance = {
-        id: boxId,
-        type: 'Box',
-        label: 'Select',
-        props: {},
-        styleSourceIds: [boxStyleId],
-        children: [
-          {
-            id: labelId,
-            type: 'Text',
-            label: 'Label',
-            props: { children: 'Select' },
-            styleSourceIds: [],
-            children: [],
-          },
-          {
-            id: selectId,
-            type: 'Select',
-            label: 'Select Field',
-            props: { 
-              placeholder: 'Select an option...',
-              options: [
-                { id: '1', label: 'Option 1', value: 'option1' },
-                { id: '2', label: 'Option 2', value: 'option2' },
-                { id: '3', label: 'Option 3', value: 'option3' },
-              ]
-            },
-            styleSourceIds: [],
-            children: [],
-          },
-        ],
-      };
-      
-      addInstance(container, selectedInstanceId || 'root');
-      return;
-    }
-    
-    // Create composite structure for RadioGroup
-    if (type === 'RadioGroup') {
-      const boxId = generateId();
-      const labelId = generateId();
-      const radio1Id = generateId();
-      const radio2Id = generateId();
-      const radio3Id = generateId();
-      
-      const { createStyleSource, setStyle } = useStyleStore.getState();
-      const boxStyleId = createStyleSource('local', `radio-group-${boxId}`);
-      setStyle(boxStyleId, 'display', 'flex');
-      setStyle(boxStyleId, 'flexDirection', 'column');
-      setStyle(boxStyleId, 'gap', '8px');
-      
-      const container: ComponentInstance = {
-        id: boxId,
-        type: 'Box' as ComponentType,
-        label: 'Radio Group',
-        props: {},
-        styleSourceIds: [boxStyleId],
-        children: [
-          {
-            id: labelId,
-            type: 'Text' as ComponentType,
-            label: 'Group Label',
-            props: { children: 'Choose an option:' },
-            styleSourceIds: [],
-            children: [],
-          },
-          {
-            id: radio1Id,
-            type: 'RadioGroup' as ComponentType,
-            label: 'Radio Options',
-            props: {
-              name: 'radio-group',
-              options: [
-                { id: '1', label: 'Option 1', value: 'option1' },
-                { id: '2', label: 'Option 2', value: 'option2' },
-                { id: '3', label: 'Option 3', value: 'option3' },
-              ],
-            },
-            styleSourceIds: [],
-            children: [],
-          },
-        ],
-      };
-      
-      addInstance(container, selectedInstanceId || 'root');
-      return;
-    }
-    
-    // Create composite structure for Dropdown
+    // DROPDOWN - Box wrapper with Button and Menu
     if (type === 'Dropdown') {
       const dropdownId = generateId();
       const triggerId = generateId();
@@ -517,7 +182,7 @@ export const ComponentsPanel: React.FC = () => {
       setStyle(dropdownStyleId, 'position', 'relative');
       setStyle(dropdownStyleId, 'width', 'fit-content');
       
-      const menuStyleId = createStyleSource('local', `dropdown-menu-${menuId}`);
+      const menuStyleId = createStyleSource('local', `menu-${menuId}`);
       setStyle(menuStyleId, 'display', 'flex');
       setStyle(menuStyleId, 'flexDirection', 'column');
       setStyle(menuStyleId, 'position', 'absolute');
@@ -584,53 +249,198 @@ export const ComponentsPanel: React.FC = () => {
         ],
       };
       
-      addInstance(container, selectedInstanceId || 'root');
+      addInstance(container, parentId);
       return;
     }
     
-    // Create composite structure for CheckboxField
-    if (type === 'CheckboxField') {
-      const boxId = generateId();
-      const checkboxId = generateId();
-      const labelId = generateId();
+    // FORM - Box wrapper with children
+    if (type === 'Form') {
+      const formId = generateId();
+      const headingId = generateId();
+      const nameBoxId = generateId();
+      const nameLabelId = generateId();
+      const nameInputId = generateId();
+      const emailBoxId = generateId();
+      const emailLabelId = generateId();
+      const emailInputId = generateId();
+      const messageBoxId = generateId();
+      const messageLabelId = generateId();
+      const messageTextareaId = generateId();
+      const buttonId = generateId();
       
       const { createStyleSource, setStyle } = useStyleStore.getState();
-      const boxStyleId = createStyleSource('local', `checkbox-field-${boxId}`);
-      setStyle(boxStyleId, 'display', 'flex');
-      setStyle(boxStyleId, 'alignItems', 'center');
-      setStyle(boxStyleId, 'gap', '8px');
+      
+      const formStyleId = createStyleSource('local', `form-${formId}`);
+      setStyle(formStyleId, 'display', 'flex');
+      setStyle(formStyleId, 'flexDirection', 'column');
+      setStyle(formStyleId, 'gap', '20px');
+      setStyle(formStyleId, 'padding', '24px');
+      setStyle(formStyleId, 'backgroundColor', 'hsl(var(--card))');
+      setStyle(formStyleId, 'border', '1px solid hsl(var(--border))');
+      setStyle(formStyleId, 'borderRadius', '8px');
+      setStyle(formStyleId, 'maxWidth', '500px');
+      
+      const fieldBoxStyleId = createStyleSource('local', `field-box-${nameBoxId}`);
+      setStyle(fieldBoxStyleId, 'display', 'flex');
+      setStyle(fieldBoxStyleId, 'flexDirection', 'column');
+      setStyle(fieldBoxStyleId, 'gap', '8px');
       
       const container: ComponentInstance = {
-        id: boxId,
-        type: 'Box',
-        label: 'Checkbox Field',
+        id: formId,
+        type: 'Box' as ComponentType,
+        label: 'Form',
         props: {},
-        styleSourceIds: [boxStyleId],
+        styleSourceIds: [formStyleId],
         children: [
           {
-            id: checkboxId,
-            type: 'CheckboxField',
-            label: 'Checkbox',
-            props: { label: 'Checkbox Label' },
+            id: headingId,
+            type: 'Heading' as ComponentType,
+            label: 'Form Heading',
+            props: { level: 'h2', children: 'Contact Us' },
             styleSourceIds: [],
             children: [],
           },
           {
-            id: labelId,
-            type: 'Text',
-            label: 'Label Text',
-            props: { children: 'Check this option' },
+            id: nameBoxId,
+            type: 'Box' as ComponentType,
+            label: 'Name Field',
+            props: {},
+            styleSourceIds: [fieldBoxStyleId],
+            children: [
+              {
+                id: nameLabelId,
+                type: 'Text' as ComponentType,
+                label: 'Name Label',
+                props: { children: 'Name' },
+                styleSourceIds: [],
+                children: [],
+              },
+              {
+                id: nameInputId,
+                type: 'TextInput' as ComponentType,
+                label: 'Name Input',
+                props: { placeholder: 'Enter your name', type: 'text' },
+                styleSourceIds: [],
+                children: [],
+              },
+            ],
+          },
+          {
+            id: emailBoxId,
+            type: 'Box' as ComponentType,
+            label: 'Email Field',
+            props: {},
+            styleSourceIds: [fieldBoxStyleId],
+            children: [
+              {
+                id: emailLabelId,
+                type: 'Text' as ComponentType,
+                label: 'Email Label',
+                props: { children: 'Email' },
+                styleSourceIds: [],
+                children: [],
+              },
+              {
+                id: emailInputId,
+                type: 'TextInput' as ComponentType,
+                label: 'Email Input',
+                props: { placeholder: 'Enter your email', type: 'email' },
+                styleSourceIds: [],
+                children: [],
+              },
+            ],
+          },
+          {
+            id: messageBoxId,
+            type: 'Box' as ComponentType,
+            label: 'Message Field',
+            props: {},
+            styleSourceIds: [fieldBoxStyleId],
+            children: [
+              {
+                id: messageLabelId,
+                type: 'Text' as ComponentType,
+                label: 'Message Label',
+                props: { children: 'Message' },
+                styleSourceIds: [],
+                children: [],
+              },
+              {
+                id: messageTextareaId,
+                type: 'TextArea' as ComponentType,
+                label: 'Message Textarea',
+                props: { placeholder: 'Enter your message', rows: 4 },
+                styleSourceIds: [],
+                children: [],
+              },
+            ],
+          },
+          {
+            id: buttonId,
+            type: 'FormButton' as ComponentType,
+            label: 'Submit Button',
+            props: { text: 'Submit', type: 'submit' },
             styleSourceIds: [],
             children: [],
           },
         ],
       };
       
-      addInstance(container, selectedInstanceId || 'root');
+      addInstance(container, parentId);
       return;
     }
     
-    // Create composite structure for Table
+    // RADIO GROUP - Box wrapper with label and RadioGroup
+    if (type === 'RadioGroup') {
+      const boxId = generateId();
+      const labelId = generateId();
+      const radioId = generateId();
+      
+      const { createStyleSource, setStyle } = useStyleStore.getState();
+      
+      const boxStyleId = createStyleSource('local', `radio-group-${boxId}`);
+      setStyle(boxStyleId, 'display', 'flex');
+      setStyle(boxStyleId, 'flexDirection', 'column');
+      setStyle(boxStyleId, 'gap', '8px');
+      
+      const container: ComponentInstance = {
+        id: boxId,
+        type: 'Box' as ComponentType,
+        label: 'Radio Group',
+        props: {},
+        styleSourceIds: [boxStyleId],
+        children: [
+          {
+            id: labelId,
+            type: 'Text' as ComponentType,
+            label: 'Group Label',
+            props: { children: 'Choose an option:' },
+            styleSourceIds: [],
+            children: [],
+          },
+          {
+            id: radioId,
+            type: 'RadioGroup' as ComponentType,
+            label: 'Radio Options',
+            props: {
+              name: 'radio-group',
+              options: [
+                { id: '1', label: 'Option 1', value: 'option1' },
+                { id: '2', label: 'Option 2', value: 'option2' },
+                { id: '3', label: 'Option 3', value: 'option3' },
+              ],
+            },
+            styleSourceIds: [],
+            children: [],
+          },
+        ],
+      };
+      
+      addInstance(container, parentId);
+      return;
+    }
+    
+    // TABLE - Container with Box structure
     if (type === 'Table') {
       const containerId = generateId();
       const tableId = generateId();
@@ -641,96 +451,165 @@ export const ComponentsPanel: React.FC = () => {
       const th3Id = generateId();
       const tbodyId = generateId();
       const row1Id = generateId();
-      const row1Cell1Id = generateId();
-      const row1Cell2Id = generateId();
-      const row1Cell3Id = generateId();
+      const cell1Id = generateId();
+      const cell2Id = generateId();
+      const cell3Id = generateId();
       const row2Id = generateId();
-      const row2Cell1Id = generateId();
-      const row2Cell2Id = generateId();
-      const row2Cell3Id = generateId();
+      const cell4Id = generateId();
+      const cell5Id = generateId();
+      const cell6Id = generateId();
       
       const { createStyleSource, setStyle } = useStyleStore.getState();
+      
       const tableStyleId = createStyleSource('local', `table-${tableId}`);
       setStyle(tableStyleId, 'width', '100%');
-      setStyle(tableStyleId, 'borderCollapse', 'collapse');
+      setStyle(tableStyleId, 'display', 'flex');
+      setStyle(tableStyleId, 'flexDirection', 'column');
+      setStyle(tableStyleId, 'border', '1px solid hsl(var(--border))');
+      setStyle(tableStyleId, 'borderRadius', '8px');
+      setStyle(tableStyleId, 'overflow', 'hidden');
       
-      const headerRowStyleId = createStyleSource('local', `table-header-${headerRowId}`);
+      const headerRowStyleId = createStyleSource('local', `header-row-${headerRowId}`);
       setStyle(headerRowStyleId, 'display', 'flex');
       setStyle(headerRowStyleId, 'gap', '16px');
-      setStyle(headerRowStyleId, 'borderBottom', '2px solid hsl(var(--border))');
       setStyle(headerRowStyleId, 'padding', '12px');
+      setStyle(headerRowStyleId, 'backgroundColor', 'hsl(var(--muted))');
       setStyle(headerRowStyleId, 'fontWeight', '600');
+      setStyle(headerRowStyleId, 'borderBottom', '2px solid hsl(var(--border))');
       
-      const rowStyleId = createStyleSource('local', `table-row-${row1Id}`);
+      const rowStyleId = createStyleSource('local', `row-${row1Id}`);
       setStyle(rowStyleId, 'display', 'flex');
       setStyle(rowStyleId, 'gap', '16px');
-      setStyle(rowStyleId, 'borderBottom', '1px solid hsl(var(--border))');
       setStyle(rowStyleId, 'padding', '12px');
+      setStyle(rowStyleId, 'borderBottom', '1px solid hsl(var(--border))');
       
       const container: ComponentInstance = {
         id: containerId,
-        type: 'Container',
+        type: 'Container' as ComponentType,
         label: 'Table',
         props: {},
         styleSourceIds: [],
         children: [
           {
             id: tableId,
-            type: 'Box',
+            type: 'Box' as ComponentType,
             label: 'Table',
             props: {},
             styleSourceIds: [tableStyleId],
             children: [
               {
                 id: theadId,
-                type: 'Box',
+                type: 'Box' as ComponentType,
                 label: 'Table Head',
                 props: {},
                 styleSourceIds: [],
                 children: [
                   {
                     id: headerRowId,
-                    type: 'Box',
+                    type: 'Box' as ComponentType,
                     label: 'Header Row',
                     props: {},
                     styleSourceIds: [headerRowStyleId],
                     children: [
-                      { id: th1Id, type: 'Text', label: 'Column 1', props: { children: 'Column 1' }, styleSourceIds: [], children: [] },
-                      { id: th2Id, type: 'Text', label: 'Column 2', props: { children: 'Column 2' }, styleSourceIds: [], children: [] },
-                      { id: th3Id, type: 'Text', label: 'Column 3', props: { children: 'Column 3' }, styleSourceIds: [], children: [] },
+                      {
+                        id: th1Id,
+                        type: 'Text' as ComponentType,
+                        label: 'Column 1',
+                        props: { children: 'Column 1' },
+                        styleSourceIds: [],
+                        children: [],
+                      },
+                      {
+                        id: th2Id,
+                        type: 'Text' as ComponentType,
+                        label: 'Column 2',
+                        props: { children: 'Column 2' },
+                        styleSourceIds: [],
+                        children: [],
+                      },
+                      {
+                        id: th3Id,
+                        type: 'Text' as ComponentType,
+                        label: 'Column 3',
+                        props: { children: 'Column 3' },
+                        styleSourceIds: [],
+                        children: [],
+                      },
                     ],
                   },
                 ],
               },
               {
                 id: tbodyId,
-                type: 'Box',
+                type: 'Box' as ComponentType,
                 label: 'Table Body',
                 props: {},
                 styleSourceIds: [],
                 children: [
                   {
                     id: row1Id,
-                    type: 'Box',
+                    type: 'Box' as ComponentType,
                     label: 'Row 1',
                     props: {},
                     styleSourceIds: [rowStyleId],
                     children: [
-                      { id: row1Cell1Id, type: 'Text', label: 'Cell', props: { children: 'Data 1' }, styleSourceIds: [], children: [] },
-                      { id: row1Cell2Id, type: 'Text', label: 'Cell', props: { children: 'Data 2' }, styleSourceIds: [], children: [] },
-                      { id: row1Cell3Id, type: 'Text', label: 'Cell', props: { children: 'Data 3' }, styleSourceIds: [], children: [] },
+                      {
+                        id: cell1Id,
+                        type: 'Text' as ComponentType,
+                        label: 'Cell',
+                        props: { children: 'Data 1' },
+                        styleSourceIds: [],
+                        children: [],
+                      },
+                      {
+                        id: cell2Id,
+                        type: 'Text' as ComponentType,
+                        label: 'Cell',
+                        props: { children: 'Data 2' },
+                        styleSourceIds: [],
+                        children: [],
+                      },
+                      {
+                        id: cell3Id,
+                        type: 'Text' as ComponentType,
+                        label: 'Cell',
+                        props: { children: 'Data 3' },
+                        styleSourceIds: [],
+                        children: [],
+                      },
                     ],
                   },
                   {
                     id: row2Id,
-                    type: 'Box',
+                    type: 'Box' as ComponentType,
                     label: 'Row 2',
                     props: {},
                     styleSourceIds: [rowStyleId],
                     children: [
-                      { id: row2Cell1Id, type: 'Text', label: 'Cell', props: { children: 'Data 4' }, styleSourceIds: [], children: [] },
-                      { id: row2Cell2Id, type: 'Text', label: 'Cell', props: { children: 'Data 5' }, styleSourceIds: [], children: [] },
-                      { id: row2Cell3Id, type: 'Text', label: 'Cell', props: { children: 'Data 6' }, styleSourceIds: [], children: [] },
+                      {
+                        id: cell4Id,
+                        type: 'Text' as ComponentType,
+                        label: 'Cell',
+                        props: { children: 'Data 4' },
+                        styleSourceIds: [],
+                        children: [],
+                      },
+                      {
+                        id: cell5Id,
+                        type: 'Text' as ComponentType,
+                        label: 'Cell',
+                        props: { children: 'Data 5' },
+                        styleSourceIds: [],
+                        children: [],
+                      },
+                      {
+                        id: cell6Id,
+                        type: 'Text' as ComponentType,
+                        label: 'Cell',
+                        props: { children: 'Data 6' },
+                        styleSourceIds: [],
+                        children: [],
+                      },
                     ],
                   },
                 ],
@@ -740,7 +619,7 @@ export const ComponentsPanel: React.FC = () => {
         ],
       };
       
-      addInstance(container, selectedInstanceId || 'root');
+      addInstance(container, parentId);
       return;
     }
     

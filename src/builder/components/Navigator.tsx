@@ -19,6 +19,29 @@ export const Navigator: React.FC = () => {
   const { getComputedStyles } = useStyleStore();
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set(['root']));
 
+  // Auto-expand newly added instances with children
+  React.useEffect(() => {
+    if (rootInstance) {
+      const findInstancesWithChildren = (instance: ComponentInstance): string[] => {
+        const ids: string[] = [];
+        if (instance.children && instance.children.length > 0) {
+          ids.push(instance.id);
+          instance.children.forEach(child => {
+            ids.push(...findInstancesWithChildren(child));
+          });
+        }
+        return ids;
+      };
+      
+      const allParentIds = findInstancesWithChildren(rootInstance);
+      setExpandedIds(prev => {
+        const next = new Set(prev);
+        allParentIds.forEach(id => next.add(id));
+        return next;
+      });
+    }
+  }, [rootInstance]);
+
   const toggleExpand = (id: string) => {
     setExpandedIds((prev) => {
       const next = new Set(prev);
