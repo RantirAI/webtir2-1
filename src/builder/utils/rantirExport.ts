@@ -204,7 +204,7 @@ function instanceToAstro(instance: ComponentInstance, indent: number = 0, propMa
     const tagMap: Record<string, string> = {
       'Section': 'section',
       'Container': 'div',
-      'Box': 'div',
+      'Div': 'div',
       'Heading': instance.props.level || 'h2',
       'Text': 'p',
       'Button': 'button',

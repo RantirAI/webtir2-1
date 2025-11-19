@@ -98,7 +98,7 @@ function instanceToReact(instance: ComponentInstance, indent: number = 0): strin
   
   if (!meta) return '';
 
-  const tag = instance.type === 'Box' ? 'div' : 
+  const tag = instance.type === 'Div' ? 'div' : 
               instance.type === 'Container' ? 'div' :
               instance.type === 'Section' ? 'section' :
               instance.type === 'Text' ? 'p' :
@@ -181,7 +181,7 @@ function instanceToHTML(instance: ComponentInstance, indent: number = 0): string
   
   if (!meta) return '';
 
-  const tag = instance.type === 'Box' ? 'div' : 
+  const tag = instance.type === 'Div' ? 'div' : 
               instance.type === 'Container' ? 'div' :
               instance.type === 'Section' ? 'section' :
               instance.type === 'Text' ? 'p' :

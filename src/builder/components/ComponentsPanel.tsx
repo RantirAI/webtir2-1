@@ -86,14 +86,14 @@ export const ComponentsPanel: React.FC = () => {
       
       const container: ComponentInstance = {
         id: navId,
-        type: 'Box' as ComponentType,
+        type: 'Div' as ComponentType,
         label: 'Navigation',
         props: {},
         styleSourceIds: [navStyleId],
         children: [
           {
             id: logoBoxId,
-            type: 'Box' as ComponentType,
+            type: 'Div' as ComponentType,
             label: 'Logo Container',
             props: {},
             styleSourceIds: [logoBoxStyleId],
@@ -110,7 +110,7 @@ export const ComponentsPanel: React.FC = () => {
           },
           {
             id: linksBoxId,
-            type: 'Box' as ComponentType,
+            type: 'Div' as ComponentType,
             label: 'Navigation Links',
             props: {},
             styleSourceIds: [linksBoxStyleId],
@@ -143,7 +143,7 @@ export const ComponentsPanel: React.FC = () => {
           },
           {
             id: buttonBoxId,
-            type: 'Box' as ComponentType,
+            type: 'Div' as ComponentType,
             label: 'Button Container',
             props: {},
             styleSourceIds: [],
@@ -200,7 +200,7 @@ export const ComponentsPanel: React.FC = () => {
       
       const container: ComponentInstance = {
         id: dropdownId,
-        type: 'Box' as ComponentType,
+        type: 'Div' as ComponentType,
         label: 'Dropdown',
         props: {},
         styleSourceIds: [dropdownStyleId],
@@ -209,14 +209,14 @@ export const ComponentsPanel: React.FC = () => {
             id: triggerId,
             type: 'Button' as ComponentType,
             label: 'Button',
-            props: { children: 'Button' },
+            props: { children: 'Open Menu' },
             styleSourceIds: [],
             children: [],
           },
           {
             id: menuId,
-            type: 'Box' as ComponentType,
-            label: 'Box',
+            type: 'Div' as ComponentType,
+            label: 'Div',
             props: {},
             styleSourceIds: [menuStyleId],
             children: [
@@ -287,7 +287,7 @@ export const ComponentsPanel: React.FC = () => {
       
       const container: ComponentInstance = {
         id: formId,
-        type: 'Box' as ComponentType,
+        type: 'Div' as ComponentType,
         label: 'Form',
         props: {},
         styleSourceIds: [formStyleId],
@@ -302,8 +302,8 @@ export const ComponentsPanel: React.FC = () => {
           },
           {
             id: nameBoxId,
-            type: 'Box' as ComponentType,
-            label: 'Box',
+            type: 'Div' as ComponentType,
+            label: 'Div',
             props: {},
             styleSourceIds: [fieldBoxStyleId],
             children: [
@@ -327,8 +327,8 @@ export const ComponentsPanel: React.FC = () => {
           },
           {
             id: emailBoxId,
-            type: 'Box' as ComponentType,
-            label: 'Box',
+            type: 'Div' as ComponentType,
+            label: 'Div',
             props: {},
             styleSourceIds: [fieldBoxStyleId],
             children: [
@@ -352,8 +352,8 @@ export const ComponentsPanel: React.FC = () => {
           },
           {
             id: messageBoxId,
-            type: 'Box' as ComponentType,
-            label: 'Box',
+            type: 'Div' as ComponentType,
+            label: 'Div',
             props: {},
             styleSourceIds: [fieldBoxStyleId],
             children: [
@@ -405,7 +405,7 @@ export const ComponentsPanel: React.FC = () => {
       
       const container: ComponentInstance = {
         id: boxId,
-        type: 'Box' as ComponentType,
+        type: 'Div' as ComponentType,
         label: 'Radio Group',
         props: {},
         styleSourceIds: [boxStyleId],
@@ -497,21 +497,21 @@ export const ComponentsPanel: React.FC = () => {
         children: [
           {
             id: tableId,
-            type: 'Box' as ComponentType,
+            type: 'Div' as ComponentType,
             label: 'Table',
             props: {},
             styleSourceIds: [tableStyleId],
             children: [
               {
                 id: theadId,
-                type: 'Box' as ComponentType,
+                type: 'Div' as ComponentType,
                 label: 'Table Head',
                 props: {},
                 styleSourceIds: [],
                 children: [
                   {
                     id: headerRowId,
-                    type: 'Box' as ComponentType,
+                    type: 'Div' as ComponentType,
                     label: 'Header Row',
                     props: {},
                     styleSourceIds: [headerRowStyleId],
@@ -546,14 +546,14 @@ export const ComponentsPanel: React.FC = () => {
               },
               {
                 id: tbodyId,
-                type: 'Box' as ComponentType,
+                type: 'Div' as ComponentType,
                 label: 'Table Body',
                 props: {},
                 styleSourceIds: [],
                 children: [
                   {
                     id: row1Id,
-                    type: 'Box' as ComponentType,
+                    type: 'Div' as ComponentType,
                     label: 'Row 1',
                     props: {},
                     styleSourceIds: [rowStyleId],
@@ -586,7 +586,7 @@ export const ComponentsPanel: React.FC = () => {
                   },
                   {
                     id: row2Id,
-                    type: 'Box' as ComponentType,
+                    type: 'Div' as ComponentType,
                     label: 'Row 2',
                     props: {},
                     styleSourceIds: [rowStyleId],
@@ -666,7 +666,7 @@ export const ComponentsPanel: React.FC = () => {
   const debouncedSearch = useDebounce(searchQuery, 300);
 
   const basicCategories = [
-    { name: 'Layout', types: ['Section', 'Container', 'Box', 'Navigation', 'Dropdown'] },
+    { name: 'Layout', types: ['Section', 'Container', 'Div', 'Navigation', 'Dropdown'] },
     { name: 'Typography', types: ['Heading', 'Text', 'RichText', 'Button', 'Link'] },
     { name: 'Media', types: ['Image', 'Video', 'Youtube', 'Lottie'] },
     { name: 'Forms', types: ['Form', 'FormButton', 'InputLabel', 'TextInput', 'TextArea', 'Select', 'RadioGroup', 'CheckboxField'] },

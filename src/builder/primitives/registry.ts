@@ -14,9 +14,9 @@ export const componentRegistry: Record<string, ComponentMeta> = {
     },
     propsDefinition: {},
   },
-  Box: {
-    type: 'Box',
-    label: 'Box',
+  Div: {
+    type: 'Div',
+    label: 'Div',
     icon: 'Square',
     defaultProps: {},
     defaultStyles: {

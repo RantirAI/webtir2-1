@@ -1763,7 +1763,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
             </div>
           )}
 
-          {(selectedInstance.type === 'Container' || selectedInstance.type === 'Box' || selectedInstance.type === 'Section') && (
+          {(selectedInstance.type === 'Container' || selectedInstance.type === 'Div' || selectedInstance.type === 'Section') && (
             <div className="space-y-4">
               <ImageUpload
                 currentValue={computedStyles.backgroundImage?.match(/url\(['"]?(.+?)['"]?\)/)?.[1] || ''}
@@ -2517,7 +2517,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
 
           {selectedInstance.type !== 'Image' && 
            selectedInstance.type !== 'Container' && 
-           selectedInstance.type !== 'Box' && 
+           selectedInstance.type !== 'Div' && 
            selectedInstance.type !== 'Section' &&
            selectedInstance.type !== 'Table' &&
            selectedInstance.type !== 'Navigation' &&

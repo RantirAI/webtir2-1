@@ -26,7 +26,7 @@ export const DroppableContainer: React.FC<DroppableContainerProps> = ({
   });
 
   // Full-width container types should take full width
-  const isFullWidthContainer = ['Box', 'Section', 'Container', 'Navigation'].includes(instance.type);
+  const isFullWidthContainer = ['Div', 'Section', 'Container', 'Navigation'].includes(instance.type);
 
   // Get child IDs for sortable context
   const childIds = instance.children.map(child => child.id);

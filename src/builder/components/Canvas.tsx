@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useBuilderStore } from '../store/useBuilderStore';
 import { useStyleStore } from '../store/useStyleStore';
 import { ComponentInstance } from '../store/types';
-import { Box } from '../primitives/Box';
+import { Div } from '../primitives/Box';
 import { Container } from '../primitives/Container';
 import { Section } from '../primitives/Section';
 import { Text } from '../primitives/Text';
@@ -161,7 +161,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
   const renderInstance = (instance: ComponentInstance): React.ReactNode => {
     const isSelected = instance.id === selectedInstanceId;
     const isHovered = instance.id === hoveredInstanceId;
-    const isContainer = ['Box', 'Container', 'Section', 'Navigation'].includes(instance.type);
+    const isContainer = ['Div', 'Container', 'Section', 'Navigation'].includes(instance.type);
 
     const commonProps = {
       instance,
@@ -185,11 +185,11 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
     );
 
     switch (instance.type) {
-      case 'Box': {
+      case 'Div': {
         const content = (
-          <Box {...commonProps}>
+          <Div {...commonProps}>
             {instance.children.map((child) => renderInstance(child))}
-          </Box>
+          </Div>
         );
         return isPreviewMode ? content : (
           <DroppableContainer key={instance.id} instance={instance} {...commonProps}>
@@ -314,12 +314,12 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
           />
         );
       case 'Form': {
-        // If Form has children (new composite structure), render as Box container
+        // If Form has children (new composite structure), render as Div container
         if (instance.children && instance.children.length > 0) {
           const content = (
-            <Box {...commonProps}>
+            <Div {...commonProps}>
               {instance.children.map((child) => renderInstance(child))}
-            </Box>
+            </Div>
           );
           return isPreviewMode ? content : (
             <DroppableContainer key={instance.id} instance={instance} {...commonProps}>
@@ -431,12 +431,12 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
       case 'Cell':
         return wrapWithDraggable(<CellPrimitive key={instance.id} {...commonProps} />);
       case 'Navigation': {
-        // If Navigation has children (new composite structure), render as Box container
+        // If Navigation has children (new composite structure), render as Div container
         if (instance.children && instance.children.length > 0) {
           const content = (
-            <Box {...commonProps}>
+            <Div {...commonProps}>
               {instance.children.map((child) => renderInstance(child))}
-            </Box>
+            </Div>
           );
           return isPreviewMode ? content : (
             <DroppableContainer key={instance.id} instance={instance} {...commonProps}>
