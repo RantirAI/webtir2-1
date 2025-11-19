@@ -99,21 +99,21 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, instance, onClos
     if (parentInstance) {
       const index = parentInstance.children.findIndex(c => c.id === instance.id);
       
-      // Create a proper Box component
+      // Create a proper Div component
       const boxId = generateId();
       const wrapperBox: ComponentInstance = {
         id: boxId,
-        type: 'Box',
-        label: 'Box',
+        type: 'Div',
+        label: 'Div',
         props: {},
         styleSourceIds: [],
         children: [],
       };
       
-      // Add the wrapper box at the same position
+      // Add the wrapper div at the same position
       addInstance(wrapperBox, parentInstance.id, index);
       
-      // Move the original instance into the box
+      // Move the original instance into the div
       moveInstance(instance.id, boxId, 0);
     }
     onClose();
@@ -221,7 +221,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, instance, onClos
         onClick={handleWrapInBox}
       >
         <BoxIcon className="w-3.5 h-3.5" />
-        <span>Wrap in Box</span>
+        <span>Wrap in Div</span>
       </button>
       
       {isInRichText && (

@@ -2,7 +2,7 @@
 
 export type ComponentType = 
   // Core/Layout
-  | 'Box' | 'Container' | 'Section' | 'Text' | 'Heading' | 'Image' | 'Button' | 'Link'
+  | 'Div' | 'Container' | 'Section' | 'Text' | 'Heading' | 'Image' | 'Button' | 'Link'
   // Rich Text
   | 'RichText' | 'Blockquote' | 'OrderedList' | 'UnorderedList' | 'CodeBlock'
   // Commonly Used

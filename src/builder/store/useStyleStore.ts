@@ -19,7 +19,7 @@ export const useStyleStore = create<StyleStore>((set, get) => ({
   nextLocalClassName: (componentType: string) => {
     // Generate Webflow-style class names: div-block-1, button-base-1, text-block-1, etc.
     const typeMap: Record<string, string> = {
-      'Box': 'div-block',
+      'Div': 'div-block',
       'Container': 'container',
       'Section': 'section',
       'Text': 'text-block',

@@ -58,7 +58,7 @@ export const DropIndicator: React.FC<DropIndicatorProps> = ({
     }
 
     // Check if drop is valid
-    const isContainerType = ['Box', 'Container', 'Section'].includes(targetInstance?.type || 'Box');
+    const isContainerType = ['Div', 'Container', 'Section'].includes(targetInstance?.type || 'Div');
     const isDraggingSection = activeType === 'Section' || activeInstance?.type === 'Section';
     const isTargetSection = targetInstance?.type === 'Section';
 

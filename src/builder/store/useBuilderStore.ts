@@ -64,7 +64,7 @@ const saveToHistory = (state: BuilderState) => {
 export const useBuilderStore = create<BuilderState>((set, get) => ({
   rootInstance: {
     id: 'root',
-    type: 'Box',
+    type: 'Div',
     label: 'Body',
     props: {},
     styleSourceIds: ['root-style'],
@@ -216,7 +216,7 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
     // Paste into selected container or root
     const selectedInstance = state.getSelectedInstance();
     const parentId = selectedInstance && 
-                     (selectedInstance.type === 'Box' || 
+                     (selectedInstance.type === 'Div' || 
                       selectedInstance.type === 'Container' || 
                       selectedInstance.type === 'Section')
       ? selectedInstance.id

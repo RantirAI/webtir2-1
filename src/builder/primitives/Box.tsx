@@ -2,7 +2,7 @@ import React from 'react';
 import { ComponentInstance } from '../store/types';
 import { useStyleStore } from '../store/useStyleStore';
 
-interface BoxProps {
+interface DivProps {
   instance: ComponentInstance;
   children?: React.ReactNode;
   isSelected?: boolean;
@@ -14,7 +14,7 @@ interface BoxProps {
   isPreviewMode?: boolean;
 }
 
-export const Box: React.FC<BoxProps> = ({
+export const Div: React.FC<DivProps> = ({
   instance,
   children,
   isSelected,
@@ -37,7 +37,7 @@ export const Box: React.FC<BoxProps> = ({
   return (
     <div
       data-instance-id={instance.id}
-      className={`builder-box ${(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}`}
+      className={`builder-div ${(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}`}
       style={finalStyles}
       onClick={isPreviewMode ? undefined : (e) => {
         e.stopPropagation();

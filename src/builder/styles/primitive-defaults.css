@@ -1,6 +1,6 @@
 /* Default styles for primitive components - lower specificity than user classes */
 
-.builder-box,
+.builder-div,
 .builder-container,
 .builder-section {
   display: flex;
