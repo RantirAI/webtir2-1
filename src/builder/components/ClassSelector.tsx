@@ -178,10 +178,7 @@ export const ClassSelector: React.FC<ClassSelectorProps> = ({
                           className={`
                             inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-mono cursor-pointer
                             transition-all relative
-                            ${isPrimary 
-                              ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-300 dark:border-blue-700' 
-                              : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 border border-yellow-300 dark:border-yellow-700'
-                            }
+                            bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-300 dark:border-blue-700
                             ${isActive ? 'ring-2 ring-offset-1 ring-primary' : ''}
                             ${!editable ? 'opacity-60' : 'hover:opacity-80'}
                           `}

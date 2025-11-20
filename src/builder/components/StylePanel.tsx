@@ -39,7 +39,7 @@ interface StylePanelProps {
 
 export const StylePanel: React.FC<StylePanelProps> = ({}) => {
   const { getSelectedInstance, updateInstance } = useBuilderStore();
-  const { setStyle, getComputedStyles, styleSources, createStyleSource, nextLocalClassName, renameStyleSource, deleteStyleSource, currentPseudoState, setCurrentPseudoState, resetStyles, setStyleMetadata, getStyleMetadata } = useStyleStore();
+  const { setStyle, getComputedStyles, styleSources, createStyleSource, nextLocalClassName, renameStyleSource, deleteStyleSource, currentPseudoState, setCurrentPseudoState, resetStyles, setStyleMetadata, getStyleMetadata, getPropertyState } = useStyleStore();
   const selectedInstance = getSelectedInstance();
   
   // ALL useState hooks MUST be at the top, before any conditional logic
@@ -76,11 +76,59 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
     setOpenSections((prev) => ({ ...prev, [section]: !prev[section] }));
   };
 
+  // Get the active style source ID based on activeClassIndex
+  const activeStyleSourceId = selectedInstance && selectedInstance.styleSourceIds && activeClassIndex !== null
+    ? selectedInstance.styleSourceIds[activeClassIndex]
+    : selectedInstance?.styleSourceIds?.[0];
+
   // Get computed styles - always show the full cascade (all classes combined)
-  // This shows both active (blue) and inherited (yellow) properties
-  const computedStyles = selectedInstance 
+  const computedStyles = selectedInstance
     ? getComputedStyles(selectedInstance.styleSourceIds || [])
     : {};
+
+  // Helper to check if a property is inherited from a parent class
+  const getPropertySource = (property: string): 'active' | 'inherited' | 'none' => {
+    if (!selectedInstance || !activeStyleSourceId) return 'none';
+    
+    // Check if defined on the active class
+    const activeValue = getPropertyState(activeStyleSourceId, property);
+    if (activeValue !== undefined) return 'active';
+    
+    // Check if it exists in computed (inherited from parent classes)
+    const computedValue = (computedStyles as any)[property];
+    if (computedValue !== undefined && computedValue !== '') return 'inherited';
+    
+    return 'none';
+  };
+
+  // Helper to get text color class based on property source
+  const getPropertyColorClass = (property: string): string => {
+    const source = getPropertySource(property);
+    if (source === 'active') return 'text-blue-600 dark:text-blue-400';
+    if (source === 'inherited') return 'text-yellow-600 dark:text-yellow-400';
+    return ''; // grey/default
+  };
+
+  // Helper component to render property indicator dot
+  const PropertyIndicator: React.FC<{ property: string }> = ({ property }) => {
+    const source = getPropertySource(property);
+    if (source === 'none') return null;
+    
+    const color = source === 'active' 
+      ? 'hsl(217, 91%, 60%)' 
+      : 'hsl(45, 93%, 47%)';
+    
+    return (
+      <span style={{ 
+        width: '6px', 
+        height: '6px', 
+        borderRadius: '50%', 
+        background: color,
+        display: 'inline-block',
+        marginLeft: '4px'
+      }} />
+    );
+  };
 
   // Sync label input to selected instance (unconditional hook placement)
   useEffect(() => {
@@ -317,7 +365,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
           onMouseLeave={() => setIsHovered(false)}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-            <span className={`SectionTitle ${hasStyles ? (isPrimary ? 'text-blue-600 dark:text-blue-400' : 'text-yellow-600 dark:text-yellow-400') : ''}`}>
+            <span className="SectionTitle">
               {title}
             </span>
             {hasStyles && (
@@ -326,7 +374,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
                   width: '8px', 
                   height: '8px', 
                   borderRadius: '50%', 
-                  background: isPrimary ? 'hsl(217, 91%, 60%)' : 'hsl(45, 93%, 47%)'
+                  background: 'hsl(217, 91%, 60%)'
                 }} />
                 {isHovered && properties && (
                   <TooltipProvider>
@@ -904,13 +952,17 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
         <div className="Col" style={{ gap: '4px' }}>
           {/* Width and Height */}
           <div style={{ display: 'grid', gridTemplateColumns: '26px 1fr 26px 1fr', gap: '2px', alignItems: 'center' }}>
-            <label className="Label">Width</label>
+            <label className={`Label ${getPropertyColorClass('width')}`}>
+              Width<PropertyIndicator property="width" />
+            </label>
             <UnitInput
               value={computedStyles.width || ''}
               onChange={(val) => updateStyle('width', val)}
               placeholder="Auto"
             />
-            <label className="Label">Height</label>
+            <label className={`Label ${getPropertyColorClass('height')}`}>
+              Height<PropertyIndicator property="height" />
+            </label>
             <UnitInput
               value={computedStyles.height || ''}
               onChange={(val) => updateStyle('height', val)}
@@ -920,13 +972,17 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
 
           {/* Min Width and Min Height */}
           <div style={{ display: 'grid', gridTemplateColumns: '26px 1fr 26px 1fr', gap: '2px', alignItems: 'center' }}>
-            <label className="Label">Min W</label>
+            <label className={`Label ${getPropertyColorClass('minWidth')}`}>
+              Min W<PropertyIndicator property="minWidth" />
+            </label>
             <UnitInput
               value={computedStyles.minWidth || ''}
               onChange={(val) => updateStyle('minWidth', val)}
               placeholder="auto"
             />
-            <label className="Label">Min H</label>
+            <label className={`Label ${getPropertyColorClass('minHeight')}`}>
+              Min H<PropertyIndicator property="minHeight" />
+            </label>
             <UnitInput
               value={computedStyles.minHeight || ''}
               onChange={(val) => updateStyle('minHeight', val)}
@@ -936,13 +992,17 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
 
           {/* Max Width and Max Height */}
           <div style={{ display: 'grid', gridTemplateColumns: '26px 1fr 26px 1fr', gap: '2px', alignItems: 'center' }}>
-            <label className="Label">Max W</label>
+            <label className={`Label ${getPropertyColorClass('maxWidth')}`}>
+              Max W<PropertyIndicator property="maxWidth" />
+            </label>
             <UnitInput
               value={computedStyles.maxWidth || ''}
               onChange={(val) => updateStyle('maxWidth', val)}
               placeholder="none"
             />
-            <label className="Label">Max H</label>
+            <label className={`Label ${getPropertyColorClass('maxHeight')}`}>
+              Max H<PropertyIndicator property="maxHeight" />
+            </label>
             <UnitInput
               value={computedStyles.maxHeight || ''}
               onChange={(val) => updateStyle('maxHeight', val)}
@@ -952,7 +1012,9 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
 
           {/* Overflow */}
           <div style={{ display: 'grid', gridTemplateColumns: '26px 1fr', gap: '2px', alignItems: 'center' }}>
-            <label className="Label">Over</label>
+            <label className={`Label ${getPropertyColorClass('overflow')}`}>
+              Over<PropertyIndicator property="overflow" />
+            </label>
             <select
               className="Select"
               value={computedStyles.overflow || 'visible'}
@@ -973,7 +1035,9 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
         <div className="Col" style={{ gap: '4px' }}>
           {/* Position Type */}
           <div style={{ display: 'grid', gridTemplateColumns: '26px 1fr', gap: '2px', alignItems: 'center' }}>
-            <label className="Label">Pos</label>
+            <label className={`Label ${getPropertyColorClass('position')}`}>
+              Pos<PropertyIndicator property="position" />
+            </label>
             <select
               className="Select"
               value={computedStyles.position || 'static'}
@@ -1042,9 +1106,11 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
                 </div>
               </div>
 
-              {/* Z-Index */}
-              <div style={{ display: 'grid', gridTemplateColumns: '26px 1fr', gap: '2px', alignItems: 'center' }}>
-                <label className="Label">Z</label>
+          {/* Z-Index */}
+          <div style={{ display: 'grid', gridTemplateColumns: '26px 1fr', gap: '2px', alignItems: 'center' }}>
+            <label className={`Label ${getPropertyColorClass('zIndex')}`}>
+              Z<PropertyIndicator property="zIndex" />
+            </label>
                 <input
                   className="Input"
                   type="number"
@@ -1102,14 +1168,19 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
             />
           </div>
           
+          {/* Font Size and Line Height */}
           <div style={{ display: 'grid', gridTemplateColumns: '26px 1fr 26px 1fr', gap: '2px', alignItems: 'center' }}>
-            <label className="Label">Size</label>
+            <label className={`Label ${getPropertyColorClass('fontSize')}`}>
+              Size<PropertyIndicator property="fontSize" />
+            </label>
             <UnitInput
               value={computedStyles.fontSize || ''}
               onChange={(val) => updateStyle('fontSize', val)}
               placeholder="16px"
             />
-            <label className="Label">Height</label>
+            <label className={`Label ${getPropertyColorClass('lineHeight')}`}>
+              Height<PropertyIndicator property="lineHeight" />
+            </label>
             <UnitInput
               value={computedStyles.lineHeight || ''}
               onChange={(val) => updateStyle('lineHeight', val)}
@@ -1118,7 +1189,9 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
           </div>
           
           <div style={{ display: 'grid', gridTemplateColumns: '26px 1fr', gap: '2px', alignItems: 'center' }}>
-            <label className="Label">Color</label>
+            <label className={`Label ${getPropertyColorClass('color')}`}>
+              Color<PropertyIndicator property="color" />
+            </label>
             <ColorPicker
               value={computedStyles.color || 'hsl(var(--foreground))'}
               onChange={(val) => updateStyle('color', val)}
@@ -1158,7 +1231,9 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
 
           {/* Decor and Transform side by side */}
           <div style={{ display: 'grid', gridTemplateColumns: '26px 1fr 26px 1fr', gap: '2px', alignItems: 'center' }}>
-            <label className="Label">Decor</label>
+            <label className={`Label ${getPropertyColorClass('textDecoration')}`}>
+              Decor<PropertyIndicator property="textDecoration" />
+            </label>
             <select
               className="Select"
               value={computedStyles.textDecoration || 'none'}
@@ -1170,7 +1245,9 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
               <option value="overline">Over</option>
               <option value="line-through">Strike</option>
             </select>
-            <label className="Label">Trans</label>
+            <label className={`Label ${getPropertyColorClass('textTransform')}`}>
+              Trans<PropertyIndicator property="textTransform" />
+            </label>
             <select
               className="Select"
               value={computedStyles.textTransform || 'none'}
@@ -1186,13 +1263,17 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
 
           {/* Letter Spacing and Text Indent */}
           <div style={{ display: 'grid', gridTemplateColumns: '26px 1fr 26px 1fr', gap: '2px', alignItems: 'center' }}>
-            <label className="Label">Letter</label>
+            <label className={`Label ${getPropertyColorClass('letterSpacing')}`}>
+              Letter<PropertyIndicator property="letterSpacing" />
+            </label>
             <UnitInput
               value={computedStyles.letterSpacing || ''}
               onChange={(val) => updateStyle('letterSpacing', val)}
               placeholder="0"
             />
-            <label className="Label">Indent</label>
+            <label className={`Label ${getPropertyColorClass('textIndent')}`}>
+              Indent<PropertyIndicator property="textIndent" />
+            </label>
             <UnitInput
               value={computedStyles.textIndent || ''}
               onChange={(val) => updateStyle('textIndent', val)}
@@ -1247,14 +1328,18 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
             <AccordionSection title="Backgrounds" section="backgrounds" properties={['backgroundColor', 'backgroundImage', 'backgroundSize', 'backgroundPosition', 'backgroundRepeat', 'backgroundClip']}>
         <div className="Col" style={{ gap: '4px' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '26px 1fr', gap: '2px', alignItems: 'center' }}>
-            <label className="Label">Color</label>
+            <label className={`Label ${getPropertyColorClass('backgroundColor')}`}>
+              Color<PropertyIndicator property="backgroundColor" />
+            </label>
             <ColorPicker
               value={computedStyles.backgroundColor || 'transparent'}
               onChange={(val) => updateStyle('backgroundColor', val)}
             />
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '26px 1fr', gap: '2px', alignItems: 'center' }}>
-            <label className="Label">Clip</label>
+            <label className={`Label ${getPropertyColorClass('backgroundClip')}`}>
+              Clip<PropertyIndicator property="backgroundClip" />
+            </label>
             <select
               className="Select"
               value={computedStyles.backgroundClip || 'border-box'}
@@ -1274,7 +1359,9 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
             <AccordionSection title="Borders" section="borders" properties={['borderWidth', 'borderStyle', 'borderColor', 'borderRadius', 'borderTopLeftRadius', 'borderTopRightRadius', 'borderBottomRightRadius', 'borderBottomLeftRadius']}>
         <div className="Col" style={{ gap: '4px' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '26px 1fr', gap: '2px', alignItems: 'center' }}>
-            <label className="Label">Radius</label>
+            <label className={`Label ${getPropertyColorClass('borderRadius')}`}>
+              Radius<PropertyIndicator property="borderRadius" />
+            </label>
             <UnitInput
               value={computedStyles.borderRadius || ''}
               onChange={(val) => updateStyle('borderRadius', val)}
@@ -1282,7 +1369,9 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
             />
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '26px 1fr 26px 1fr', gap: '2px', alignItems: 'center' }}>
-            <label className="Label">Style</label>
+            <label className={`Label ${getPropertyColorClass('borderStyle')}`}>
+              Style<PropertyIndicator property="borderStyle" />
+            </label>
             <select
               className="Select"
               value={computedStyles.borderStyle || 'none'}
@@ -1295,7 +1384,9 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
               <option value="dotted">Dot</option>
               <option value="double">Double</option>
             </select>
-            <label className="Label">Width</label>
+            <label className={`Label ${getPropertyColorClass('borderWidth')}`}>
+              Width<PropertyIndicator property="borderWidth" />
+            </label>
             <UnitInput
               value={computedStyles.borderWidth || ''}
               onChange={(val) => updateStyle('borderWidth', val)}
@@ -1303,7 +1394,9 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
             />
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '26px 1fr', gap: '2px', alignItems: 'center' }}>
-            <label className="Label">Color</label>
+            <label className={`Label ${getPropertyColorClass('borderColor')}`}>
+              Color<PropertyIndicator property="borderColor" />
+            </label>
             <ColorPicker
               value={computedStyles.borderColor || 'hsl(var(--border))'}
               onChange={(val) => updateStyle('borderColor', val)}
@@ -1316,7 +1409,9 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
             <AccordionSection title="Effects" section="effects" properties={['opacity', 'mixBlendMode', 'boxShadow', 'filter', 'backdropFilter', 'transform', 'transition', 'cursor', 'outline', 'outlineWidth', 'outlineStyle', 'outlineColor']}>
         <div className="Col" style={{ gap: '4px' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '26px 1fr', gap: '2px', alignItems: 'center' }}>
-            <label className="Label">Blend</label>
+            <label className={`Label ${getPropertyColorClass('mixBlendMode')}`}>
+              Blend<PropertyIndicator property="mixBlendMode" />
+            </label>
             <select
               className="Select"
               value={computedStyles.mixBlendMode || 'normal'}
@@ -1332,7 +1427,9 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
             </select>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '26px 1fr', gap: '2px', alignItems: 'center' }}>
-            <label className="Label">Opac</label>
+            <label className={`Label ${getPropertyColorClass('opacity')}`}>
+              Opac<PropertyIndicator property="opacity" />
+            </label>
             <input
               className="Input"
               type="range"
@@ -1365,7 +1462,9 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
           </div>
           
           <div style={{ display: 'grid', gridTemplateColumns: '26px 1fr', gap: '2px', alignItems: 'center' }}>
-            <label className="Label">Filter</label>
+            <label className={`Label ${getPropertyColorClass('filter')}`}>
+              Filter<PropertyIndicator property="filter" />
+            </label>
             <input
               className="Input"
               type="text"
@@ -1375,7 +1474,9 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
             />
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '26px 1fr', gap: '2px', alignItems: 'center' }}>
-            <label className="Label">Trans</label>
+            <label className={`Label ${getPropertyColorClass('transform')}`}>
+              Trans<PropertyIndicator property="transform" />
+            </label>
             <input
               className="Input"
               type="text"
@@ -1385,7 +1486,9 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
             />
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '26px 1fr', gap: '2px', alignItems: 'center' }}>
-            <label className="Label">Cursor</label>
+            <label className={`Label ${getPropertyColorClass('cursor')}`}>
+              Cursor<PropertyIndicator property="cursor" />
+            </label>
             <select
               className="Select"
               value={computedStyles.cursor || 'auto'}
