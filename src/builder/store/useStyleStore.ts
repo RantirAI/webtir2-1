@@ -7,6 +7,9 @@ const defaultBreakpoints: Breakpoint[] = [
   { id: 'mobile', label: 'Mobile', maxWidth: 767 },
 ];
 
+// Initialize counters from existing classes on first use
+let countersInitialized = false;
+
 export const useStyleStore = create<StyleStore>((set, get) => ({
   styleSources: {},
   styles: {},
@@ -16,26 +19,104 @@ export const useStyleStore = create<StyleStore>((set, get) => ({
   nameCounters: {},
   classDependencies: {}, // Track which classes depend on which: { classId: [dependentClassId1, dependentClassId2] }
 
-  nextLocalClassName: (componentType: string) => {
-    // Generate Webflow-style class names: div-block-1, button-base-1, text-block-1, etc.
+  // Initialize counters from existing class names (migration/backwards compatibility)
+  initCountersFromRegistry: () => {
+    if (countersInitialized) return;
+    
+    const { styleSources } = get();
+    const counters: Record<string, number> = {};
+    
+    // Scan all existing class names and extract max numeric suffix per type
+    Object.values(styleSources).forEach(source => {
+      if (source.type === 'local' && source.name) {
+        // Match pattern: <type>-<number> (e.g., container-42, button-17)
+        const match = source.name.match(/^(.+?)-(\d+)$/);
+        if (match) {
+          const [, baseType, numStr] = match;
+          const num = parseInt(numStr, 10);
+          if (!isNaN(num)) {
+            counters[baseType] = Math.max(counters[baseType] || 0, num);
+          }
+        }
+      }
+    });
+    
+    set((state) => ({ nameCounters: { ...state.nameCounters, ...counters } }));
+    countersInitialized = true;
+  },
+
+  // Get next auto-class name with collision detection (supports up to 1M+)
+  getNextAutoClassName: (componentType: string, startFrom: 'none' | number = 'none'): string => {
+    // Map component types to base names
     const typeMap: Record<string, string> = {
-      'Div': 'div-block',
+      'Div': 'div',
       'Container': 'container',
       'Section': 'section',
-      'Text': 'text-block',
+      'Text': 'text',
       'Heading': 'heading',
       'Button': 'button',
       'Image': 'image',
       'Link': 'link',
+      'Form': 'form',
+      'Input': 'input',
+      'Select': 'select',
+      'Checkbox': 'checkbox',
+      'Radio': 'radio',
+      'Textarea': 'textarea',
+      'Navigation': 'navigation',
+      'Table': 'table',
+      'Video': 'video',
+      'Lottie': 'lottie',
+      'Youtube': 'youtube',
     };
     
     const base = typeMap[componentType] || componentType.toLowerCase();
-    const count = (get().nameCounters[base] || 0) + 1;
-    set((state) => ({ nameCounters: { ...state.nameCounters, [base]: count } }));
-    return `${base}-${count}`;
+    const { nameCounters, styleSources } = get();
+    
+    // If startFrom is 'none', return base without suffix
+    if (startFrom === 'none') {
+      return base;
+    }
+    
+    // Get current counter value (atomic increment)
+    const nextNum = typeof startFrom === 'number' && startFrom !== 0 ? startFrom : (nameCounters[base] || 0) + 1;
+    
+    // Collision detection: check if name exists, increment until unique (O(1) lookup)
+    const existingNames = new Set(Object.values(styleSources).map(s => s.name));
+    let candidate = `${base}-${nextNum}`;
+    let currentNum = nextNum;
+    let attempts = 0;
+    const MAX_ATTEMPTS = 1000; // Safety limit to prevent infinite loop
+    
+    while (existingNames.has(candidate) && attempts < MAX_ATTEMPTS) {
+      currentNum++;
+      candidate = `${base}-${currentNum}`;
+      attempts++;
+    }
+    
+    if (attempts >= MAX_ATTEMPTS) {
+      // Fallback: use timestamp to guarantee uniqueness
+      candidate = `${base}-${Date.now()}`;
+      currentNum = Date.now();
+    }
+    
+    // Atomically update counter to new high-water mark
+    set((state) => ({ nameCounters: { ...state.nameCounters, [base]: currentNum } }));
+    
+    return candidate;
+  },
+
+  nextLocalClassName: (componentType: string) => {
+    // Legacy method - delegates to getNextAutoClassName for backwards compatibility
+    return get().getNextAutoClassName(componentType, 1);
   },
 
   createStyleSource: (type, name) => {
+    // Initialize counters on first use
+    if (!countersInitialized) {
+      get().initCountersFromRegistry();
+    }
+    
     const id = `${type}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const styleSource: StyleSource = {
       id,

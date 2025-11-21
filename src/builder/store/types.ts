@@ -209,6 +209,8 @@ export interface StyleStore {
   // Naming helpers
   nameCounters: Record<string, number>;
   nextLocalClassName: (componentType: string) => string;
+  getNextAutoClassName: (componentType: string, startFrom?: 'none' | number) => string;
+  initCountersFromRegistry: () => void;
   
   // Actions
   createStyleSource: (type: StyleSourceType, name?: string) => string;
