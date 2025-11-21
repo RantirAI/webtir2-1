@@ -26,7 +26,22 @@ export const ClassSelector: React.FC<ClassSelectorProps> = ({
   const inputRef = useRef<HTMLInputElement>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingValue, setEditingValue] = useState('');
-  const { styleSources, isClassEditable, getClassDependents, setClassDependency, removeClassDependency, renameStyleSource } = useStyleStore();
+  const [showAutoPreview, setShowAutoPreview] = useState(false);
+  const { 
+    styleSources, 
+    isClassEditable, 
+    getClassDependents, 
+    setClassDependency, 
+    removeClassDependency, 
+    renameStyleSource,
+    getNextAutoClassName,
+    initCountersFromRegistry
+  } = useStyleStore();
+
+  // Initialize counters on mount
+  useEffect(() => {
+    initCountersFromRegistry();
+  }, [initCountersFromRegistry]);
 
   // Get all existing class names for autocomplete
   const allClassNames = Object.values(styleSources)
@@ -59,6 +74,7 @@ export const ClassSelector: React.FC<ClassSelectorProps> = ({
         onAddClass(safeName);
         setInputValue('');
         setIsOpen(false);
+        setShowAutoPreview(false);
       }
     } else if (e.key === 'Backspace' && !inputValue && selectedClasses.length > 0) {
       // Remove last class on backspace when input is empty
@@ -71,6 +87,10 @@ export const ClassSelector: React.FC<ClassSelectorProps> = ({
       }
       
       onRemoveClass(lastClass.id);
+    } else if (e.key === 'Tab' && !inputValue) {
+      // Tab with empty input shows auto-class preview
+      e.preventDefault();
+      setShowAutoPreview(!showAutoPreview);
     }
   };
 
@@ -125,10 +145,37 @@ export const ClassSelector: React.FC<ClassSelectorProps> = ({
     // Show dropdown when typing
     if (inputValue.length > 0) {
       setIsOpen(true);
+      setShowAutoPreview(false); // Hide auto preview when typing
     } else {
       setIsOpen(false);
     }
   }, [inputValue]);
+
+  // Generate auto-class preview (for demonstration purposes)
+  const getAutoClassPreview = () => {
+    // Detect component type from first selected class or default to 'div'
+    const firstClass = selectedClasses[0];
+    let componentType = 'div';
+    
+    if (firstClass) {
+      // Try to infer type from class name
+      const name = firstClass.name;
+      if (name.startsWith('container')) componentType = 'Container';
+      else if (name.startsWith('section')) componentType = 'Section';
+      else if (name.startsWith('heading')) componentType = 'Heading';
+      else if (name.startsWith('text')) componentType = 'Text';
+      else if (name.startsWith('button')) componentType = 'Button';
+      else if (name.startsWith('image')) componentType = 'Image';
+      else if (name.startsWith('link')) componentType = 'Link';
+    }
+    
+    return {
+      none: getNextAutoClassName(componentType, 'none'),
+      numbered: getNextAutoClassName(componentType, 1),
+    };
+  };
+
+  const autoPreview = getAutoClassPreview();
 
   // Check if active class is editable
   const activeClass = activeClassIndex !== null ? selectedClasses[activeClassIndex] : null;
@@ -245,15 +292,90 @@ export const ClassSelector: React.FC<ClassSelectorProps> = ({
                 );
               })}
               
+              {/* Auto-class preview toggle */}
+              {showAutoPreview && !inputValue && (
+                <div className="flex items-center gap-1 mr-2">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onAddClass(autoPreview.none);
+                          setShowAutoPreview(false);
+                        }}
+                        className="px-2 py-0.5 text-[10px] font-mono rounded bg-muted hover:bg-muted/80 border border-border"
+                      >
+                        Auto: none
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" className="text-xs max-w-[200px]">
+                      <div className="font-semibold">No numeric suffix</div>
+                      <div className="text-muted-foreground">Creates: .{autoPreview.none}</div>
+                    </TooltipContent>
+                  </Tooltip>
+                  
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onAddClass(autoPreview.numbered);
+                          setShowAutoPreview(false);
+                        }}
+                        className="px-2 py-0.5 text-[10px] font-mono rounded bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 hover:opacity-80 border border-blue-300 dark:border-blue-700"
+                      >
+                        Auto: {autoPreview.numbered}
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" className="text-xs max-w-[200px]">
+                      <div className="font-semibold">Auto-numbered (1, 2, 3...)</div>
+                      <div className="text-muted-foreground">
+                        Counter-based naming up to 1M+
+                      </div>
+                      <div className="text-muted-foreground mt-1">
+                        Next: .{autoPreview.numbered}
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+              )}
+
               <input
                 ref={inputRef}
                 type="text"
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder={selectedClasses.length === 0 ? "+ Add Class 1 (Enter)" : "+ Add Class " + (selectedClasses.length + 1)}
+                onFocus={() => setShowAutoPreview(false)}
+                placeholder={
+                  showAutoPreview 
+                    ? "Choose auto-name or type custom..." 
+                    : selectedClasses.length === 0 
+                      ? "+ Add Class 1 (Tab for auto)" 
+                      : `+ Add Class ${selectedClasses.length + 1} (Tab for auto)`
+                }
                 className="flex-1 min-w-[120px] outline-none bg-transparent text-foreground text-xs font-mono placeholder:text-muted-foreground px-1"
               />
+              
+              {/* Tab hint */}
+              {!showAutoPreview && !inputValue && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowAutoPreview(true);
+                      }}
+                      className="px-1.5 py-0.5 text-[9px] rounded bg-muted/50 text-muted-foreground hover:bg-muted border border-border/50"
+                    >
+                      TAB
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="text-xs">
+                    Press Tab to see auto-naming options
+                  </TooltipContent>
+                </Tooltip>
+              )}
             </div>
           </PopoverTrigger>
           
