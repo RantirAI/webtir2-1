@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { EditableText } from '../components/EditableText';
 import { useBuilderStore } from '../store/useBuilderStore';
 import { Menu, X } from 'lucide-react';
+import webtirLogo from '@/assets/webtir-sdk-logo.png';
 
 interface NavigationPrimitiveProps {
   instanceId: string;
   logo?: string;
+  logoImage?: string;
   menuItems?: { text: string; url: string; id: string }[];
   alignment?: 'left-right' | 'center' | 'right-left';
   mobileAnimation?: 'none' | 'slide' | 'fade' | 'scale';
@@ -21,6 +23,7 @@ interface NavigationPrimitiveProps {
 export const NavigationPrimitive: React.FC<NavigationPrimitiveProps> = ({
   instanceId,
   logo = 'Logo',
+  logoImage = webtirLogo,
   menuItems = [
     { text: 'Home', url: '#', id: '1' },
     { text: 'About', url: '#', id: '2' },
@@ -142,13 +145,12 @@ export const NavigationPrimitive: React.FC<NavigationPrimitiveProps> = ({
       style={style}
       data-instance-id={instanceId}
     >
-      <div className={`flex items-center ${getFlexAlignment()} px-6 py-4 gap-6`}>
-        {/* Custom children (Images, Buttons, Links, etc.) */}
-        {children}
-        
-        {/* Logo - only show if no children or explicitly set */}
-        {(!children || logo !== 'Logo') && (
-          <div className="flex-shrink-0">
+      <div className="flex items-center w-full px-6 py-4 gap-6">
+        {/* Logo on left */}
+        <div className="flex-shrink-0">
+          {logoImage ? (
+            <img src={logoImage} alt={logo} className="h-8 w-auto" />
+          ) : (
             <EditableText
               value={logo}
               onChange={handleLogoChange}
@@ -156,12 +158,12 @@ export const NavigationPrimitive: React.FC<NavigationPrimitiveProps> = ({
               className="text-lg font-bold"
               isSelected={isSelected}
             />
-          </div>
-        )}
+          )}
+        </div>
 
-        {/* Desktop Menu */}
+        {/* Desktop Menu in center */}
         {!isMobileView && menuItems.length > 0 && (
-          <div className="flex items-center gap-8 ml-auto">
+          <div className="flex items-center gap-8 mx-auto">
             {menuItems.map((item) => (
               <EditableText
                 key={item.id}
@@ -175,8 +177,11 @@ export const NavigationPrimitive: React.FC<NavigationPrimitiveProps> = ({
           </div>
         )}
 
+        {/* Custom children (CTA button) on right */}
+        {children && <div className="flex-shrink-0 ml-auto">{children}</div>}
+
         {/* Mobile Menu Toggle */}
-        {isMobileView && (
+        {isMobileView && !children && (
           <button
             className="flex-shrink-0 p-2 -mr-2 ml-auto"
             onClick={toggleMobileMenu}
