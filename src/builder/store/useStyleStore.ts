@@ -1,5 +1,12 @@
 import { create } from 'zustand';
 import { StyleStore, StyleSource, Breakpoint, StyleDeclaration, PseudoState } from './types';
+import { 
+  generateAutoClassName, 
+  previewNextClassName, 
+  normalizeComponentBase,
+  initializeCountersFromRegistry,
+  AutoClassConfig
+} from '../utils/autoClassSystem';
 
 const defaultBreakpoints: Breakpoint[] = [
   { id: 'base', label: 'Base' },
@@ -18,15 +25,85 @@ export const useStyleStore = create<StyleStore>((set, get) => ({
   currentPseudoState: 'default',
   nameCounters: {},
   classDependencies: {}, // Track which classes depend on which: { classId: [dependentClassId1, dependentClassId2] }
+  autoClassConfig: {
+    startIndex: 1,
+    padding: 0,
+    separator: '-',
+    noneFirst: false,
+  },
 
+  // Legacy method - kept for backward compatibility
   nextLocalClassName: (componentType: string) => {
-    const base = componentType.toLowerCase();
-    const { nameCounters } = get();
-    const nextNum = (nameCounters[base] || 0) + 1;
+    return get().getNextAutoClassName(componentType);
+  },
+
+  // Get next auto-class name and persist counter
+  getNextAutoClassName: (componentType: string) => {
+    const { nameCounters, styleSources, autoClassConfig } = get();
+    const base = normalizeComponentBase(componentType);
+    const currentCounter = nameCounters[base] || autoClassConfig.startIndex || 1;
     
-    set((state) => ({ nameCounters: { ...state.nameCounters, [base]: nextNum } }));
+    // Get all existing class names
+    const existingNames = new Set(
+      Object.values(styleSources)
+        .filter(s => s.type === 'local')
+        .map(s => s.name)
+    );
     
-    return `${base}-${nextNum}`;
+    const result = generateAutoClassName(
+      componentType,
+      existingNames,
+      currentCounter,
+      autoClassConfig
+    );
+    
+    // Update counter
+    const newCounter = result.index !== null ? result.index + 1 : currentCounter + 1;
+    set((state) => ({ 
+      nameCounters: { ...state.nameCounters, [base]: newCounter } 
+    }));
+    
+    return result.name;
+  },
+
+  // Preview next auto-class name without persisting
+  previewNextAutoClassName: (componentType: string) => {
+    const { nameCounters, styleSources, autoClassConfig } = get();
+    const base = normalizeComponentBase(componentType);
+    const currentCounter = nameCounters[base] || autoClassConfig.startIndex || 1;
+    
+    const existingNames = new Set(
+      Object.values(styleSources)
+        .filter(s => s.type === 'local')
+        .map(s => s.name)
+    );
+    
+    return previewNextClassName(
+      componentType,
+      existingNames,
+      currentCounter,
+      autoClassConfig
+    );
+  },
+
+  // Update auto-class configuration
+  setAutoClassConfig: (config: Partial<AutoClassConfig>) => {
+    set((state) => ({
+      autoClassConfig: { ...state.autoClassConfig, ...config }
+    }));
+  },
+
+  // Initialize counters from existing class registry
+  initCountersFromRegistry: () => {
+    const { styleSources, autoClassConfig } = get();
+    const existingNames = Object.values(styleSources)
+      .filter(s => s.type === 'local')
+      .map(s => s.name);
+    
+    const initializedCounters = initializeCountersFromRegistry(existingNames, autoClassConfig);
+    
+    set({ nameCounters: initializedCounters });
+    countersInitialized = true;
   },
 
   createStyleSource: (type, name) => {
