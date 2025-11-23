@@ -1,10 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X, Lock, AlertCircle } from 'lucide-react';
+import { X, Lock, AlertCircle, Settings } from 'lucide-react';
 import { useStyleStore } from '../store/useStyleStore';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
+import { Button } from '@/components/ui/button';
 
 interface ClassSelectorProps {
   selectedClasses: { id: string; name: string; isPrimary: boolean }[];
@@ -12,6 +17,7 @@ interface ClassSelectorProps {
   onRemoveClass: (classId: string) => void;
   onClassClick: (classId: string, index: number) => void;
   activeClassIndex: number | null;
+  componentType?: string; // For auto-class preview
 }
 
 export const ClassSelector: React.FC<ClassSelectorProps> = ({
@@ -20,9 +26,11 @@ export const ClassSelector: React.FC<ClassSelectorProps> = ({
   onRemoveClass,
   onClassClick,
   activeClassIndex,
+  componentType = 'div',
 }) => {
   const [inputValue, setInputValue] = useState('');
   const [isOpen, setIsOpen] = useState(false);
+  const [configOpen, setConfigOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingValue, setEditingValue] = useState('');
@@ -32,8 +40,14 @@ export const ClassSelector: React.FC<ClassSelectorProps> = ({
     getClassDependents, 
     setClassDependency, 
     removeClassDependency, 
-    renameStyleSource 
+    renameStyleSource,
+    previewNextAutoClassName,
+    autoClassConfig,
+    setAutoClassConfig,
   } = useStyleStore();
+
+  // Preview next auto-class name
+  const nextAutoClassName = previewNextAutoClassName(componentType);
 
   // Get all existing class names for autocomplete
   const allClassNames = Object.values(styleSources)
@@ -144,7 +158,113 @@ export const ClassSelector: React.FC<ClassSelectorProps> = ({
 
   return (
     <TooltipProvider>
-      <div className="relative">
+      <div className="relative space-y-2">
+        {/* Auto-class preview and config */}
+        <div className="flex items-center justify-between text-xs text-muted-foreground px-1">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="flex items-center gap-1 font-mono cursor-help">
+                <span>Next:</span>
+                <span className="font-semibold text-foreground">{nextAutoClassName}</span>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent side="top" className="text-xs max-w-xs">
+              <div className="space-y-1">
+                <div className="font-semibold">Auto-class Generator</div>
+                <div>Next class name: <code className="font-mono">{nextAutoClassName}</code></div>
+                <div className="text-muted-foreground">
+                  {autoClassConfig.noneFirst && nextAutoClassName.indexOf('-') === -1
+                    ? 'First class uses no numeric suffix'
+                    : `Sequential numbering from ${autoClassConfig.startIndex}`}
+                </div>
+              </div>
+            </TooltipContent>
+          </Tooltip>
+
+          <Dialog open={configOpen} onOpenChange={setConfigOpen}>
+            <DialogTrigger asChild>
+              <Button variant="ghost" size="sm" className="h-6 px-2">
+                <Settings className="w-3 h-3 mr-1" />
+                Config
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Auto-class Configuration</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="startIndex">Start Index</Label>
+                  <Input
+                    id="startIndex"
+                    type="number"
+                    min="1"
+                    value={autoClassConfig.startIndex || 1}
+                    onChange={(e) => setAutoClassConfig({ startIndex: parseInt(e.target.value) || 1 })}
+                    className="font-mono"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    First number in sequence (default: 1)
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="padding">Zero Padding</Label>
+                  <Input
+                    id="padding"
+                    type="number"
+                    min="0"
+                    max="6"
+                    value={autoClassConfig.padding || 0}
+                    onChange={(e) => setAutoClassConfig({ padding: parseInt(e.target.value) || 0 })}
+                    className="font-mono"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Digits with zero-padding (0 = none, 3 = 001, 002...)
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="separator">Separator</Label>
+                  <Input
+                    id="separator"
+                    type="text"
+                    maxLength={1}
+                    value={autoClassConfig.separator || '-'}
+                    onChange={(e) => setAutoClassConfig({ separator: e.target.value || '-' })}
+                    className="font-mono"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Character between base and number (default: -)
+                  </p>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="noneFirst">No suffix for first class</Label>
+                    <p className="text-xs text-muted-foreground">
+                      First class uses base name only (e.g., "button" not "button-1")
+                    </p>
+                  </div>
+                  <Switch
+                    id="noneFirst"
+                    checked={autoClassConfig.noneFirst || false}
+                    onCheckedChange={(checked) => setAutoClassConfig({ noneFirst: checked })}
+                  />
+                </div>
+
+                <div className="pt-2 border-t">
+                  <p className="text-xs text-muted-foreground">
+                    <strong>Preview:</strong> {nextAutoClassName}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Counters support up to 1,000,000+ classes per component type
+                  </p>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
         {/* Warning banner for locked classes */}
         {!isActiveClassEditable && activeClassDependents.length > 0 && (
           <Alert className="mb-2 bg-yellow-50 dark:bg-yellow-900/20 border-yellow-300 dark:border-yellow-700">

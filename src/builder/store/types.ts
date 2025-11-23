@@ -1,6 +1,7 @@
 // Core types inspired by Webtir's component system
+import type { AutoClassConfig } from '../utils/autoClassSystem';
 
-export type ComponentType = 
+export type ComponentType =
   // Core/Layout
   | 'Div' | 'Container' | 'Section' | 'Text' | 'Heading' | 'Image' | 'Button' | 'Link'
   // Rich Text
@@ -208,7 +209,12 @@ export interface StyleStore {
 
   // Naming helpers
   nameCounters: Record<string, number>;
+  autoClassConfig: AutoClassConfig;
   nextLocalClassName: (componentType: string) => string;
+  getNextAutoClassName: (componentType: string) => string;
+  previewNextAutoClassName: (componentType: string) => string;
+  setAutoClassConfig: (config: Partial<AutoClassConfig>) => void;
+  initCountersFromRegistry: () => void;
   
   // Actions
   createStyleSource: (type: StyleSourceType, name?: string) => string;
