@@ -1,200 +1,255 @@
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
-import webtirSdkLogo from "@/assets/webtir-sdk-logo.png";
-import { PageFooter } from "@/builder/components/PageFooter";
-import { Layers, Type, Layout, Image, Video, Code } from "lucide-react";
+import webtirLogo from "@/assets/webtir-logo.svg";
 
 const Index = () => {
-  const navigate = useNavigate();
-
   return (
-    <div className="min-h-screen bg-white">
-      {/* Announcement Bar */}
-      <div className="h-10 bg-[#1a1a1a] flex items-center justify-center text-white text-sm">
-        GET ACCESS TO OUR EMBED YEARLY LICENSE FOR 50% OFF FOR BETA RELEASE USING CODE: DRAWTIR50
-      </div>
+    <div className="min-h-screen bg-background">
+      {/* Top Navigation Bar */}
+      <nav className="border-b border-border/40 bg-background/80 backdrop-blur-sm sticky top-0 z-50">
+        <div className="max-w-[720px] mx-auto px-6 py-4 flex items-center justify-between">
+          <img src={webtirLogo} alt="Webtir" className="h-6" />
+          <div className="flex items-center gap-6">
+            <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+              Documentation
+            </a>
+            <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+              Contact
+            </a>
+            <Button variant="outline" size="sm" className="rounded-full px-4">
+              Sign in
+            </Button>
+          </div>
+        </div>
+      </nav>
 
-      {/* Main Content with Dotted Background */}
-      <div className="min-h-[calc(100vh-40px)] relative">
-        {/* Dotted Background Pattern - More Visible */}
-        <div 
-          className="absolute inset-0 opacity-50"
-          style={{
-            backgroundImage: 'radial-gradient(circle, #9ca3af 1.5px, transparent 1.5px)',
-            backgroundSize: '20px 20px'
-          }}
-        />
-
-        {/* Logo and Test Demo Button */}
-        <div className="relative z-10 flex justify-between items-center px-12 pt-8">
-          <img src={webtirSdkLogo} alt="Webtir SDK" className="h-12" />
-          <Button 
-            onClick={() => navigate('/builder')} 
-            className="bg-primary hover:bg-primary/90"
-          >
-            Test the Demo
-          </Button>
+      {/* Hero Section */}
+      <section className="max-w-[720px] mx-auto px-6 pt-16 pb-12">
+        <div className="text-center space-y-6">
+          <div className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium mb-2">
+            Now in Beta
+          </div>
+          <h1 className="text-5xl font-bold tracking-tight text-foreground">
+            Create your own visual editor in minutes
+          </h1>
+          <p className="text-lg text-muted-foreground max-w-[600px] mx-auto">
+            Turbocharge your product experience by embedding customizable drag-n-drop editors
+          </p>
+          <div className="flex items-center justify-center gap-3">
+            <Button variant="ghost" size="sm" className="text-sm">
+              Request invite
+            </Button>
+            <Button size="sm" className="text-sm">
+              Schedule a demo
+            </Button>
+          </div>
         </div>
 
-        {/* Builder Interface Mockup */}
-        <div className="relative z-10 px-8 py-8 flex gap-4 max-w-[1600px] mx-auto">
-          {/* Left Sidebar - Elements Panel */}
-          <div className="w-64 bg-white border border-border rounded-xl shadow-lg p-4 space-y-4 h-[600px] overflow-y-auto cursor-move hover:shadow-xl transition-shadow">
-            <div>
-              <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
-                <Layout className="w-4 h-4" />
-                LAYOUTS
-              </h3>
-              <div className="grid grid-cols-3 gap-2">
-                <div className="border border-border rounded-lg p-3 hover:bg-muted/50 transition-colors cursor-pointer">
-                  <Layout className="w-6 h-6 mx-auto mb-1" />
-                  <p className="text-xs text-center">Section</p>
-                </div>
-                <div className="border border-border rounded-lg p-3 hover:bg-muted/50 transition-colors cursor-pointer">
-                  <Layout className="w-6 h-6 mx-auto mb-1" />
-                  <p className="text-xs text-center">Container</p>
-                </div>
-                <div className="border border-border rounded-lg p-3 hover:bg-muted/50 transition-colors cursor-pointer">
-                  <Layout className="w-6 h-6 mx-auto mb-1" />
-                  <p className="text-xs text-center">Box</p>
-                </div>
-              </div>
-            </div>
+        {/* Hero Video */}
+        <div className="mt-12 rounded-xl overflow-hidden shadow-2xl border border-border/50">
+          <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+            <video
+              className="absolute top-0 left-0 w-full h-full object-cover"
+              src="/webtir-promo.mp4"
+              autoPlay
+              loop
+              muted
+              playsInline
+            />
+          </div>
+        </div>
+      </section>
 
-            <div>
-              <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
-                <Type className="w-4 h-4" />
-                TYPOGRAPHY
-              </h3>
-              <div className="grid grid-cols-3 gap-2">
-                <div className="border border-border rounded-lg p-3 hover:bg-muted/50 transition-colors cursor-pointer">
-                  <Type className="w-6 h-6 mx-auto mb-1" />
-                  <p className="text-xs text-center">Heading</p>
-                </div>
-                <div className="border border-border rounded-lg p-3 hover:bg-muted/50 transition-colors cursor-pointer">
-                  <Type className="w-6 h-6 mx-auto mb-1" />
-                  <p className="text-xs text-center">Text</p>
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
-                <Image className="w-4 h-4" />
-                MEDIA
-              </h3>
-              <div className="grid grid-cols-3 gap-2">
-                <div className="border border-border rounded-lg p-3 hover:bg-muted/50 transition-colors cursor-pointer">
-                  <Image className="w-6 h-6 mx-auto mb-1" />
-                  <p className="text-xs text-center">Image</p>
-                </div>
-                <div className="border border-border rounded-lg p-3 hover:bg-muted/50 transition-colors cursor-pointer">
-                  <Video className="w-6 h-6 mx-auto mb-1" />
-                  <p className="text-xs text-center">Video</p>
-                </div>
-              </div>
+      {/* Feature Cards Grid */}
+      <section className="max-w-[720px] mx-auto px-6 py-12">
+        <div className="grid grid-cols-2 gap-4">
+          {/* Card 1 */}
+          <div className="rounded-2xl bg-blue-50 dark:bg-blue-950/20 p-6 space-y-4">
+            <h3 className="text-lg font-semibold text-foreground">Make your product interactive</h3>
+            <p className="text-sm text-muted-foreground">
+              Don't waste months building your positive drag-n-drop interface. Embed Webtir and let your users build, configure, and preview instantly.
+            </p>
+            <div className="rounded-lg bg-white dark:bg-background border border-border p-4 aspect-[4/3] flex items-center justify-center text-xs text-muted-foreground">
+              Editor Interface Preview
             </div>
           </div>
 
-          {/* Center Canvas */}
-          <div className="flex-1 bg-white border-2 border-primary rounded-xl shadow-2xl p-8 min-h-[600px] relative">
-            {/* Section Badge */}
-            <div className="absolute top-4 left-4 bg-primary text-primary-foreground px-3 py-1 rounded text-xs font-medium flex items-center gap-1">
-              Section
-              <div className="flex gap-0.5">
-                <button className="hover:bg-primary-foreground/20 p-0.5 rounded">↑</button>
-                <button className="hover:bg-primary-foreground/20 p-0.5 rounded">↓</button>
-              </div>
-            </div>
-
-            {/* Canvas with selected section */}
-            <div className="border-2 border-primary rounded-lg p-8 bg-muted/10 relative">
-              <div className="text-center space-y-6">
-                <h2 className="text-3xl font-bold">Build Beautiful Websites</h2>
-                <p className="text-lg text-muted-foreground">
-                  Visual website builder with drag and drop
-                </p>
-              </div>
-
-              {/* Bento Grid Layout */}
-              <div className="grid grid-cols-3 gap-4 mt-12">
-                {/* Top Row - 3 equal cards */}
-                <div className="bg-background border border-border rounded-xl p-6 text-center space-y-3">
-                  <div className="w-12 h-12 bg-primary/10 rounded-lg mx-auto flex items-center justify-center">
-                    <Layout className="w-6 h-6 text-primary" />
-                  </div>
-                  <h3 className="font-semibold">Visual Design</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Design visually with intuitive tools
-                  </p>
-                </div>
-
-                <div className="bg-background border border-border rounded-xl p-6 text-center space-y-3">
-                  <div className="w-12 h-12 bg-primary/10 rounded-lg mx-auto flex items-center justify-center">
-                    <Code className="w-6 h-6 text-primary" />
-                  </div>
-                  <h3 className="font-semibold">Edit Visually</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Adjust colors and layouts easily
-                  </p>
-                </div>
-
-                <div className="bg-background border border-border rounded-xl p-6 text-center space-y-3">
-                  <div className="w-12 h-12 bg-primary/10 rounded-lg mx-auto flex items-center justify-center">
-                    <Layers className="w-6 h-6 text-primary" />
-                  </div>
-                  <h3 className="font-semibold">Brand Guide</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Bring your design systems
-                  </p>
-                </div>
-              </div>
-
-              {/* Bottom Row - 2 wider cards */}
-              <div className="grid grid-cols-2 gap-4 mt-4">
-                <div className="bg-background border border-border rounded-xl p-8 space-y-3">
-                  <h3 className="font-semibold text-lg">Open source</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Work together and build seamlessly
-                  </p>
-                </div>
-
-                <div className="bg-background border border-border rounded-xl p-8 space-y-3">
-                  <h3 className="font-semibold text-lg">Export & Embed</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Get production-ready code
-                  </p>
-                </div>
-              </div>
+          {/* Card 2 */}
+          <div className="rounded-2xl bg-green-50 dark:bg-green-950/20 p-6 space-y-4">
+            <h3 className="text-lg font-semibold text-foreground">Lightweight & full-featured</h3>
+            <p className="text-sm text-muted-foreground">
+              Make the editor as simple or as complete as you need with support for variables, class-based styling, AI, and real-time collaboration. AI and more.
+            </p>
+            <div className="rounded-lg bg-white dark:bg-background border border-border p-4 aspect-[4/3] flex items-center justify-center text-xs text-muted-foreground">
+              AI-Powered Features
             </div>
           </div>
 
-          {/* Right Sidebar - Layers Panel */}
-          <div className="w-64 bg-white border border-border rounded-xl shadow-lg p-4 space-y-3 h-[600px] overflow-y-auto cursor-move hover:shadow-xl transition-shadow">
-            <h3 className="text-sm font-semibold flex items-center gap-2">
-              <Layers className="w-4 h-4" />
-              Layers
-            </h3>
-            <div className="space-y-1">
-              <div className="flex items-center gap-2 p-2 bg-primary/10 rounded-md border border-primary">
-                <Layout className="w-4 h-4" />
-                <span className="text-sm">Section</span>
-              </div>
-              <div className="flex items-center gap-2 p-2 hover:bg-muted/50 rounded-md ml-4">
-                <Type className="w-4 h-4" />
-                <span className="text-sm">Heading</span>
-              </div>
-              <div className="flex items-center gap-2 p-2 hover:bg-muted/50 rounded-md ml-4">
-                <Type className="w-4 h-4" />
-                <span className="text-sm">Text</span>
-              </div>
+          {/* Card 3 */}
+          <div className="rounded-2xl bg-orange-50 dark:bg-orange-950/20 p-6 space-y-4">
+            <h3 className="text-lg font-semibold text-foreground">Integrate your UI and logic</h3>
+            <p className="text-sm text-muted-foreground">
+              Connect Webtir to your React components and business logic. No need to rip out your current framework. Drop it on top of what you have.
+            </p>
+            <div className="rounded-lg bg-white dark:bg-background border border-border p-4 aspect-[4/3] flex items-center justify-center text-xs text-muted-foreground">
+              Component Integration
+            </div>
+          </div>
+
+          {/* Card 4 */}
+          <div className="rounded-2xl bg-purple-50 dark:bg-purple-950/20 p-6 space-y-4">
+            <h3 className="text-lg font-semibold text-foreground">Matches with your brand</h3>
+            <p className="text-sm text-muted-foreground">
+              Fully theme the editor with your design system. Control colors, fonts, and behaviors, allowing for a seamless integration with your brand identity.
+            </p>
+            <div className="rounded-lg bg-white dark:bg-background border border-border p-4 aspect-[4/3] flex items-center justify-center text-xs text-muted-foreground">
+              Brand Customization
             </div>
           </div>
         </div>
-      </div>
+      </section>
+
+      {/* Features Grid */}
+      <section className="max-w-[720px] mx-auto px-6 py-16">
+        <h2 className="text-3xl font-bold text-center mb-12 text-foreground">
+          All the features you'd expect & then some
+        </h2>
+        <div className="grid grid-cols-3 gap-4">
+          {/* AI Assistant */}
+          <div className="rounded-xl border border-border bg-card p-5 space-y-3">
+            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-semibold">
+              AI
+            </div>
+            <h4 className="font-semibold text-sm text-foreground">AI Assistant</h4>
+            <p className="text-xs text-muted-foreground">
+              Generate layouts, components, and class styles with prompts
+            </p>
+          </div>
+
+          {/* Variables */}
+          <div className="rounded-xl border border-border bg-card p-5 space-y-3">
+            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-semibold text-xs">
+              {'{ }'}
+            </div>
+            <h4 className="font-semibold text-sm text-foreground">Variables</h4>
+            <p className="text-xs text-muted-foreground">
+              Bind editor settings to your own data, environment variables, and feature flags
+            </p>
+          </div>
+
+          {/* Realtime Collaboration */}
+          <div className="rounded-xl border border-border bg-card p-5 space-y-3">
+            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-semibold text-xs">
+              👥
+            </div>
+            <h4 className="font-semibold text-sm text-foreground">Realtime Collaboration</h4>
+            <p className="text-xs text-muted-foreground">
+              Multiple users editing the same canvas at once
+            </p>
+          </div>
+
+          {/* Styling */}
+          <div className="rounded-xl border border-border bg-card p-5 space-y-3">
+            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-semibold text-xs">
+              🎨
+            </div>
+            <h4 className="font-semibold text-sm text-foreground">Styling</h4>
+            <p className="text-xs text-muted-foreground">
+              Webflow-style class system with reusable tokens, responsive controls, and pseudo-states
+            </p>
+          </div>
+
+          {/* Components */}
+          <div className="rounded-xl border border-border bg-card p-5 space-y-3">
+            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-semibold text-xs">
+              🧩
+            </div>
+            <h4 className="font-semibold text-sm text-foreground">Components</h4>
+            <p className="text-xs text-muted-foreground">
+              Drop in your own React components and map their props to visual controls
+            </p>
+          </div>
+
+          {/* Publishing */}
+          <div className="rounded-xl border border-border bg-card p-5 space-y-3">
+            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-semibold text-xs">
+              🚀
+            </div>
+            <h4 className="font-semibold text-sm text-foreground">Publishing</h4>
+            <p className="text-xs text-muted-foreground">
+              Sync changes back to your codebase, export config, or ship changes behind feature flags
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing Section */}
+      <section className="max-w-[720px] mx-auto px-6 py-12">
+        <div className="rounded-2xl border border-border bg-card p-8 space-y-6">
+          <div className="space-y-4">
+            <h2 className="text-2xl font-bold text-foreground">Simple, transparent pricing</h2>
+            <p className="text-muted-foreground">
+              Webtir is <span className="font-semibold text-foreground">fully open source under the MIT license</span>. 
+              Fork it, run it anywhere, and build on top of it for free.
+            </p>
+            <div className="pt-4 space-y-3">
+              <div className="flex items-baseline gap-2">
+                <span className="text-3xl font-bold text-foreground">$999</span>
+                <span className="text-muted-foreground">/year</span>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                White-label, commercial support, and integration help with platforms like Lovable, v0, and Cursor.
+              </p>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li className="flex items-center gap-2">
+                  <span className="text-primary">✓</span>
+                  Priority support & SLAs
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-primary">✓</span>
+                  Private onboarding sessions
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-primary">✓</span>
+                  Custom implementation support
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-primary">✓</span>
+                  Remove Webtir branding
+                </li>
+              </ul>
+            </div>
+            <a href="#" className="inline-flex text-sm text-primary hover:underline">
+              View pricing details →
+            </a>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="max-w-[720px] mx-auto px-6 py-16">
+        <div className="rounded-2xl bg-muted/30 p-12 text-center space-y-6">
+          <h2 className="text-3xl font-bold text-foreground">Let's get in touch</h2>
+          <p className="text-muted-foreground max-w-md mx-auto">
+            We'd love to help your product embed Webtir, the next-level visual editor that can be embedded directly inside your own app or platform.
+          </p>
+          <div className="flex items-center justify-center gap-3">
+            <Button size="lg">
+              Schedule a demo
+            </Button>
+            <Button variant="outline" size="lg">
+              Test-drive the Webtir demo
+            </Button>
+          </div>
+        </div>
+      </section>
 
       {/* Footer */}
-      <PageFooter />
+      <footer className="border-t border-border/40 mt-16">
+        <div className="max-w-[720px] mx-auto px-6 py-8 flex items-center justify-between text-sm text-muted-foreground">
+          <img src={webtirLogo} alt="Webtir" className="h-5 opacity-60" />
+          <p>© 2025 Webtir. MIT Licensed.</p>
+        </div>
+      </footer>
     </div>
   );
 };
