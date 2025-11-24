@@ -11,6 +11,10 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import webtirLogo from "@/assets/webtir-logo.svg";
 import rantirLogo from "@/assets/rantir-studio-logo.svg";
 import pricingBadge from "@/assets/pricing-license-badge.svg";
+import featureBlue from "@/assets/feature-blue.png";
+import featureGreen from "@/assets/feature-green.png";
+import featureOrange from "@/assets/feature-orange.png";
+import featurePurple from "@/assets/feature-purple.png";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
@@ -218,7 +222,7 @@ const Index = () => {
             >
               Contact
             </a>
-            <img src={rantirLogo} alt="Rantir Studio" style={{ width: '80px' }} />
+            <img src={rantirLogo} alt="Rantir Studio" style={{ width: '80px', marginLeft: '-8px' }} />
             <Button variant="outline" size="sm" className="rounded-full px-4" asChild>
               <Link to="/builder">View demo</Link>
             </Button>
@@ -274,8 +278,8 @@ const Index = () => {
             <p className="text-sm text-muted-foreground">
               Don't waste months building your positive drag-n-drop interface. Embed Webtir and let your users build, configure, and preview instantly.
             </p>
-            <div className="rounded-lg bg-white dark:bg-background border border-border p-4 aspect-[4/3] flex items-center justify-center text-xs text-muted-foreground">
-              Editor Interface Preview
+            <div className="rounded-lg overflow-hidden h-64">
+              <img src={featureBlue} alt="Editor Interface Preview" className="w-full h-full object-cover" />
             </div>
           </div>
 
@@ -285,8 +289,8 @@ const Index = () => {
             <p className="text-sm text-muted-foreground">
               Make the editor as simple or as complete as you need with support for variables, class-based styling, AI, and real-time collaboration. AI and more.
             </p>
-            <div className="rounded-lg bg-white dark:bg-background border border-border p-4 aspect-[4/3] flex items-center justify-center text-xs text-muted-foreground">
-              AI-Powered Features
+            <div className="rounded-lg overflow-hidden h-64">
+              <img src={featureGreen} alt="AI-Powered Features" className="w-full h-full object-cover" />
             </div>
           </div>
 
@@ -296,8 +300,8 @@ const Index = () => {
             <p className="text-sm text-muted-foreground">
               Connect Webtir to your React components and business logic. No need to rip out your current framework. Drop it on top of what you have.
             </p>
-            <div className="rounded-lg bg-white dark:bg-background border border-border p-4 aspect-[4/3] flex items-center justify-center text-xs text-muted-foreground">
-              Component Integration
+            <div className="rounded-lg overflow-hidden h-64">
+              <img src={featureOrange} alt="Component Integration" className="w-full h-full object-cover" />
             </div>
           </div>
 
@@ -307,8 +311,8 @@ const Index = () => {
             <p className="text-sm text-muted-foreground">
               Fully theme the editor with your design system. Control colors, fonts, and behaviors, allowing for a seamless integration with your brand identity.
             </p>
-            <div className="rounded-lg bg-white dark:bg-background border border-border p-4 aspect-[4/3] flex items-center justify-center text-xs text-muted-foreground">
-              Brand Customization
+            <div className="rounded-lg overflow-hidden h-64">
+              <img src={featurePurple} alt="Brand Customization" className="w-full h-full object-cover" />
             </div>
           </div>
         </div>
@@ -391,8 +395,8 @@ const Index = () => {
       {/* Pricing Section */}
       <section className="max-w-[720px] mx-auto px-6 py-12">
         <div className="rounded-2xl border border-border bg-card p-8 space-y-6">
-          <div className="flex justify-center mb-6">
-            <img src={pricingBadge} alt="Pricing License" className="w-full max-w-[280px]" />
+          <div className="mb-6">
+            <img src={pricingBadge} alt="Pricing License" style={{ maxWidth: '100px' }} />
           </div>
           <div className="space-y-4">
             <h2 className="text-2xl font-bold text-foreground">Simple, transparent pricing</h2>
