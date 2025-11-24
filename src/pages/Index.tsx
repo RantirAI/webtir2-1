@@ -9,7 +9,8 @@ import {
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import webtirLogo from "@/assets/webtir-logo.svg";
-import rantirLogo from "@/assets/webtir-sdk-logo.png";
+import rantirLogo from "@/assets/rantir-studio-logo.svg";
+import pricingBadge from "@/assets/pricing-license-badge.svg";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
@@ -21,7 +22,7 @@ const Index = () => {
       {/* Top Navigation Bar */}
       <nav className="border-b border-border/40 bg-background/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-[720px] mx-auto px-6 py-4 flex items-center justify-between">
-          <img src={webtirLogo} alt="Webtir" className="h-6" />
+          <img src={webtirLogo} alt="Webtir" className="h-6" style={{ maxWidth: '64px' }} />
           <div className="flex items-center gap-6">
             <Dialog open={licenseOpen} onOpenChange={setLicenseOpen}>
               <DialogTrigger asChild>
@@ -217,7 +218,7 @@ const Index = () => {
             >
               Contact
             </a>
-            <img src={rantirLogo} alt="Rantir Studio" className="h-6" />
+            <img src={rantirLogo} alt="Rantir Studio" style={{ width: '80px' }} />
             <Button variant="outline" size="sm" className="rounded-full px-4" asChild>
               <Link to="/builder">View demo</Link>
             </Button>
@@ -390,6 +391,9 @@ const Index = () => {
       {/* Pricing Section */}
       <section className="max-w-[720px] mx-auto px-6 py-12">
         <div className="rounded-2xl border border-border bg-card p-8 space-y-6">
+          <div className="flex justify-center mb-6">
+            <img src={pricingBadge} alt="Pricing License" className="w-full max-w-[280px]" />
+          </div>
           <div className="space-y-4">
             <h2 className="text-2xl font-bold text-foreground">Simple, transparent pricing</h2>
             <p className="text-muted-foreground">
@@ -423,14 +427,23 @@ const Index = () => {
                 </li>
               </ul>
             </div>
-            <a 
-              href="https://calendly.com/rantir/30min" 
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex text-sm text-primary hover:underline"
-            >
-              View pricing details →
-            </a>
+            <div className="flex items-center gap-4">
+              <a 
+                href="https://calendly.com/rantir/30min" 
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex text-sm text-primary hover:underline"
+              >
+                View pricing details →
+              </a>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setLicenseOpen(true)}
+              >
+                See license
+              </Button>
+            </div>
           </div>
         </div>
       </section>
