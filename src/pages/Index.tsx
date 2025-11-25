@@ -255,32 +255,34 @@ const Index = () => {
       </nav>
 
       {/* Hero Section */}
-      <section className="max-w-[720px] mx-auto px-6 pt-20 pb-12 text-center space-y-6 relative overflow-hidden">
+      <section className="max-w-[720px] mx-auto px-6 pt-20 pb-12 text-center relative overflow-visible min-h-[500px]">
         {/* Subtle dot pattern background - light mode */}
         <div 
-          className="absolute inset-0 -z-10 dark:hidden" 
+          className="absolute inset-0 pointer-events-none dark:hidden" 
           style={{
-            backgroundImage: 'radial-gradient(circle, rgba(0, 0, 0, 0.15) 1.5px, transparent 1.5px)',
-            backgroundSize: '24px 24px'
+            backgroundImage: 'radial-gradient(circle, rgba(0, 0, 0, 0.25) 2px, transparent 2px)',
+            backgroundSize: '32px 32px',
+            zIndex: 0
           }}
         ></div>
         {/* Subtle dot pattern background - dark mode */}
         <div 
-          className="absolute inset-0 -z-10 hidden dark:block" 
+          className="absolute inset-0 pointer-events-none hidden dark:block" 
           style={{
-            backgroundImage: 'radial-gradient(circle, rgba(255, 255, 255, 0.15) 1.5px, transparent 1.5px)',
-            backgroundSize: '24px 24px'
+            backgroundImage: 'radial-gradient(circle, rgba(255, 255, 255, 0.25) 2px, transparent 2px)',
+            backgroundSize: '32px 32px',
+            zIndex: 0
           }}
         ></div>
         
         {/* Animated cursors */}
-        <div className="absolute inset-0 -z-[5] pointer-events-none">
+        <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 1 }}>
           <img 
             src={cursorBlue} 
             alt="" 
-            className="absolute w-12 opacity-80"
+            className="absolute w-16 opacity-90"
             style={{
-              top: '20%',
+              top: '15%',
               left: '10%',
               animation: 'float-1 15s ease-in-out infinite'
             }}
@@ -288,20 +290,20 @@ const Index = () => {
           <img 
             src={cursorPurple} 
             alt="" 
-            className="absolute w-12 opacity-80"
+            className="absolute w-16 opacity-90"
             style={{
-              top: '60%',
-              right: '15%',
+              top: '50%',
+              right: '10%',
               animation: 'float-2 18s ease-in-out infinite'
             }}
           />
           <img 
             src={cursorBlueAlt} 
             alt="" 
-            className="absolute w-12 opacity-80"
+            className="absolute w-16 opacity-90"
             style={{
-              bottom: '20%',
-              left: '20%',
+              bottom: '15%',
+              left: '15%',
               animation: 'float-3 20s ease-in-out infinite'
             }}
           />
@@ -310,40 +312,42 @@ const Index = () => {
         <style>{`
           @keyframes float-1 {
             0%, 100% { transform: translate(0, 0) rotate(0deg); }
-            25% { transform: translate(30px, -20px) rotate(5deg); }
-            50% { transform: translate(-20px, -40px) rotate(-5deg); }
-            75% { transform: translate(-30px, 10px) rotate(3deg); }
+            25% { transform: translate(40px, -30px) rotate(8deg); }
+            50% { transform: translate(-30px, -50px) rotate(-8deg); }
+            75% { transform: translate(-40px, 15px) rotate(5deg); }
           }
           @keyframes float-2 {
             0%, 100% { transform: translate(0, 0) rotate(0deg); }
-            33% { transform: translate(-40px, 30px) rotate(-4deg); }
-            66% { transform: translate(20px, -25px) rotate(4deg); }
+            33% { transform: translate(-50px, 40px) rotate(-6deg); }
+            66% { transform: translate(30px, -35px) rotate(6deg); }
           }
           @keyframes float-3 {
             0%, 100% { transform: translate(0, 0) rotate(0deg); }
-            30% { transform: translate(40px, 20px) rotate(6deg); }
-            60% { transform: translate(-30px, -30px) rotate(-6deg); }
+            30% { transform: translate(50px, 30px) rotate(8deg); }
+            60% { transform: translate(-40px, -40px) rotate(-8deg); }
           }
         `}</style>
 
-        <div className="flex justify-center mb-6">
-          <img src={rantirLogo} alt="Rantir Studio" className="h-8 text-foreground" />
-        </div>
-        <h1 className="text-4xl font-bold text-foreground">
-          Own your own web visual editor
-        </h1>
-        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-          Webtir makes it possible to embedded and customize your own drag-n-drop editors for anything your working on. Now with AI
-        </p>
-        <div className="flex gap-4 justify-center">
-          <Button size="lg" className="rounded-full" asChild>
-            <a href="https://calendly.com/rantir/30min" target="_blank" rel="noopener noreferrer">
-              Request MIT License
-            </a>
-          </Button>
-          <Button variant="outline" size="lg" className="rounded-full" asChild>
-            <Link to="/builder">View demo</Link>
-          </Button>
+        <div className="relative z-10 space-y-6">
+          <div className="flex justify-center mb-6">
+            <img src={rantirLogo} alt="Rantir Studio" className="h-8 text-foreground" />
+          </div>
+          <h1 className="text-4xl font-bold text-foreground">
+            Own your own web visual editor
+          </h1>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Webtir makes it possible to embedded and customize your own drag-n-drop editors for anything your working on. Now with AI
+          </p>
+          <div className="flex gap-4 justify-center">
+            <Button size="lg" className="rounded-full" asChild>
+              <a href="https://calendly.com/rantir/30min" target="_blank" rel="noopener noreferrer">
+                Request MIT License
+              </a>
+            </Button>
+            <Button variant="outline" size="lg" className="rounded-full" asChild>
+              <Link to="/builder">View demo</Link>
+            </Button>
+          </div>
         </div>
       </section>
 
