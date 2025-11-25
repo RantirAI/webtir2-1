@@ -44,7 +44,7 @@ const Index = () => {
       {/* Top Navigation Bar */}
       <nav className="border-b border-border/40 bg-background/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-[720px] mx-auto px-6 py-4 flex items-center justify-between">
-          <img src={webtirLogo} alt="Webtir" className="h-6" style={{ maxWidth: '64px' }} />
+          <img src={webtirLogo} alt="Webtir" className="h-6 text-foreground" style={{ maxWidth: '64px' }} />
           <div className="flex items-center gap-6">
             <Dialog open={licenseOpen} onOpenChange={setLicenseOpen}>
             <DialogTrigger asChild>
@@ -401,7 +401,7 @@ const Index = () => {
         `}</style>
 
         <div className="flex justify-center mb-6">
-          <img src={rantirLogo} alt="Rantir Studio" className="h-8" />
+          <img src={rantirLogo} alt="Rantir Studio" className="h-8 text-foreground" />
         </div>
         <h1 className="text-4xl font-bold text-foreground">
           Own your own web visual editor
