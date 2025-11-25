@@ -8,6 +8,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { LayoutDashboard, ShieldCheck, Braces, Palette, Grid3x3, Database, Sparkles, Code, Share2 } from "lucide-react";
 import webtirLogo from "@/assets/webtir-logo.svg";
 import rantirLogo from "@/assets/rantir-studio-logo.svg";
 import pricingBadge from "@/assets/pricing-license-badge.svg";
@@ -222,7 +223,7 @@ const Index = () => {
             >
               Contact
             </a>
-            <img src={rantirLogo} alt="Rantir Studio" style={{ width: '80px', marginLeft: '-8px' }} />
+            <img src={rantirLogo} alt="Rantir Studio" style={{ width: '80px', marginLeft: '-16px' }} />
             <Button variant="outline" size="sm" className="rounded-full px-4" asChild>
               <Link to="/builder">View demo</Link>
             </Button>
@@ -231,41 +232,22 @@ const Index = () => {
       </nav>
 
       {/* Hero Section */}
-      <section className="max-w-[720px] mx-auto px-6 pt-16 pb-12">
-        <div className="text-center space-y-6">
-          <div className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium mb-2">
-            Now in Beta
-          </div>
-          <h1 className="text-5xl font-bold tracking-tight text-foreground">
-            Create your own visual editor in minutes
-          </h1>
-          <p className="text-lg text-muted-foreground max-w-[600px] mx-auto">
-            Turbocharge your product experience by embedding customizable drag-n-drop editors
-          </p>
-          <div className="flex items-center justify-center gap-3">
-            <Button variant="ghost" size="sm" className="text-sm" asChild>
-              <a href="https://calendly.com/rantir/30min" target="_blank" rel="noopener noreferrer">
-                Request MIT License
-              </a>
-            </Button>
-            <Button size="sm" className="text-sm" asChild>
-              <Link to="/builder">View demo</Link>
-            </Button>
-          </div>
-        </div>
-
-        {/* Hero Video */}
-        <div className="mt-12 rounded-xl overflow-hidden shadow-2xl border border-border/50">
-          <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
-            <video
-              className="absolute top-0 left-0 w-full h-full object-cover"
-              src="/webtir-promo.mp4"
-              autoPlay
-              loop
-              muted
-              playsInline
-            />
-          </div>
+      <section className="max-w-[720px] mx-auto px-6 pt-20 pb-12 text-center space-y-6">
+        <h1 className="text-4xl font-bold text-foreground">
+          Own your own web visual editor
+        </h1>
+        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          Webtir makes it possible to embedded and customize your own drag-n-drop editors for anything your working on. Now with AI
+        </p>
+        <div className="flex gap-4 justify-center">
+          <Button size="lg" className="rounded-full" asChild>
+            <a href="https://calendly.com/rantir/30min" target="_blank" rel="noopener noreferrer">
+              Request MIT License
+            </a>
+          </Button>
+          <Button variant="outline" size="lg" className="rounded-full" asChild>
+            <Link to="/builder">View demo</Link>
+          </Button>
         </div>
       </section>
 
@@ -318,75 +300,81 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Features Grid */}
-      <section className="max-w-[720px] mx-auto px-6 py-16">
-        <h2 className="text-3xl font-bold text-center mb-12 text-foreground">
-          All the features you'd expect & then some
-        </h2>
-        <div className="grid grid-cols-3 gap-4">
-          {/* AI Assistant */}
-          <div className="rounded-xl border border-border bg-card p-5 space-y-3">
-            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-semibold">
-              AI
-            </div>
-            <h4 className="font-semibold text-sm text-foreground">AI Assistant</h4>
-            <p className="text-xs text-muted-foreground">
-              Generate layouts, components, and class styles with prompts
+      {/* Features Grid 3x3 */}
+      <section className="max-w-[720px] mx-auto px-6 py-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Row 1 */}
+          <div className="space-y-3 p-6 rounded-lg border border-border bg-card">
+            <LayoutDashboard className="w-8 h-8 text-primary" />
+            <h4 className="font-semibold text-foreground">Visual editor you can embed anywhere</h4>
+            <p className="text-sm text-muted-foreground">
+              Drop the Webtir canvas into your own app—from admin dashboards to partner portals—using a simple embeddable component and a small SDK.
             </p>
           </div>
 
-          {/* Variables */}
-          <div className="rounded-xl border border-border bg-card p-5 space-y-3">
-            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-semibold text-xs">
-              {'{ }'}
-            </div>
-            <h4 className="font-semibold text-sm text-foreground">Variables</h4>
-            <p className="text-xs text-muted-foreground">
-              Bind editor settings to your own data, environment variables, and feature flags
+          <div className="space-y-3 p-6 rounded-lg border border-border bg-card">
+            <ShieldCheck className="w-8 h-8 text-primary" />
+            <h4 className="font-semibold text-foreground">MIT-licensed & white-label ready</h4>
+            <p className="text-sm text-muted-foreground">
+              Webtir is fully open source (MIT), so you can self-host, fork, and re-skin it as your own without legal gymnastics—plus optional $999/yr white-label and support.
             </p>
           </div>
 
-          {/* Realtime Collaboration */}
-          <div className="rounded-xl border border-border bg-card p-5 space-y-3">
-            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-semibold text-xs">
-              👥
-            </div>
-            <h4 className="font-semibold text-sm text-foreground">Realtime Collaboration</h4>
-            <p className="text-xs text-muted-foreground">
-              Multiple users editing the same canvas at once
+          <div className="space-y-3 p-6 rounded-lg border border-border bg-card">
+            <Braces className="w-8 h-8 text-primary" />
+            <h4 className="font-semibold text-foreground">Schema-driven configuration</h4>
+            <p className="text-sm text-muted-foreground">
+              Define components, props, and validation rules in a structured schema so the editor always knows what's allowed—and your product logic stays safe.
             </p>
           </div>
 
-          {/* Styling */}
-          <div className="rounded-xl border border-border bg-card p-5 space-y-3">
-            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-semibold text-xs">
-              🎨
-            </div>
-            <h4 className="font-semibold text-sm text-foreground">Styling</h4>
-            <p className="text-xs text-muted-foreground">
-              Webflow-style class system with reusable tokens, responsive controls, and pseudo-states
+          {/* Row 2 */}
+          <div className="space-y-3 p-6 rounded-lg border border-border bg-card">
+            <Palette className="w-8 h-8 text-primary" />
+            <h4 className="font-semibold text-foreground">Class & token based styling</h4>
+            <p className="text-sm text-muted-foreground">
+              A full style system with classes, tokens, and breakpoints so teams can create consistent layouts instead of one-off inline styles.
             </p>
           </div>
 
-          {/* Components */}
-          <div className="rounded-xl border border-border bg-card p-5 space-y-3">
-            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-semibold text-xs">
-              🧩
-            </div>
-            <h4 className="font-semibold text-sm text-foreground">Components</h4>
-            <p className="text-xs text-muted-foreground">
-              Drop in your own React components and map their props to visual controls
+          <div className="space-y-3 p-6 rounded-lg border border-border bg-card">
+            <Grid3x3 className="w-8 h-8 text-primary" />
+            <h4 className="font-semibold text-foreground">Component drawer & prop controls</h4>
+            <p className="text-sm text-muted-foreground">
+              A searchable component drawer with per-component controls, toggles, sliders, and select inputs mapped directly to your prop types.
             </p>
           </div>
 
-          {/* Publishing */}
-          <div className="rounded-xl border border-border bg-card p-5 space-y-3">
-            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-semibold text-xs">
-              🚀
-            </div>
-            <h4 className="font-semibold text-sm text-foreground">Publishing</h4>
-            <p className="text-xs text-muted-foreground">
-              Sync changes back to your codebase, export config, or ship changes behind feature flags
+          <div className="space-y-3 p-6 rounded-lg border border-border bg-card">
+            <Database className="w-8 h-8 text-primary" />
+            <h4 className="font-semibold text-foreground">Data bindings & actions</h4>
+            <p className="text-sm text-muted-foreground">
+              Point-and-click bindings to queries, collections, and actions—connect buttons to API calls, lists to data sources, and forms to submissions with guardrails.
+            </p>
+          </div>
+
+          {/* Row 3 */}
+          <div className="space-y-3 p-6 rounded-lg border border-border bg-card">
+            <Sparkles className="w-8 h-8 text-primary" />
+            <h4 className="font-semibold text-foreground">AI-assisted layouts & refactors</h4>
+            <p className="text-sm text-muted-foreground">
+              Let users ask "Make this a three-column pricing section" or "Tighten the spacing for mobile" and have AI update the layout through your own models.
+            </p>
+          </div>
+
+          <div className="space-y-3 p-6 rounded-lg border border-border bg-card">
+            <Code className="w-8 h-8 text-primary" />
+            <h4 className="font-semibold text-foreground">Code-first escape hatch</h4>
+            <p className="text-sm text-muted-foreground">
+              Designers get drag-and-drop; engineers keep code. Every change can be inspected as code, committed to git, and reviewed like any other PR.
+            </p>
+          </div>
+
+          <div className="space-y-3 p-6 rounded-lg border border-border bg-card">
+            <Share2 className="w-8 h-8 text-primary" />
+            <h4 className="font-semibold text-foreground">Plays nice with Lovable, v0, Cursor & friends</h4>
+            <p className="text-sm text-muted-foreground">
+              Use Webtir as the builder layer across AI dev tools—generate components in Lovable, refine flows in v0, or hand off to Cursor without locking into any single platform.
             </p>
           </div>
         </div>
