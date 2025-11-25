@@ -8,7 +8,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { LayoutDashboard, ShieldCheck, Braces, Palette, Grid3x3, Database, Sparkles, Code, Share2 } from "lucide-react";
+import { LayoutDashboard, ShieldCheck, Braces, Palette, Grid3x3, Database, Sparkles, Code, Share2, Moon, Sun } from "lucide-react";
 import webtirLogo from "@/assets/webtir-logo.svg";
 import rantirLogo from "@/assets/rantir-studio-logo.svg";
 import pricingBadge from "@/assets/pricing-license-badge.svg";
@@ -19,11 +19,25 @@ import featurePurple from "@/assets/feature-purple.png";
 import cursorBlue from "@/assets/cursor-blue.svg";
 import cursorPurple from "@/assets/cursor-purple.svg";
 import cursorBlueAlt from "@/assets/cursor-blue-alt.svg";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
 const Index = () => {
   const [licenseOpen, setLicenseOpen] = useState(false);
+  const [roadmapOpen, setRoadmapOpen] = useState(false);
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+
+  useEffect(() => {
+    // Check initial theme
+    const isDark = document.documentElement.classList.contains('dark');
+    setTheme(isDark ? 'dark' : 'light');
+  }, []);
+
+  const toggleTheme = () => {
+    const newTheme = theme === 'light' ? 'dark' : 'light';
+    setTheme(newTheme);
+    document.documentElement.classList.toggle('dark');
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -218,6 +232,78 @@ const Index = () => {
               </div>
             </DialogContent>
           </Dialog>
+          <Dialog open={roadmapOpen} onOpenChange={setRoadmapOpen}>
+            <DialogTrigger asChild>
+              <button className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                Roadmap
+              </button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl max-h-[80vh]">
+              <DialogHeader>
+                <DialogTitle className="text-xl">Webtir Roadmap & Changelog</DialogTitle>
+                <DialogDescription className="text-base pt-2">
+                  What's coming to Webtir in the next few months
+                </DialogDescription>
+              </DialogHeader>
+              <ScrollArea className="h-[50vh] pr-4">
+                <div className="space-y-6">
+                  <div className="space-y-3">
+                    <h3 className="text-lg font-semibold text-foreground">📅 November 2024</h3>
+                    <h4 className="font-semibold text-foreground">AI Builder Interface (Foundational Release)</h4>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      Introduces a first version of Webtir's AI interaction layer. Users can now generate layouts, modify sections, and request styling changes directly through natural language prompts. Designed for bring-your-own-model setups and fully compatible with OpenAI, Gemini, and local inference.
+                    </p>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      The component and style selector is foundationally in beta version with code export & code change (or insert)
+                    </p>
+                  </div>
+
+                  <div className="space-y-3">
+                    <h3 className="text-lg font-semibold text-foreground">📅 December 2024</h3>
+                    <h4 className="font-semibold text-foreground">Dynamic Variables & State System</h4>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      Adds a fully integrated variable framework that allows content, styles, bindings, and component props to be driven by user-defined values. Enables dynamic text, responsive layouts, custom tokens, feature flags, and multi-state components.
+                    </p>
+                    <h4 className="font-semibold text-foreground mt-3">Live Multi-User Editing</h4>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      Real-time collaboration arrives with synchronized cursors, conflict-free editing, and presence indicators. Multiple editors can work on the same canvas without overwrites, merges, or locking.
+                    </p>
+                    <h4 className="font-semibold text-foreground mt-3">Webflow & HTML Copy or Paste</h4>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      Adding the ability to upload and convert or edit Webflow, HTML for Figma based elements.
+                    </p>
+                  </div>
+
+                  <div className="space-y-3">
+                    <h3 className="text-lg font-semibold text-foreground">📅 January 2025</h3>
+                    <h4 className="font-semibold text-foreground">Advanced Styling Workspace</h4>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      Releases a comprehensive CSS-driven styling suite: class creation, reusable tokens, spacing rules, effects, borders, grids, and responsive breakpoints. Designed to mirror professional tools like Webflow but with export-clean, class-only output that fits directly into your design system.
+                    </p>
+                    <h4 className="font-semibold text-foreground mt-3">Component Authoring & Local Reuse</h4>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      Ships a new system allowing users to author their own reusable components inside Webtir. Each component can expose props, variants, and internal structure, enabling true modular page-level editing.
+                    </p>
+                  </div>
+
+                  <div className="space-y-3">
+                    <h3 className="text-lg font-semibold text-foreground">📅 February 2025</h3>
+                    <h4 className="font-semibold text-foreground">Versioned Publishing Pipeline</h4>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      Launches live publishing workflows: version history, restore points, preview environments, and production pushes. All changes are stored, diffable, and deployable as code or as JSON schemas.
+                    </p>
+                    <h4 className="font-semibold text-foreground mt-3">Custom Components — Editable & Extensible</h4>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      Upgrades component support to allow full custom authoring with code overrides, editable slots, and schema-driven inputs. Gives teams the ability to create design-system-ready building blocks that non-technical users can safely edit, remix, and reuse.
+                    </p>
+                  </div>
+                </div>
+              </ScrollArea>
+              <div className="flex items-center justify-end pt-4 border-t">
+                <Button onClick={() => setRoadmapOpen(false)}>Close</Button>
+              </div>
+            </DialogContent>
+          </Dialog>
           <a 
             href="https://calendly.com/rantir/30min" 
             target="_blank"
@@ -226,6 +312,14 @@ const Index = () => {
           >
             Contact
             </a>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleTheme}
+              className="rounded-full"
+            >
+              {theme === 'light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+            </Button>
             <Button variant="outline" size="sm" className="rounded-full px-4" asChild>
               <Link to="/builder">View demo</Link>
             </Button>
@@ -234,19 +328,31 @@ const Index = () => {
       </nav>
 
       {/* Hero Section */}
-      <section className="max-w-[720px] mx-auto px-6 pt-20 pb-12 text-center space-y-6 relative">
+      <section className="max-w-[720px] mx-auto px-6 pt-20 pb-12 text-center space-y-6 relative overflow-hidden">
         {/* Subtle dot pattern background */}
-        <div className="absolute inset-0 -z-10 opacity-20 dark:opacity-10" style={{
-          backgroundImage: 'radial-gradient(circle, currentColor 1px, transparent 1px)',
-          backgroundSize: '24px 24px'
-        }}></div>
+        <div 
+          className="absolute inset-0 -z-10" 
+          style={{
+            backgroundImage: 'radial-gradient(circle, hsl(240 5.9% 90%) 1px, transparent 1px)',
+            backgroundSize: '24px 24px',
+            opacity: 0.4
+          }}
+        ></div>
+        <div 
+          className="absolute inset-0 -z-10 dark:block hidden" 
+          style={{
+            backgroundImage: 'radial-gradient(circle, hsl(240 3.7% 25%) 1px, transparent 1px)',
+            backgroundSize: '24px 24px',
+            opacity: 0.3
+          }}
+        ></div>
         
         {/* Animated cursors */}
-        <div className="absolute inset-0 -z-10 pointer-events-none overflow-hidden">
+        <div className="absolute inset-0 -z-[5] pointer-events-none">
           <img 
             src={cursorBlue} 
             alt="" 
-            className="absolute w-16 animate-float-slow"
+            className="absolute w-12 opacity-80"
             style={{
               top: '20%',
               left: '10%',
@@ -256,7 +362,7 @@ const Index = () => {
           <img 
             src={cursorPurple} 
             alt="" 
-            className="absolute w-16"
+            className="absolute w-12 opacity-80"
             style={{
               top: '60%',
               right: '15%',
@@ -266,7 +372,7 @@ const Index = () => {
           <img 
             src={cursorBlueAlt} 
             alt="" 
-            className="absolute w-16"
+            className="absolute w-12 opacity-80"
             style={{
               bottom: '20%',
               left: '20%',
@@ -277,20 +383,20 @@ const Index = () => {
 
         <style>{`
           @keyframes float-1 {
-            0%, 100% { transform: translate(0, 0); }
-            25% { transform: translate(30px, -20px); }
-            50% { transform: translate(-20px, -40px); }
-            75% { transform: translate(-30px, 10px); }
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(30px, -20px) rotate(5deg); }
+            50% { transform: translate(-20px, -40px) rotate(-5deg); }
+            75% { transform: translate(-30px, 10px) rotate(3deg); }
           }
           @keyframes float-2 {
-            0%, 100% { transform: translate(0, 0); }
-            33% { transform: translate(-40px, 30px); }
-            66% { transform: translate(20px, -25px); }
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            33% { transform: translate(-40px, 30px) rotate(-4deg); }
+            66% { transform: translate(20px, -25px) rotate(4deg); }
           }
           @keyframes float-3 {
-            0%, 100% { transform: translate(0, 0); }
-            30% { transform: translate(40px, 20px); }
-            60% { transform: translate(-30px, -30px); }
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            30% { transform: translate(40px, 20px) rotate(6deg); }
+            60% { transform: translate(-30px, -30px) rotate(-6deg); }
           }
         `}</style>
 
