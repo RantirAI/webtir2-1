@@ -26,19 +26,21 @@ const WebtirLogo = ({ isDark }: { isDark: boolean }) => (
 const footerLinks = [
   { label: "Documentation", href: "https://www.rantir.com/documentation" },
   { label: "Embed", href: "https://github.com/RantirAI/webtir2-1" },
-  { label: "Roadmap", href: "https://www.rantir.com/roadmap" },
 ];
 
 export const PageFooter = () => {
   const { theme } = useTheme();
   const isDark = theme === "dark";
   const [licenseOpen, setLicenseOpen] = useState(false);
+  const [roadmapOpen, setRoadmapOpen] = useState(false);
 
   return (
     <footer className="fixed bottom-4 right-4 z-50 bg-background/95 backdrop-blur-sm border border-border rounded-lg shadow-lg px-4 py-2">
       <div className="flex items-center gap-4">
         <WebtirLogo isDark={isDark} />
         <div className="h-4 w-px bg-border" />
+        
+        {/* License Dialog */}
         <Dialog open={licenseOpen} onOpenChange={setLicenseOpen}>
           <DialogTrigger asChild>
             <button className="text-xs text-muted-foreground hover:text-foreground transition-colors">
@@ -225,6 +227,81 @@ export const PageFooter = () => {
             </div>
           </DialogContent>
         </Dialog>
+        
+        {/* Roadmap Dialog */}
+        <Dialog open={roadmapOpen} onOpenChange={setRoadmapOpen}>
+          <DialogTrigger asChild>
+            <button className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+              Roadmap
+            </button>
+          </DialogTrigger>
+          <DialogContent className="max-w-2xl max-h-[80vh]">
+            <DialogHeader>
+              <DialogTitle className="text-xl">Webtir Roadmap & Changelog</DialogTitle>
+              <DialogDescription className="text-base pt-2">
+                What's coming to Webtir in the next few months
+              </DialogDescription>
+            </DialogHeader>
+            <ScrollArea className="h-[50vh] pr-4">
+              <div className="space-y-6">
+                <div className="space-y-3">
+                  <h3 className="text-lg font-semibold text-foreground">📅 November 2024</h3>
+                  <h4 className="font-semibold text-foreground">AI Builder Interface (Foundational Release)</h4>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Introduces a first version of Webtir's AI interaction layer. Users can now generate layouts, modify sections, and request styling changes directly through natural language prompts. Designed for bring-your-own-model setups and fully compatible with OpenAI, Gemini, and local inference.
+                  </p>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    The component and style selector is foundationally in beta version with code export & code change (or insert)
+                  </p>
+                </div>
+
+                <div className="space-y-3">
+                  <h3 className="text-lg font-semibold text-foreground">📅 December 2024</h3>
+                  <h4 className="font-semibold text-foreground">Dynamic Variables & State System</h4>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Adds a fully integrated variable framework that allows content, styles, bindings, and component props to be driven by user-defined values. Enables dynamic text, responsive layouts, custom tokens, feature flags, and multi-state components.
+                  </p>
+                  <h4 className="font-semibold text-foreground mt-3">Live Multi-User Editing</h4>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Real-time collaboration arrives with synchronized cursors, conflict-free editing, and presence indicators. Multiple editors can work on the same canvas without overwrites, merges, or locking.
+                  </p>
+                  <h4 className="font-semibold text-foreground mt-3">Webflow & HTML Copy or Paste</h4>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Adding the ability to upload and convert or edit Webflow, HTML for Figma based elements.
+                  </p>
+                </div>
+
+                <div className="space-y-3">
+                  <h3 className="text-lg font-semibold text-foreground">📅 January 2025</h3>
+                  <h4 className="font-semibold text-foreground">Advanced Styling Workspace</h4>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Releases a comprehensive CSS-driven styling suite: class creation, reusable tokens, spacing rules, effects, borders, grids, and responsive breakpoints. Designed to mirror professional tools like Webflow but with export-clean, class-only output that fits directly into your design system.
+                  </p>
+                  <h4 className="font-semibold text-foreground mt-3">Component Authoring & Local Reuse</h4>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Ships a new system allowing users to author their own reusable components inside Webtir. Each component can expose props, variants, and internal structure, enabling true modular page-level editing.
+                  </p>
+                </div>
+
+                <div className="space-y-3">
+                  <h3 className="text-lg font-semibold text-foreground">📅 February 2025</h3>
+                  <h4 className="font-semibold text-foreground">Versioned Publishing Pipeline</h4>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Launches live publishing workflows: version history, restore points, preview environments, and production pushes. All changes are stored, diffable, and deployable as code or as JSON schemas.
+                  </p>
+                  <h4 className="font-semibold text-foreground mt-3">Custom Components — Editable & Extensible</h4>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Upgrades component support to allow full custom authoring with code overrides, editable slots, and schema-driven inputs. Gives teams the ability to create design-system-ready building blocks that non-technical users can safely edit, remix, and reuse.
+                  </p>
+                </div>
+              </div>
+            </ScrollArea>
+            <div className="flex items-center justify-end pt-4 border-t">
+              <Button onClick={() => setRoadmapOpen(false)}>Close</Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+        
         {footerLinks.map((link) => (
           <a
             key={link.label}
