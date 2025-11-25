@@ -30,7 +30,7 @@ and an embeddable SDK designed for teams who want total control.
 - [Embedding Webtir](#embedding-webtir)
 - [Installation](#installation)
 - [White-Label & Support](#whitelabel--support)
-- [License](#license)
+- [License](#license) --> $999/yr for an MIT-extended white-label friendly embeddable-use license is available
 
 ---
 
