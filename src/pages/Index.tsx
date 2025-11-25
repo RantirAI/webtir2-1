@@ -10,6 +10,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { LayoutDashboard, ShieldCheck, Braces, Palette, Grid3x3, Database, Sparkles, Code, Share2 } from "lucide-react";
 import webtirLogo from "@/assets/webtir-logo.svg";
+import rantirLogo from "@/assets/rantir-studio-logo.svg";
 import pricingBadge from "@/assets/pricing-license-badge.svg";
 import featureBlue from "@/assets/feature-blue.png";
 import featureGreen from "@/assets/feature-green.png";
@@ -28,8 +29,10 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       {/* Top Navigation Bar */}
       <nav className="border-b border-border/40 bg-background/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="max-w-[720px] mx-auto px-6 py-4 flex items-center justify-end gap-6">
-          <Dialog open={licenseOpen} onOpenChange={setLicenseOpen}>
+        <div className="max-w-[720px] mx-auto px-6 py-4 flex items-center justify-between">
+          <img src={webtirLogo} alt="Webtir" className="h-6" style={{ maxWidth: '64px' }} />
+          <div className="flex items-center gap-6">
+            <Dialog open={licenseOpen} onOpenChange={setLicenseOpen}>
             <DialogTrigger asChild>
               <button className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                 Fork the Repo for Free
@@ -222,10 +225,11 @@ const Index = () => {
             className="text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             Contact
-          </a>
-          <Button variant="outline" size="sm" className="rounded-full px-4" asChild>
-            <Link to="/builder">View demo</Link>
-          </Button>
+            </a>
+            <Button variant="outline" size="sm" className="rounded-full px-4" asChild>
+              <Link to="/builder">View demo</Link>
+            </Button>
+          </div>
         </div>
       </nav>
 
@@ -290,8 +294,8 @@ const Index = () => {
           }
         `}</style>
 
-        <div className="flex justify-center mb-4">
-          <img src={webtirLogo} alt="Webtir" className="h-10" style={{ maxWidth: '64px' }} />
+        <div className="flex justify-center mb-6">
+          <img src={rantirLogo} alt="Rantir Studio" className="h-8" />
         </div>
         <h1 className="text-4xl font-bold text-foreground">
           Own your own web visual editor
@@ -381,7 +385,7 @@ const Index = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Row 1 */}
           <div className="space-y-3 p-6 rounded-lg border border-border bg-card">
-            <LayoutDashboard className="w-8 h-8 text-primary" />
+            <LayoutDashboard className="w-5 h-5 text-primary" />
             <h4 className="font-semibold text-foreground">Visual editor you can embed anywhere</h4>
             <p className="text-sm text-muted-foreground">
               Drop the Webtir canvas into your own app—from admin dashboards to partner portals—using a simple embeddable component and a small SDK.
@@ -389,7 +393,7 @@ const Index = () => {
           </div>
 
           <div className="space-y-3 p-6 rounded-lg border border-border bg-card">
-            <ShieldCheck className="w-8 h-8 text-primary" />
+            <ShieldCheck className="w-5 h-5 text-primary" />
             <h4 className="font-semibold text-foreground">MIT-licensed & white-label ready</h4>
             <p className="text-sm text-muted-foreground">
               Webtir is fully open source (MIT), so you can self-host, fork, and re-skin it as your own without legal gymnastics—plus optional $999/yr white-label and support.
@@ -397,7 +401,7 @@ const Index = () => {
           </div>
 
           <div className="space-y-3 p-6 rounded-lg border border-border bg-card">
-            <Braces className="w-8 h-8 text-primary" />
+            <Braces className="w-5 h-5 text-primary" />
             <h4 className="font-semibold text-foreground">Schema-driven configuration</h4>
             <p className="text-sm text-muted-foreground">
               Define components, props, and validation rules in a structured schema so the editor always knows what's allowed—and your product logic stays safe.
@@ -406,7 +410,7 @@ const Index = () => {
 
           {/* Row 2 */}
           <div className="space-y-3 p-6 rounded-lg border border-border bg-card">
-            <Palette className="w-8 h-8 text-primary" />
+            <Palette className="w-5 h-5 text-primary" />
             <h4 className="font-semibold text-foreground">Class & token based styling</h4>
             <p className="text-sm text-muted-foreground">
               A full style system with classes, tokens, and breakpoints so teams can create consistent layouts instead of one-off inline styles.
@@ -414,7 +418,7 @@ const Index = () => {
           </div>
 
           <div className="space-y-3 p-6 rounded-lg border border-border bg-card">
-            <Grid3x3 className="w-8 h-8 text-primary" />
+            <Grid3x3 className="w-5 h-5 text-primary" />
             <h4 className="font-semibold text-foreground">Component drawer & prop controls</h4>
             <p className="text-sm text-muted-foreground">
               A searchable component drawer with per-component controls, toggles, sliders, and select inputs mapped directly to your prop types.
@@ -422,7 +426,7 @@ const Index = () => {
           </div>
 
           <div className="space-y-3 p-6 rounded-lg border border-border bg-card">
-            <Database className="w-8 h-8 text-primary" />
+            <Database className="w-5 h-5 text-primary" />
             <h4 className="font-semibold text-foreground">Data bindings & actions</h4>
             <p className="text-sm text-muted-foreground">
               Point-and-click bindings to queries, collections, and actions—connect buttons to API calls, lists to data sources, and forms to submissions with guardrails.
@@ -431,7 +435,7 @@ const Index = () => {
 
           {/* Row 3 */}
           <div className="space-y-3 p-6 rounded-lg border border-border bg-card">
-            <Sparkles className="w-8 h-8 text-primary" />
+            <Sparkles className="w-5 h-5 text-primary" />
             <h4 className="font-semibold text-foreground">AI-assisted layouts & refactors</h4>
             <p className="text-sm text-muted-foreground">
               Let users ask "Make this a three-column pricing section" or "Tighten the spacing for mobile" and have AI update the layout through your own models.
@@ -439,7 +443,7 @@ const Index = () => {
           </div>
 
           <div className="space-y-3 p-6 rounded-lg border border-border bg-card">
-            <Code className="w-8 h-8 text-primary" />
+            <Code className="w-5 h-5 text-primary" />
             <h4 className="font-semibold text-foreground">Code-first escape hatch</h4>
             <p className="text-sm text-muted-foreground">
               Designers get drag-and-drop; engineers keep code. Every change can be inspected as code, committed to git, and reviewed like any other PR.
@@ -447,7 +451,7 @@ const Index = () => {
           </div>
 
           <div className="space-y-3 p-6 rounded-lg border border-border bg-card">
-            <Share2 className="w-8 h-8 text-primary" />
+            <Share2 className="w-5 h-5 text-primary" />
             <h4 className="font-semibold text-foreground">Plays nice with Lovable, v0, Cursor & friends</h4>
             <p className="text-sm text-muted-foreground">
               Use Webtir as the builder layer across AI dev tools—generate components in Lovable, refine flows in v0, or hand off to Cursor without locking into any single platform.
