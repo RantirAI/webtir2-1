@@ -62,9 +62,9 @@ export const ComponentsPanel: React.FC = () => {
       const buttonBoxId = generateId();
       const buttonId = generateId();
       
-      const { createStyleSource, setStyle } = useStyleStore.getState();
+      const { createStyleSource, setStyle, getNextAutoClassName } = useStyleStore.getState();
       
-      const navStyleId = createStyleSource('local', `nav-${navId}`);
+      const navStyleId = createStyleSource('local', getNextAutoClassName('navigation'));
       setStyle(navStyleId, 'display', 'flex');
       setStyle(navStyleId, 'flexDirection', 'row');
       setStyle(navStyleId, 'alignItems', 'center');
@@ -74,12 +74,12 @@ export const ComponentsPanel: React.FC = () => {
       setStyle(navStyleId, 'borderBottom', '1px solid hsl(var(--border))');
       setStyle(navStyleId, 'width', '100%');
       
-      const logoBoxStyleId = createStyleSource('local', `logo-box-${logoBoxId}`);
+      const logoBoxStyleId = createStyleSource('local', getNextAutoClassName('logo-container'));
       setStyle(logoBoxStyleId, 'display', 'flex');
       setStyle(logoBoxStyleId, 'alignItems', 'center');
       setStyle(logoBoxStyleId, 'gap', '8px');
       
-      const linksBoxStyleId = createStyleSource('local', `links-box-${linksBoxId}`);
+      const linksBoxStyleId = createStyleSource('local', getNextAutoClassName('nav-links'));
       setStyle(linksBoxStyleId, 'display', 'flex');
       setStyle(linksBoxStyleId, 'gap', '24px');
       setStyle(linksBoxStyleId, 'alignItems', 'center');
@@ -94,14 +94,14 @@ export const ComponentsPanel: React.FC = () => {
           {
             id: logoBoxId,
             type: 'Div' as ComponentType,
-            label: 'Logo Container',
+            label: 'Div',
             props: {},
             styleSourceIds: [logoBoxStyleId],
             children: [
               {
                 id: logoId,
                 type: 'Image' as ComponentType,
-                label: 'Logo',
+                label: 'Image',
                 props: { src: '/placeholder.svg', alt: 'Logo' },
                 styleSourceIds: [],
                 children: [],
@@ -111,14 +111,14 @@ export const ComponentsPanel: React.FC = () => {
           {
             id: linksBoxId,
             type: 'Div' as ComponentType,
-            label: 'Navigation Links',
+            label: 'Div',
             props: {},
             styleSourceIds: [linksBoxStyleId],
             children: [
               {
                 id: link1Id,
                 type: 'Link' as ComponentType,
-                label: 'Home Link',
+                label: 'Link',
                 props: { href: '#', children: 'Home' },
                 styleSourceIds: [],
                 children: [],
@@ -126,7 +126,7 @@ export const ComponentsPanel: React.FC = () => {
               {
                 id: link2Id,
                 type: 'Link' as ComponentType,
-                label: 'About Link',
+                label: 'Link',
                 props: { href: '#', children: 'About' },
                 styleSourceIds: [],
                 children: [],
@@ -134,7 +134,7 @@ export const ComponentsPanel: React.FC = () => {
               {
                 id: link3Id,
                 type: 'Link' as ComponentType,
-                label: 'Contact Link',
+                label: 'Link',
                 props: { href: '#', children: 'Contact' },
                 styleSourceIds: [],
                 children: [],
@@ -144,14 +144,14 @@ export const ComponentsPanel: React.FC = () => {
           {
             id: buttonBoxId,
             type: 'Div' as ComponentType,
-            label: 'Button Container',
+            label: 'Div',
             props: {},
             styleSourceIds: [],
             children: [
               {
                 id: buttonId,
                 type: 'Button' as ComponentType,
-                label: 'CTA Button',
+                label: 'Button',
                 props: { children: 'Get Started' },
                 styleSourceIds: [],
                 children: [],
@@ -174,15 +174,15 @@ export const ComponentsPanel: React.FC = () => {
       const item2Id = generateId();
       const item3Id = generateId();
       
-      const { createStyleSource, setStyle } = useStyleStore.getState();
+      const { createStyleSource, setStyle, getNextAutoClassName } = useStyleStore.getState();
       
-      const dropdownStyleId = createStyleSource('local', `dropdown-${dropdownId}`);
+      const dropdownStyleId = createStyleSource('local', getNextAutoClassName('dropdown'));
       setStyle(dropdownStyleId, 'display', 'flex');
       setStyle(dropdownStyleId, 'flexDirection', 'column');
       setStyle(dropdownStyleId, 'position', 'relative');
       setStyle(dropdownStyleId, 'width', 'fit-content');
       
-      const menuStyleId = createStyleSource('local', `menu-${menuId}`);
+      const menuStyleId = createStyleSource('local', getNextAutoClassName('dropdown-menu'));
       setStyle(menuStyleId, 'display', 'flex');
       setStyle(menuStyleId, 'flexDirection', 'column');
       setStyle(menuStyleId, 'position', 'absolute');
@@ -268,9 +268,9 @@ export const ComponentsPanel: React.FC = () => {
       const messageTextareaId = generateId();
       const buttonId = generateId();
       
-      const { createStyleSource, setStyle } = useStyleStore.getState();
+      const { createStyleSource, setStyle, getNextAutoClassName } = useStyleStore.getState();
       
-      const formStyleId = createStyleSource('local', `form-${formId}`);
+      const formStyleId = createStyleSource('local', getNextAutoClassName('form'));
       setStyle(formStyleId, 'display', 'flex');
       setStyle(formStyleId, 'flexDirection', 'column');
       setStyle(formStyleId, 'gap', '20px');
@@ -280,7 +280,7 @@ export const ComponentsPanel: React.FC = () => {
       setStyle(formStyleId, 'borderRadius', '8px');
       setStyle(formStyleId, 'maxWidth', '500px');
       
-      const fieldBoxStyleId = createStyleSource('local', `field-box-${nameBoxId}`);
+      const fieldBoxStyleId = createStyleSource('local', getNextAutoClassName('form-field'));
       setStyle(fieldBoxStyleId, 'display', 'flex');
       setStyle(fieldBoxStyleId, 'flexDirection', 'column');
       setStyle(fieldBoxStyleId, 'gap', '8px');
