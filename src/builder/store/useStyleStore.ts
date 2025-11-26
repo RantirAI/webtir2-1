@@ -112,11 +112,21 @@ export const useStyleStore = create<StyleStore>((set, get) => ({
   },
 
   createStyleSource: (type, name) => {
-    const id = `${type}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const className = name || `${type}-class`;
+    // Use the class name as the ID for easier debugging and consistency
+    // If the name already exists, add a unique suffix
+    let id = className;
+    let counter = 1;
+    const state = get();
+    while (state.styleSources[id]) {
+      id = `${className}-${counter}`;
+      counter++;
+    }
+    
     const styleSource: StyleSource = {
       id,
       type,
-      name: name || `${type}-class`,
+      name: className,
     };
     
     set((state) => ({
