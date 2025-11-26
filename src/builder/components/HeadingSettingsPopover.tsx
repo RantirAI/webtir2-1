@@ -81,7 +81,7 @@ export const HeadingSettingsPopover: React.FC<HeadingSettingsPopoverProps> = ({
   if (!isOpen) return null;
 
   const tags = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'];
-  const tagNumbers = ['1', '2', '3', '4', '5', '6'];
+  const tagLabels = ['H1', 'H2', 'H3', 'H4', 'H5', 'H6'];
 
   return (
     <div
@@ -112,9 +112,9 @@ export const HeadingSettingsPopover: React.FC<HeadingSettingsPopoverProps> = ({
         <div className="space-y-0.5">
           <label className="text-[9px] text-muted-foreground uppercase tracking-wide">Tag</label>
           <div className="grid grid-cols-6 gap-1">
-            {tagNumbers.map((num, index) => (
+            {tagLabels.map((label, index) => (
               <button
-                key={num}
+                key={label}
                 onClick={() => onTagChange(tags[index])}
                 className={`h-5 flex items-center justify-center rounded text-[10px] font-medium transition-colors ${
                   currentTag === tags[index]
@@ -122,7 +122,7 @@ export const HeadingSettingsPopover: React.FC<HeadingSettingsPopoverProps> = ({
                     : 'bg-muted text-muted-foreground hover:bg-muted/80'
                 }`}
               >
-                {num}
+                {label}
               </button>
             ))}
           </div>
