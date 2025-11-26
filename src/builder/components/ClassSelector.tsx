@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X, Lock, AlertCircle, Settings, ArrowDown } from 'lucide-react';
+import { X, Lock, AlertCircle, Settings } from 'lucide-react';
 import { useStyleStore } from '../store/useStyleStore';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
@@ -375,18 +375,15 @@ export const ClassSelector: React.FC<ClassSelectorProps> = ({
                 );
               })}
 
-              <div className="flex items-center gap-1 flex-1 min-w-[120px]">
-                <ArrowDown className="w-3 h-3 text-muted-foreground flex-shrink-0" />
-                <input
-                  ref={inputRef}
-                  type="text"
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  placeholder={selectedClasses.length === 0 ? "+ Add Class 1" : `+ Add Class ${selectedClasses.length + 1}`}
-                  className="flex-1 outline-none bg-transparent text-foreground text-xs font-mono placeholder:text-muted-foreground"
-                />
-              </div>
+              <input
+                ref={inputRef}
+                type="text"
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder={selectedClasses.length === 0 ? "+ Add Class 1" : `+ Add Class ${selectedClasses.length + 1}`}
+                className="flex-1 min-w-[120px] outline-none bg-transparent text-foreground text-xs font-mono placeholder:text-muted-foreground px-1"
+              />
             </div>
           </PopoverTrigger>
           
