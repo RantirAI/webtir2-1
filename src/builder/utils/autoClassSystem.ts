@@ -41,6 +41,10 @@ export function normalizeComponentBase(componentType: string): string {
     heading: 'heading',
     text: 'text',
     richtext: 'richtext',
+    blockquote: 'blockquote',
+    orderedlist: 'list',
+    unorderedlist: 'list',
+    codeblock: 'code',
     
     // Interactive
     button: 'button',
@@ -84,9 +88,10 @@ export function normalizeComponentBase(componentType: string): string {
     cellprimitive: 'cell',
     keyvalue: 'keyvalue',
     
-    // Navigation
+    // Navigation & Interactive
     navigation: 'nav',
     navigationprimitive: 'nav',
+    dropdown: 'dropdown',
   };
   
   return typeMap[normalized] || normalized;
