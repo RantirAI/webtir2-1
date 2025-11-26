@@ -24,7 +24,9 @@ export const usePageStore = create<PageStore>((set, get) => ({
   currentPageId: '',
   
   addPage: (name, rootInstance) => {
-    const id = `page-${Date.now()}`;
+    const state = get();
+    const existingPageCount = Object.keys(state.pages).length;
+    const id = `page-${existingPageCount + 1}`;
     set((state) => ({
       pages: {
         ...state.pages,
