@@ -665,7 +665,8 @@ const Builder: React.FC = () => {
         <div className={`flex-1 relative ${isPreviewMode ? 'overflow-auto' : 'overflow-hidden'}`}>
         {/* Canvas Background */}
         <Canvas 
-          zoom={zoom} 
+          zoom={zoom}
+          onZoomChange={setZoom}
           currentBreakpoint={currentBreakpoint} 
           pages={pages} 
           currentPage={currentPage}

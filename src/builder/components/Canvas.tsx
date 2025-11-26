@@ -42,6 +42,7 @@ import { DraggableInstance } from './DraggableInstance';
 
 interface CanvasProps {
   zoom: number;
+  onZoomChange?: (zoom: number) => void;
   currentBreakpoint: string;
   pages: string[];
   currentPage: string;
@@ -52,7 +53,7 @@ interface CanvasProps {
   onCanvasRef?: (element: HTMLElement | null) => void;
 }
 
-export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, currentPage, pageNames, onPageNameChange, isPanMode, isPreviewMode, onCanvasRef }) => {
+export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreakpoint, pages, currentPage, pageNames, onPageNameChange, isPanMode, isPreviewMode, onCanvasRef }) => {
   const rootInstance = useBuilderStore((state) => state.rootInstance);
   const selectedInstanceId = useBuilderStore((state) => state.selectedInstanceId);
   const hoveredInstanceId = useBuilderStore((state) => state.hoveredInstanceId);
@@ -73,6 +74,8 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
   const [customWidth, setCustomWidth] = useState<number | null>(null);
   const [isResizing, setIsResizing] = useState<'left' | 'right' | null>(null);
   const [resizeStart, setResizeStart] = useState({ x: 0, width: 0 });
+  const [touchStart, setTouchStart] = useState<{ x: number; y: number; distance: number } | null>(null);
+  const [initialZoom, setInitialZoom] = useState<number>(100);
 
   const { setNodeRef } = useDroppable({
     id: 'canvas-drop-zone',
@@ -154,6 +157,62 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
     const delta = isResizing === 'right' ? (e.clientX - resizeStart.x) : (resizeStart.x - e.clientX);
     const newWidth = Math.max(320, Math.min(1920, resizeStart.width + delta * 2));
     setCustomWidth(newWidth);
+  };
+
+  // Touch event handlers
+  const getTouchDistance = (touches: React.TouchList) => {
+    if (touches.length < 2) return 0;
+    const dx = touches[0].clientX - touches[1].clientX;
+    const dy = touches[0].clientY - touches[1].clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 2) {
+      // Pinch zoom
+      const distance = getTouchDistance(e.touches);
+      setTouchStart({
+        x: (e.touches[0].clientX + e.touches[1].clientX) / 2,
+        y: (e.touches[0].clientY + e.touches[1].clientY) / 2,
+        distance,
+      });
+      setInitialZoom(zoom);
+    } else if (e.touches.length === 1 && (isPanMode || e.touches[0].target === canvasRef.current)) {
+      // Single touch pan
+      setIsPanning(true);
+      setPanStart({
+        x: e.touches[0].clientX,
+        y: e.touches[0].clientY,
+      });
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (e.touches.length === 2 && touchStart) {
+      // Pinch zoom
+      e.preventDefault();
+      const distance = getTouchDistance(e.touches);
+      const scale = distance / touchStart.distance;
+      const newZoom = Math.max(10, Math.min(200, initialZoom * scale));
+      if (onZoomChange) {
+        onZoomChange(newZoom);
+      }
+    } else if (e.touches.length === 1 && isPanning && canvasRef.current) {
+      // Single touch pan
+      e.preventDefault();
+      const deltaX = e.touches[0].clientX - panStart.x;
+      const deltaY = e.touches[0].clientY - panStart.y;
+      
+      canvasRef.current.scrollLeft -= deltaX;
+      canvasRef.current.scrollTop -= deltaY;
+      
+      setPanStart({ x: e.touches[0].clientX, y: e.touches[0].clientY });
+    }
+  };
+
+  const handleTouchEnd = () => {
+    setIsPanning(false);
+    setTouchStart(null);
   };
 
   const handleContextMenu = (e: React.MouseEvent, instance: ComponentInstance) => {
@@ -533,14 +592,18 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
       }}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
     >
       <div 
-        className="transition-transform origin-top-left flex items-start gap-8"
+        className="transition-transform origin-top-left flex items-start justify-center gap-8"
         style={{
           transform: isPreviewMode ? 'none' : `scale(${zoom / 100}) translate(${panOffset.x / (zoom / 100)}px, ${panOffset.y / (zoom / 100)}px)`,
           padding: isPreviewMode ? '0' : '4rem',
           minHeight: isPreviewMode ? 'auto' : '100vh',
           width: isPreviewMode ? '100%' : 'max-content',
+          minWidth: isPreviewMode ? '100%' : 'calc(100% + 8rem)',
         }}
       >
         {pages.map((page, index) => {
