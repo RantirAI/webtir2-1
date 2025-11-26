@@ -120,13 +120,21 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
     };
   }, [isPanMode]);
 
-  // Scroll to show top margin on mount
+  // Scroll to show top margin on mount and when pages change
   useEffect(() => {
-    if (canvasRef.current && !isPreviewMode) {
-      // Scroll down by 120px to show the top margin
-      canvasRef.current.scrollTop = 120;
-    }
-  }, [isPreviewMode]);
+    const scrollTimer = setTimeout(() => {
+      if (canvasRef.current && !isPreviewMode) {
+        // Scroll to show pages below toolbar - 200px offset
+        canvasRef.current.scrollTo({
+          top: 200,
+          left: 0,
+          behavior: 'instant'
+        });
+      }
+    }, 100);
+    
+    return () => clearTimeout(scrollTimer);
+  }, [isPreviewMode, currentPage]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if (isPanMode) {

@@ -13,10 +13,9 @@ interface FileTreeProps {
   onFileSelect: (path: string) => void;
   selectedFile: string;
   pages: string[];
-  hasMedia: boolean;
 }
 
-export const FileTree: React.FC<FileTreeProps> = ({ onFileSelect, selectedFile, pages, hasMedia }) => {
+export const FileTree: React.FC<FileTreeProps> = ({ onFileSelect, selectedFile, pages }) => {
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set(['/', '/pages', '/components', '/media']));
 
   const fileStructure: FileNode[] = useMemo(() => {
@@ -44,22 +43,24 @@ export const FileTree: React.FC<FileTreeProps> = ({ onFileSelect, selectedFile, 
       children: [],
     });
     
-    // Media folder (only if there are media assets)
-    if (hasMedia) {
-      structure.push({
-        name: 'media',
-        type: 'folder',
-        path: '/media',
-        children: [],
-      });
-    }
+    // Media folder with placeholder files
+    structure.push({
+      name: 'media',
+      type: 'folder',
+      path: '/media',
+      children: [
+        { name: 'images', type: 'folder' as const, path: '/media/images', children: [] },
+        { name: 'videos', type: 'folder' as const, path: '/media/videos', children: [] },
+        { name: 'lottie', type: 'folder' as const, path: '/media/lottie', children: [] },
+      ],
+    });
     
     // Global files
     structure.push({ name: 'styles.css', type: 'file', path: '/styles.css' });
     structure.push({ name: 'script.js', type: 'file', path: '/script.js' });
     
     return structure;
-  }, [pages, hasMedia]);
+  }, [pages]);
 
   const toggleFolder = (path: string) => {
     const newExpanded = new Set(expandedFolders);
