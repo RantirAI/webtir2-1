@@ -610,14 +610,18 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
         className="transition-transform origin-center inline-flex items-start justify-center gap-8"
         style={{
           transform: isPreviewMode ? 'none' : `scale(${zoom / 100})`,
-          padding: isPreviewMode ? '0' : '20rem 20rem',
-          minHeight: isPreviewMode ? 'auto' : 'calc(100vh + 40rem)',
+          padding: isPreviewMode ? '0' : '7.5rem 20rem 20rem 20rem', // 120px top, 320px sides/bottom
+          minHeight: isPreviewMode ? 'auto' : 'calc(100vh + 27.5rem)',
           minWidth: isPreviewMode ? 'auto' : 'calc(100% + 40rem)',
         }}
       >
         {safePages.map((pageId, index) => {
           const pageData = allPages?.find(p => p.id === pageId);
           const pageRootInstance = pageData?.rootInstance;
+          
+          // Debug logging
+          console.log('Rendering page:', pageId, 'pageData:', pageData, 'rootInstance:', pageRootInstance);
+          
           const pageStyles = rootStyles as React.CSSProperties;
           // All pages stay at 1440px - only current page respects breakpoint
           const isCurrentPage = pageId === currentPage;
