@@ -514,23 +514,25 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
                     </Tooltip>
                   </TooltipProvider>
                 </div>
-                {classes.length > 0 && (
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-5 w-5 p-0 text-foreground hover:text-primary"
-                          onClick={handleResetStyles}
-                        >
-                          <RotateCcw className="w-3 h-3" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>Reset styles to default</TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                )}
+                <div className="flex items-center gap-1">
+                  {classes.length > 0 && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-5 w-5 p-0 text-foreground hover:text-primary"
+                            onClick={handleResetStyles}
+                          >
+                            <RotateCcw className="w-3 h-3" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Reset styles to default</TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
+                </div>
               </div>
 
               {/* Integrated State dropdown + Class selector */}
@@ -544,6 +546,8 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
                       onRemoveClass={handleRemoveClass}
                       onClassClick={handleClassClick}
                       activeClassIndex={activeClassIndex}
+                      componentType={selectedInstance.type}
+                      showAutoClassPreview={false}
                     />
                   </div>
                   
