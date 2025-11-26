@@ -274,6 +274,23 @@ const Index = () => {
             zIndex: 0
           }}
         ></div>
+
+        {/* Radial gradient overlay - light mode */}
+        <div 
+          className="absolute inset-0 pointer-events-none dark:hidden" 
+          style={{
+            background: 'radial-gradient(circle at center, transparent 0%, transparent 30%, rgba(255, 255, 255, 0.7) 70%, rgba(255, 255, 255, 0.95) 100%)',
+            zIndex: 0
+          }}
+        ></div>
+        {/* Radial gradient overlay - dark mode */}
+        <div 
+          className="absolute inset-0 pointer-events-none hidden dark:block" 
+          style={{
+            background: 'radial-gradient(circle at center, transparent 0%, transparent 30%, rgba(0, 0, 0, 0.7) 70%, rgba(0, 0, 0, 0.95) 100%)',
+            zIndex: 0
+          }}
+        ></div>
         
         {/* Animated cursors */}
         <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 1 }}>
