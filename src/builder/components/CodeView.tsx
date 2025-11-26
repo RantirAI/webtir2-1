@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useBuilderStore } from '../store/useBuilderStore';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 import { exportHTML, exportCSS, exportJS, exportAstro } from '../utils/codeExport';
 import { parseHTMLToInstance } from '../utils/codeImport';
 import { useMediaStore } from '../store/useMediaStore';
@@ -210,91 +211,99 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
       </div>
 
       {/* Main Content */}
-      <div className="flex h-[calc(100vh-4rem)]">
+      <ResizablePanelGroup direction="horizontal" className="h-[calc(100vh-4rem)]">
         {/* File Tree Sidebar */}
-        <div className="w-60 border-r border-border bg-muted/20">
-          <div className="h-10 border-b border-border flex items-center px-3">
-            <h3 className="text-xs font-semibold text-muted-foreground uppercase">Files</h3>
+        <ResizablePanel defaultSize={12} minSize={8} maxSize={25}>
+          <div className="h-full border-r border-border bg-muted/20">
+            <div className="h-10 border-b border-border flex items-center px-3">
+              <h3 className="text-xs font-semibold text-muted-foreground uppercase">Files</h3>
+            </div>
+            <FileTree 
+              onFileSelect={setSelectedFile}
+              selectedFile={selectedFile}
+              pages={pages}
+              hasMedia={hasMedia}
+            />
           </div>
-          <FileTree 
-            onFileSelect={setSelectedFile}
-            selectedFile={selectedFile}
-            pages={pages}
-            hasMedia={hasMedia}
-          />
-        </div>
+        </ResizablePanel>
+
+        <ResizableHandle withHandle />
 
         {/* Code Editor - Center */}
-        <div className="flex-1 border-r border-border overflow-hidden">
-          <div className="h-10 border-b border-border flex items-center px-3 bg-muted/20">
-            <span className="text-xs font-mono text-muted-foreground">{selectedFile}</span>
+        <ResizablePanel defaultSize={44} minSize={30}>
+          <div className="h-full border-r border-border overflow-hidden">
+            <div className="h-10 border-b border-border flex items-center px-3 bg-muted/20">
+              <span className="text-xs font-mono text-muted-foreground">{selectedFile}</span>
+            </div>
+            <CodeEditor 
+              code={getCode(activeTab)} 
+              language={activeTab === 'astro' || activeTab === 'html' ? 'html' : activeTab === 'react' ? 'jsx' : activeTab}
+              onChange={(newCode) => {
+                setIsCodeEdited(true);
+                switch (activeTab) {
+                  case 'html': setHtmlCode(newCode); break;
+                  case 'css': setCssCode(newCode); break;
+                  case 'react': setJsCode(newCode); break;
+                  case 'astro': setAstroCode(newCode); break;
+                }
+              }}
+            />
           </div>
-          <CodeEditor 
-            code={getCode(activeTab)} 
-            language={activeTab === 'astro' || activeTab === 'html' ? 'html' : activeTab === 'react' ? 'jsx' : activeTab}
-            onChange={(newCode) => {
-              setIsCodeEdited(true);
-              switch (activeTab) {
-                case 'html': setHtmlCode(newCode); break;
-                case 'css': setCssCode(newCode); break;
-                case 'react': setJsCode(newCode); break;
-                case 'astro': setAstroCode(newCode); break;
-              }
-            }}
-          />
-        </div>
+        </ResizablePanel>
+
+        <ResizableHandle withHandle />
 
         {/* Preview - Right Side */}
-        <div className="w-1/2 bg-muted/30 flex flex-col">
-          {/* Preview Controls */}
-          <div className="h-14 border-b border-border flex items-center justify-between px-4 bg-background/50">
-            <h3 className="text-sm font-medium text-muted-foreground">Preview</h3>
-            <div className="flex gap-1">
-              <Button
-                variant={previewSize === 'desktop' ? 'secondary' : 'ghost'}
-                size="sm"
-                onClick={() => setPreviewSize('desktop')}
-                className="h-8 w-8 p-0"
-              >
-                <Monitor className="h-4 w-4" />
-              </Button>
-              <Button
-                variant={previewSize === 'tablet' ? 'secondary' : 'ghost'}
-                size="sm"
-                onClick={() => setPreviewSize('tablet')}
-                className="h-8 w-8 p-0"
-              >
-                <Tablet className="h-4 w-4" />
-              </Button>
-              <Button
-                variant={previewSize === 'mobile' ? 'secondary' : 'ghost'}
-                size="sm"
-                onClick={() => setPreviewSize('mobile')}
-                className="h-8 w-8 p-0"
-              >
-                <Smartphone className="h-4 w-4" />
-              </Button>
+        <ResizablePanel defaultSize={44} minSize={30}>
+          <div className="h-full bg-muted/30 flex flex-col">
+            {/* Preview Controls */}
+            <div className="h-14 border-b border-border flex items-center justify-between px-4 bg-background/50">
+              <h3 className="text-sm font-medium text-muted-foreground">Preview</h3>
+              <div className="flex gap-1">
+                <Button
+                  variant={previewSize === 'desktop' ? 'secondary' : 'ghost'}
+                  size="sm"
+                  onClick={() => setPreviewSize('desktop')}
+                  className="h-8 w-8 p-0"
+                >
+                  <Monitor className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant={previewSize === 'tablet' ? 'secondary' : 'ghost'}
+                  size="sm"
+                  onClick={() => setPreviewSize('tablet')}
+                  className="h-8 w-8 p-0"
+                >
+                  <Tablet className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant={previewSize === 'mobile' ? 'secondary' : 'ghost'}
+                  size="sm"
+                  onClick={() => setPreviewSize('mobile')}
+                  className="h-8 w-8 p-0"
+                >
+                  <Smartphone className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
-          </div>
 
-          {/* Preview Frame */}
-          <div className="flex-1 overflow-hidden flex justify-center items-start p-4">
-            <div 
-              className="bg-white dark:bg-zinc-900 border border-border rounded-lg shadow-xl transition-all duration-300 overflow-hidden"
-              style={{ 
-                width: getPreviewWidth(),
-                height: '100%',
-                transform: 'scale(0.8)',
-                transformOrigin: 'top center'
-              }}
-            >
-              <div className="w-full h-full overflow-auto">
-                <PreviewFrame htmlCode={htmlCode} cssCode={cssCode} jsCode={jsCode} />
+            {/* Preview Frame */}
+            <div className="flex-1 overflow-hidden flex justify-center items-start p-4">
+              <div 
+                className="bg-white dark:bg-zinc-900 border border-border rounded-lg shadow-xl transition-all duration-300 overflow-hidden"
+                style={{ 
+                  width: getPreviewWidth(),
+                  height: '100%',
+                }}
+              >
+                <div className="w-full h-full overflow-auto">
+                  <PreviewFrame htmlCode={htmlCode} cssCode={cssCode} jsCode={jsCode} />
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </div>
+        </ResizablePanel>
+      </ResizablePanelGroup>
 
       <ImportModal
         open={showImportModal}

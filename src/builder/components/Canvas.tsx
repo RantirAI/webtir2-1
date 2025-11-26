@@ -120,6 +120,14 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
     };
   }, [isPanMode]);
 
+  // Scroll to show top margin on mount
+  useEffect(() => {
+    if (canvasRef.current && !isPreviewMode) {
+      // Scroll down by 120px to show the top margin
+      canvasRef.current.scrollTop = 120;
+    }
+  }, [isPreviewMode]);
+
   const handleMouseDown = (e: React.MouseEvent) => {
     if (isPanMode) {
       e.preventDefault();
