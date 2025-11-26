@@ -130,6 +130,13 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
   
   setHoveredInstanceId: (id) => set({ hoveredInstanceId: id }),
   
+  setRootInstance: (instance) => {
+    set({ 
+      rootInstance: instance,
+      selectedInstanceId: null,
+    });
+  },
+  
   moveInstance: (instanceId, newParentId, index) => {
     set((state) => {
       const newRoot = JSON.parse(JSON.stringify(state.rootInstance)) as ComponentInstance;
