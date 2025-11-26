@@ -84,6 +84,13 @@ export const ComponentsPanel: React.FC = () => {
       setStyle(linksBoxStyleId, 'gap', '24px');
       setStyle(linksBoxStyleId, 'alignItems', 'center');
       
+      // Auto-classes for child components
+      const logoImageStyleId = createStyleSource('local', getNextAutoClassName('image'));
+      const link1StyleId = createStyleSource('local', getNextAutoClassName('link'));
+      const link2StyleId = createStyleSource('local', getNextAutoClassName('link'));
+      const link3StyleId = createStyleSource('local', getNextAutoClassName('link'));
+      const buttonStyleId = createStyleSource('local', getNextAutoClassName('button'));
+      
       const container: ComponentInstance = {
         id: navId,
         type: 'Div' as ComponentType,
@@ -103,7 +110,7 @@ export const ComponentsPanel: React.FC = () => {
                 type: 'Image' as ComponentType,
                 label: 'Image',
                 props: { src: '/placeholder.svg', alt: 'Logo' },
-                styleSourceIds: [],
+                styleSourceIds: [logoImageStyleId],
                 children: [],
               },
             ],
@@ -120,7 +127,7 @@ export const ComponentsPanel: React.FC = () => {
                 type: 'Link' as ComponentType,
                 label: 'Link',
                 props: { href: '#', children: 'Home' },
-                styleSourceIds: [],
+                styleSourceIds: [link1StyleId],
                 children: [],
               },
               {
@@ -128,7 +135,7 @@ export const ComponentsPanel: React.FC = () => {
                 type: 'Link' as ComponentType,
                 label: 'Link',
                 props: { href: '#', children: 'About' },
-                styleSourceIds: [],
+                styleSourceIds: [link2StyleId],
                 children: [],
               },
               {
@@ -136,7 +143,7 @@ export const ComponentsPanel: React.FC = () => {
                 type: 'Link' as ComponentType,
                 label: 'Link',
                 props: { href: '#', children: 'Contact' },
-                styleSourceIds: [],
+                styleSourceIds: [link3StyleId],
                 children: [],
               },
             ],
@@ -153,7 +160,7 @@ export const ComponentsPanel: React.FC = () => {
                 type: 'Button' as ComponentType,
                 label: 'Button',
                 props: { children: 'Get Started' },
-                styleSourceIds: [],
+                styleSourceIds: [buttonStyleId],
                 children: [],
               },
             ],
@@ -176,7 +183,7 @@ export const ComponentsPanel: React.FC = () => {
       
       const { createStyleSource, setStyle, getNextAutoClassName } = useStyleStore.getState();
       
-      const dropdownStyleId = createStyleSource('local', getNextAutoClassName('div'));
+      const dropdownStyleId = createStyleSource('local', getNextAutoClassName('dropdown'));
       setStyle(dropdownStyleId, 'display', 'flex');
       setStyle(dropdownStyleId, 'flexDirection', 'column');
       setStyle(dropdownStyleId, 'position', 'relative');
@@ -198,6 +205,12 @@ export const ComponentsPanel: React.FC = () => {
       setStyle(menuStyleId, 'zIndex', '50');
       setStyle(menuStyleId, 'gap', '4px');
       
+      // Auto-classes for child components
+      const triggerButtonStyleId = createStyleSource('local', getNextAutoClassName('button'));
+      const menuLink1StyleId = createStyleSource('local', getNextAutoClassName('link'));
+      const menuLink2StyleId = createStyleSource('local', getNextAutoClassName('link'));
+      const menuButtonStyleId = createStyleSource('local', getNextAutoClassName('button'));
+      
       const container: ComponentInstance = {
         id: dropdownId,
         type: 'Div' as ComponentType,
@@ -210,7 +223,7 @@ export const ComponentsPanel: React.FC = () => {
             type: 'Button' as ComponentType,
             label: 'Button',
             props: { children: 'Open Menu' },
-            styleSourceIds: [],
+            styleSourceIds: [triggerButtonStyleId],
             children: [],
           },
           {
@@ -225,7 +238,7 @@ export const ComponentsPanel: React.FC = () => {
                 type: 'Link' as ComponentType,
                 label: 'Link',
                 props: { href: '#', children: 'Link' },
-                styleSourceIds: [],
+                styleSourceIds: [menuLink1StyleId],
                 children: [],
               },
               {
@@ -233,7 +246,7 @@ export const ComponentsPanel: React.FC = () => {
                 type: 'Link' as ComponentType,
                 label: 'Link',
                 props: { href: '#', children: 'Link' },
-                styleSourceIds: [],
+                styleSourceIds: [menuLink2StyleId],
                 children: [],
               },
               {
@@ -241,7 +254,7 @@ export const ComponentsPanel: React.FC = () => {
                 type: 'Button' as ComponentType,
                 label: 'Button',
                 props: { children: 'Button' },
-                styleSourceIds: [],
+                styleSourceIds: [menuButtonStyleId],
                 children: [],
               },
             ],
@@ -270,7 +283,7 @@ export const ComponentsPanel: React.FC = () => {
       
       const { createStyleSource, setStyle, getNextAutoClassName } = useStyleStore.getState();
       
-      const formStyleId = createStyleSource('local', getNextAutoClassName('div'));
+      const formStyleId = createStyleSource('local', getNextAutoClassName('form'));
       setStyle(formStyleId, 'display', 'flex');
       setStyle(formStyleId, 'flexDirection', 'column');
       setStyle(formStyleId, 'gap', '20px');
@@ -285,6 +298,16 @@ export const ComponentsPanel: React.FC = () => {
       setStyle(fieldBoxStyleId, 'flexDirection', 'column');
       setStyle(fieldBoxStyleId, 'gap', '8px');
       
+      // Auto-classes for form components
+      const headingStyleId = createStyleSource('local', getNextAutoClassName('heading'));
+      const nameLabelStyleId = createStyleSource('local', getNextAutoClassName('label'));
+      const nameInputStyleId = createStyleSource('local', getNextAutoClassName('input'));
+      const emailLabelStyleId = createStyleSource('local', getNextAutoClassName('label'));
+      const emailInputStyleId = createStyleSource('local', getNextAutoClassName('input'));
+      const messageLabelStyleId = createStyleSource('local', getNextAutoClassName('label'));
+      const messageTextareaStyleId = createStyleSource('local', getNextAutoClassName('textarea'));
+      const submitButtonStyleId = createStyleSource('local', getNextAutoClassName('button'));
+      
       const container: ComponentInstance = {
         id: formId,
         type: 'Div' as ComponentType,
@@ -297,7 +320,7 @@ export const ComponentsPanel: React.FC = () => {
             type: 'Heading' as ComponentType,
             label: 'Heading',
             props: { level: 'h2', children: 'Heading' },
-            styleSourceIds: [],
+            styleSourceIds: [headingStyleId],
             children: [],
           },
           {
@@ -312,7 +335,7 @@ export const ComponentsPanel: React.FC = () => {
                 type: 'Text' as ComponentType,
                 label: 'Text',
                 props: { children: 'Label' },
-                styleSourceIds: [],
+                styleSourceIds: [nameLabelStyleId],
                 children: [],
               },
               {
@@ -320,7 +343,7 @@ export const ComponentsPanel: React.FC = () => {
                 type: 'TextInput' as ComponentType,
                 label: 'TextInput',
                 props: { placeholder: 'Input', type: 'text' },
-                styleSourceIds: [],
+                styleSourceIds: [nameInputStyleId],
                 children: [],
               },
             ],
@@ -337,7 +360,7 @@ export const ComponentsPanel: React.FC = () => {
                 type: 'Text' as ComponentType,
                 label: 'Text',
                 props: { children: 'Label' },
-                styleSourceIds: [],
+                styleSourceIds: [emailLabelStyleId],
                 children: [],
               },
               {
@@ -345,7 +368,7 @@ export const ComponentsPanel: React.FC = () => {
                 type: 'TextInput' as ComponentType,
                 label: 'TextInput',
                 props: { placeholder: 'Input', type: 'email' },
-                styleSourceIds: [],
+                styleSourceIds: [emailInputStyleId],
                 children: [],
               },
             ],
@@ -362,7 +385,7 @@ export const ComponentsPanel: React.FC = () => {
                 type: 'Text' as ComponentType,
                 label: 'Text',
                 props: { children: 'Label' },
-                styleSourceIds: [],
+                styleSourceIds: [messageLabelStyleId],
                 children: [],
               },
               {
@@ -370,7 +393,7 @@ export const ComponentsPanel: React.FC = () => {
                 type: 'TextArea' as ComponentType,
                 label: 'TextArea',
                 props: { placeholder: 'Input', rows: 4 },
-                styleSourceIds: [],
+                styleSourceIds: [messageTextareaStyleId],
                 children: [],
               },
             ],
@@ -380,7 +403,7 @@ export const ComponentsPanel: React.FC = () => {
             type: 'FormButton' as ComponentType,
             label: 'FormButton',
             props: { text: 'Button', type: 'submit' },
-            styleSourceIds: [],
+            styleSourceIds: [submitButtonStyleId],
             children: [],
           },
         ],
@@ -398,10 +421,14 @@ export const ComponentsPanel: React.FC = () => {
       
       const { createStyleSource, setStyle, getNextAutoClassName } = useStyleStore.getState();
       
-      const boxStyleId = createStyleSource('local', getNextAutoClassName('div'));
+      const boxStyleId = createStyleSource('local', getNextAutoClassName('radio'));
       setStyle(boxStyleId, 'display', 'flex');
       setStyle(boxStyleId, 'flexDirection', 'column');
       setStyle(boxStyleId, 'gap', '8px');
+      
+      // Auto-classes for child components
+      const labelStyleId = createStyleSource('local', getNextAutoClassName('text'));
+      const radioGroupStyleId = createStyleSource('local', getNextAutoClassName('radio'));
       
       const container: ComponentInstance = {
         id: boxId,
@@ -415,7 +442,7 @@ export const ComponentsPanel: React.FC = () => {
             type: 'Text' as ComponentType,
             label: 'Text',
             props: { children: 'Label' },
-            styleSourceIds: [],
+            styleSourceIds: [labelStyleId],
             children: [],
           },
           {
@@ -430,7 +457,7 @@ export const ComponentsPanel: React.FC = () => {
                 { id: '3', label: 'Option 3', value: 'option3' },
               ],
             },
-            styleSourceIds: [],
+            styleSourceIds: [radioGroupStyleId],
             children: [],
           },
         ],
@@ -461,7 +488,7 @@ export const ComponentsPanel: React.FC = () => {
       
       const { createStyleSource, setStyle, getNextAutoClassName } = useStyleStore.getState();
       
-      const tableStyleId = createStyleSource('local', getNextAutoClassName('div'));
+      const tableStyleId = createStyleSource('local', getNextAutoClassName('table'));
       setStyle(tableStyleId, 'width', '100%');
       setStyle(tableStyleId, 'display', 'flex');
       setStyle(tableStyleId, 'flexDirection', 'column');
@@ -488,12 +515,15 @@ export const ComponentsPanel: React.FC = () => {
       setStyle(cellStyleId, 'padding', '12px');
       setStyle(cellStyleId, 'borderRight', '1px solid hsl(var(--border))');
       
+      // Auto-class for container
+      const containerStyleId = createStyleSource('local', getNextAutoClassName('container'));
+      
       const container: ComponentInstance = {
         id: containerId,
         type: 'Container' as ComponentType,
         label: 'Table',
         props: {},
-        styleSourceIds: [],
+        styleSourceIds: [containerStyleId],
         children: [
           {
             id: tableId,
