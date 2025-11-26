@@ -3,9 +3,12 @@ import { useBuilderStore } from '../store/useBuilderStore';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { exportHTML, exportCSS, exportJS, exportAstro } from '../utils/codeExport';
-import { Copy, Check, Monitor, Tablet, Smartphone, Upload } from 'lucide-react';
+import { parseHTMLToInstance } from '../utils/codeImport';
+import { useMediaStore } from '../store/useMediaStore';
+import { Copy, Check, Monitor, Tablet, Smartphone, Upload, Image as ImageIcon, FileVideo, FileAudio, FileCode } from 'lucide-react';
 import { ImportModal } from './ImportModal';
 import { FileTree } from './FileTree';
+import { toast } from '@/hooks/use-toast';
 import Prism from 'prismjs';
 import 'prismjs/themes/prism-tomorrow.css';
 import 'prismjs/components/prism-markup';
@@ -14,15 +17,20 @@ import 'prismjs/components/prism-javascript';
 
 interface CodeViewProps {
   onClose: () => void;
+  pages: string[];
+  pageNames: Record<string, string>;
 }
 
-export const CodeView: React.FC<CodeViewProps> = ({ onClose }) => {
+export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames }) => {
   const rootInstance = useBuilderStore((state) => state.rootInstance);
+  const updateInstance = useBuilderStore((state) => state.updateInstance);
+  const { assets, getAllAssets, getAssetsByType } = useMediaStore();
   const [activeTab, setActiveTab] = useState('html');
   const [copiedTab, setCopiedTab] = useState<string | null>(null);
   const [previewSize, setPreviewSize] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
   const [showImportModal, setShowImportModal] = useState(false);
   const [selectedFile, setSelectedFile] = useState('/pages/index.html');
+  const [isCodeEdited, setIsCodeEdited] = useState(false);
   
   const [htmlCode, setHtmlCode] = useState('');
   const [cssCode, setCssCode] = useState('');
@@ -49,17 +57,75 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose }) => {
     // This would parse the content and update the builder store
   };
 
+  // Apply code changes to builder
+  const applyCodeChanges = () => {
+    try {
+      if (activeTab === 'html') {
+        const newInstance = parseHTMLToInstance(htmlCode);
+        if (newInstance && rootInstance) {
+          // Update the root instance while preserving the ID
+          updateInstance(rootInstance.id, {
+            children: newInstance.children,
+            styleSourceIds: newInstance.styleSourceIds,
+          });
+          
+          toast({
+            title: 'Code applied',
+            description: 'HTML changes have been applied to the canvas',
+          });
+        }
+      }
+      
+      setIsCodeEdited(false);
+    } catch (error) {
+      toast({
+        title: 'Error applying code',
+        description: 'Failed to parse HTML. Please check for syntax errors.',
+        variant: 'destructive',
+      });
+    }
+  };
+
   const getCode = (tab: string) => {
     switch (tab) {
       case 'html': return htmlCode;
       case 'css': return cssCode;
       case 'react': return jsCode;
       case 'astro': return astroCode;
-      case 'media': return '// Media assets will be listed here';
+      case 'media': return generateMediaList();
       case 'design': return '/* Design system tokens and variables */\n' + cssCode;
       case 'ai': return '// AI Chat interface coming soon';
       default: return '';
     }
+  };
+  
+  const generateMediaList = () => {
+    const allAssets = getAllAssets();
+    if (allAssets.length === 0) {
+      return '// No media assets added yet\n// Upload images, videos, or Lottie files to see them here';
+    }
+    
+    const assetsByType = {
+      image: getAssetsByType('image'),
+      video: getAssetsByType('video'),
+      lottie: getAssetsByType('lottie'),
+      audio: getAssetsByType('audio'),
+      other: getAssetsByType('other'),
+    };
+    
+    let output = '// Media Assets\n\n';
+    
+    Object.entries(assetsByType).forEach(([type, items]) => {
+      if (items.length > 0) {
+        output += `// ${type.toUpperCase()} (${items.length})\n`;
+        items.forEach(asset => {
+          output += `// ${asset.name} - ${asset.url}\n`;
+        });
+        output += '\n';
+      }
+    });
+    
+    return output;
   };
 
   const getPreviewWidth = () => {
@@ -76,7 +142,6 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose }) => {
       {/* Top Bar */}
       <div className="h-16 border-b border-border flex items-center justify-between px-6">
         <div className="flex items-center gap-4">
-          <h2 className="text-lg font-semibold">Code Export</h2>
           <Tabs value={activeTab} onValueChange={setActiveTab} className="h-10">
             <TabsList className="h-10 bg-muted/50">
               <TabsTrigger value="html" className="data-[state=active]:bg-background text-xs">
@@ -102,6 +167,16 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose }) => {
         </div>
         
         <div className="flex items-center gap-2">
+          {isCodeEdited && activeTab === 'html' && (
+            <Button
+              variant="default"
+              size="sm"
+              onClick={applyCodeChanges}
+              className="gap-2"
+            >
+              Apply Changes to Canvas
+            </Button>
+          )}
           <Button
             variant="outline"
             size="sm"
@@ -154,6 +229,7 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose }) => {
             code={getCode(activeTab)} 
             language={activeTab === 'astro' || activeTab === 'html' ? 'html' : activeTab === 'react' ? 'jsx' : activeTab}
             onChange={(newCode) => {
+              setIsCodeEdited(true);
               switch (activeTab) {
                 case 'html': setHtmlCode(newCode); break;
                 case 'css': setCssCode(newCode); break;

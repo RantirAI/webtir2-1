@@ -760,7 +760,11 @@ const Builder: React.FC = () => {
 
         {/* Code View Sidebar */}
         {!isPreviewMode && isCodeViewOpen && (
-          <CodeView onClose={() => setIsCodeViewOpen(false)} />
+            <CodeView 
+              onClose={() => setIsCodeViewOpen(false)}
+              pages={pages}
+              pageNames={pageNames}
+            />
         )}
       </div>
 
