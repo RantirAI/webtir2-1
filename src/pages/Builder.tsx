@@ -729,6 +729,8 @@ const Builder: React.FC = () => {
           isPanMode={isPanMode}
           isPreviewMode={isPreviewMode}
           onCanvasRef={setCanvasElement}
+          onPageChange={(pageId) => setCurrentPage(pageId)}
+          allPages={allPages}
         />
 
         {/* Drop Indicator Overlay */}

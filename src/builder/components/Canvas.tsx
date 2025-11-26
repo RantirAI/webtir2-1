@@ -51,9 +51,11 @@ interface CanvasProps {
   isPanMode: boolean;
   isPreviewMode: boolean;
   onCanvasRef?: (element: HTMLElement | null) => void;
+  onPageChange?: (pageId: string) => void;
+  allPages?: Array<{ id: string; name: string; rootInstance: any }>;
 }
 
-export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreakpoint, pages, currentPage, pageNames, onPageNameChange, isPanMode, isPreviewMode, onCanvasRef }) => {
+export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreakpoint, pages, currentPage, pageNames, onPageNameChange, isPanMode, isPreviewMode, onCanvasRef, onPageChange, allPages = [] }) => {
   const rootInstance = useBuilderStore((state) => state.rootInstance);
   const selectedInstanceId = useBuilderStore((state) => state.selectedInstanceId);
   const hoveredInstanceId = useBuilderStore((state) => state.hoveredInstanceId);
@@ -605,23 +607,25 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
         className="transition-transform origin-center inline-flex items-start justify-center gap-8"
         style={{
           transform: isPreviewMode ? 'none' : `scale(${zoom / 100})`,
-          padding: isPreviewMode ? '0' : '12rem 8rem',
+          padding: isPreviewMode ? '0' : '12rem 20rem',
           minHeight: isPreviewMode ? 'auto' : 'calc(100vh + 24rem)',
-          minWidth: isPreviewMode ? 'auto' : 'calc(100% + 16rem)',
+          minWidth: isPreviewMode ? 'auto' : 'calc(100% + 40rem)',
         }}
       >
-        {pages.map((page, index) => {
+        {pages.map((pageId, index) => {
+          const pageData = allPages?.find(p => p.id === pageId);
+          const pageRootInstance = pageData?.rootInstance;
           const pageStyles = rootStyles as React.CSSProperties;
-          // Current page uses breakpoint width, others stay at 1440px
-          const isCurrentPage = page === currentPage;
+          // All pages stay at 1440px - only current page respects breakpoint
+          const isCurrentPage = pageId === currentPage;
           const frameWidth = isPreviewMode 
             ? '100%' 
             : (isCurrentPage ? (typeof currentBreakpointWidth === 'number' ? currentBreakpointWidth : 1440) : 1440);
           
           return (
           <div 
-            key={page}
-            className={`builder-page ${!isPreviewMode ? 'scrollbar-thin' : ''}`}
+            key={pageId}
+            className={`builder-page ${!isPreviewMode ? 'scrollbar-thin' : ''} ${isCurrentPage ? 'ring-2 ring-blue-500' : ''}`}
             style={{ 
               ...pageStyles,
               width: isPreviewMode ? '100%' : `${frameWidth}px`,
@@ -632,6 +636,12 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
               position: 'relative',
               overflow: isPreviewMode ? 'visible' : 'auto',
               flexShrink: 0,
+              cursor: isCurrentPage ? 'default' : 'pointer',
+            }}
+            onClick={(e) => {
+              if (!isCurrentPage && e.target === e.currentTarget) {
+                onPageChange?.(pageId);
+              }
             }}
           >
             {/* Breakpoint Width Indicator */}
@@ -640,9 +650,9 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
                 className="absolute -top-10 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-blue-500 text-white px-3 py-1.5 rounded-md shadow-lg text-xs font-semibold z-10"
                 style={{ pointerEvents: 'none' }}
               >
-                <span>{pageNames[page] || page}</span>
+                <span>{pageNames[pageId] || pageId}</span>
                 <span className="opacity-70">•</span>
-                <span>{displayWidth}px</span>
+                <span>{isCurrentPage ? displayWidth : frameWidth}px</span>
               </div>
             )}
 
@@ -668,7 +678,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
               />
             )}
 
-            {index === 0 && rootInstance && renderInstance(rootInstance)}
+            {pageRootInstance && renderInstance(pageRootInstance)}
           </div>
           );
         })}
