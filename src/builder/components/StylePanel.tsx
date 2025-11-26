@@ -1170,7 +1170,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({
                           : 'bg-[#F5F5F5] dark:bg-[#09090b] border-input text-muted-foreground hover:bg-accent hover:text-foreground'
                       }`}
                     >
-                      {num}
+                      H{num}
                     </button>
                   );
                 })}
