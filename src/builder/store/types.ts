@@ -3,7 +3,7 @@ import type { AutoClassConfig } from '../utils/autoClassSystem';
 
 export type ComponentType =
   // Core/Layout
-  | 'Div' | 'Container' | 'Section' | 'Text' | 'Heading' | 'Image' | 'Button' | 'Link'
+  | 'Div' | 'Box' | 'Container' | 'Section' | 'Text' | 'Heading' | 'Image' | 'Button' | 'Link'
   // Rich Text
   | 'RichText' | 'Blockquote' | 'OrderedList' | 'UnorderedList' | 'CodeBlock'
   // Commonly Used
