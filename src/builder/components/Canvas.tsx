@@ -124,10 +124,10 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
   useEffect(() => {
     const scrollTimer = setTimeout(() => {
       if (canvasRef.current && !isPreviewMode) {
-        // Scroll to show pages below toolbar - 800px offset for new padding
+        // Scroll to center the canvas - frames are now centered with equal padding
         canvasRef.current.scrollTo({
           top: 800,
-          left: 700,
+          left: 800,
           behavior: 'instant'
         });
       }
@@ -627,9 +627,9 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
         className="transition-transform origin-center inline-flex items-start justify-center gap-8"
         style={{
           transform: isPreviewMode ? 'none' : `scale(${zoom / 100})`,
-          padding: isPreviewMode ? '0' : '62.5rem 57.5rem 57.5rem 57.5rem', // 1000px top, 920px sides/bottom
-          minHeight: isPreviewMode ? 'auto' : 'calc(100vh + 120rem)',
-          minWidth: isPreviewMode ? 'auto' : 'calc(100% + 115rem)',
+          padding: isPreviewMode ? '0' : '62.5rem', // Equal padding on all sides for centered frames
+          minHeight: isPreviewMode ? 'auto' : 'calc(100vh + 125rem)',
+          minWidth: isPreviewMode ? 'auto' : 'calc(100% + 125rem)',
         }}
       >
         {safePages.map((pageId, index) => {
