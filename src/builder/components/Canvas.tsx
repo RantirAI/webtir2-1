@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useBuilderStore } from '../store/useBuilderStore';
 import { useStyleStore } from '../store/useStyleStore';
 import { ComponentInstance } from '../store/types';
@@ -124,10 +124,10 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
   useEffect(() => {
     const scrollTimer = setTimeout(() => {
       if (canvasRef.current && !isPreviewMode) {
-        // Scroll to center the canvas - frames are now centered with equal padding
+        // Scroll to show pages below toolbar - 800px offset for new padding
         canvasRef.current.scrollTo({
           top: 800,
-          left: 800,
+          left: 700,
           behavior: 'instant'
         });
       }
@@ -598,16 +598,13 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
   // Get root instance styles for page body
   const rootStyles = rootInstance ? getComputedStyles(rootInstance.styleSourceIds || []) : {};
   
-  // Stabilize the ref callback to prevent infinite loops
-  const handleCanvasRef = useCallback((node: HTMLDivElement | null) => {
-    canvasRef.current = node;
-    setNodeRef(node);
-    onCanvasRef?.(node);
-  }, [setNodeRef, onCanvasRef]);
-  
   return (
     <div 
-      ref={handleCanvasRef}
+      ref={(node) => {
+        canvasRef.current = node;
+        setNodeRef(node);
+        onCanvasRef?.(node);
+      }}
       className={`absolute inset-0 ${isPreviewMode ? 'overflow-auto' : 'overflow-auto'} bg-[#e5e7eb] dark:bg-zinc-800 builder-canvas flex items-center justify-center`}
       style={{
         backgroundImage: isPreviewMode ? 'none' : `radial-gradient(circle, #9ca3af 1px, transparent 1px)`,
@@ -630,9 +627,9 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
         className="transition-transform origin-center inline-flex items-start justify-center gap-8"
         style={{
           transform: isPreviewMode ? 'none' : `scale(${zoom / 100})`,
-          padding: isPreviewMode ? '0' : '62.5rem', // Equal padding on all sides for centered frames
-          minHeight: isPreviewMode ? 'auto' : 'calc(100vh + 125rem)',
-          minWidth: isPreviewMode ? 'auto' : 'calc(100% + 125rem)',
+          padding: isPreviewMode ? '0' : '62.5rem 57.5rem 57.5rem 57.5rem', // 1000px top, 920px sides/bottom
+          minHeight: isPreviewMode ? 'auto' : 'calc(100vh + 120rem)',
+          minWidth: isPreviewMode ? 'auto' : 'calc(100% + 115rem)',
         }}
       >
         {safePages.map((pageId, index) => {

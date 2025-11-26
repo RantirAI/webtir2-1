@@ -1,5 +1,5 @@
-import React, { useState, useMemo, useCallback } from 'react';
-import { ChevronRight, ChevronDown, FileCode, FolderOpen, Folder, FileImage, FileVideo, Film, Palette } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { ChevronRight, ChevronDown, FileCode, FolderOpen, Folder, FileImage, Palette, MessageSquare } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface FileNode {
@@ -15,7 +15,7 @@ interface FileTreeProps {
   pages: string[];
 }
 
-const FileTree: React.FC<FileTreeProps> = ({ onFileSelect, selectedFile, pages }) => {
+export const FileTree: React.FC<FileTreeProps> = ({ onFileSelect, selectedFile, pages }) => {
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set(['/', '/pages', '/components', '/media']));
 
   const fileStructure: FileNode[] = useMemo(() => {
@@ -62,33 +62,15 @@ const FileTree: React.FC<FileTreeProps> = ({ onFileSelect, selectedFile, pages }
     return structure;
   }, [pages]);
 
-  const toggleFolder = useCallback((path: string) => {
-    setExpandedFolders(prev => {
-      const newExpanded = new Set(prev);
-      if (newExpanded.has(path)) {
-        newExpanded.delete(path);
-      } else {
-        newExpanded.add(path);
-      }
-      return newExpanded;
-    });
-  }, []);
-
-  const getFileIcon = useCallback((path: string) => {
-    if (path.endsWith('.html')) return <FileCode className="w-3 h-3 flex-shrink-0 text-orange-500" />;
-    if (path.endsWith('.css')) return <Palette className="w-3 h-3 flex-shrink-0 text-blue-500" />;
-    if (path.endsWith('.js')) return <FileCode className="w-3 h-3 flex-shrink-0 text-yellow-500" />;
-    if (path.includes('/images/') || path.match(/\.(jpg|jpeg|png|gif|svg|webp)$/)) {
-      return <FileImage className="w-3 h-3 flex-shrink-0 text-green-500" />;
+  const toggleFolder = (path: string) => {
+    const newExpanded = new Set(expandedFolders);
+    if (newExpanded.has(path)) {
+      newExpanded.delete(path);
+    } else {
+      newExpanded.add(path);
     }
-    if (path.includes('/videos/') || path.match(/\.(mp4|webm|mov)$/)) {
-      return <FileVideo className="w-3 h-3 flex-shrink-0 text-purple-500" />;
-    }
-    if (path.includes('/lottie/') || path.endsWith('.json')) {
-      return <Film className="w-3 h-3 flex-shrink-0 text-pink-500" />;
-    }
-    return <FileCode className="w-3 h-3 flex-shrink-0 text-muted-foreground" />;
-  }, []);
+    setExpandedFolders(newExpanded);
+  };
 
   const renderNode = (node: FileNode, depth: number = 0): React.ReactNode => {
     const isExpanded = expandedFolders.has(node.path);
@@ -134,31 +116,17 @@ const FileTree: React.FC<FileTreeProps> = ({ onFileSelect, selectedFile, pages }
         style={{ paddingLeft: `${depth * 12 + 20}px` }}
         onClick={() => onFileSelect(node.path)}
       >
-        {getFileIcon(node.path)}
+        <FileCode className="w-3 h-3 flex-shrink-0 text-muted-foreground" />
         <span className="truncate">{node.name}</span>
       </div>
     );
   };
 
-  const treeContent = useMemo(() => (
-    <div className="py-2">
-      {fileStructure.map((node) => renderNode(node))}
-    </div>
-  ), [fileStructure, expandedFolders, selectedFile]);
-
   return (
     <ScrollArea className="h-full">
-      {treeContent}
+      <div className="py-2">
+        {fileStructure.map((node) => renderNode(node))}
+      </div>
     </ScrollArea>
   );
 };
-
-// Custom comparison to prevent unnecessary re-renders
-const areEqual = (prevProps: FileTreeProps, nextProps: FileTreeProps) => {
-  if (prevProps.selectedFile !== nextProps.selectedFile) return false;
-  if (prevProps.onFileSelect !== nextProps.onFileSelect) return false;
-  if (prevProps.pages.length !== nextProps.pages.length) return false;
-  return prevProps.pages.every((page, i) => page === nextProps.pages[i]);
-};
-
-export const FileTreeMemo = React.memo(FileTree, areEqual);

@@ -3,7 +3,7 @@ import { useBuilderStore } from '../store/useBuilderStore';
 import { useStyleStore } from '../store/useStyleStore';
 import { PseudoState } from '../store/types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Paintbrush, Plus, Square, Type, Heading as HeadingIcon, MousePointerClick, Image as ImageIcon, Link as LinkIcon, X, ChevronDown, ChevronRight, Settings as SettingsIcon, Zap, Database, RotateCcw, Info, AlignLeft, AlignCenter, AlignRight, AlignJustify, AlignHorizontalJustifyCenter, AlignHorizontalJustifyStart, AlignHorizontalJustifyEnd, AlignHorizontalSpaceBetween, AlignHorizontalSpaceAround, AlignVerticalJustifyCenter, AlignVerticalJustifyStart, AlignVerticalJustifyEnd, AlignVerticalSpaceBetween, AlignVerticalSpaceAround, ArrowRight, ArrowDown, ArrowLeft, ArrowUp, Box, LayoutList, LayoutGrid, Minus, EyeOff, FileText, Home, Copy, Trash2 } from 'lucide-react';
+import { Paintbrush, Plus, Square, Type, Heading as HeadingIcon, MousePointerClick, Image as ImageIcon, Link as LinkIcon, X, ChevronDown, ChevronRight, Settings as SettingsIcon, Zap, Database, RotateCcw, Info, AlignLeft, AlignCenter, AlignRight, AlignJustify, ArrowRight, ArrowDown, ArrowLeft, ArrowUp, Box, LayoutList, LayoutGrid, Minus, EyeOff, FileText, Home, Copy, Trash2 } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Input } from '@/components/ui/input';
@@ -712,7 +712,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({
                 </div>
               </div>
 
-              {/* Alignment Section - New X/Y Axis Layout with Icons */}
+              {/* Alignment Section - 50/50 Grid Layout */}
               <div className="Col" style={{ gap: 'var(--space-1)' }}>
                 <label className="Label" style={{ fontSize: '10px' }}>Align</label>
                 <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: 'var(--space-2)', alignItems: 'start' }}>
@@ -749,16 +749,14 @@ export const StylePanel: React.FC<StylePanelProps> = ({
                             updateStyle('alignItems', alignMap[row]);
                           }}
                           onDoubleClick={() => {
-                            // Double click to activate space-between for the entire row or column
-                            if (row === 1) {
-                              // Middle row - set justify to space-between and activate all 3 in that row
-                              updateStyle('justifyContent', 'space-between');
-                              updateStyle('alignItems', alignMap[row]);
-                            }
-                            if (col === 1) {
-                              // Middle column - set align to space-between and activate all 3 in that column
-                              updateStyle('alignItems', 'space-between');
-                              updateStyle('justifyContent', justifyMap[col]);
+                            // Double click for advanced options
+                            if (col === 1 && row === 1) {
+                              // Center - cycle through space options
+                              const current = computedStyles.justifyContent;
+                              if (current === 'center') updateStyle('justifyContent', 'space-between');
+                              else if (current === 'space-between') updateStyle('justifyContent', 'space-around');
+                              else if (current === 'space-around') updateStyle('justifyContent', 'space-evenly');
+                              else updateStyle('justifyContent', 'center');
                             }
                           }}
                         />
@@ -766,94 +764,39 @@ export const StylePanel: React.FC<StylePanelProps> = ({
                     })}
                   </div>
 
-                  {/* Right: X and Y Axis Controls with Icons */}
+                  {/* Right: Stacked Controls */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
                     <div className="Col" style={{ gap: '2px' }}>
-                      <label className="Label" style={{ fontSize: '9px' }}>X (Justify)</label>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <button className="Select flex items-center justify-between gap-1" style={{ fontSize: '9px', padding: '2px 6px', height: '22px', maxWidth: '120px' }}>
-                            {computedStyles.justifyContent === 'flex-start' || !computedStyles.justifyContent ? (
-                              <><AlignHorizontalJustifyStart className="w-3 h-3" /><span>Left</span></>
-                            ) : computedStyles.justifyContent === 'center' ? (
-                              <><AlignHorizontalJustifyCenter className="w-3 h-3" /><span>Center</span></>
-                            ) : computedStyles.justifyContent === 'flex-end' ? (
-                              <><AlignHorizontalJustifyEnd className="w-3 h-3" /><span>Right</span></>
-                            ) : computedStyles.justifyContent === 'space-between' ? (
-                              <><AlignHorizontalSpaceBetween className="w-3 h-3" /><span>Space between</span></>
-                            ) : (
-                              <><AlignHorizontalSpaceAround className="w-3 h-3" /><span>Space around</span></>
-                            )}
-                            <ChevronDown className="w-3 h-3 ml-auto" />
-                          </button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="start" className="w-[160px] bg-background">
-                          <DropdownMenuItem onClick={() => updateStyle('justifyContent', 'flex-start')} className="flex items-center gap-2">
-                            <AlignHorizontalJustifyStart className="w-4 h-4" />
-                            Left
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => updateStyle('justifyContent', 'center')} className="flex items-center gap-2">
-                            <AlignHorizontalJustifyCenter className="w-4 h-4" />
-                            Center
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => updateStyle('justifyContent', 'flex-end')} className="flex items-center gap-2">
-                            <AlignHorizontalJustifyEnd className="w-4 h-4" />
-                            Right
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => updateStyle('justifyContent', 'space-between')} className="flex items-center gap-2">
-                            <AlignHorizontalSpaceBetween className="w-4 h-4" />
-                            Space between
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => updateStyle('justifyContent', 'space-around')} className="flex items-center gap-2">
-                            <AlignHorizontalSpaceAround className="w-4 h-4" />
-                            Space around
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                      <label className="Label" style={{ fontSize: '9px' }}>Justify</label>
+                      <select
+                        className="Select"
+                        value={computedStyles.justifyContent || 'flex-start'}
+                        onChange={(e) => updateStyle('justifyContent', e.target.value)}
+                        style={{ fontSize: '9px', padding: '2px 4px', height: '22px', maxWidth: '90px' }}
+                      >
+                        <option value="flex-start">Start</option>
+                        <option value="center">Center</option>
+                        <option value="flex-end">End</option>
+                        <option value="space-between">Between</option>
+                        <option value="space-around">Around</option>
+                        <option value="space-evenly">Evenly</option>
+                      </select>
                     </div>
 
                     <div className="Col" style={{ gap: '2px' }}>
-                      <label className="Label" style={{ fontSize: '9px' }}>Y (Align)</label>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <button className="Select flex items-center justify-between gap-1" style={{ fontSize: '9px', padding: '2px 6px', height: '22px', maxWidth: '120px' }}>
-                            {computedStyles.alignItems === 'flex-start' ? (
-                              <><AlignVerticalJustifyStart className="w-3 h-3" /><span>Top</span></>
-                            ) : computedStyles.alignItems === 'center' ? (
-                              <><AlignVerticalJustifyCenter className="w-3 h-3" /><span>Center</span></>
-                            ) : computedStyles.alignItems === 'flex-end' ? (
-                              <><AlignVerticalJustifyEnd className="w-3 h-3" /><span>Bottom</span></>
-                            ) : computedStyles.alignItems === 'space-between' ? (
-                              <><AlignVerticalSpaceBetween className="w-3 h-3" /><span>Space between</span></>
-                            ) : (
-                              <><AlignVerticalSpaceAround className="w-3 h-3" /><span>Space around</span></>
-                            )}
-                            <ChevronDown className="w-3 h-3 ml-auto" />
-                          </button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="start" className="w-[160px] bg-background">
-                          <DropdownMenuItem onClick={() => updateStyle('alignItems', 'flex-start')} className="flex items-center gap-2">
-                            <AlignVerticalJustifyStart className="w-4 h-4" />
-                            Top
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => updateStyle('alignItems', 'center')} className="flex items-center gap-2">
-                            <AlignVerticalJustifyCenter className="w-4 h-4" />
-                            Center
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => updateStyle('alignItems', 'flex-end')} className="flex items-center gap-2">
-                            <AlignVerticalJustifyEnd className="w-4 h-4" />
-                            Bottom
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => updateStyle('alignItems', 'space-between')} className="flex items-center gap-2">
-                            <AlignVerticalSpaceBetween className="w-4 h-4" />
-                            Space between
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => updateStyle('alignItems', 'space-around')} className="flex items-center gap-2">
-                            <AlignVerticalSpaceAround className="w-4 h-4" />
-                            Space around
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                      <label className="Label" style={{ fontSize: '9px' }}>Align</label>
+                      <select
+                        className="Select"
+                        value={computedStyles.alignItems || 'stretch'}
+                        onChange={(e) => updateStyle('alignItems', e.target.value)}
+                        style={{ fontSize: '9px', padding: '2px 4px', height: '22px', maxWidth: '90px' }}
+                      >
+                        <option value="stretch">Stretch</option>
+                        <option value="flex-start">Start</option>
+                        <option value="center">Center</option>
+                        <option value="flex-end">End</option>
+                        <option value="baseline">Baseline</option>
+                      </select>
                     </div>
 
                     <div className="Col" style={{ gap: '2px' }}>

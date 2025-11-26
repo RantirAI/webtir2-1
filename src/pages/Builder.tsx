@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Canvas } from '@/builder/components/Canvas';
 import { LeftSidebar } from '@/builder/components/LeftSidebar';
 import { StylePanel } from '@/builder/components/StylePanel';
@@ -39,19 +39,11 @@ const Builder: React.FC = () => {
   const [isCodeViewOpen, setIsCodeViewOpen] = useState(false);
   const [sidebarsHidden, setSidebarsHidden] = useState(false);
   
-  // Page store - use direct selectors to avoid reference issues
-  const pages = usePageStore((state) => state.pages);
-  const currentPageId = usePageStore((state) => state.currentPageId);
-  const addPage = usePageStore((state) => state.addPage);
-  const setCurrentPage = usePageStore((state) => state.setCurrentPage);
-  const updatePage = usePageStore((state) => state.updatePage);
-  const deletePage = usePageStore((state) => state.deletePage);
-  
-  // Memoize derived values
-  const allPages = useMemo(() => Object.values(pages), [pages]);
-  const currentPageData = useMemo(() => pages[currentPageId] || null, [pages, currentPageId]);
-  const pageIds = useMemo(() => Object.keys(pages), [pages]);
-  const pageNamesList = useMemo(() => allPages.map(p => p.name), [allPages]);
+  // Page store
+  const { currentPageId, addPage, setCurrentPage, getCurrentPage, getAllPages } = usePageStore();
+  const allPages = getAllPages();
+  const currentPageData = getCurrentPage();
+  const pageIds = Array.isArray(allPages) ? allPages.map(p => p.id) : [];
   
   // Builder store - now synced with current page
   const setRootInstance = useBuilderStore((state) => state.setRootInstance);
@@ -96,18 +88,16 @@ const Builder: React.FC = () => {
   // Save current page's rootInstance whenever it changes
   useEffect(() => {
     if (currentPageData && rootInstance && currentPageId) {
+      const { updatePage } = usePageStore.getState();
       updatePage(currentPageId, { rootInstance });
     }
-  }, [rootInstance, currentPageId, currentPageData, updatePage]);
+  }, [rootInstance, currentPageId]);
   
   // Compute page names and current page
-  const pageNames: Record<string, string> = useMemo(() => {
-    const names: Record<string, string> = {};
-    allPages.forEach(page => {
-      names[page.id] = page.name;
-    });
-    return names;
-  }, [allPages]);
+  const pageNames: Record<string, string> = {};
+  allPages.forEach(page => {
+    pageNames[page.id] = page.name;
+  });
   const currentPage = currentPageData?.name || 'Page 1';
   
   // Configure sensors with activation constraint to prevent accidental drags
@@ -695,23 +685,19 @@ const Builder: React.FC = () => {
   };
 
   const handlePageNameChange = (pageId: string, newName: string) => {
+    const { updatePage } = usePageStore.getState();
     updatePage(pageId, { name: newName });
   };
 
   const handleDeletePage = (pageId: string) => {
     if (allPages.length === 1) return;
+    const { deletePage } = usePageStore.getState();
     deletePage(pageId);
     if (currentPageId === pageId) {
-      const remainingPages = allPages.filter(p => p.id !== pageId);
-      if (remainingPages.length > 0) {
-        setCurrentPage(remainingPages[0].id);
-      }
+      setCurrentPage(allPages[0].id);
     }
     if (homePage === pageId) {
-      const remainingPages = allPages.filter(p => p.id !== pageId);
-      if (remainingPages.length > 0) {
-        setHomePage(remainingPages[0].id);
-      }
+      setHomePage(allPages[0].id);
     }
   };
 
@@ -832,7 +818,7 @@ const Builder: React.FC = () => {
         {!isPreviewMode && isCodeViewOpen && (
           <CodeView 
             onClose={() => setIsCodeViewOpen(false)}
-            pages={pageNamesList}
+            pages={allPages.map(p => p.name)}
             pageNames={pageNames}
           />
         )}
