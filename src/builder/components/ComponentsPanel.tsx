@@ -661,11 +661,24 @@ export const ComponentsPanel: React.FC = () => {
     // Create default children for RichText component
     const defaultChildren: ComponentInstance[] = [];
     if (type === 'RichText') {
+      const { createStyleSource, setStyle, getNextAutoClassName } = useStyleStore.getState();
+      
+      // Create style sources for each child element
+      const h2StyleId = createStyleSource('local', getNextAutoClassName('heading'));
+      setStyle(h2StyleId, 'fontSize', '32px');
+      setStyle(h2StyleId, 'fontWeight', '700');
+      
+      const h3StyleId = createStyleSource('local', getNextAutoClassName('heading'));
+      setStyle(h3StyleId, 'fontSize', '24px');
+      setStyle(h3StyleId, 'fontWeight', '700');
+      
+      const textStyleId = createStyleSource('local', getNextAutoClassName('text'));
+      
       const headingId = generateId();
       defaultChildren.push(
-        { id: headingId, type: 'Heading', label: 'Heading', props: { level: 'h2', children: 'Heading 2' }, styleSourceIds: [], children: [] },
-        { id: `${headingId}-2`, type: 'Heading', label: 'Heading', props: { level: 'h3', children: 'Heading 3' }, styleSourceIds: [], children: [] },
-        { id: generateId(), type: 'Text', label: 'Text', props: { children: 'This is a text paragraph.' }, styleSourceIds: [], children: [] }
+        { id: headingId, type: 'Heading', label: 'Heading', props: { level: 'h2', children: 'Heading 2' }, styleSourceIds: [h2StyleId], children: [] },
+        { id: `${headingId}-2`, type: 'Heading', label: 'Heading', props: { level: 'h3', children: 'Heading 3' }, styleSourceIds: [h3StyleId], children: [] },
+        { id: generateId(), type: 'Text', label: 'Text', props: { children: 'This is a text paragraph.' }, styleSourceIds: [textStyleId], children: [] }
       );
     }
 

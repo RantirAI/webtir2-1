@@ -29,7 +29,7 @@ export const Heading: React.FC<HeadingProps> = ({
   const { setStyle } = useStyleStore();
   const level = instance.props.level || 'h1';
 
-  // Set default font size based on heading level when level changes
+  // Ensure heading always has a style source with default styles
   React.useEffect(() => {
     const fontSizeMap: Record<string, string> = {
       h1: '48px',
@@ -40,15 +40,26 @@ export const Heading: React.FC<HeadingProps> = ({
       h6: '12px',
     };
 
-    // Only set if the instance has a style source
-    if (instance.styleSourceIds && instance.styleSourceIds.length > 0) {
+    // If instance has no style source, create one
+    if (!instance.styleSourceIds || instance.styleSourceIds.length === 0) {
+      const { createStyleSource, getNextAutoClassName } = useStyleStore.getState();
+      const styleSourceId = createStyleSource('local', getNextAutoClassName('heading'));
+      
+      // Apply default styles
+      setStyle(styleSourceId, 'fontSize', fontSizeMap[level]);
+      setStyle(styleSourceId, 'fontWeight', '700');
+      
+      // Attach style source to instance
+      updateInstance(instance.id, {
+        styleSourceIds: [styleSourceId],
+      });
+    } else {
+      // Update font size when tag changes
       const primaryClassId = instance.styleSourceIds[0];
       const targetFontSize = fontSizeMap[level];
-      
-      // Update font size when tag changes
       setStyle(primaryClassId, 'fontSize', targetFontSize);
     }
-  }, [level, instance.styleSourceIds, setStyle]);
+  }, [level, instance.id, instance.styleSourceIds, setStyle, updateInstance]);
 
   const handleTextChange = (newText: string) => {
     updateInstance(instance.id, {
