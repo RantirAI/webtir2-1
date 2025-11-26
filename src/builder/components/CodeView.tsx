@@ -5,8 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 import { exportHTML, exportCSS, exportJS, exportAstro } from '../utils/codeExport';
 import { parseHTMLToInstance } from '../utils/codeImport';
-import { useMediaStore } from '../store/useMediaStore';
-import { Copy, Check, Monitor, Tablet, Smartphone, Upload, Image as ImageIcon, FileVideo, FileAudio, FileCode } from 'lucide-react';
+import { Copy, Check, Monitor, Tablet, Smartphone, Upload } from 'lucide-react';
 import { ImportModal } from './ImportModal';
 import { FileTree } from './FileTree';
 import { toast } from '@/hooks/use-toast';
@@ -25,14 +24,12 @@ interface CodeViewProps {
 export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames }) => {
   const rootInstance = useBuilderStore((state) => state.rootInstance);
   const updateInstance = useBuilderStore((state) => state.updateInstance);
-  const { assets, getAllAssets, getAssetsByType } = useMediaStore();
   const [activeTab, setActiveTab] = useState('html');
   const [copiedTab, setCopiedTab] = useState<string | null>(null);
   const [previewSize, setPreviewSize] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
   const [showImportModal, setShowImportModal] = useState(false);
   const defaultFile = pages.length > 0 ? `/pages/${pages[0].toLowerCase().replace(/\s+/g, '-')}.html` : '/pages/page-1.html';
   const [selectedFile, setSelectedFile] = useState(defaultFile);
-  const hasMedia = getAllAssets().length > 0;
   const [isCodeEdited, setIsCodeEdited] = useState(false);
   
   const [htmlCode, setHtmlCode] = useState('');
@@ -95,40 +92,8 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
       case 'css': return cssCode;
       case 'react': return jsCode;
       case 'astro': return astroCode;
-      case 'media': return generateMediaList();
-      case 'design': return '/* Design system tokens and variables */\n' + cssCode;
-      case 'ai': return '// AI Chat interface coming soon';
       default: return '';
     }
-  };
-  
-  const generateMediaList = () => {
-    const allAssets = getAllAssets();
-    if (allAssets.length === 0) {
-      return '// No media assets added yet\n// Upload images, videos, or Lottie files to see them here';
-    }
-    
-    const assetsByType = {
-      image: getAssetsByType('image'),
-      video: getAssetsByType('video'),
-      lottie: getAssetsByType('lottie'),
-      audio: getAssetsByType('audio'),
-      other: getAssetsByType('other'),
-    };
-    
-    let output = '// Media Assets\n\n';
-    
-    Object.entries(assetsByType).forEach(([type, items]) => {
-      if (items.length > 0) {
-        output += `// ${type.toUpperCase()} (${items.length})\n`;
-        items.forEach(asset => {
-          output += `// ${asset.name} - ${asset.url}\n`;
-        });
-        output += '\n';
-      }
-    });
-    
-    return output;
   };
 
   const getPreviewWidth = () => {
@@ -156,14 +121,8 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
               <TabsTrigger value="astro" className="data-[state=active]:bg-background text-xs">
                 Astro
               </TabsTrigger>
-              <TabsTrigger value="media" className="data-[state=active]:bg-background text-xs">
-                Media
-              </TabsTrigger>
-              <TabsTrigger value="design" className="data-[state=active]:bg-background text-xs">
-                Design System
-              </TabsTrigger>
-              <TabsTrigger value="ai" className="data-[state=active]:bg-background text-xs">
-                AI Chat
+              <TabsTrigger value="css" className="data-[state=active]:bg-background text-xs">
+                CSS
               </TabsTrigger>
             </TabsList>
           </Tabs>
@@ -222,7 +181,6 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
               onFileSelect={setSelectedFile}
               selectedFile={selectedFile}
               pages={pages}
-              hasMedia={hasMedia}
             />
           </div>
         </ResizablePanel>
