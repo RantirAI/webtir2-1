@@ -90,7 +90,7 @@ export const FileTree: React.FC<FileTreeProps> = React.memo(({ onFileSelect, sel
     return <FileCode className="w-3 h-3 flex-shrink-0 text-muted-foreground" />;
   }, []);
 
-  const renderNode = useCallback((node: FileNode, depth: number = 0): React.ReactNode => {
+  const renderNode = (node: FileNode, depth: number = 0): React.ReactNode => {
     const isExpanded = expandedFolders.has(node.path);
     const isSelected = selectedFile === node.path;
 
@@ -138,7 +138,7 @@ export const FileTree: React.FC<FileTreeProps> = React.memo(({ onFileSelect, sel
         <span className="truncate">{node.name}</span>
       </div>
     );
-  }, [expandedFolders, selectedFile, onFileSelect, toggleFolder, getFileIcon]);
+  };
 
   return (
     <ScrollArea className="h-full">
