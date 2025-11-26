@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { ChevronRight, ChevronDown, FileCode, FolderOpen, Folder, FileImage, Palette, MessageSquare } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
@@ -12,40 +12,54 @@ interface FileNode {
 interface FileTreeProps {
   onFileSelect: (path: string) => void;
   selectedFile: string;
+  pages: string[];
+  hasMedia: boolean;
 }
 
-export const FileTree: React.FC<FileTreeProps> = ({ onFileSelect, selectedFile }) => {
-  const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set(['/', '/pages', '/components']));
+export const FileTree: React.FC<FileTreeProps> = ({ onFileSelect, selectedFile, pages, hasMedia }) => {
+  const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set(['/', '/pages', '/components', '/media']));
 
-  const fileStructure: FileNode[] = [
-    {
-      name: 'pages',
-      type: 'folder',
-      path: '/pages',
-      children: [
-        { name: 'index.html', type: 'file', path: '/pages/index.html' },
-        { name: 'about.html', type: 'file', path: '/pages/about.html' },
-      ],
-    },
-    {
+  const fileStructure: FileNode[] = useMemo(() => {
+    const structure: FileNode[] = [];
+    
+    // Pages folder
+    if (pages.length > 0) {
+      structure.push({
+        name: 'pages',
+        type: 'folder',
+        path: '/pages',
+        children: pages.map(pageName => ({
+          name: `${pageName.toLowerCase().replace(/\s+/g, '-')}.html`,
+          type: 'file' as const,
+          path: `/pages/${pageName.toLowerCase().replace(/\s+/g, '-')}.html`,
+        })),
+      });
+    }
+    
+    // Components folder (always present)
+    structure.push({
       name: 'components',
       type: 'folder',
       path: '/components',
-      children: [
-        { name: 'Header.jsx', type: 'file', path: '/components/Header.jsx' },
-        { name: 'Footer.jsx', type: 'file', path: '/components/Footer.jsx' },
-      ],
-    },
-    {
-      name: 'styles',
-      type: 'folder',
-      path: '/styles',
-      children: [
-        { name: 'main.css', type: 'file', path: '/styles/main.css' },
-        { name: 'variables.css', type: 'file', path: '/styles/variables.css' },
-      ],
-    },
-  ];
+      children: [],
+    });
+    
+    // Media folder (only if there are media assets)
+    if (hasMedia) {
+      structure.push({
+        name: 'media',
+        type: 'folder',
+        path: '/media',
+        children: [],
+      });
+    }
+    
+    // Global files
+    structure.push({ name: 'styles.css', type: 'file', path: '/styles.css' });
+    structure.push({ name: 'script.js', type: 'file', path: '/script.js' });
+    
+    return structure;
+  }, [pages, hasMedia]);
 
   const toggleFolder = (path: string) => {
     const newExpanded = new Set(expandedFolders);

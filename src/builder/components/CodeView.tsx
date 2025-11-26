@@ -29,7 +29,9 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
   const [copiedTab, setCopiedTab] = useState<string | null>(null);
   const [previewSize, setPreviewSize] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
   const [showImportModal, setShowImportModal] = useState(false);
-  const [selectedFile, setSelectedFile] = useState('/pages/index.html');
+  const defaultFile = pages.length > 0 ? `/pages/${pages[0].toLowerCase().replace(/\s+/g, '-')}.html` : '/pages/page-1.html';
+  const [selectedFile, setSelectedFile] = useState(defaultFile);
+  const hasMedia = getAllAssets().length > 0;
   const [isCodeEdited, setIsCodeEdited] = useState(false);
   
   const [htmlCode, setHtmlCode] = useState('');
@@ -217,6 +219,8 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
           <FileTree 
             onFileSelect={setSelectedFile}
             selectedFile={selectedFile}
+            pages={pages}
+            hasMedia={hasMedia}
           />
         </div>
 

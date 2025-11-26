@@ -605,8 +605,8 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
         className="transition-transform origin-center inline-flex items-start justify-center gap-8"
         style={{
           transform: isPreviewMode ? 'none' : `scale(${zoom / 100})`,
-          padding: isPreviewMode ? '0' : '4rem',
-          minHeight: isPreviewMode ? 'auto' : 'calc(100vh - 8rem)',
+          padding: isPreviewMode ? '0' : '8rem',
+          minHeight: isPreviewMode ? 'auto' : 'calc(100vh + 16rem)',
         }}
       >
         {pages.map((page, index) => {
