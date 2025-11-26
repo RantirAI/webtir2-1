@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { X, Lock, AlertCircle, Settings } from 'lucide-react';
 import { useStyleStore } from '../store/useStyleStore';
+import { useBuilderStore } from '../store/useBuilderStore';
+import { countClassUsage } from '../utils/classUsage';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -36,6 +38,7 @@ export const ClassSelector: React.FC<ClassSelectorProps> = ({
   const inputRef = useRef<HTMLInputElement>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingValue, setEditingValue] = useState('');
+  const rootInstance = useBuilderStore((state) => state.rootInstance);
   const { 
     styleSources, 
     isClassEditable, 
@@ -157,13 +160,18 @@ export const ClassSelector: React.FC<ClassSelectorProps> = ({
   const activeClass = activeClassIndex !== null ? selectedClasses[activeClassIndex] : null;
   const isActiveClassEditable = activeClass ? isClassEditable(activeClass.id) : true;
   const activeClassDependents = activeClass ? getClassDependents(activeClass.id) : [];
+  
+  // Calculate class usage count
+  const classUsageCount = activeClass && rootInstance 
+    ? countClassUsage(rootInstance, activeClass.id)
+    : 0;
 
   return (
     <TooltipProvider>
-      <div className="relative space-y-2">
+      <div className="relative">
         {/* Auto-class preview and config */}
         {showAutoClassPreview && (
-          <div className="flex items-center justify-between px-1" style={{ fontSize: '10px', color: 'hsl(var(--muted-foreground))' }}>
+          <div className="flex items-center justify-between px-1 mb-2" style={{ fontSize: '10px', color: 'hsl(var(--muted-foreground))' }}>
             <Tooltip>
               <TooltipTrigger asChild>
                 <div className="flex items-center gap-1 font-mono cursor-help">
@@ -415,6 +423,13 @@ export const ClassSelector: React.FC<ClassSelectorProps> = ({
             </PopoverContent>
           )}
         </Popover>
+        
+        {/* Class usage counter */}
+        {selectedClasses.length > 0 && activeClass && classUsageCount > 1 && (
+          <div style={{ fontSize: '10px', color: 'hsl(var(--muted-foreground))', marginTop: 'var(--space-1)' }}>
+            Used in {classUsageCount} element{classUsageCount !== 1 ? 's' : ''}
+          </div>
+        )}
       </div>
     </TooltipProvider>
   );

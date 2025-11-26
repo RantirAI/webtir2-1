@@ -476,16 +476,58 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
 
               {/* Class Selector - Multi-class support */}
             <div style={{ padding: 'var(--space-3)', borderBottom: '1px solid hsl(var(--border))' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-2)' }}>
-                <ClassSelector 
-                  selectedClasses={classes}
-                  onAddClass={handleAddClass}
-                  onRemoveClass={handleRemoveClass}
-                  onClassClick={handleClassClick}
-                  activeClassIndex={activeClassIndex}
-                  componentType={selectedInstance.type}
-                  showAutoClassPreview={true}
-                />
+              <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'flex-start', marginBottom: 'var(--space-2)' }}>
+                <div style={{ flex: 1 }}>
+                  <ClassSelector 
+                    selectedClasses={classes}
+                    onAddClass={handleAddClass}
+                    onRemoveClass={handleRemoveClass}
+                    onClassClick={handleClassClick}
+                    activeClassIndex={activeClassIndex}
+                    componentType={selectedInstance.type}
+                    showAutoClassPreview={true}
+                  />
+                </div>
+                
+                {/* State dropdown on same line */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className={`h-9 w-6 p-0 justify-center border border-border flex-shrink-0 ${currentPseudoState !== 'default' ? 'bg-green-500/10 border-green-500/50' : ''}`}
+                      title={`State: ${currentPseudoState}`}
+                    >
+                      <ChevronDown className="w-2.5 h-2.5 text-muted-foreground" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" side="bottom" className="w-28 bg-popover border border-border z-[10000]">
+                    {(['default', 'hover', 'focus', 'active', 'visited'] as const).map((state) => {
+                      // Check if this state has any styles
+                      const hasStyles = selectedInstance.styleSourceIds?.some(classId => {
+                        const { styles, currentBreakpointId } = useStyleStore.getState();
+                        return Object.keys(styles).some(key => {
+                          const [keyClassId, keyBreakpoint, keyState] = key.split(':');
+                          return keyClassId === classId && keyBreakpoint === currentBreakpointId && keyState === state;
+                        });
+                      });
+                      
+                      return (
+                        <DropdownMenuItem 
+                          key={state}
+                          onClick={() => setCurrentPseudoState(state as PseudoState)}
+                          className="flex items-center justify-between text-xs py-1"
+                        >
+                          <span className="capitalize">{state}</span>
+                          {hasStyles && state !== 'default' && (
+                            <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                          )}
+                        </DropdownMenuItem>
+                      );
+                    })}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                
                 {classes.length > 0 && (
                   <TooltipProvider>
                     <Tooltip>
@@ -493,7 +535,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="h-5 w-5 p-0 text-foreground hover:text-primary"
+                          className="h-5 w-5 p-0 text-foreground hover:text-primary flex-shrink-0"
                           onClick={handleResetStyles}
                         >
                           <RotateCcw className="w-3 h-3" />
@@ -505,58 +547,9 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
                 )}
               </div>
 
-              {/* State dropdown */}
-              <div className="flex justify-end">
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className={`h-9 w-6 p-0 justify-center border border-border ${currentPseudoState !== 'default' ? 'bg-green-500/10 border-green-500/50' : ''}`}
-                        title={`State: ${currentPseudoState}`}
-                      >
-                        <ChevronDown className="w-2.5 h-2.5 text-muted-foreground" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" side="bottom" className="w-28 bg-popover border border-border z-[10000]">
-                      {(['default', 'hover', 'focus', 'active', 'visited'] as const).map((state) => {
-                        // Check if this state has any styles
-                        const hasStyles = selectedInstance.styleSourceIds?.some(classId => {
-                          const { styles, currentBreakpointId } = useStyleStore.getState();
-                          return Object.keys(styles).some(key => {
-                            const [keyClassId, keyBreakpoint, keyState] = key.split(':');
-                            return keyClassId === classId && keyBreakpoint === currentBreakpointId && keyState === state;
-                          });
-                        });
-                        
-                        return (
-                          <DropdownMenuItem 
-                            key={state}
-                            onClick={() => setCurrentPseudoState(state as PseudoState)}
-                            className="flex items-center justify-between text-xs py-1"
-                          >
-                            <span className="capitalize">{state}</span>
-                            {hasStyles && state !== 'default' && (
-                              <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-                            )}
-                          </DropdownMenuItem>
-                        );
-                      })}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-
               {classes.length === 0 && (
-                <div 
-                  className="bg-muted/50 border border-dashed border-border rounded text-center mt-3"
-                  style={{ padding: 'var(--space-3)' }}
-                >
-                  <div style={{ fontSize: '11px', color: 'hsl(var(--muted-foreground))', marginBottom: '4px' }}>
-                    No classes assigned
-                  </div>
-                  <div style={{ fontSize: '10px', color: 'hsl(var(--muted-foreground))' }}>
-                    Add a class or style to auto-create one
-                  </div>
+                <div style={{ fontSize: '10px', color: 'hsl(var(--muted-foreground))', marginTop: 'var(--space-1)' }}>
+                  No classes assigned
                 </div>
               )}
             </div>

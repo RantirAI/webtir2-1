@@ -84,21 +84,22 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
   
   const displayWidth = typeof currentBreakpointWidth === 'number' ? currentBreakpointWidth : 960;
 
-  // Handle scroll with hand tool
+  // Handle scroll - Shift for horizontal even without pan mode
   useEffect(() => {
     if (!canvasRef.current) return;
     
     const handleWheel = (e: WheelEvent) => {
-      if (!isPanMode) return;
-      
-      e.preventDefault();
-      const container = canvasRef.current;
-      if (!container) return;
-      
-      // Shift key for horizontal scroll, otherwise vertical
+      // Shift key for horizontal scroll
       if (e.shiftKey) {
+        e.preventDefault();
+        const container = canvasRef.current;
+        if (!container) return;
         container.scrollLeft += e.deltaY;
-      } else {
+      } else if (isPanMode) {
+        // Pan mode for vertical scroll
+        e.preventDefault();
+        const container = canvasRef.current;
+        if (!container) return;
         container.scrollTop += e.deltaY;
       }
     };
