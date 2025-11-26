@@ -535,30 +535,36 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
       onMouseLeave={handleMouseUp}
     >
       <div 
-        className="transition-transform origin-center flex items-start justify-center gap-8"
+        className="transition-transform origin-top-left flex items-start gap-8"
         style={{
           transform: isPreviewMode ? 'none' : `scale(${zoom / 100}) translate(${panOffset.x / (zoom / 100)}px, ${panOffset.y / (zoom / 100)}px)`,
           padding: isPreviewMode ? '0' : '4rem',
           minHeight: isPreviewMode ? 'auto' : '100vh',
-          minWidth: '100%',
+          width: isPreviewMode ? '100%' : 'max-content',
         }}
       >
         {pages.map((page, index) => {
           const pageStyles = rootStyles as React.CSSProperties;
+          // Current page uses breakpoint width, others stay at 1440px
+          const isCurrentPage = page === currentPage;
+          const frameWidth = isPreviewMode 
+            ? '100%' 
+            : (isCurrentPage ? (typeof currentBreakpointWidth === 'number' ? currentBreakpointWidth : 1440) : 1440);
+          
           return (
           <div 
             key={page}
             className={`builder-page ${!isPreviewMode ? 'scrollbar-thin' : ''}`}
             style={{ 
               ...pageStyles,
-              width: isPreviewMode ? '100%' : `${currentBreakpointWidth}px`,
+              width: isPreviewMode ? '100%' : `${frameWidth}px`,
               minHeight: isPreviewMode ? '100vh' : '1200px',
               maxHeight: isPreviewMode ? 'none' : 'calc(100vh - 8rem)',
               boxShadow: isPreviewMode ? 'none' : '0 2px 8px rgba(0,0,0,0.1)',
               transition: isResizing ? 'none' : 'width 0.3s ease',
               position: 'relative',
               overflow: isPreviewMode ? 'visible' : 'auto',
-              maxWidth: '100%',
+              flexShrink: 0,
             }}
           >
             {/* Breakpoint Width Indicator */}
