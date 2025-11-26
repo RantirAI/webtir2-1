@@ -353,8 +353,8 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Video Section */}
-      <section className="max-w-[720px] mx-auto px-6 py-8">
+      {/* Video Section - Overlapping Hero */}
+      <section className="max-w-[720px] mx-auto px-6 -mt-12 relative z-10">
         <div className="rounded-2xl overflow-hidden shadow-2xl border border-border">
           <video 
             autoPlay 
