@@ -67,6 +67,12 @@ export const Navigator: React.FC = () => {
     const computedStyles = getComputedStyles(instance.styleSourceIds);
     const width = computedStyles.width || 'auto';
     const height = computedStyles.height || 'auto';
+    
+    // Get dynamic label from primary style source (first class name)
+    const styleSources = useStyleStore((state) => state.styleSources);
+    const primaryStyleId = instance.styleSourceIds?.[0];
+    const primaryClassName = primaryStyleId ? styleSources[primaryStyleId]?.name : null;
+    const displayLabel = primaryClassName || instance.label || instance.type;
 
     // Setup drag-and-drop for non-root elements
     const {
@@ -177,7 +183,7 @@ export const Navigator: React.FC = () => {
           >
             <div className="flex items-center gap-2 min-w-0">
               {IconComponent && <IconComponent className="w-3 h-3 flex-shrink-0" />}
-              <span className="truncate">{instance.label || instance.type}</span>
+              <span className="truncate">{displayLabel}</span>
               {canDropInside(instance.type) && (
                 <span className="text-[10px] text-muted-foreground">●</span>
               )}

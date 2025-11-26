@@ -39,6 +39,11 @@ export const useStyleStore = create<StyleStore>((set, get) => ({
 
   // Get next auto-class name and persist counter
   getNextAutoClassName: (componentType: string) => {
+    // Ensure counters are initialized from existing classes
+    if (!countersInitialized) {
+      get().initCountersFromRegistry();
+    }
+    
     const { nameCounters, styleSources, autoClassConfig } = get();
     const base = normalizeComponentBase(componentType);
     const currentCounter = nameCounters[base] || autoClassConfig.startIndex || 1;
