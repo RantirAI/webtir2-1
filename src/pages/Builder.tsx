@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Canvas } from '@/builder/components/Canvas';
 import { LeftSidebar } from '@/builder/components/LeftSidebar';
 import { StylePanel } from '@/builder/components/StylePanel';
@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, DragOverEvent, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useBuilderStore } from '@/builder/store/useBuilderStore';
+import { usePageStore } from '@/builder/store/usePageStore';
 import { componentRegistry } from '@/builder/primitives/registry';
 import { ComponentInstance, ComponentType } from '@/builder/store/types';
 import { generateId } from '@/builder/utils/instance';
@@ -23,12 +24,9 @@ import * as Icons from 'lucide-react';
 
 const Builder: React.FC = () => {
   const [zoom, setZoom] = useState(100);
-  const [currentPage, setCurrentPage] = useState('Page 1');
-  const [pages, setPages] = useState(['Page 1']);
   const [currentBreakpoint, setCurrentBreakpoint] = useState('desktop');
   const [isPanMode, setIsPanMode] = useState(false);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
-  const [pageNames, setPageNames] = useState<Record<string, string>>({ 'Page 1': 'Page 1' });
   const [homePage, setHomePage] = useState('Page 1');
   const [projectName, setProjectName] = useState('My Project');
   const [projectSettingsOpen, setProjectSettingsOpen] = useState(false);
@@ -40,11 +38,50 @@ const Builder: React.FC = () => {
   const [canvasElement, setCanvasElement] = useState<HTMLElement | null>(null);
   const [isCodeViewOpen, setIsCodeViewOpen] = useState(false);
   
+  // Page store
+  const { pages, currentPageId, addPage, setCurrentPage, getCurrentPage, getAllPages } = usePageStore();
+  const allPages = getAllPages();
+  const currentPageData = getCurrentPage();
+  
+  // Builder store - now synced with current page
+  const setRootInstance = useBuilderStore((state) => state.setRootInstance);
   const addInstance = useBuilderStore((state) => state.addInstance);
   const moveInstance = useBuilderStore((state) => state.moveInstance);
   const findInstance = useBuilderStore((state) => state.findInstance);
   const rootInstance = useBuilderStore((state) => state.rootInstance);
   const selectedInstanceId = useBuilderStore((state) => state.selectedInstanceId);
+  const setSelectedInstanceId = useBuilderStore((state) => state.setSelectedInstanceId);
+  
+  // Initialize first page if none exists
+  useEffect(() => {
+    if (allPages.length === 0 && rootInstance) {
+      const pageId = addPage('Page 1', rootInstance);
+      setCurrentPage(pageId);
+    }
+  }, []);
+  
+  // Sync rootInstance when page changes
+  useEffect(() => {
+    if (currentPageData && currentPageData.rootInstance) {
+      setRootInstance(currentPageData.rootInstance);
+      setSelectedInstanceId(null); // Clear selection when switching pages
+    }
+  }, [currentPageId]);
+  
+  // Save current page's rootInstance whenever it changes
+  useEffect(() => {
+    if (currentPageData && rootInstance && currentPageId) {
+      const { updatePage } = usePageStore.getState();
+      updatePage(currentPageId, { rootInstance });
+    }
+  }, [rootInstance, currentPageId]);
+  
+  // Compute page names and current page
+  const pageNames: Record<string, string> = {};
+  allPages.forEach(page => {
+    pageNames[page.id] = page.name;
+  });
+  const currentPage = currentPageData?.name || 'Page 1';
   
   // Configure sensors with activation constraint to prevent accidental drags
   const sensors = useSensors(
@@ -616,38 +653,45 @@ const Builder: React.FC = () => {
   };
 
   const handleAddPage = () => {
-    const newPageNum = pages.length + 1;
-    const newPage = `Page ${newPageNum}`;
-    setPages([...pages, newPage]);
-    setPageNames({ ...pageNames, [newPage]: newPage });
-    setCurrentPage(newPage);
+    const newPageName = `Page ${allPages.length + 1}`;
+    // Create a new empty root instance for the new page
+    const newRootInstance: ComponentInstance = {
+      id: 'root',
+      type: 'Div',
+      label: 'Body',
+      props: {},
+      styleSourceIds: ['root-style'],
+      children: [],
+    };
+    const pageId = addPage(newPageName, newRootInstance);
+    setCurrentPage(pageId);
   };
 
   const handlePageNameChange = (pageId: string, newName: string) => {
-    setPageNames({ ...pageNames, [pageId]: newName });
+    const { updatePage } = usePageStore.getState();
+    updatePage(pageId, { name: newName });
   };
 
   const handleDeletePage = (pageId: string) => {
-    if (pages.length === 1) return;
-    const newPages = pages.filter(p => p !== pageId);
-    setPages(newPages);
-    const newPageNames = { ...pageNames };
-    delete newPageNames[pageId];
-    setPageNames(newPageNames);
-    if (currentPage === pageId) {
-      setCurrentPage(newPages[0]);
+    if (allPages.length === 1) return;
+    const { deletePage } = usePageStore.getState();
+    deletePage(pageId);
+    if (currentPageId === pageId) {
+      setCurrentPage(allPages[0].id);
     }
     if (homePage === pageId) {
-      setHomePage(newPages[0]);
+      setHomePage(allPages[0].id);
     }
   };
 
   const handleDuplicatePage = (pageId: string) => {
-    const newPageNum = pages.length + 1;
-    const newPage = `${pageNames[pageId]} Copy`;
-    setPages([...pages, newPage]);
-    setPageNames({ ...pageNames, [newPage]: newPage });
-    setCurrentPage(newPage);
+    const page = pages[pageId];
+    if (!page) return;
+    const newPageName = `${page.name} Copy`;
+    // Deep copy the root instance
+    const duplicatedRootInstance = JSON.parse(JSON.stringify(page.rootInstance));
+    const newPageId = addPage(newPageName, duplicatedRootInstance);
+    setCurrentPage(newPageId);
   };
 
   return (
@@ -668,8 +712,8 @@ const Builder: React.FC = () => {
           zoom={zoom}
           onZoomChange={setZoom}
           currentBreakpoint={currentBreakpoint} 
-          pages={pages} 
-          currentPage={currentPage}
+          pages={allPages.map(p => p.id)} 
+          currentPage={currentPageId}
           pageNames={pageNames}
           onPageNameChange={handlePageNameChange}
           isPanMode={isPanMode}
@@ -701,10 +745,10 @@ const Builder: React.FC = () => {
         {!isPreviewMode && !isCodeViewOpen && (
           <div className="absolute left-4 top-4 bottom-4 z-10 transition-all duration-300 animate-slide-in-left">
             <LeftSidebar
-              pages={pages}
-              currentPage={currentPage}
+              pages={allPages.map(p => p.id)}
+              currentPage={currentPageId}
               pageNames={pageNames}
-              onPageChange={setCurrentPage}
+              onPageChange={(pageId) => setCurrentPage(pageId)}
               onPageNameChange={handlePageNameChange}
               onDeletePage={handleDeletePage}
               onDuplicatePage={handleDuplicatePage}
@@ -722,9 +766,9 @@ const Builder: React.FC = () => {
             }`}
           >
             <PageNavigation
-              currentPage={currentPage}
-              pages={pages}
-              onPageChange={setCurrentPage}
+              currentPage={currentPageId}
+              pages={allPages.map(p => p.id)}
+              onPageChange={(pageId) => setCurrentPage(pageId)}
               onAddPage={handleAddPage}
               currentBreakpoint={currentBreakpoint}
               onBreakpointChange={setCurrentBreakpoint}
@@ -761,11 +805,11 @@ const Builder: React.FC = () => {
 
         {/* Code View Sidebar */}
         {!isPreviewMode && isCodeViewOpen && (
-            <CodeView 
-              onClose={() => setIsCodeViewOpen(false)}
-              pages={pages}
-              pageNames={pageNames}
-            />
+          <CodeView 
+            onClose={() => setIsCodeViewOpen(false)}
+            pages={allPages.map(p => p.name)}
+            pageNames={pageNames}
+          />
         )}
       </div>
 
