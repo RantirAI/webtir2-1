@@ -56,6 +56,9 @@ interface CanvasProps {
 }
 
 export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreakpoint, pages, currentPage, pageNames, onPageNameChange, isPanMode, isPreviewMode, onCanvasRef, onPageChange, allPages = [] }) => {
+  // Ensure pages is always an array
+  const safePages = Array.isArray(pages) ? pages : [];
+  
   const rootInstance = useBuilderStore((state) => state.rootInstance);
   const selectedInstanceId = useBuilderStore((state) => state.selectedInstanceId);
   const hoveredInstanceId = useBuilderStore((state) => state.hoveredInstanceId);
@@ -612,7 +615,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
           minWidth: isPreviewMode ? 'auto' : 'calc(100% + 40rem)',
         }}
       >
-        {pages.map((pageId, index) => {
+        {safePages.map((pageId, index) => {
           const pageData = allPages?.find(p => p.id === pageId);
           const pageRootInstance = pageData?.rootInstance;
           const pageStyles = rootStyles as React.CSSProperties;
