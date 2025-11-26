@@ -183,8 +183,8 @@ export const StylePanel: React.FC<StylePanelProps> = ({
               value="settings" 
               className="gap-1 text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none"
             >
-              <SettingsIcon className="w-3 h-3" />
-              Settings
+              <Database className="w-3 h-3" />
+              Data
             </TabsTrigger>
             <TabsTrigger 
               value="pages" 
@@ -201,7 +201,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({
           </TabsContent>
           <TabsContent value="settings" className="flex-1 m-0 p-3 overflow-y-auto">
             <div className="text-xs text-muted-foreground text-center">
-              Select an element to configure settings
+              Select an element to configure data settings
             </div>
           </TabsContent>
           <TabsContent value="pages" className="flex-1 m-0 p-0 overflow-y-auto">
