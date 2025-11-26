@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X, Lock, AlertCircle, Settings } from 'lucide-react';
+import { X, Lock, AlertCircle, Settings, ArrowDown } from 'lucide-react';
 import { useStyleStore } from '../store/useStyleStore';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
@@ -160,7 +160,7 @@ export const ClassSelector: React.FC<ClassSelectorProps> = ({
     <TooltipProvider>
       <div className="relative space-y-2">
         {/* Auto-class preview and config */}
-        <div className="flex items-center justify-between text-xs text-muted-foreground px-1">
+        <div className="flex items-center justify-between px-1" style={{ fontSize: '10px', color: 'hsl(var(--muted-foreground))' }}>
           <Tooltip>
             <TooltipTrigger asChild>
               <div className="flex items-center gap-1 font-mono cursor-help">
@@ -183,33 +183,32 @@ export const ClassSelector: React.FC<ClassSelectorProps> = ({
 
           <Dialog open={configOpen} onOpenChange={setConfigOpen}>
             <DialogTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-6 px-2">
-                <Settings className="w-3 h-3 mr-1" />
-                Config
+              <Button variant="ghost" size="sm" className="h-5 w-5 p-0">
+                <Settings className="w-3 h-3" />
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-md">
               <DialogHeader>
-                <DialogTitle>Auto-class Configuration</DialogTitle>
+                <DialogTitle className="text-sm">Auto-class Configuration</DialogTitle>
               </DialogHeader>
-              <div className="space-y-4 py-4">
-                <div className="space-y-2">
-                  <Label htmlFor="startIndex">Start Index</Label>
+              <div className="space-y-2 py-2">
+                <div className="space-y-1">
+                  <Label htmlFor="startIndex" className="text-xs">Start Index</Label>
                   <Input
                     id="startIndex"
                     type="number"
                     min="1"
                     value={autoClassConfig.startIndex || 1}
                     onChange={(e) => setAutoClassConfig({ startIndex: parseInt(e.target.value) || 1 })}
-                    className="font-mono"
+                    className="font-mono text-xs h-7"
                   />
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-[10px] text-muted-foreground">
                     First number in sequence (default: 1)
                   </p>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="padding">Zero Padding</Label>
+                <div className="space-y-1">
+                  <Label htmlFor="padding" className="text-xs">Zero Padding</Label>
                   <Input
                     id="padding"
                     type="number"
@@ -217,32 +216,32 @@ export const ClassSelector: React.FC<ClassSelectorProps> = ({
                     max="6"
                     value={autoClassConfig.padding || 0}
                     onChange={(e) => setAutoClassConfig({ padding: parseInt(e.target.value) || 0 })}
-                    className="font-mono"
+                    className="font-mono text-xs h-7"
                   />
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-[10px] text-muted-foreground">
                     Digits with zero-padding (0 = none, 3 = 001, 002...)
                   </p>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="separator">Separator</Label>
+                <div className="space-y-1">
+                  <Label htmlFor="separator" className="text-xs">Separator</Label>
                   <Input
                     id="separator"
                     type="text"
                     maxLength={1}
                     value={autoClassConfig.separator || '-'}
                     onChange={(e) => setAutoClassConfig({ separator: e.target.value || '-' })}
-                    className="font-mono"
+                    className="font-mono text-xs h-7"
                   />
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-[10px] text-muted-foreground">
                     Character between base and number (default: -)
                   </p>
                 </div>
 
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label htmlFor="noneFirst">No suffix for first class</Label>
-                    <p className="text-xs text-muted-foreground">
+                    <Label htmlFor="noneFirst" className="text-xs">No suffix for first class</Label>
+                    <p className="text-[10px] text-muted-foreground">
                       First class uses base name only (e.g., "button" not "button-1")
                     </p>
                   </div>
@@ -254,10 +253,10 @@ export const ClassSelector: React.FC<ClassSelectorProps> = ({
                 </div>
 
                 <div className="pt-2 border-t">
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-[10px] text-muted-foreground">
                     <strong>Preview:</strong> {nextAutoClassName}
                   </p>
-                  <p className="text-xs text-muted-foreground mt-1">
+                  <p className="text-[10px] text-muted-foreground mt-1">
                     Counters support up to 1,000,000+ classes per component type
                   </p>
                 </div>
@@ -372,15 +371,18 @@ export const ClassSelector: React.FC<ClassSelectorProps> = ({
                 );
               })}
 
-              <input
-                ref={inputRef}
-                type="text"
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder={selectedClasses.length === 0 ? "+ Add Class 1" : `+ Add Class ${selectedClasses.length + 1}`}
-                className="flex-1 min-w-[120px] outline-none bg-transparent text-foreground text-xs font-mono placeholder:text-muted-foreground px-1"
-              />
+              <div className="flex items-center gap-1 flex-1 min-w-[120px]">
+                <ArrowDown className="w-3 h-3 text-muted-foreground flex-shrink-0" />
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder={selectedClasses.length === 0 ? "+ Add Class 1" : `+ Add Class ${selectedClasses.length + 1}`}
+                  className="flex-1 outline-none bg-transparent text-foreground text-xs font-mono placeholder:text-muted-foreground"
+                />
+              </div>
             </div>
           </PopoverTrigger>
           
@@ -392,13 +394,13 @@ export const ClassSelector: React.FC<ClassSelectorProps> = ({
             >
               <Command>
                 <CommandList>
-                  <CommandEmpty>No existing classes found</CommandEmpty>
-                  <CommandGroup heading="Existing Classes">
+                  <CommandEmpty className="text-xs py-2">No existing classes found</CommandEmpty>
+                  <CommandGroup heading="Existing Classes" className="text-xs">
                     {availableClasses.map((className) => (
                       <CommandItem
                         key={className}
                         onSelect={() => handleSelectExisting(className)}
-                        className="text-xs font-mono cursor-pointer"
+                        className="text-xs font-mono cursor-pointer py-1.5"
                       >
                         <span className="text-muted-foreground mr-1">.</span>
                         {className}

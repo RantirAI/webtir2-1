@@ -559,7 +559,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
                         <ChevronDown className="w-2.5 h-2.5 text-muted-foreground" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" side="bottom" className="w-32 bg-popover border border-border z-[10000]">
+                    <DropdownMenuContent align="end" side="bottom" className="w-28 bg-popover border border-border z-[10000]">
                       {(['default', 'hover', 'focus', 'active', 'visited'] as const).map((state) => {
                         // Check if this state has any styles
                         const hasStyles = selectedInstance.styleSourceIds?.some(classId => {
@@ -574,7 +574,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
                           <DropdownMenuItem 
                             key={state}
                             onClick={() => setCurrentPseudoState(state as PseudoState)}
-                            className="flex items-center justify-between"
+                            className="flex items-center justify-between text-xs py-1"
                           >
                             <span className="capitalize">{state}</span>
                             {hasStyles && state !== 'default' && (
