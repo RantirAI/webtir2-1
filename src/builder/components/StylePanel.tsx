@@ -477,43 +477,6 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
               {/* Class Selector - Multi-class support */}
             <div style={{ padding: 'var(--space-3)', borderBottom: '1px solid hsl(var(--border))' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-2)' }}>
-                <div className="flex items-center gap-2">
-                  <div style={{ fontSize: '10px', fontWeight: 600, color: 'hsl(var(--muted-foreground))', letterSpacing: '0.5px' }}>
-                    STYLE SOURCES
-                  </div>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-4 w-4 p-0 text-muted-foreground hover:text-foreground"
-                        >
-                          <Info className="w-3 h-3" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent side="right" align="start" className="max-w-xs z-[100000]">
-                        <div className="text-xs space-y-2">
-                          <div className="flex items-center gap-3">
-                            <div className="flex items-center gap-1">
-                              <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-                              <span>Class 1 (Primary)</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
-                              <span>Class 2+ (Inherits)</span>
-                            </div>
-                          </div>
-                          <div className="text-[10px] opacity-80 space-y-0.5">
-                            <div>• Each class inherits from its predecessor</div>
-                            <div>• Only the last class in the chain is editable</div>
-                            <div>• Remove dependent classes to unlock editing</div>
-                          </div>
-                        </div>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                </div>
                 <ClassSelector 
                   selectedClasses={classes}
                   onAddClass={handleAddClass}

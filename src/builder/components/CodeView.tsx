@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { exportHTML, exportCSS, exportJS, exportAstro } from '../utils/codeExport';
 import { Copy, Check, Monitor, Tablet, Smartphone, Upload } from 'lucide-react';
 import { ImportModal } from './ImportModal';
+import { FileTree } from './FileTree';
 import Prism from 'prismjs';
 import 'prismjs/themes/prism-tomorrow.css';
 import 'prismjs/components/prism-markup';
@@ -21,6 +22,7 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose }) => {
   const [copiedTab, setCopiedTab] = useState<string | null>(null);
   const [previewSize, setPreviewSize] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
   const [showImportModal, setShowImportModal] = useState(false);
+  const [selectedFile, setSelectedFile] = useState('/pages/index.html');
   
   const [htmlCode, setHtmlCode] = useState('');
   const [cssCode, setCssCode] = useState('');
@@ -51,8 +53,11 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose }) => {
     switch (tab) {
       case 'html': return htmlCode;
       case 'css': return cssCode;
-      case 'js': return jsCode;
+      case 'react': return jsCode;
       case 'astro': return astroCode;
+      case 'media': return '// Media assets will be listed here';
+      case 'design': return '/* Design system tokens and variables */\n' + cssCode;
+      case 'ai': return '// AI Chat interface coming soon';
       default: return '';
     }
   };
@@ -71,19 +76,26 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose }) => {
       {/* Top Bar */}
       <div className="h-16 border-b border-border flex items-center justify-between px-6">
         <div className="flex items-center gap-4">
+          <h2 className="text-lg font-semibold">Code Export</h2>
           <Tabs value={activeTab} onValueChange={setActiveTab} className="h-10">
             <TabsList className="h-10 bg-muted/50">
-              <TabsTrigger value="html" className="data-[state=active]:bg-background">
+              <TabsTrigger value="html" className="data-[state=active]:bg-background text-xs">
                 HTML
               </TabsTrigger>
-              <TabsTrigger value="css" className="data-[state=active]:bg-background">
-                CSS
+              <TabsTrigger value="react" className="data-[state=active]:bg-background text-xs">
+                React
               </TabsTrigger>
-              <TabsTrigger value="js" className="data-[state=active]:bg-background">
-                JavaScript
-              </TabsTrigger>
-              <TabsTrigger value="astro" className="data-[state=active]:bg-background">
+              <TabsTrigger value="astro" className="data-[state=active]:bg-background text-xs">
                 Astro
+              </TabsTrigger>
+              <TabsTrigger value="media" className="data-[state=active]:bg-background text-xs">
+                Media
+              </TabsTrigger>
+              <TabsTrigger value="design" className="data-[state=active]:bg-background text-xs">
+                Design System
+              </TabsTrigger>
+              <TabsTrigger value="ai" className="data-[state=active]:bg-background text-xs">
+                AI Chat
               </TabsTrigger>
             </TabsList>
           </Tabs>
@@ -122,16 +134,30 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose }) => {
 
       {/* Main Content */}
       <div className="flex h-[calc(100vh-4rem)]">
-        {/* Code Editor - Left Side */}
+        {/* File Tree Sidebar */}
+        <div className="w-60 border-r border-border bg-muted/20">
+          <div className="h-10 border-b border-border flex items-center px-3">
+            <h3 className="text-xs font-semibold text-muted-foreground uppercase">Files</h3>
+          </div>
+          <FileTree 
+            onFileSelect={setSelectedFile}
+            selectedFile={selectedFile}
+          />
+        </div>
+
+        {/* Code Editor - Center */}
         <div className="flex-1 border-r border-border overflow-hidden">
+          <div className="h-10 border-b border-border flex items-center px-3 bg-muted/20">
+            <span className="text-xs font-mono text-muted-foreground">{selectedFile}</span>
+          </div>
           <CodeEditor 
             code={getCode(activeTab)} 
-            language={activeTab === 'astro' ? 'html' : activeTab}
+            language={activeTab === 'astro' || activeTab === 'html' ? 'html' : activeTab === 'react' ? 'jsx' : activeTab}
             onChange={(newCode) => {
               switch (activeTab) {
                 case 'html': setHtmlCode(newCode); break;
                 case 'css': setCssCode(newCode); break;
-                case 'js': setJsCode(newCode); break;
+                case 'react': setJsCode(newCode); break;
                 case 'astro': setAstroCode(newCode); break;
               }
             }}

@@ -84,19 +84,53 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
   
   const displayWidth = typeof currentBreakpointWidth === 'number' ? currentBreakpointWidth : 960;
 
+  // Handle scroll with hand tool
+  useEffect(() => {
+    if (!canvasRef.current) return;
+    
+    const handleWheel = (e: WheelEvent) => {
+      if (!isPanMode) return;
+      
+      e.preventDefault();
+      const container = canvasRef.current;
+      if (!container) return;
+      
+      // Shift key for horizontal scroll, otherwise vertical
+      if (e.shiftKey) {
+        container.scrollLeft += e.deltaY;
+      } else {
+        container.scrollTop += e.deltaY;
+      }
+    };
+    
+    const container = canvasRef.current;
+    container.addEventListener('wheel', handleWheel, { passive: false });
+    
+    return () => {
+      container.removeEventListener('wheel', handleWheel);
+    };
+  }, [isPanMode]);
+
   const handleMouseDown = (e: React.MouseEvent) => {
     if (isPanMode) {
+      e.preventDefault();
       setIsPanning(true);
-      setPanStart({ x: e.clientX - panOffset.x, y: e.clientY - panOffset.y });
+      setPanStart({ 
+        x: e.clientX, 
+        y: e.clientY 
+      });
     }
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
-    if (isPanning && isPanMode) {
-      setPanOffset({
-        x: e.clientX - panStart.x,
-        y: e.clientY - panStart.y,
-      });
+    if (isPanning && isPanMode && canvasRef.current) {
+      const deltaX = e.clientX - panStart.x;
+      const deltaY = e.clientY - panStart.y;
+      
+      canvasRef.current.scrollLeft -= deltaX;
+      canvasRef.current.scrollTop -= deltaY;
+      
+      setPanStart({ x: e.clientX, y: e.clientY });
     }
   };
 
@@ -485,7 +519,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, currentBreakpoint, pages, 
         setNodeRef(node);
         onCanvasRef?.(node);
       }}
-      className={`absolute inset-0 ${isPreviewMode ? 'overflow-auto' : 'overflow-hidden'} bg-[#e5e7eb] dark:bg-zinc-800 builder-canvas`}
+      className={`absolute inset-0 ${isPreviewMode ? 'overflow-auto' : 'overflow-auto'} bg-[#e5e7eb] dark:bg-zinc-800 builder-canvas`}
       style={{
         backgroundImage: isPreviewMode ? 'none' : `radial-gradient(circle, #9ca3af 1px, transparent 1px)`,
         backgroundSize: '20px 20px',
