@@ -51,6 +51,7 @@ const Builder: React.FC = () => {
   const allPages = useMemo(() => Object.values(pages), [pages]);
   const currentPageData = useMemo(() => pages[currentPageId] || null, [pages, currentPageId]);
   const pageIds = useMemo(() => Object.keys(pages), [pages]);
+  const pageNamesList = useMemo(() => allPages.map(p => p.name), [allPages]);
   
   // Builder store - now synced with current page
   const setRootInstance = useBuilderStore((state) => state.setRootInstance);
@@ -831,7 +832,7 @@ const Builder: React.FC = () => {
         {!isPreviewMode && isCodeViewOpen && (
           <CodeView 
             onClose={() => setIsCodeViewOpen(false)}
-            pages={allPages.map(p => p.name)}
+            pages={pageNamesList}
             pageNames={pageNames}
           />
         )}
