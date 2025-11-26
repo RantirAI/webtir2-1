@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X, Lock, AlertCircle, Settings, ArrowDown } from 'lucide-react';
+import { X, Lock, AlertCircle, Settings } from 'lucide-react';
 import { useStyleStore } from '../store/useStyleStore';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
@@ -18,6 +18,7 @@ interface ClassSelectorProps {
   onClassClick: (classId: string, index: number) => void;
   activeClassIndex: number | null;
   componentType?: string; // For auto-class preview
+  showAutoClassPreview?: boolean; // Whether to show auto-class preview
 }
 
 export const ClassSelector: React.FC<ClassSelectorProps> = ({
@@ -27,6 +28,7 @@ export const ClassSelector: React.FC<ClassSelectorProps> = ({
   onClassClick,
   activeClassIndex,
   componentType = 'div',
+  showAutoClassPreview = false,
 }) => {
   const [inputValue, setInputValue] = useState('');
   const [isOpen, setIsOpen] = useState(false);
@@ -160,38 +162,39 @@ export const ClassSelector: React.FC<ClassSelectorProps> = ({
     <TooltipProvider>
       <div className="relative space-y-2">
         {/* Auto-class preview and config */}
-        <div className="flex items-center justify-between px-1" style={{ fontSize: '10px', color: 'hsl(var(--muted-foreground))' }}>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className="flex items-center gap-1 font-mono cursor-help">
-                <span>Next:</span>
-                <span className="font-semibold text-foreground">{nextAutoClassName}</span>
-              </div>
-            </TooltipTrigger>
-            <TooltipContent side="top" className="text-xs max-w-xs">
-              <div className="space-y-1">
-                <div className="font-semibold">Auto-class Generator</div>
-                <div>Next class name: <code className="font-mono">{nextAutoClassName}</code></div>
-                <div className="text-muted-foreground">
-                  {autoClassConfig.noneFirst && nextAutoClassName.indexOf('-') === -1
-                    ? 'First class uses no numeric suffix'
-                    : `Sequential numbering from ${autoClassConfig.startIndex}`}
+        {showAutoClassPreview && (
+          <div className="flex items-center justify-between px-1" style={{ fontSize: '10px', color: 'hsl(var(--muted-foreground))' }}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex items-center gap-1 font-mono cursor-help">
+                  <span>Next:</span>
+                  <span className="font-semibold text-foreground">{nextAutoClassName}</span>
                 </div>
-              </div>
-            </TooltipContent>
-          </Tooltip>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="text-xs max-w-xs">
+                <div className="space-y-1">
+                  <div className="font-semibold">Auto-class Generator</div>
+                  <div>Next class name: <code className="font-mono">{nextAutoClassName}</code></div>
+                  <div className="text-muted-foreground">
+                    {autoClassConfig.noneFirst && nextAutoClassName.indexOf('-') === -1
+                      ? 'First class uses no numeric suffix'
+                      : `Sequential numbering from ${autoClassConfig.startIndex}`}
+                  </div>
+                </div>
+              </TooltipContent>
+            </Tooltip>
 
-          <Dialog open={configOpen} onOpenChange={setConfigOpen}>
+            <Dialog open={configOpen} onOpenChange={setConfigOpen}>
             <DialogTrigger asChild>
               <Button variant="ghost" size="sm" className="h-5 w-5 p-0">
                 <Settings className="w-3 h-3" />
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-md">
-              <DialogHeader>
+            <DialogContent className="sm:max-w-md p-3">
+              <DialogHeader className="pb-1">
                 <DialogTitle className="text-sm">Auto-class Configuration</DialogTitle>
               </DialogHeader>
-              <div className="space-y-2 py-2">
+              <div className="space-y-2 py-1">
                 <div className="space-y-1">
                   <Label htmlFor="startIndex" className="text-xs">Start Index</Label>
                   <Input
@@ -263,7 +266,8 @@ export const ClassSelector: React.FC<ClassSelectorProps> = ({
               </div>
             </DialogContent>
           </Dialog>
-        </div>
+          </div>
+        )}
         {/* Warning banner for locked classes */}
         {!isActiveClassEditable && activeClassDependents.length > 0 && (
           <Alert className="mb-2 bg-yellow-50 dark:bg-yellow-900/20 border-yellow-300 dark:border-yellow-700">
@@ -372,7 +376,6 @@ export const ClassSelector: React.FC<ClassSelectorProps> = ({
               })}
 
               <div className="flex items-center gap-1 flex-1 min-w-[120px]">
-                <ArrowDown className="w-3 h-3 text-muted-foreground flex-shrink-0" />
                 <input
                   ref={inputRef}
                   type="text"

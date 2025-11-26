@@ -514,6 +514,15 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
                     </Tooltip>
                   </TooltipProvider>
                 </div>
+                <ClassSelector 
+                  selectedClasses={classes}
+                  onAddClass={handleAddClass}
+                  onRemoveClass={handleRemoveClass}
+                  onClassClick={handleClassClick}
+                  activeClassIndex={activeClassIndex}
+                  componentType={selectedInstance.type}
+                  showAutoClassPreview={true}
+                />
                 {classes.length > 0 && (
                   <TooltipProvider>
                     <Tooltip>
@@ -533,27 +542,14 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
                 )}
               </div>
 
-              {/* Integrated State dropdown + Class selector */}
-              <div className="flex flex-col gap-2">
-                <div className="flex items-center gap-1 relative">
-                  {/* Class selector taking space */}
-                  <div className="flex-1 pr-7">
-                    <ClassSelector
-                      selectedClasses={classes}
-                      onAddClass={handleAddClass}
-                      onRemoveClass={handleRemoveClass}
-                      onClassClick={handleClassClick}
-                      activeClassIndex={activeClassIndex}
-                    />
-                  </div>
-                  
-                  {/* Compact State dropdown - absolute positioned to right */}
-                  <DropdownMenu>
+              {/* State dropdown */}
+              <div className="flex justify-end">
+                <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button 
                         variant="outline" 
                         size="sm" 
-                        className={`absolute right-0 top-0 h-9 w-6 p-0 justify-center border border-border ${currentPseudoState !== 'default' ? 'bg-green-500/10 border-green-500/50' : ''}`}
+                        className={`h-9 w-6 p-0 justify-center border border-border ${currentPseudoState !== 'default' ? 'bg-green-500/10 border-green-500/50' : ''}`}
                         title={`State: ${currentPseudoState}`}
                       >
                         <ChevronDown className="w-2.5 h-2.5 text-muted-foreground" />
@@ -586,7 +582,6 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
-              </div>
 
               {classes.length === 0 && (
                 <div 
