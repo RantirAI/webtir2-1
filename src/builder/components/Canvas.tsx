@@ -177,13 +177,17 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
         distance,
       });
       setInitialZoom(zoom);
-    } else if (e.touches.length === 1 && (isPanMode || e.touches[0].target === canvasRef.current)) {
-      // Single touch pan
-      setIsPanning(true);
-      setPanStart({
-        x: e.touches[0].clientX,
-        y: e.touches[0].clientY,
-      });
+    } else if (e.touches.length === 1) {
+      // Single touch pan - always enable for canvas
+      const target = e.target as HTMLElement;
+      const isCanvas = target.classList.contains('builder-canvas') || target.closest('.builder-canvas');
+      if (isCanvas || isPanMode) {
+        setIsPanning(true);
+        setPanStart({
+          x: e.touches[0].clientX,
+          y: e.touches[0].clientY,
+        });
+      }
     }
   };
 
@@ -579,10 +583,11 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
         setNodeRef(node);
         onCanvasRef?.(node);
       }}
-      className={`absolute inset-0 ${isPreviewMode ? 'overflow-auto' : 'overflow-auto'} bg-[#e5e7eb] dark:bg-zinc-800 builder-canvas`}
+      className={`absolute inset-0 ${isPreviewMode ? 'overflow-auto' : 'overflow-auto'} bg-[#e5e7eb] dark:bg-zinc-800 builder-canvas flex items-center justify-center`}
       style={{
         backgroundImage: isPreviewMode ? 'none' : `radial-gradient(circle, #9ca3af 1px, transparent 1px)`,
         backgroundSize: '20px 20px',
+        backgroundPosition: 'center',
         cursor: isPanMode ? (isPanning ? 'grabbing' : 'grab') : 'default',
       }}
       onMouseDown={handleMouseDown}
@@ -597,13 +602,11 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
       onTouchEnd={handleTouchEnd}
     >
       <div 
-        className="transition-transform origin-top-left flex items-start justify-center gap-8"
+        className="transition-transform origin-center inline-flex items-start justify-center gap-8"
         style={{
-          transform: isPreviewMode ? 'none' : `scale(${zoom / 100}) translate(${panOffset.x / (zoom / 100)}px, ${panOffset.y / (zoom / 100)}px)`,
+          transform: isPreviewMode ? 'none' : `scale(${zoom / 100})`,
           padding: isPreviewMode ? '0' : '4rem',
-          minHeight: isPreviewMode ? 'auto' : '100vh',
-          width: isPreviewMode ? '100%' : 'max-content',
-          minWidth: isPreviewMode ? '100%' : 'calc(100% + 8rem)',
+          minHeight: isPreviewMode ? 'auto' : 'calc(100vh - 8rem)',
         }}
       >
         {pages.map((page, index) => {
