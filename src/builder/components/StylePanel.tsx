@@ -749,11 +749,14 @@ export const StylePanel: React.FC<StylePanelProps> = ({
                             updateStyle('alignItems', alignMap[row]);
                           }}
                           onDoubleClick={() => {
-                            // Double click for advanced options
+                            // Double click center button cycles through space options
                             if (col === 1 && row === 1) {
-                              // Center - cycle through space options
                               const current = computedStyles.justifyContent;
-                              if (current === 'center') updateStyle('justifyContent', 'space-between');
+                              if (current === 'center') {
+                                updateStyle('justifyContent', 'space-between');
+                                // Activate all three in row
+                                updateStyle('alignItems', alignMap[row]);
+                              }
                               else if (current === 'space-between') updateStyle('justifyContent', 'space-around');
                               else if (current === 'space-around') updateStyle('justifyContent', 'space-evenly');
                               else updateStyle('justifyContent', 'center');
@@ -764,38 +767,40 @@ export const StylePanel: React.FC<StylePanelProps> = ({
                     })}
                   </div>
 
-                  {/* Right: Stacked Controls */}
+                  {/* Right: Stacked Controls with X/Y labels and icons */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
                     <div className="Col" style={{ gap: '2px' }}>
-                      <label className="Label" style={{ fontSize: '9px' }}>Justify</label>
+                      <label className="Label" style={{ fontSize: '9px', fontWeight: 600 }}>x</label>
                       <select
                         className="Select"
                         value={computedStyles.justifyContent || 'flex-start'}
                         onChange={(e) => updateStyle('justifyContent', e.target.value)}
-                        style={{ fontSize: '9px', padding: '2px 4px', height: '22px', maxWidth: '90px' }}
+                        style={{ fontSize: '9px', padding: '2px 4px', height: '24px', maxWidth: '90px' }}
                       >
-                        <option value="flex-start">Start</option>
-                        <option value="center">Center</option>
-                        <option value="flex-end">End</option>
-                        <option value="space-between">Between</option>
-                        <option value="space-around">Around</option>
-                        <option value="space-evenly">Evenly</option>
+                        <option value="flex-start">◀ Left</option>
+                        <option value="center">● Center</option>
+                        <option value="flex-end">▶ Right</option>
+                        <option value="space-between">⬌ Space between</option>
+                        <option value="space-around">⬍ Space around</option>
+                        <option value="space-evenly">⬌ Evenly</option>
                       </select>
                     </div>
 
                     <div className="Col" style={{ gap: '2px' }}>
-                      <label className="Label" style={{ fontSize: '9px' }}>Align</label>
+                      <label className="Label" style={{ fontSize: '9px', fontWeight: 600 }}>y</label>
                       <select
                         className="Select"
                         value={computedStyles.alignItems || 'stretch'}
                         onChange={(e) => updateStyle('alignItems', e.target.value)}
-                        style={{ fontSize: '9px', padding: '2px 4px', height: '22px', maxWidth: '90px' }}
+                        style={{ fontSize: '9px', padding: '2px 4px', height: '24px', maxWidth: '90px' }}
                       >
-                        <option value="stretch">Stretch</option>
-                        <option value="flex-start">Start</option>
-                        <option value="center">Center</option>
-                        <option value="flex-end">End</option>
-                        <option value="baseline">Baseline</option>
+                        <option value="flex-start">▲ Top</option>
+                        <option value="center">● Center</option>
+                        <option value="flex-end">▼ Bottom</option>
+                        <option value="space-between">⬍ Space between</option>
+                        <option value="space-around">⬍ Space around</option>
+                        <option value="stretch">⬍ Stretch</option>
+                        <option value="baseline">― Baseline</option>
                       </select>
                     </div>
 

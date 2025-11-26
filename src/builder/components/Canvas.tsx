@@ -120,14 +120,14 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
     };
   }, [isPanMode]);
 
-  // Scroll to show top margin on mount and when pages change
+  // Scroll to center pages on mount and when pages change
   useEffect(() => {
     const scrollTimer = setTimeout(() => {
       if (canvasRef.current && !isPreviewMode) {
-        // Scroll to show pages below toolbar - 800px offset for new padding
+        // Center pages in the canvas - 1200px padding on all sides
         canvasRef.current.scrollTo({
-          top: 800,
-          left: 700,
+          top: 1000,
+          left: 1000,
           behavior: 'instant'
         });
       }
@@ -627,9 +627,9 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
         className="transition-transform origin-center inline-flex items-start justify-center gap-8"
         style={{
           transform: isPreviewMode ? 'none' : `scale(${zoom / 100})`,
-          padding: isPreviewMode ? '0' : '62.5rem 57.5rem 57.5rem 57.5rem', // 1000px top, 920px sides/bottom
-          minHeight: isPreviewMode ? 'auto' : 'calc(100vh + 120rem)',
-          minWidth: isPreviewMode ? 'auto' : 'calc(100% + 115rem)',
+          padding: isPreviewMode ? '0' : '75rem', // 1200px on all sides for proper centering
+          minHeight: isPreviewMode ? 'auto' : 'calc(100vh + 150rem)',
+          minWidth: isPreviewMode ? 'auto' : 'calc(100% + 150rem)',
         }}
       >
         {safePages.map((pageId, index) => {

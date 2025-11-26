@@ -52,7 +52,7 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = () => {
             className="text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none flex items-center gap-1 whitespace-nowrap flex-shrink-0"
           >
             <Sparkles className="w-3 h-3" />
-            <span>AI Chat</span>
+            <span>AI</span>
           </TabsTrigger>
         </TabsList>
 
