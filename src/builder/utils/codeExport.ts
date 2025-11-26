@@ -2,22 +2,34 @@ import { ComponentInstance } from '../store/types';
 import { useStyleStore } from '../store/useStyleStore';
 import { exportStylesheet } from './export';
 
-// Export HTML
-export function exportHTML(rootInstance: ComponentInstance): string {
+// Export HTML for a single page
+export function exportHTML(rootInstance: ComponentInstance, title: string = 'My Page'): string {
   const html = instanceToHTML(rootInstance);
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My Page</title>
-  <link rel="stylesheet" href="styles.css">
+  <title>${title}</title>
+  <link rel="stylesheet" href="../styles.css">
 </head>
 <body>
 ${html}
-  <script src="script.js"></script>
+  <script src="../script.js"></script>
 </body>
 </html>`;
+}
+
+// Export HTML for multiple pages
+export function exportMultiPageHTML(pages: Array<{ id: string; name: string; rootInstance: ComponentInstance }>): Record<string, string> {
+  const pageFiles: Record<string, string> = {};
+  
+  pages.forEach(page => {
+    const fileName = page.name.toLowerCase().replace(/\s+/g, '-');
+    pageFiles[`pages/${fileName}.html`] = exportHTML(page.rootInstance, page.name);
+  });
+  
+  return pageFiles;
 }
 
 function instanceToHTML(instance: ComponentInstance, indent: number = 1): string {
