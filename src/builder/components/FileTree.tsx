@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { ChevronRight, ChevronDown, FileCode, FolderOpen, Folder, FileImage, Palette, MessageSquare } from 'lucide-react';
+import { ChevronRight, ChevronDown, FileCode, FolderOpen, Folder, FileImage, FileVideo, Film, Palette } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface FileNode {
@@ -107,6 +107,23 @@ export const FileTree: React.FC<FileTreeProps> = ({ onFileSelect, selectedFile, 
       );
     }
 
+    // Get appropriate icon for file type
+    const getFileIcon = () => {
+      if (node.path.endsWith('.html')) return <FileCode className="w-3 h-3 flex-shrink-0 text-orange-500" />;
+      if (node.path.endsWith('.css')) return <Palette className="w-3 h-3 flex-shrink-0 text-blue-500" />;
+      if (node.path.endsWith('.js')) return <FileCode className="w-3 h-3 flex-shrink-0 text-yellow-500" />;
+      if (node.path.includes('/images/') || node.path.match(/\.(jpg|jpeg|png|gif|svg|webp)$/)) {
+        return <FileImage className="w-3 h-3 flex-shrink-0 text-green-500" />;
+      }
+      if (node.path.includes('/videos/') || node.path.match(/\.(mp4|webm|mov)$/)) {
+        return <FileVideo className="w-3 h-3 flex-shrink-0 text-purple-500" />;
+      }
+      if (node.path.includes('/lottie/') || node.path.endsWith('.json')) {
+        return <Film className="w-3 h-3 flex-shrink-0 text-pink-500" />;
+      }
+      return <FileCode className="w-3 h-3 flex-shrink-0 text-muted-foreground" />;
+    };
+
     return (
       <div
         key={node.path}
@@ -116,7 +133,7 @@ export const FileTree: React.FC<FileTreeProps> = ({ onFileSelect, selectedFile, 
         style={{ paddingLeft: `${depth * 12 + 20}px` }}
         onClick={() => onFileSelect(node.path)}
       >
-        <FileCode className="w-3 h-3 flex-shrink-0 text-muted-foreground" />
+        {getFileIcon()}
         <span className="truncate">{node.name}</span>
       </div>
     );
