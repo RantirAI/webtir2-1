@@ -23,7 +23,7 @@ import { deepestContainerCollision } from '@/builder/utils/collisionDetection';
 import * as Icons from 'lucide-react';
 
 const Builder: React.FC = () => {
-  const [zoom, setZoom] = useState(100);
+  const [zoom, setZoom] = useState(80); // Default zoom set to 80%
   const [currentBreakpoint, setCurrentBreakpoint] = useState('desktop');
   const [isPanMode, setIsPanMode] = useState(false);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
@@ -37,6 +37,7 @@ const Builder: React.FC = () => {
   const [dragOverEvent, setDragOverEvent] = useState<any>(null);
   const [canvasElement, setCanvasElement] = useState<HTMLElement | null>(null);
   const [isCodeViewOpen, setIsCodeViewOpen] = useState(false);
+  const [sidebarsHidden, setSidebarsHidden] = useState(false);
   
   // Page store
   const { currentPageId, addPage, setCurrentPage, getCurrentPage, getAllPages } = usePageStore();
@@ -754,19 +755,9 @@ const Builder: React.FC = () => {
         )}
 
         {/* Floating Left Sidebar */}
-        {!isPreviewMode && !isCodeViewOpen && (
+        {!isPreviewMode && !isCodeViewOpen && !sidebarsHidden && (
           <div className="absolute left-4 top-4 bottom-4 z-10 transition-all duration-300 animate-slide-in-left">
-            <LeftSidebar
-              pages={pageIds}
-              currentPage={currentPageId}
-              pageNames={pageNames}
-              onPageChange={(pageId) => setCurrentPage(pageId)}
-              onPageNameChange={handlePageNameChange}
-              onDeletePage={handleDeletePage}
-              onDuplicatePage={handleDuplicatePage}
-              onSetHomePage={setHomePage}
-              homePage={homePage}
-            />
+            <LeftSidebar />
           </div>
         )}
 
@@ -794,22 +785,24 @@ const Builder: React.FC = () => {
               onProjectSettingsOpen={() => setProjectSettingsOpen(true)}
               isCodeViewOpen={isCodeViewOpen}
               onCodeViewToggle={() => setIsCodeViewOpen(!isCodeViewOpen)}
+              sidebarsHidden={sidebarsHidden}
+              onToggleSidebars={() => setSidebarsHidden(!sidebarsHidden)}
             />
           </div>
         )}
 
         {/* Floating Right Sidebar */}
-        {!isPreviewMode && !isCodeViewOpen && (
+        {!isPreviewMode && !isCodeViewOpen && !sidebarsHidden && (
           <div className="absolute right-4 top-4 bottom-4 z-10 transition-all duration-300 animate-slide-in-right">
             <StylePanel
-              pages={[]}
-              currentPage={currentPage}
-              pageNames={{}}
-              onPageChange={() => {}}
-              onPageNameChange={() => {}}
-              onDeletePage={() => {}}
-              onDuplicatePage={() => {}}
-              onSetHomePage={() => {}}
+              pages={pageIds}
+              currentPage={currentPageId}
+              pageNames={pageNames}
+              onPageChange={(pageId) => setCurrentPage(pageId)}
+              onPageNameChange={handlePageNameChange}
+              onDeletePage={handleDeletePage}
+              onDuplicatePage={handleDuplicatePage}
+              onSetHomePage={setHomePage}
               homePage={homePage}
             />
           </div>
