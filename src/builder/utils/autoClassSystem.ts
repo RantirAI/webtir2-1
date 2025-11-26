@@ -31,31 +31,62 @@ export function normalizeComponentBase(componentType: string): string {
   
   // Map common component types to semantic names
   const typeMap: Record<string, string> = {
+    // Layout components
+    div: 'div',
     box: 'div',
     container: 'container',
     section: 'section',
+    
+    // Typography
+    heading: 'heading',
+    text: 'text',
+    richtext: 'richtext',
+    
+    // Interactive
     button: 'button',
     buttonprimitive: 'button',
-    text: 'text',
-    heading: 'heading',
-    image: 'image',
-    imageprimitive: 'image',
+    formbutton: 'button',
     link: 'link',
     linkprimitive: 'link',
+    
+    // Media
+    image: 'image',
+    imageprimitive: 'image',
+    video: 'video',
+    videoprimitive: 'video',
+    youtube: 'youtube',
+    youtubeprimitive: 'youtube',
+    lottie: 'lottie',
+    lottieprimitive: 'lottie',
+    
+    // Forms
     form: 'form',
     formprimitive: 'form',
+    inputlabel: 'label',
     input: 'input',
     textinput: 'input',
+    textinputprimitive: 'input',
     textarea: 'textarea',
+    textareaprimitive: 'textarea',
     select: 'select',
+    selectprimitive: 'select',
     checkbox: 'checkbox',
+    checkboxprimitive: 'checkbox',
+    checkboxfield: 'checkbox',
     radio: 'radio',
+    radioprimitive: 'radio',
+    radiogroup: 'radio',
+    
+    // Data
     table: 'table',
+    tableprimitive: 'table',
     cell: 'cell',
-    video: 'video',
-    youtube: 'youtube',
-    lottie: 'lottie',
+    cellprimitive: 'cell',
+    keyvalue: 'keyvalue',
+    
+    // Navigation
     navigation: 'nav',
+    navigationprimitive: 'nav',
   };
   
   return typeMap[normalized] || normalized;
