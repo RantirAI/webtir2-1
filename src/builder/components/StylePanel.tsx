@@ -86,8 +86,8 @@ export const StylePanel: React.FC<StylePanelProps> = ({
 
   const [openSections, setOpenSections] = useState({
     layout: true,
-    space: false,
-    size: false,
+    space: true,
+    size: true,
     position: false,
     typography: false,
     backgrounds: false,
@@ -485,8 +485,8 @@ export const StylePanel: React.FC<StylePanelProps> = ({
             value="settings" 
             className="text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none flex items-center gap-1"
           >
-            <SettingsIcon className="w-3 h-3" />
-            Settings
+            <Database className="w-3 h-3" />
+            Data
           </TabsTrigger>
           <TabsTrigger 
             value="pages" 
@@ -777,12 +777,12 @@ export const StylePanel: React.FC<StylePanelProps> = ({
                         onChange={(e) => updateStyle('justifyContent', e.target.value)}
                         style={{ fontSize: '9px', padding: '2px 4px', height: '24px', maxWidth: '90px' }}
                       >
-                        <option value="flex-start">◀ Left</option>
-                        <option value="center">● Center</option>
-                        <option value="flex-end">▶ Right</option>
-                        <option value="space-between">⬌ Space between</option>
-                        <option value="space-around">⬍ Space around</option>
-                        <option value="space-evenly">⬌ Evenly</option>
+                        <option value="flex-start">← Left</option>
+                        <option value="center">+ Center</option>
+                        <option value="flex-end">→ Right</option>
+                        <option value="space-between">↔ Space between</option>
+                        <option value="space-around">⟷ Space around</option>
+                        <option value="space-evenly">⟷ Evenly</option>
                       </select>
                     </div>
 
@@ -794,13 +794,13 @@ export const StylePanel: React.FC<StylePanelProps> = ({
                         onChange={(e) => updateStyle('alignItems', e.target.value)}
                         style={{ fontSize: '9px', padding: '2px 4px', height: '24px', maxWidth: '90px' }}
                       >
-                        <option value="flex-start">▲ Top</option>
-                        <option value="center">● Center</option>
-                        <option value="flex-end">▼ Bottom</option>
-                        <option value="space-between">⬍ Space between</option>
-                        <option value="space-around">⬍ Space around</option>
-                        <option value="stretch">⬍ Stretch</option>
-                        <option value="baseline">― Baseline</option>
+                        <option value="flex-start">↑ Top</option>
+                        <option value="center">+ Center</option>
+                        <option value="flex-end">↓ Bottom</option>
+                        <option value="space-between">↕ Space between</option>
+                        <option value="space-around">⟷ Space around</option>
+                        <option value="stretch">⇕ Stretch</option>
+                        <option value="baseline">─ Baseline</option>
                       </select>
                     </div>
 
