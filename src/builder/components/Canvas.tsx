@@ -610,8 +610,8 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
         className="transition-transform origin-center inline-flex items-start justify-center gap-8"
         style={{
           transform: isPreviewMode ? 'none' : `scale(${zoom / 100})`,
-          padding: isPreviewMode ? '0' : '12rem 20rem',
-          minHeight: isPreviewMode ? 'auto' : 'calc(100vh + 24rem)',
+          padding: isPreviewMode ? '0' : '20rem 20rem',
+          minHeight: isPreviewMode ? 'auto' : 'calc(100vh + 40rem)',
           minWidth: isPreviewMode ? 'auto' : 'calc(100% + 40rem)',
         }}
       >
