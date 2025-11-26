@@ -21,6 +21,7 @@ export const TextAreaPrimitive: React.FC<TextAreaPrimitiveProps> = ({
 }) => {
   return (
     <textarea
+      data-instance-id={instanceId}
       placeholder={placeholder}
       rows={rows}
       required={required}

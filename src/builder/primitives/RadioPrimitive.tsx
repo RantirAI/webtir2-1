@@ -34,6 +34,7 @@ export const RadioPrimitive: React.FC<RadioPrimitiveProps> = ({
 }) => {
   return (
     <div
+      data-instance-id={instanceId}
       className={`${orientation === 'horizontal' ? 'flex gap-4' : 'space-y-2'} ${className}`}
       style={style}
     >

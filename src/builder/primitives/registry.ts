@@ -516,7 +516,12 @@ export const componentRegistry: Record<string, ComponentMeta> = {
       type: 'button',
       disabled: false,
     },
-    defaultStyles: {},
+    defaultStyles: {
+      display: 'inline-flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: '40px',
+    },
     propsDefinition: {
       text: {
         type: 'string',
@@ -548,7 +553,11 @@ export const componentRegistry: Record<string, ComponentMeta> = {
       htmlFor: '',
       required: false,
     },
-    defaultStyles: {},
+    defaultStyles: {
+      display: 'block',
+      fontSize: '14px',
+      fontWeight: '500',
+    },
     propsDefinition: {
       text: {
         type: 'string',
@@ -580,7 +589,10 @@ export const componentRegistry: Record<string, ComponentMeta> = {
       required: false,
       disabled: false,
     },
-    defaultStyles: {},
+    defaultStyles: {
+      width: '100%',
+      minHeight: '40px',
+    },
     propsDefinition: {
       placeholder: {
         type: 'string',
@@ -619,7 +631,10 @@ export const componentRegistry: Record<string, ComponentMeta> = {
       required: false,
       disabled: false,
     },
-    defaultStyles: {},
+    defaultStyles: {
+      width: '100%',
+      minHeight: '100px',
+    },
     propsDefinition: {
       placeholder: {
         type: 'string',
@@ -661,7 +676,10 @@ export const componentRegistry: Record<string, ComponentMeta> = {
       required: false,
       disabled: false,
     },
-    defaultStyles: {},
+    defaultStyles: {
+      width: '100%',
+      minHeight: '40px',
+    },
     propsDefinition: {
       placeholder: {
         type: 'string',
@@ -698,7 +716,11 @@ export const componentRegistry: Record<string, ComponentMeta> = {
       disabled: false,
       orientation: 'vertical',
     },
-    defaultStyles: {},
+    defaultStyles: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '8px',
+    },
     propsDefinition: {
       name: {
         type: 'string',
@@ -736,7 +758,12 @@ export const componentRegistry: Record<string, ComponentMeta> = {
       required: false,
       disabled: false,
     },
-    defaultStyles: {},
+    defaultStyles: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '8px',
+      minHeight: '24px',
+    },
     propsDefinition: {
       label: {
         type: 'string',

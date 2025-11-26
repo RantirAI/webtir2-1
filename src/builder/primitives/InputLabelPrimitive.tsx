@@ -27,6 +27,7 @@ export const InputLabelPrimitive: React.FC<InputLabelPrimitiveProps> = ({
 
   return (
     <label
+      data-instance-id={instanceId}
       htmlFor={htmlFor}
       className={`block text-sm font-medium text-foreground ${className}`}
       style={style}
