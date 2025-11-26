@@ -260,7 +260,7 @@ const Index = () => {
         <div 
           className="absolute inset-0 pointer-events-none dark:hidden" 
           style={{
-            backgroundImage: 'radial-gradient(circle, rgba(0, 0, 0, 0.6) 1.5px, transparent 1.5px)',
+            backgroundImage: 'radial-gradient(circle, rgba(0, 0, 0, 0.12) 1.5px, transparent 1.5px)',
             backgroundSize: '16px 16px',
             zIndex: 0
           }}
@@ -269,7 +269,7 @@ const Index = () => {
         <div 
           className="absolute inset-0 pointer-events-none hidden dark:block" 
           style={{
-            backgroundImage: 'radial-gradient(circle, rgba(255, 255, 255, 0.6) 1.5px, transparent 1.5px)',
+            backgroundImage: 'radial-gradient(circle, rgba(255, 255, 255, 0.12) 1.5px, transparent 1.5px)',
             backgroundSize: '16px 16px',
             zIndex: 0
           }}
