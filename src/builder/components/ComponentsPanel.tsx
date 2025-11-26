@@ -74,12 +74,12 @@ export const ComponentsPanel: React.FC = () => {
       setStyle(navStyleId, 'borderBottom', '1px solid hsl(var(--border))');
       setStyle(navStyleId, 'width', '100%');
       
-      const logoBoxStyleId = createStyleSource('local', getNextAutoClassName('logo-container'));
+      const logoBoxStyleId = createStyleSource('local', getNextAutoClassName('div'));
       setStyle(logoBoxStyleId, 'display', 'flex');
       setStyle(logoBoxStyleId, 'alignItems', 'center');
       setStyle(logoBoxStyleId, 'gap', '8px');
       
-      const linksBoxStyleId = createStyleSource('local', getNextAutoClassName('nav-links'));
+      const linksBoxStyleId = createStyleSource('local', getNextAutoClassName('div'));
       setStyle(linksBoxStyleId, 'display', 'flex');
       setStyle(linksBoxStyleId, 'gap', '24px');
       setStyle(linksBoxStyleId, 'alignItems', 'center');
@@ -176,13 +176,13 @@ export const ComponentsPanel: React.FC = () => {
       
       const { createStyleSource, setStyle, getNextAutoClassName } = useStyleStore.getState();
       
-      const dropdownStyleId = createStyleSource('local', getNextAutoClassName('dropdown'));
+      const dropdownStyleId = createStyleSource('local', getNextAutoClassName('div'));
       setStyle(dropdownStyleId, 'display', 'flex');
       setStyle(dropdownStyleId, 'flexDirection', 'column');
       setStyle(dropdownStyleId, 'position', 'relative');
       setStyle(dropdownStyleId, 'width', 'fit-content');
       
-      const menuStyleId = createStyleSource('local', getNextAutoClassName('dropdown-menu'));
+      const menuStyleId = createStyleSource('local', getNextAutoClassName('div'));
       setStyle(menuStyleId, 'display', 'flex');
       setStyle(menuStyleId, 'flexDirection', 'column');
       setStyle(menuStyleId, 'position', 'absolute');
@@ -270,7 +270,7 @@ export const ComponentsPanel: React.FC = () => {
       
       const { createStyleSource, setStyle, getNextAutoClassName } = useStyleStore.getState();
       
-      const formStyleId = createStyleSource('local', getNextAutoClassName('form'));
+      const formStyleId = createStyleSource('local', getNextAutoClassName('div'));
       setStyle(formStyleId, 'display', 'flex');
       setStyle(formStyleId, 'flexDirection', 'column');
       setStyle(formStyleId, 'gap', '20px');
@@ -280,7 +280,7 @@ export const ComponentsPanel: React.FC = () => {
       setStyle(formStyleId, 'borderRadius', '8px');
       setStyle(formStyleId, 'maxWidth', '500px');
       
-      const fieldBoxStyleId = createStyleSource('local', getNextAutoClassName('form-field'));
+      const fieldBoxStyleId = createStyleSource('local', getNextAutoClassName('div'));
       setStyle(fieldBoxStyleId, 'display', 'flex');
       setStyle(fieldBoxStyleId, 'flexDirection', 'column');
       setStyle(fieldBoxStyleId, 'gap', '8px');
@@ -396,9 +396,9 @@ export const ComponentsPanel: React.FC = () => {
       const labelId = generateId();
       const radioId = generateId();
       
-      const { createStyleSource, setStyle } = useStyleStore.getState();
+      const { createStyleSource, setStyle, getNextAutoClassName } = useStyleStore.getState();
       
-      const boxStyleId = createStyleSource('local', `radio-group-${boxId}`);
+      const boxStyleId = createStyleSource('local', getNextAutoClassName('div'));
       setStyle(boxStyleId, 'display', 'flex');
       setStyle(boxStyleId, 'flexDirection', 'column');
       setStyle(boxStyleId, 'gap', '8px');
@@ -459,9 +459,9 @@ export const ComponentsPanel: React.FC = () => {
       const cell5Id = generateId();
       const cell6Id = generateId();
       
-      const { createStyleSource, setStyle } = useStyleStore.getState();
+      const { createStyleSource, setStyle, getNextAutoClassName } = useStyleStore.getState();
       
-      const tableStyleId = createStyleSource('local', `table-${tableId}`);
+      const tableStyleId = createStyleSource('local', getNextAutoClassName('div'));
       setStyle(tableStyleId, 'width', '100%');
       setStyle(tableStyleId, 'display', 'flex');
       setStyle(tableStyleId, 'flexDirection', 'column');
@@ -469,7 +469,7 @@ export const ComponentsPanel: React.FC = () => {
       setStyle(tableStyleId, 'borderRadius', '8px');
       setStyle(tableStyleId, 'overflow', 'hidden');
       
-      const headerRowStyleId = createStyleSource('local', `header-row-${headerRowId}`);
+      const headerRowStyleId = createStyleSource('local', getNextAutoClassName('div'));
       setStyle(headerRowStyleId, 'display', 'flex');
       setStyle(headerRowStyleId, 'gap', '0');
       setStyle(headerRowStyleId, 'padding', '0');
@@ -477,13 +477,13 @@ export const ComponentsPanel: React.FC = () => {
       setStyle(headerRowStyleId, 'fontWeight', '600');
       setStyle(headerRowStyleId, 'borderBottom', '2px solid hsl(var(--border))');
       
-      const rowStyleId = createStyleSource('local', `row-${row1Id}`);
+      const rowStyleId = createStyleSource('local', getNextAutoClassName('div'));
       setStyle(rowStyleId, 'display', 'flex');
       setStyle(rowStyleId, 'gap', '0');
       setStyle(rowStyleId, 'padding', '0');
       setStyle(rowStyleId, 'borderBottom', '1px solid hsl(var(--border))');
 
-      const cellStyleId = createStyleSource('local', `cell-${cell1Id}`);
+      const cellStyleId = createStyleSource('local', getNextAutoClassName('cell'));
       setStyle(cellStyleId, 'flex', '1');
       setStyle(cellStyleId, 'padding', '12px');
       setStyle(cellStyleId, 'borderRight', '1px solid hsl(var(--border))');
@@ -639,12 +639,14 @@ export const ComponentsPanel: React.FC = () => {
       );
     }
 
-    let styleSourceId: string | undefined;
-    if (type === 'Button' && meta.defaultStyles) {
-      const { createStyleSource, setStyle } = useStyleStore.getState();
-      styleSourceId = createStyleSource('local', 'button');
+    // Create auto-class style source for all components
+    const { createStyleSource, setStyle, getNextAutoClassName } = useStyleStore.getState();
+    const styleSourceId = createStyleSource('local', getNextAutoClassName(type));
+    
+    // Apply default styles if component has them
+    if (meta.defaultStyles) {
       Object.entries(meta.defaultStyles).forEach(([property, value]) => {
-        setStyle(styleSourceId!, property, value);
+        setStyle(styleSourceId, property, value);
       });
     }
 
@@ -653,7 +655,7 @@ export const ComponentsPanel: React.FC = () => {
       type: type as ComponentType,
       label: meta.label,
       props: { ...meta.defaultProps },
-      styleSourceIds: styleSourceId ? [styleSourceId] : [],
+      styleSourceIds: [styleSourceId],
       children: defaultChildren,
     };
 
