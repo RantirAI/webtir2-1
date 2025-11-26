@@ -8,7 +8,7 @@ import { exportHTML, exportCSS, exportJS, exportAstro } from '../utils/codeExpor
 import { parseHTMLToInstance } from '../utils/codeImport';
 import { Copy, Check, Monitor, Tablet, Smartphone, Upload, FileImage } from 'lucide-react';
 import { ImportModal } from './ImportModal';
-import { FileTree } from './FileTree';
+import { FileTreeMemo } from './FileTree';
 import { toast } from '@/hooks/use-toast';
 import Prism from 'prismjs';
 import 'prismjs/themes/prism-tomorrow.css';
@@ -211,7 +211,7 @@ export const CodeView: React.FC<CodeViewProps> = React.memo(({ onClose, pages, p
             <div className="h-10 border-b border-border flex items-center px-3">
               <h3 className="text-xs font-semibold text-muted-foreground uppercase">Files</h3>
             </div>
-            <FileTree 
+            <FileTreeMemo 
               onFileSelect={setSelectedFile}
               selectedFile={selectedFile}
               pages={pages}

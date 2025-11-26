@@ -15,7 +15,7 @@ interface FileTreeProps {
   pages: string[];
 }
 
-export const FileTree: React.FC<FileTreeProps> = React.memo(({ onFileSelect, selectedFile, pages }) => {
+const FileTree: React.FC<FileTreeProps> = ({ onFileSelect, selectedFile, pages }) => {
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set(['/', '/pages', '/components', '/media']));
 
   const fileStructure: FileNode[] = useMemo(() => {
@@ -140,13 +140,25 @@ export const FileTree: React.FC<FileTreeProps> = React.memo(({ onFileSelect, sel
     );
   };
 
+  const treeContent = useMemo(() => (
+    <div className="py-2">
+      {fileStructure.map((node) => renderNode(node))}
+    </div>
+  ), [fileStructure, expandedFolders, selectedFile]);
+
   return (
     <ScrollArea className="h-full">
-      <div className="py-2">
-        {fileStructure.map((node) => renderNode(node))}
-      </div>
+      {treeContent}
     </ScrollArea>
   );
-});
+};
 
-FileTree.displayName = 'FileTree';
+// Custom comparison to prevent unnecessary re-renders
+const areEqual = (prevProps: FileTreeProps, nextProps: FileTreeProps) => {
+  if (prevProps.selectedFile !== nextProps.selectedFile) return false;
+  if (prevProps.onFileSelect !== nextProps.onFileSelect) return false;
+  if (prevProps.pages.length !== nextProps.pages.length) return false;
+  return prevProps.pages.every((page, i) => page === nextProps.pages[i]);
+};
+
+export const FileTreeMemo = React.memo(FileTree, areEqual);
