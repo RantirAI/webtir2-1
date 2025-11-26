@@ -141,8 +141,8 @@ export const NavigationPrimitive: React.FC<NavigationPrimitiveProps> = ({
     <nav
       role="navigation"
       aria-label="Main Navigation"
-      className={`w-full ${className}`}
-      style={style}
+      className={className}
+      style={{ width: '100%', ...style }}
       data-instance-id={instanceId}
     >
       <div className="flex items-center w-full px-6 py-4 gap-6">
