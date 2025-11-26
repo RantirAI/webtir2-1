@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useBuilderStore } from '../store/useBuilderStore';
+import { usePageStore } from '../store/usePageStore';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 import { exportHTML, exportCSS, exportJS, exportAstro } from '../utils/codeExport';
 import { parseHTMLToInstance } from '../utils/codeImport';
-import { Copy, Check, Monitor, Tablet, Smartphone, Upload } from 'lucide-react';
+import { Copy, Check, Monitor, Tablet, Smartphone, Upload, FileImage } from 'lucide-react';
 import { ImportModal } from './ImportModal';
 import { FileTree } from './FileTree';
 import { toast } from '@/hooks/use-toast';
@@ -24,6 +25,7 @@ interface CodeViewProps {
 export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames }) => {
   const rootInstance = useBuilderStore((state) => state.rootInstance);
   const updateInstance = useBuilderStore((state) => state.updateInstance);
+  const allPagesData = usePageStore((state) => state.getAllPages());
   const [activeTab, setActiveTab] = useState('html');
   const [copiedTab, setCopiedTab] = useState<string | null>(null);
   const [previewSize, setPreviewSize] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
@@ -32,18 +34,28 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
   const [selectedFile, setSelectedFile] = useState(defaultFile);
   const [isCodeEdited, setIsCodeEdited] = useState(false);
   
-  const [htmlCode, setHtmlCode] = useState('');
+  const [pageHtmlCodes, setPageHtmlCodes] = useState<Record<string, string>>({});
   const [cssCode, setCssCode] = useState('');
   const [jsCode, setJsCode] = useState('');
   const [astroCode, setAstroCode] = useState('');
 
   useEffect(() => {
-    // Generate code exports
-    setHtmlCode(exportHTML(rootInstance));
+    // Generate code for all pages
+    const pageCodes: Record<string, string> = {};
+    pages.forEach((pageId) => {
+      const pageData = allPagesData.find(p => p.id === pageId);
+      if (pageData) {
+        const fileName = `${pageData.name.toLowerCase().replace(/\s+/g, '-')}.html`;
+        pageCodes[`/pages/${fileName}`] = exportHTML(pageData.rootInstance, pageData.name);
+      }
+    });
+    setPageHtmlCodes(pageCodes);
+    
+    // Generate global files
     setCssCode(exportCSS());
     setJsCode(exportJS(rootInstance));
     setAstroCode(exportAstro(rootInstance));
-  }, [rootInstance]);
+  }, [rootInstance, pages, allPagesData]);
 
   const handleCopy = (code: string, tab: string) => {
     navigator.clipboard.writeText(code);
@@ -60,8 +72,8 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
   // Apply code changes to builder
   const applyCodeChanges = () => {
     try {
-      if (activeTab === 'html') {
-        const newInstance = parseHTMLToInstance(htmlCode);
+      if (selectedFile.startsWith('/pages/') && selectedFile.endsWith('.html')) {
+        const newInstance = parseHTMLToInstance(pageHtmlCodes[selectedFile] || '');
         if (newInstance && rootInstance) {
           // Update the root instance while preserving the ID
           updateInstance(rootInstance.id, {
@@ -86,14 +98,44 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
     }
   };
 
+  const getCurrentFileCode = () => {
+    // If it's a page HTML file, return the specific page code
+    if (selectedFile.startsWith('/pages/') && selectedFile.endsWith('.html')) {
+      return pageHtmlCodes[selectedFile] || '';
+    }
+    
+    // Global files
+    if (selectedFile === '/styles.css') return cssCode;
+    if (selectedFile === '/script.js') return jsCode;
+    
+    // Media files - show as link
+    if (selectedFile.startsWith('/media/')) {
+      const fileName = selectedFile.split('/').pop();
+      return `/* Media file: ${fileName} */\n// This file is displayed in the preview panel`;
+    }
+    
+    return '';
+  };
+
+  const getFileLanguage = () => {
+    if (selectedFile.endsWith('.html')) return 'html';
+    if (selectedFile.endsWith('.css')) return 'css';
+    if (selectedFile.endsWith('.js')) return 'javascript';
+    return 'javascript';
+  };
+
   const getCode = (tab: string) => {
     switch (tab) {
-      case 'html': return htmlCode;
+      case 'html': return pageHtmlCodes[selectedFile] || Object.values(pageHtmlCodes)[0] || '';
       case 'css': return cssCode;
       case 'react': return jsCode;
       case 'astro': return astroCode;
       default: return '';
     }
+  };
+
+  const shouldShowHtmlPreview = () => {
+    return selectedFile.endsWith('.html');
   };
 
   const getPreviewWidth = () => {
@@ -110,26 +152,14 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
       {/* Top Bar */}
       <div className="h-16 border-b border-border flex items-center justify-between px-6">
         <div className="flex items-center gap-4">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="h-10">
-            <TabsList className="h-10 bg-muted/50">
-              <TabsTrigger value="html" className="data-[state=active]:bg-background text-xs">
-                HTML
-              </TabsTrigger>
-              <TabsTrigger value="react" className="data-[state=active]:bg-background text-xs">
-                React
-              </TabsTrigger>
-              <TabsTrigger value="astro" className="data-[state=active]:bg-background text-xs">
-                Astro
-              </TabsTrigger>
-              <TabsTrigger value="css" className="data-[state=active]:bg-background text-xs">
-                CSS
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
+          {/* Only show export tabs when no specific file is selected, or when we want to export */}
+          <div className="text-sm font-medium">
+            Code Editor
+          </div>
         </div>
         
         <div className="flex items-center gap-2">
-          {isCodeEdited && activeTab === 'html' && (
+          {isCodeEdited && selectedFile.endsWith('.html') && (
             <Button
               variant="default"
               size="sm"
@@ -151,10 +181,10 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => handleCopy(getCode(activeTab), activeTab)}
+            onClick={() => handleCopy(getCurrentFileCode(), selectedFile)}
             className="gap-2"
           >
-            {copiedTab === activeTab ? (
+            {copiedTab === selectedFile ? (
               <>
                 <Check className="h-4 w-4" />
                 Copied
@@ -194,15 +224,16 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
               <span className="text-xs font-mono text-muted-foreground">{selectedFile}</span>
             </div>
             <CodeEditor 
-              code={getCode(activeTab)} 
-              language={activeTab === 'astro' || activeTab === 'html' ? 'html' : activeTab === 'react' ? 'jsx' : activeTab}
+              code={getCurrentFileCode()} 
+              language={getFileLanguage()}
               onChange={(newCode) => {
                 setIsCodeEdited(true);
-                switch (activeTab) {
-                  case 'html': setHtmlCode(newCode); break;
-                  case 'css': setCssCode(newCode); break;
-                  case 'react': setJsCode(newCode); break;
-                  case 'astro': setAstroCode(newCode); break;
+                if (selectedFile.startsWith('/pages/') && selectedFile.endsWith('.html')) {
+                  setPageHtmlCodes(prev => ({ ...prev, [selectedFile]: newCode }));
+                } else if (selectedFile === '/styles.css') {
+                  setCssCode(newCode);
+                } else if (selectedFile === '/script.js') {
+                  setJsCode(newCode);
                 }
               }}
             />
@@ -247,17 +278,34 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
 
             {/* Preview Frame */}
             <div className="flex-1 overflow-hidden flex justify-center items-start p-4">
-              <div 
-                className="bg-white dark:bg-zinc-900 border border-border rounded-lg shadow-xl transition-all duration-300 overflow-hidden"
-                style={{ 
-                  width: getPreviewWidth(),
-                  height: '100%',
-                }}
-              >
-                <div className="w-full h-full overflow-auto">
-                  <PreviewFrame htmlCode={htmlCode} cssCode={cssCode} jsCode={jsCode} />
+              {shouldShowHtmlPreview() ? (
+                <div 
+                  className="bg-white dark:bg-zinc-900 border border-border rounded-lg shadow-xl transition-all duration-300 overflow-hidden"
+                  style={{ 
+                    width: getPreviewWidth(),
+                    height: '100%',
+                  }}
+                >
+                  <div className="w-full h-full overflow-auto">
+                    <PreviewFrame htmlCode={getCurrentFileCode()} cssCode={cssCode} jsCode={jsCode} />
+                  </div>
                 </div>
-              </div>
+              ) : selectedFile.startsWith('/media/') ? (
+                <div className="flex items-center justify-center w-full h-full">
+                  <div className="text-center p-8 border border-dashed border-border rounded-lg">
+                    <FileImage className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                    <p className="text-sm text-muted-foreground">Media file preview</p>
+                    <p className="text-xs text-muted-foreground mt-2">{selectedFile.split('/').pop()}</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center justify-center w-full h-full">
+                  <div className="text-center p-8">
+                    <p className="text-sm text-muted-foreground">No preview available</p>
+                    <p className="text-xs text-muted-foreground mt-2">CSS and JS files cannot be previewed</p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </ResizablePanel>
