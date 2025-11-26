@@ -39,14 +39,18 @@ const Builder: React.FC = () => {
   const [isCodeViewOpen, setIsCodeViewOpen] = useState(false);
   const [sidebarsHidden, setSidebarsHidden] = useState(false);
   
-  // Page store
-  const { currentPageId, addPage, setCurrentPage, getCurrentPage, getAllPages } = usePageStore();
-  const allPages = getAllPages();
-  const currentPageData = getCurrentPage();
-  const pageIds = useMemo(() => 
-    Array.isArray(allPages) ? allPages.map(p => p.id) : [], 
-    [allPages]
-  );
+  // Page store - use direct selectors to avoid reference issues
+  const pages = usePageStore((state) => state.pages);
+  const currentPageId = usePageStore((state) => state.currentPageId);
+  const addPage = usePageStore((state) => state.addPage);
+  const setCurrentPage = usePageStore((state) => state.setCurrentPage);
+  const updatePage = usePageStore((state) => state.updatePage);
+  const deletePage = usePageStore((state) => state.deletePage);
+  
+  // Memoize derived values
+  const allPages = useMemo(() => Object.values(pages), [pages]);
+  const currentPageData = useMemo(() => pages[currentPageId] || null, [pages, currentPageId]);
+  const pageIds = useMemo(() => Object.keys(pages), [pages]);
   
   // Builder store - now synced with current page
   const setRootInstance = useBuilderStore((state) => state.setRootInstance);
@@ -91,10 +95,9 @@ const Builder: React.FC = () => {
   // Save current page's rootInstance whenever it changes
   useEffect(() => {
     if (currentPageData && rootInstance && currentPageId) {
-      const { updatePage } = usePageStore.getState();
       updatePage(currentPageId, { rootInstance });
     }
-  }, [rootInstance, currentPageId]);
+  }, [rootInstance, currentPageId, currentPageData, updatePage]);
   
   // Compute page names and current page
   const pageNames: Record<string, string> = useMemo(() => {
@@ -691,19 +694,23 @@ const Builder: React.FC = () => {
   };
 
   const handlePageNameChange = (pageId: string, newName: string) => {
-    const { updatePage } = usePageStore.getState();
     updatePage(pageId, { name: newName });
   };
 
   const handleDeletePage = (pageId: string) => {
     if (allPages.length === 1) return;
-    const { deletePage } = usePageStore.getState();
     deletePage(pageId);
     if (currentPageId === pageId) {
-      setCurrentPage(allPages[0].id);
+      const remainingPages = allPages.filter(p => p.id !== pageId);
+      if (remainingPages.length > 0) {
+        setCurrentPage(remainingPages[0].id);
+      }
     }
     if (homePage === pageId) {
-      setHomePage(allPages[0].id);
+      const remainingPages = allPages.filter(p => p.id !== pageId);
+      if (remainingPages.length > 0) {
+        setHomePage(remainingPages[0].id);
+      }
     }
   };
 
