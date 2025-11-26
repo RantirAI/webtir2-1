@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useBuilderStore } from '../store/useBuilderStore';
 import { useStyleStore } from '../store/useStyleStore';
 import { ComponentInstance } from '../store/types';
@@ -598,13 +598,16 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
   // Get root instance styles for page body
   const rootStyles = rootInstance ? getComputedStyles(rootInstance.styleSourceIds || []) : {};
   
+  // Stabilize the ref callback to prevent infinite loops
+  const handleCanvasRef = useCallback((node: HTMLDivElement | null) => {
+    canvasRef.current = node;
+    setNodeRef(node);
+    onCanvasRef?.(node);
+  }, [setNodeRef, onCanvasRef]);
+  
   return (
     <div 
-      ref={(node) => {
-        canvasRef.current = node;
-        setNodeRef(node);
-        onCanvasRef?.(node);
-      }}
+      ref={handleCanvasRef}
       className={`absolute inset-0 ${isPreviewMode ? 'overflow-auto' : 'overflow-auto'} bg-[#e5e7eb] dark:bg-zinc-800 builder-canvas flex items-center justify-center`}
       style={{
         backgroundImage: isPreviewMode ? 'none' : `radial-gradient(circle, #9ca3af 1px, transparent 1px)`,
