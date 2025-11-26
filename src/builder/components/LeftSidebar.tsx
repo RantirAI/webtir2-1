@@ -36,6 +36,9 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
   onSetHomePage,
   homePage,
 }) => {
+  // Ensure pages is always an array
+  const safePages = Array.isArray(pages) ? pages : [];
+  
   const [pageSettingsOpen, setPageSettingsOpen] = useState(false);
   const [selectedPageForSettings, setSelectedPageForSettings] = useState<string>('');
   const [pageMetaTitle, setPageMetaTitle] = useState('');
@@ -97,7 +100,7 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
 
           <TabsContent value="pages" className="flex-1 m-0 p-0 overflow-y-auto">
             <div className="p-1.5">
-              {pages.map((page) => (
+              {safePages.map((page) => (
               <div
                 key={page}
                 className={`flex items-center justify-between p-1.5 rounded cursor-pointer hover:bg-accent ${

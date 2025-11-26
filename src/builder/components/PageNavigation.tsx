@@ -54,6 +54,9 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
   isCodeViewOpen = false,
   onCodeViewToggle,
 }) => {
+  // Ensure pages is always an array
+  const safePages = Array.isArray(pages) ? pages : [];
+  
   const { theme, setTheme } = useTheme();
   const { toast } = useToast();
   const { rootInstance } = useBuilderStore();
@@ -242,7 +245,7 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="w-48">
-          {pages.map((page) => (
+          {safePages.map((page) => (
             <DropdownMenuItem key={page} onClick={() => onPageChange(page)}>
               {page}
             </DropdownMenuItem>
