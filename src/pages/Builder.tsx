@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Canvas } from '@/builder/components/Canvas';
 import { LeftSidebar } from '@/builder/components/LeftSidebar';
 import { StylePanel } from '@/builder/components/StylePanel';
@@ -43,7 +43,10 @@ const Builder: React.FC = () => {
   const { currentPageId, addPage, setCurrentPage, getCurrentPage, getAllPages } = usePageStore();
   const allPages = getAllPages();
   const currentPageData = getCurrentPage();
-  const pageIds = Array.isArray(allPages) ? allPages.map(p => p.id) : [];
+  const pageIds = useMemo(() => 
+    Array.isArray(allPages) ? allPages.map(p => p.id) : [], 
+    [allPages]
+  );
   
   // Builder store - now synced with current page
   const setRootInstance = useBuilderStore((state) => state.setRootInstance);
@@ -94,10 +97,13 @@ const Builder: React.FC = () => {
   }, [rootInstance, currentPageId]);
   
   // Compute page names and current page
-  const pageNames: Record<string, string> = {};
-  allPages.forEach(page => {
-    pageNames[page.id] = page.name;
-  });
+  const pageNames: Record<string, string> = useMemo(() => {
+    const names: Record<string, string> = {};
+    allPages.forEach(page => {
+      names[page.id] = page.name;
+    });
+    return names;
+  }, [allPages]);
   const currentPage = currentPageData?.name || 'Page 1';
   
   // Configure sensors with activation constraint to prevent accidental drags

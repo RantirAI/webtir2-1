@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { ChevronRight, ChevronDown, FileCode, FolderOpen, Folder, FileImage, FileVideo, Film, Palette } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
@@ -15,7 +15,7 @@ interface FileTreeProps {
   pages: string[];
 }
 
-export const FileTree: React.FC<FileTreeProps> = ({ onFileSelect, selectedFile, pages }) => {
+export const FileTree: React.FC<FileTreeProps> = React.memo(({ onFileSelect, selectedFile, pages }) => {
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set(['/', '/pages', '/components', '/media']));
 
   const fileStructure: FileNode[] = useMemo(() => {
@@ -62,17 +62,35 @@ export const FileTree: React.FC<FileTreeProps> = ({ onFileSelect, selectedFile, 
     return structure;
   }, [pages]);
 
-  const toggleFolder = (path: string) => {
-    const newExpanded = new Set(expandedFolders);
-    if (newExpanded.has(path)) {
-      newExpanded.delete(path);
-    } else {
-      newExpanded.add(path);
-    }
-    setExpandedFolders(newExpanded);
-  };
+  const toggleFolder = useCallback((path: string) => {
+    setExpandedFolders(prev => {
+      const newExpanded = new Set(prev);
+      if (newExpanded.has(path)) {
+        newExpanded.delete(path);
+      } else {
+        newExpanded.add(path);
+      }
+      return newExpanded;
+    });
+  }, []);
 
-  const renderNode = (node: FileNode, depth: number = 0): React.ReactNode => {
+  const getFileIcon = useCallback((path: string) => {
+    if (path.endsWith('.html')) return <FileCode className="w-3 h-3 flex-shrink-0 text-orange-500" />;
+    if (path.endsWith('.css')) return <Palette className="w-3 h-3 flex-shrink-0 text-blue-500" />;
+    if (path.endsWith('.js')) return <FileCode className="w-3 h-3 flex-shrink-0 text-yellow-500" />;
+    if (path.includes('/images/') || path.match(/\.(jpg|jpeg|png|gif|svg|webp)$/)) {
+      return <FileImage className="w-3 h-3 flex-shrink-0 text-green-500" />;
+    }
+    if (path.includes('/videos/') || path.match(/\.(mp4|webm|mov)$/)) {
+      return <FileVideo className="w-3 h-3 flex-shrink-0 text-purple-500" />;
+    }
+    if (path.includes('/lottie/') || path.endsWith('.json')) {
+      return <Film className="w-3 h-3 flex-shrink-0 text-pink-500" />;
+    }
+    return <FileCode className="w-3 h-3 flex-shrink-0 text-muted-foreground" />;
+  }, []);
+
+  const renderNode = useCallback((node: FileNode, depth: number = 0): React.ReactNode => {
     const isExpanded = expandedFolders.has(node.path);
     const isSelected = selectedFile === node.path;
 
@@ -107,23 +125,6 @@ export const FileTree: React.FC<FileTreeProps> = ({ onFileSelect, selectedFile, 
       );
     }
 
-    // Get appropriate icon for file type
-    const getFileIcon = () => {
-      if (node.path.endsWith('.html')) return <FileCode className="w-3 h-3 flex-shrink-0 text-orange-500" />;
-      if (node.path.endsWith('.css')) return <Palette className="w-3 h-3 flex-shrink-0 text-blue-500" />;
-      if (node.path.endsWith('.js')) return <FileCode className="w-3 h-3 flex-shrink-0 text-yellow-500" />;
-      if (node.path.includes('/images/') || node.path.match(/\.(jpg|jpeg|png|gif|svg|webp)$/)) {
-        return <FileImage className="w-3 h-3 flex-shrink-0 text-green-500" />;
-      }
-      if (node.path.includes('/videos/') || node.path.match(/\.(mp4|webm|mov)$/)) {
-        return <FileVideo className="w-3 h-3 flex-shrink-0 text-purple-500" />;
-      }
-      if (node.path.includes('/lottie/') || node.path.endsWith('.json')) {
-        return <Film className="w-3 h-3 flex-shrink-0 text-pink-500" />;
-      }
-      return <FileCode className="w-3 h-3 flex-shrink-0 text-muted-foreground" />;
-    };
-
     return (
       <div
         key={node.path}
@@ -133,11 +134,11 @@ export const FileTree: React.FC<FileTreeProps> = ({ onFileSelect, selectedFile, 
         style={{ paddingLeft: `${depth * 12 + 20}px` }}
         onClick={() => onFileSelect(node.path)}
       >
-        {getFileIcon()}
+        {getFileIcon(node.path)}
         <span className="truncate">{node.name}</span>
       </div>
     );
-  };
+  }, [expandedFolders, selectedFile, onFileSelect, toggleFolder, getFileIcon]);
 
   return (
     <ScrollArea className="h-full">
@@ -146,4 +147,6 @@ export const FileTree: React.FC<FileTreeProps> = ({ onFileSelect, selectedFile, 
       </div>
     </ScrollArea>
   );
-};
+});
+
+FileTree.displayName = 'FileTree';
