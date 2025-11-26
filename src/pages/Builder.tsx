@@ -39,9 +39,10 @@ const Builder: React.FC = () => {
   const [isCodeViewOpen, setIsCodeViewOpen] = useState(false);
   
   // Page store
-  const { pages, currentPageId, addPage, setCurrentPage, getCurrentPage, getAllPages } = usePageStore();
+  const { currentPageId, addPage, setCurrentPage, getCurrentPage, getAllPages } = usePageStore();
   const allPages = getAllPages();
   const currentPageData = getCurrentPage();
+  const pageIds = allPages.map(p => p.id);
   
   // Builder store - now synced with current page
   const setRootInstance = useBuilderStore((state) => state.setRootInstance);
@@ -54,8 +55,17 @@ const Builder: React.FC = () => {
   
   // Initialize first page if none exists
   useEffect(() => {
-    if (allPages.length === 0 && rootInstance) {
-      const pageId = addPage('Page 1', rootInstance);
+    if (allPages.length === 0) {
+      // Create initial root instance
+      const initialRoot: ComponentInstance = {
+        id: 'root',
+        type: 'Div',
+        label: 'Body',
+        props: {},
+        styleSourceIds: ['root-style'],
+        children: [],
+      };
+      const pageId = addPage('Page 1', initialRoot);
       setCurrentPage(pageId);
     }
   }, []);
@@ -685,7 +695,7 @@ const Builder: React.FC = () => {
   };
 
   const handleDuplicatePage = (pageId: string) => {
-    const page = pages[pageId];
+    const page = allPages.find(p => p.id === pageId);
     if (!page) return;
     const newPageName = `${page.name} Copy`;
     // Deep copy the root instance
@@ -712,7 +722,7 @@ const Builder: React.FC = () => {
           zoom={zoom}
           onZoomChange={setZoom}
           currentBreakpoint={currentBreakpoint} 
-          pages={allPages.map(p => p.id)} 
+          pages={pageIds} 
           currentPage={currentPageId}
           pageNames={pageNames}
           onPageNameChange={handlePageNameChange}
@@ -745,7 +755,7 @@ const Builder: React.FC = () => {
         {!isPreviewMode && !isCodeViewOpen && (
           <div className="absolute left-4 top-4 bottom-4 z-10 transition-all duration-300 animate-slide-in-left">
             <LeftSidebar
-              pages={allPages.map(p => p.id)}
+              pages={pageIds}
               currentPage={currentPageId}
               pageNames={pageNames}
               onPageChange={(pageId) => setCurrentPage(pageId)}
@@ -767,7 +777,7 @@ const Builder: React.FC = () => {
           >
             <PageNavigation
               currentPage={currentPageId}
-              pages={allPages.map(p => p.id)}
+              pages={pageIds}
               onPageChange={(pageId) => setCurrentPage(pageId)}
               onAddPage={handleAddPage}
               currentBreakpoint={currentBreakpoint}
