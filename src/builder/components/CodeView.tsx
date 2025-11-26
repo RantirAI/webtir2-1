@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useBuilderStore } from '../store/useBuilderStore';
 import { usePageStore } from '../store/usePageStore';
 import { Button } from '@/components/ui/button';
@@ -22,7 +22,7 @@ interface CodeViewProps {
   pageNames: Record<string, string>;
 }
 
-export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames }) => {
+export const CodeView: React.FC<CodeViewProps> = React.memo(({ onClose, pages, pageNames }) => {
   const rootInstance = useBuilderStore((state) => state.rootInstance);
   const updateInstance = useBuilderStore((state) => state.updateInstance);
   const pagesData = usePageStore((state) => state.pages);
@@ -31,7 +31,10 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
   const [copiedTab, setCopiedTab] = useState<string | null>(null);
   const [previewSize, setPreviewSize] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
   const [showImportModal, setShowImportModal] = useState(false);
-  const defaultFile = pages.length > 0 ? `/pages/${pages[0].toLowerCase().replace(/\s+/g, '-')}.html` : '/pages/page-1.html';
+  const defaultFile = useMemo(() => 
+    pages.length > 0 ? `/pages/${pages[0].toLowerCase().replace(/\s+/g, '-')}.html` : '/pages/page-1.html',
+    [pages]
+  );
   const [selectedFile, setSelectedFile] = useState(defaultFile);
   const [isCodeEdited, setIsCodeEdited] = useState(false);
   
@@ -58,20 +61,20 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
     setAstroCode(exportAstro(rootInstance));
   }, [rootInstance, pages, allPagesData]);
 
-  const handleCopy = (code: string, tab: string) => {
+  const handleCopy = useCallback((code: string, tab: string) => {
     navigator.clipboard.writeText(code);
     setCopiedTab(tab);
     setTimeout(() => setCopiedTab(null), 2000);
-  };
+  }, []);
 
-  const handleImport = (source: string, content: string | File) => {
+  const handleImport = useCallback((source: string, content: string | File) => {
     console.log('Importing from:', source, content);
     // TODO: Implement actual import logic
     // This would parse the content and update the builder store
-  };
+  }, []);
 
   // Apply code changes to builder
-  const applyCodeChanges = () => {
+  const applyCodeChanges = useCallback(() => {
     try {
       if (selectedFile.startsWith('/pages/') && selectedFile.endsWith('.html')) {
         const newInstance = parseHTMLToInstance(pageHtmlCodes[selectedFile] || '');
@@ -97,9 +100,9 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
         variant: 'destructive',
       });
     }
-  };
+  }, [selectedFile, pageHtmlCodes, rootInstance, updateInstance]);
 
-  const getCurrentFileCode = () => {
+  const getCurrentFileCode = useCallback(() => {
     // If it's a page HTML file, return the specific page code
     if (selectedFile.startsWith('/pages/') && selectedFile.endsWith('.html')) {
       return pageHtmlCodes[selectedFile] || '';
@@ -116,16 +119,16 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
     }
     
     return '';
-  };
+  }, [selectedFile, pageHtmlCodes, cssCode, jsCode]);
 
-  const getFileLanguage = () => {
+  const getFileLanguage = useCallback(() => {
     if (selectedFile.endsWith('.html')) return 'html';
     if (selectedFile.endsWith('.css')) return 'css';
     if (selectedFile.endsWith('.js')) return 'javascript';
     return 'javascript';
-  };
+  }, [selectedFile]);
 
-  const getCode = (tab: string) => {
+  const getCode = useCallback((tab: string) => {
     switch (tab) {
       case 'html': return pageHtmlCodes[selectedFile] || Object.values(pageHtmlCodes)[0] || '';
       case 'css': return cssCode;
@@ -133,20 +136,20 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
       case 'astro': return astroCode;
       default: return '';
     }
-  };
+  }, [pageHtmlCodes, selectedFile, cssCode, jsCode, astroCode]);
 
-  const shouldShowHtmlPreview = () => {
+  const shouldShowHtmlPreview = useCallback(() => {
     return selectedFile.endsWith('.html');
-  };
+  }, [selectedFile]);
 
-  const getPreviewWidth = () => {
+  const getPreviewWidth = useCallback(() => {
     switch (previewSize) {
       case 'mobile': return '375px';
       case 'tablet': return '768px';
       case 'desktop': return '100%';
       default: return '100%';
     }
-  };
+  }, [previewSize]);
 
   return (
     <div className="fixed inset-0 z-50 bg-background animate-fade-in">
@@ -319,7 +322,9 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
       />
     </div>
   );
-};
+});
+
+CodeView.displayName = 'CodeView';
 
 interface CodeEditorProps {
   code: string;
