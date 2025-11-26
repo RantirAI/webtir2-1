@@ -3,7 +3,7 @@ import { useBuilderStore } from '../store/useBuilderStore';
 import { useStyleStore } from '../store/useStyleStore';
 import { PseudoState } from '../store/types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Paintbrush, Plus, Square, Type, Heading as HeadingIcon, MousePointerClick, Image as ImageIcon, Link as LinkIcon, X, ChevronDown, Settings as SettingsIcon, Zap, Database, RotateCcw, Info, AlignLeft, AlignCenter, AlignRight, AlignJustify, ArrowRight, ArrowDown, ArrowLeft, ArrowUp, Box, LayoutList, LayoutGrid, Minus, EyeOff } from 'lucide-react';
+import { Paintbrush, Plus, Square, Type, Heading as HeadingIcon, MousePointerClick, Image as ImageIcon, Link as LinkIcon, X, ChevronDown, ChevronRight, Settings as SettingsIcon, Zap, Database, RotateCcw, Info, AlignLeft, AlignCenter, AlignRight, AlignJustify, ArrowRight, ArrowDown, ArrowLeft, ArrowUp, Box, LayoutList, LayoutGrid, Minus, EyeOff, FileText, Home, Copy, Trash2 } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Input } from '@/components/ui/input';
@@ -16,6 +16,11 @@ import { SpacingControl } from './SpacingControl';
 import { FontPicker } from './FontPicker';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
 import { ClassSelector } from './ClassSelector';
 import { ImageUpload } from './ImageUpload';
 import { VideoUpload } from './VideoUpload';
@@ -37,7 +42,17 @@ interface StylePanelProps {
   homePage: string;
 }
 
-export const StylePanel: React.FC<StylePanelProps> = ({}) => {
+export const StylePanel: React.FC<StylePanelProps> = ({
+  pages,
+  currentPage,
+  pageNames,
+  onPageChange,
+  onPageNameChange,
+  onDeletePage,
+  onDuplicatePage,
+  onSetHomePage,
+  homePage,
+}) => {
   const { getSelectedInstance, updateInstance } = useBuilderStore();
   const { setStyle, getComputedStyles, styleSources, createStyleSource, nextLocalClassName, renameStyleSource, deleteStyleSource, currentPseudoState, setCurrentPseudoState, resetStyles, setStyleMetadata, getStyleMetadata, getPropertyState } = useStyleStore();
   const selectedInstance = getSelectedInstance();
@@ -50,6 +65,14 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
   const [activeClassIndex, setActiveClassIndex] = useState<number | null>(null);
   const [isMarginLinked, setIsMarginLinked] = useState(false);
   const [isPaddingLinked, setIsPaddingLinked] = useState(false);
+  const [pageSettingsOpen, setPageSettingsOpen] = useState(false);
+  const [selectedPageForSettings, setSelectedPageForSettings] = useState<string>('');
+  const [pageMetaTitle, setPageMetaTitle] = useState('');
+  const [pageMetaDescription, setPageMetaDescription] = useState('');
+  const [customCode, setCustomCode] = useState('');
+  const [statusCode, setStatusCode] = useState('200');
+  const [redirect, setRedirect] = useState('');
+  const [language, setLanguage] = useState('en-US');
   
   // Initialize label input and active class when selectedInstance changes
   useEffect(() => {
@@ -137,11 +160,18 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
     }
   }, [selectedInstance?.id, selectedInstance?.label, selectedInstance?.type]);
 
+  const handlePageClick = (page: string) => {
+    setSelectedPageForSettings(page);
+    setPageSettingsOpen(true);
+  };
+
+  const safePages = Array.isArray(pages) ? pages : [];
+
   if (!selectedInstance) {
     return (
       <div className="w-64 h-full bg-background border border-border rounded-lg shadow-xl flex flex-col overflow-hidden backdrop-blur-md bg-white/70 dark:bg-zinc-900/70">
         <Tabs defaultValue="styles" className="flex-1 flex flex-col">
-          <TabsList className="w-full grid grid-cols-2 rounded-none border-b bg-transparent h-10 p-1 gap-1">
+          <TabsList className="w-full grid grid-cols-3 rounded-none border-b bg-transparent h-10 p-1 gap-1">
             <TabsTrigger 
               value="styles" 
               className="gap-1 text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none"
@@ -156,6 +186,13 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
               <SettingsIcon className="w-3 h-3" />
               Settings
             </TabsTrigger>
+            <TabsTrigger 
+              value="pages" 
+              className="gap-1 text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none"
+            >
+              <FileText className="w-3 h-3" />
+              Pages
+            </TabsTrigger>
           </TabsList>
           <TabsContent value="styles" className="flex-1 m-0 p-3 overflow-y-auto">
             <div className="text-xs text-muted-foreground text-center">
@@ -165,6 +202,31 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
           <TabsContent value="settings" className="flex-1 m-0 p-3 overflow-y-auto">
             <div className="text-xs text-muted-foreground text-center">
               Select an element to configure settings
+            </div>
+          </TabsContent>
+          <TabsContent value="pages" className="flex-1 m-0 p-0 overflow-y-auto">
+            <div className="p-1.5">
+              {safePages.map((page) => (
+                <div
+                  key={page}
+                  className={`flex items-center justify-between p-1.5 rounded cursor-pointer hover:bg-accent ${
+                    currentPage === page ? 'bg-accent' : ''
+                  }`}
+                  onClick={() => handlePageClick(page)}
+                >
+                  <div className="flex items-center gap-2">
+                    {homePage === page ? (
+                      <Home className="w-4 h-4 text-primary" />
+                    ) : (
+                      <FileText className="w-4 h-4" />
+                    )}
+                    <span className="text-xs">{pageNames[page] || page}</span>
+                  </div>
+                  <ChevronRight 
+                    className="w-4 h-4 text-muted-foreground hover:text-foreground"
+                  />
+                </div>
+              ))}
             </div>
           </TabsContent>
         </Tabs>
@@ -411,7 +473,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
   return (
     <div className="w-64 h-full bg-background border border-border rounded-lg shadow-xl flex flex-col overflow-hidden backdrop-blur-md bg-white/70 dark:bg-zinc-900/70">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
-        <TabsList className="w-full grid grid-cols-2 rounded-none border-b bg-transparent h-10 p-1 gap-1 flex-shrink-0">
+        <TabsList className="w-full grid grid-cols-3 rounded-none border-b bg-transparent h-10 p-1 gap-1 flex-shrink-0">
           <TabsTrigger 
             value="style"
             className="text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none flex items-center gap-1"
@@ -425,6 +487,13 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
           >
             <SettingsIcon className="w-3 h-3" />
             Settings
+          </TabsTrigger>
+          <TabsTrigger 
+            value="pages" 
+            className="text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none flex items-center gap-1"
+          >
+            <FileText className="w-3 h-3" />
+            Pages
           </TabsTrigger>
         </TabsList>
 
@@ -2588,6 +2657,32 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
           )}
         </TabsContent>
 
+        <TabsContent value="pages" className="flex-1 min-h-0 m-0 p-0 overflow-y-auto overflow-x-hidden">
+          <div className="p-1.5">
+            {safePages.map((page) => (
+              <div
+                key={page}
+                className={`flex items-center justify-between p-1.5 rounded cursor-pointer hover:bg-accent ${
+                  currentPage === page ? 'bg-accent' : ''
+                }`}
+                onClick={() => handlePageClick(page)}
+              >
+                <div className="flex items-center gap-2">
+                  {homePage === page ? (
+                    <Home className="w-4 h-4 text-primary" />
+                  ) : (
+                    <FileText className="w-4 h-4" />
+                  )}
+                  <span className="text-xs">{pageNames[page] || page}</span>
+                </div>
+                <ChevronRight 
+                  className="w-4 h-4 text-muted-foreground hover:text-foreground"
+                />
+              </div>
+            ))}
+          </div>
+        </TabsContent>
+
         <TabsContent value="actions" className="flex-1 min-h-0 m-0 p-4 overflow-y-auto overflow-x-hidden">
           <div className="text-sm text-muted-foreground text-center">
             Actions panel coming soon
@@ -2600,6 +2695,152 @@ export const StylePanel: React.FC<StylePanelProps> = ({}) => {
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* Page Settings Drawer */}
+      <Sheet open={pageSettingsOpen} onOpenChange={setPageSettingsOpen}>
+        <SheetContent side="right" className="w-[340px] overflow-y-auto p-4">
+          <SheetHeader className="pb-3 space-y-1">
+            <SheetTitle className="text-sm">Page Settings</SheetTitle>
+            <SheetDescription className="text-xs">Configure settings for this page</SheetDescription>
+          </SheetHeader>
+          <div className="mt-3 space-y-3">
+            {/* Page Name */}
+            <div className="space-y-1.5">
+              <Label htmlFor="page-name" className="text-xs">Page Name</Label>
+              <Input
+                id="page-name"
+                value={pageNames[selectedPageForSettings] || ''}
+                onChange={(e) => onPageNameChange(selectedPageForSettings, e.target.value)}
+                className="h-7 text-xs"
+              />
+              <div className="flex items-center gap-2 mt-1.5">
+                <Checkbox 
+                  id="home-page"
+                  checked={homePage === selectedPageForSettings}
+                  onCheckedChange={(checked) => {
+                    if (checked) onSetHomePage(selectedPageForSettings);
+                  }}
+                  className="h-3 w-3"
+                />
+                <Label htmlFor="home-page" className="text-xs font-normal">
+                  Make "{pageNames[selectedPageForSettings]}" the home page
+                </Label>
+              </div>
+            </div>
+
+            {/* Path */}
+            <div className="space-y-1.5">
+              <Label htmlFor="page-path" className="text-xs">Path</Label>
+              <Input
+                id="page-path"
+                value={`/${pageNames[selectedPageForSettings]?.toLowerCase().replace(/\s+/g, '-') || ''}`}
+                disabled
+                className="bg-muted h-7 text-xs"
+              />
+            </div>
+
+            {/* Status Code */}
+            <div className="space-y-1.5">
+              <Label htmlFor="status-code" className="text-xs">Status Code</Label>
+              <Input
+                id="status-code"
+                value={statusCode}
+                onChange={(e) => setStatusCode(e.target.value)}
+                placeholder="200"
+                className="h-7 text-xs"
+              />
+            </div>
+
+            {/* Redirect */}
+            <div className="space-y-1.5">
+              <Label htmlFor="redirect" className="text-xs">Redirect</Label>
+              <Input
+                id="redirect"
+                value={redirect}
+                onChange={(e) => setRedirect(e.target.value)}
+                placeholder="/another-path"
+                className="h-7 text-xs"
+              />
+            </div>
+
+            <Separator className="my-3" />
+
+            {/* Search Section */}
+            <div className="space-y-2.5">
+              <div>
+                <h3 className="text-xs font-semibold mb-0.5">Search</h3>
+                <p className="text-[10px] text-muted-foreground">Optimize the way this page appears in search results.</p>
+              </div>
+
+              {/* Title */}
+              <div className="space-y-1.5">
+                <Label htmlFor="meta-title" className="text-xs">Title</Label>
+                <Input
+                  id="meta-title"
+                  value={pageMetaTitle}
+                  onChange={(e) => setPageMetaTitle(e.target.value)}
+                  placeholder="Untitled"
+                  className="h-7 text-xs"
+                />
+              </div>
+
+              {/* Description */}
+              <div className="space-y-1.5">
+                <Label htmlFor="meta-description" className="text-xs">Description</Label>
+                <Textarea
+                  id="meta-description"
+                  value={pageMetaDescription}
+                  onChange={(e) => setPageMetaDescription(e.target.value)}
+                  placeholder="Enter page description"
+                  rows={3}
+                  className="text-xs resize-none"
+                />
+              </div>
+
+              {/* Language */}
+              <div className="space-y-1.5">
+                <Label htmlFor="language" className="text-xs">Language</Label>
+                <Input
+                  id="language"
+                  value={language}
+                  onChange={(e) => setLanguage(e.target.value)}
+                  placeholder="en-US"
+                  className="h-7 text-xs"
+                />
+              </div>
+            </div>
+
+            <Separator className="my-3" />
+
+            {/* Action Buttons */}
+            <div className="flex gap-2 pt-2">
+              <Button
+                variant="outline"
+                className="flex items-center gap-1.5 h-7 text-xs"
+                onClick={() => {
+                  onDuplicatePage(selectedPageForSettings);
+                  setPageSettingsOpen(false);
+                }}
+              >
+                <Copy className="w-3 h-3" />
+                Duplicate
+              </Button>
+              <Button
+                variant="destructive"
+                className="flex items-center gap-1.5 h-7 text-xs"
+                onClick={() => {
+                  onDeletePage(selectedPageForSettings);
+                  setPageSettingsOpen(false);
+                }}
+                disabled={safePages.length === 1}
+              >
+                <Trash2 className="w-3 h-3" />
+                Delete
+              </Button>
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 };

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Plus, ChevronDown, Monitor, Tablet, Smartphone, Download, Save, Eye, ZoomIn, ZoomOut, Sun, Moon, Hand, FileCode, FileText, Palette, Zap, X } from 'lucide-react';
+import { Plus, ChevronDown, Monitor, Tablet, Smartphone, Download, Save, Eye, ZoomIn, ZoomOut, Sun, Moon, Hand, FileCode, FileText, Palette, Zap, X, PanelLeftClose } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Separator } from '@/components/ui/separator';
 import { useTheme } from 'next-themes';
@@ -27,6 +27,8 @@ interface PageNavigationProps {
   onProjectSettingsOpen: () => void;
   isCodeViewOpen?: boolean;
   onCodeViewToggle?: () => void;
+  sidebarsHidden?: boolean;
+  onToggleSidebars?: () => void;
 }
 
 export const breakpoints = [
@@ -53,6 +55,8 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
   onProjectSettingsOpen,
   isCodeViewOpen = false,
   onCodeViewToggle,
+  sidebarsHidden = false,
+  onToggleSidebars,
 }) => {
   // Ensure pages is always an array
   const safePages = Array.isArray(pages) ? pages : [];
@@ -233,6 +237,19 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
       >
         {isCodeViewOpen ? <X className="w-4 h-4" /> : <FileCode className="w-4 h-4" />}
       </Button>
+
+      {/* Sidebar Toggle */}
+      {!isCodeViewOpen && onToggleSidebars && (
+        <Button
+          variant="ghost"
+          size="sm"
+          className={`h-8 px-2 ${sidebarsHidden ? 'bg-[#F5F5F5] dark:bg-zinc-800' : ''}`}
+          onClick={onToggleSidebars}
+          title={sidebarsHidden ? "Show Sidebars" : "Hide Sidebars"}
+        >
+          <PanelLeftClose className={`w-4 h-4 transition-transform ${sidebarsHidden ? 'rotate-180' : ''}`} />
+        </Button>
+      )}
 
       <Separator orientation="vertical" className="h-6" />
 
