@@ -21,6 +21,7 @@ export const TextInputPrimitive: React.FC<TextInputPrimitiveProps> = ({
 }) => {
   return (
     <input
+      data-instance-id={instanceId}
       type={type}
       placeholder={placeholder}
       required={required}

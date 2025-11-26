@@ -467,7 +467,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
             text={instance.props.text}
             type={instance.props.type}
             disabled={instance.props.disabled}
-            className=""
+            className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
             style={getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties}
           />
         );
@@ -479,7 +479,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
             text={instance.props.text}
             htmlFor={instance.props.htmlFor}
             required={instance.props.required}
-            className=""
+            className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
             style={getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties}
           />
         );
@@ -492,7 +492,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
             type={instance.props.type}
             required={instance.props.required}
             disabled={instance.props.disabled}
-            className=""
+            className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
             style={getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties}
           />
         );
@@ -505,7 +505,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
             rows={instance.props.rows}
             required={instance.props.required}
             disabled={instance.props.disabled}
-            className=""
+            className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
             style={getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties}
           />
         );
@@ -518,7 +518,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
             placeholder={instance.props.placeholder}
             required={instance.props.required}
             disabled={instance.props.disabled}
-            className=""
+            className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
             style={getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties}
           />
         );
@@ -532,7 +532,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
             required={instance.props.required}
             disabled={instance.props.disabled}
             orientation={instance.props.orientation}
-            className=""
+            className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
             style={getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties}
           />
         );
@@ -544,7 +544,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
             label={instance.props.label}
             required={instance.props.required}
             disabled={instance.props.disabled}
-            className=""
+            className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
             style={getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties}
           />
         );

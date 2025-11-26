@@ -27,6 +27,7 @@ export const FormButtonPrimitive: React.FC<FormButtonPrimitiveProps> = ({
 
   return (
     <button
+      data-instance-id={instanceId}
       type={type}
       disabled={disabled}
       className={`px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed ${className}`}

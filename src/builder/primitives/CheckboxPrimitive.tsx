@@ -26,7 +26,11 @@ export const CheckboxPrimitive: React.FC<CheckboxPrimitiveProps> = ({
   };
 
   return (
-    <label className={`flex items-center gap-2 cursor-pointer ${className}`} style={style}>
+    <label 
+      data-instance-id={instanceId}
+      className={`flex items-center gap-2 cursor-pointer ${className}`} 
+      style={style}
+    >
       <input
         type="checkbox"
         required={required}
