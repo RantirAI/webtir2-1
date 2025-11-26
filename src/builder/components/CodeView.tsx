@@ -25,7 +25,7 @@ interface CodeViewProps {
 export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames }) => {
   const rootInstance = useBuilderStore((state) => state.rootInstance);
   const updateInstance = useBuilderStore((state) => state.updateInstance);
-  const allPagesData = usePageStore((state) => state.getAllPages());
+  const allPagesData = usePageStore((state) => Object.values(state.pages));
   const [activeTab, setActiveTab] = useState('html');
   const [copiedTab, setCopiedTab] = useState<string | null>(null);
   const [previewSize, setPreviewSize] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
@@ -55,7 +55,7 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
     setCssCode(exportCSS());
     setJsCode(exportJS(rootInstance));
     setAstroCode(exportAstro(rootInstance));
-  }, [rootInstance, pages, allPagesData]);
+  }, [rootInstance, pages]);
 
   const handleCopy = (code: string, tab: string) => {
     navigator.clipboard.writeText(code);
