@@ -255,13 +255,13 @@ const Index = () => {
       </nav>
 
       {/* Hero Section */}
-      <section className="max-w-[720px] mx-auto px-6 pt-20 pb-12 text-center relative overflow-visible min-h-[500px]">
+      <section className="relative overflow-hidden h-[440px] flex items-center justify-center" style={{ maxWidth: '1400px', margin: '0 auto' }}>
         {/* Subtle dot pattern background - light mode */}
         <div 
           className="absolute inset-0 pointer-events-none dark:hidden" 
           style={{
-            backgroundImage: 'radial-gradient(circle, rgba(0, 0, 0, 0.25) 2px, transparent 2px)',
-            backgroundSize: '32px 32px',
+            backgroundImage: 'radial-gradient(circle, rgba(0, 0, 0, 0.6) 1.5px, transparent 1.5px)',
+            backgroundSize: '16px 16px',
             zIndex: 0
           }}
         ></div>
@@ -269,8 +269,8 @@ const Index = () => {
         <div 
           className="absolute inset-0 pointer-events-none hidden dark:block" 
           style={{
-            backgroundImage: 'radial-gradient(circle, rgba(255, 255, 255, 0.25) 2px, transparent 2px)',
-            backgroundSize: '32px 32px',
+            backgroundImage: 'radial-gradient(circle, rgba(255, 255, 255, 0.6) 1.5px, transparent 1.5px)',
+            backgroundSize: '16px 16px',
             zIndex: 0
           }}
         ></div>
@@ -328,25 +328,27 @@ const Index = () => {
           }
         `}</style>
 
-        <div className="relative z-10 space-y-6">
-          <div className="flex justify-center mb-6">
-            <img src={rantirLogo} alt="Rantir Studio" className="h-8 text-foreground" />
-          </div>
-          <h1 className="text-4xl font-bold text-foreground">
-            Own your own web visual editor
-          </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Webtir makes it possible to embedded and customize your own drag-n-drop editors for anything your working on. Now with AI
-          </p>
-          <div className="flex gap-4 justify-center">
-            <Button size="lg" className="rounded-full" asChild>
-              <a href="https://calendly.com/rantir/30min" target="_blank" rel="noopener noreferrer">
-                Request MIT License
-              </a>
-            </Button>
-            <Button variant="outline" size="lg" className="rounded-full" asChild>
-              <Link to="/builder">View demo</Link>
-            </Button>
+        <div className="relative z-10 w-full px-6">
+          <div className="mx-auto text-center space-y-6" style={{ maxWidth: '720px' }}>
+            <div className="flex justify-center mb-6">
+              <img src={rantirLogo} alt="Rantir Studio" className="h-8 text-foreground" />
+            </div>
+            <h1 className="text-4xl font-bold text-foreground">
+              Own your own web visual editor
+            </h1>
+            <p className="text-lg text-muted-foreground">
+              Webtir makes it possible to embedded and customize your own drag-n-drop editors for anything your working on. Now with AI
+            </p>
+            <div className="flex gap-4 justify-center">
+              <Button size="lg" className="rounded-full" asChild>
+                <a href="https://calendly.com/rantir/30min" target="_blank" rel="noopener noreferrer">
+                  Request MIT License
+                </a>
+              </Button>
+              <Button variant="outline" size="lg" className="rounded-full" asChild>
+                <Link to="/builder">View demo</Link>
+              </Button>
+            </div>
           </div>
         </div>
       </section>
