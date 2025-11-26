@@ -54,6 +54,12 @@ const Builder: React.FC = () => {
   const selectedInstanceId = useBuilderStore((state) => state.selectedInstanceId);
   const setSelectedInstanceId = useBuilderStore((state) => state.setSelectedInstanceId);
   
+  // Initialize counters from existing classes on mount
+  useEffect(() => {
+    const { initCountersFromRegistry } = useStyleStore.getState();
+    initCountersFromRegistry();
+  }, []);
+  
   // Initialize first page if none exists
   useEffect(() => {
     if (allPages.length === 0) {
