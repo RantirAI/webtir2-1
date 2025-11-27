@@ -74,18 +74,23 @@ export const ComponentsPanel: React.FC = () => {
       setStyle(navStyleId, 'backgroundColor', 'hsl(var(--background))');
       setStyle(navStyleId, 'borderBottom', '1px solid hsl(var(--border))');
       setStyle(navStyleId, 'width', '100%');
+      setStyle(navStyleId, 'gap', '24px');
       
       const logoBoxClassName = getNextAutoClassName('div');
       const logoBoxStyleId = createStyleSource('local', logoBoxClassName);
       setStyle(logoBoxStyleId, 'display', 'flex');
       setStyle(logoBoxStyleId, 'alignItems', 'center');
       setStyle(logoBoxStyleId, 'gap', '8px');
+      setStyle(logoBoxStyleId, 'order', '1');
       
       const linksBoxClassName = getNextAutoClassName('div');
       const linksBoxStyleId = createStyleSource('local', linksBoxClassName);
       setStyle(linksBoxStyleId, 'display', 'flex');
       setStyle(linksBoxStyleId, 'gap', '24px');
       setStyle(linksBoxStyleId, 'alignItems', 'center');
+      setStyle(linksBoxStyleId, 'order', '2');
+      setStyle(linksBoxStyleId, 'flexGrow', '1');
+      setStyle(linksBoxStyleId, 'justifyContent', 'flex-end');
       
       // Auto-classes for child components
       const logoImageClassName = getNextAutoClassName('image');
@@ -96,6 +101,10 @@ export const ComponentsPanel: React.FC = () => {
       const link2StyleId = createStyleSource('local', link2ClassName);
       const link3ClassName = getNextAutoClassName('link');
       const link3StyleId = createStyleSource('local', link3ClassName);
+      const buttonBoxClassName = getNextAutoClassName('div');
+      const buttonBoxStyleId = createStyleSource('local', buttonBoxClassName);
+      setStyle(buttonBoxStyleId, 'order', '3');
+      setStyle(buttonBoxStyleId, 'marginLeft', '16px');
       const buttonClassName = getNextAutoClassName('button');
       const buttonStyleId = createStyleSource('local', buttonClassName);
       
@@ -103,7 +112,7 @@ export const ComponentsPanel: React.FC = () => {
         id: navId,
         type: 'Div' as ComponentType,
         label: 'Navigation',
-        props: {},
+        props: { template: 'logo-left-menu-right' },
         styleSourceIds: [navStyleId],
         children: [
           {
@@ -161,7 +170,7 @@ export const ComponentsPanel: React.FC = () => {
             type: 'Div' as ComponentType,
             label: 'Div',
             props: {},
-            styleSourceIds: [],
+            styleSourceIds: [buttonBoxStyleId],
             children: [
               {
                 id: buttonId,
