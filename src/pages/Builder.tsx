@@ -45,6 +45,12 @@ const Builder: React.FC = () => {
   const currentPageData = getCurrentPage();
   const pageIds = Array.isArray(allPages) ? allPages.map(p => p.id) : [];
   
+  // Debug logging
+  console.log('Builder render - allPages:', allPages);
+  console.log('Builder render - pageIds:', pageIds);
+  console.log('Builder render - currentPageId:', currentPageId);
+  console.log('Builder render - currentPageData:', currentPageData);
+  
   // Builder store - now synced with current page
   const setRootInstance = useBuilderStore((state) => state.setRootInstance);
   const addInstance = useBuilderStore((state) => state.addInstance);
