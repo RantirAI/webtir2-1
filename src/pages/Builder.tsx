@@ -45,12 +45,6 @@ const Builder: React.FC = () => {
   const currentPageData = getCurrentPage();
   const pageIds = Array.isArray(allPages) ? allPages.map(p => p.id) : [];
   
-  // Debug logging
-  console.log('Builder render - allPages:', allPages);
-  console.log('Builder render - pageIds:', pageIds);
-  console.log('Builder render - currentPageId:', currentPageId);
-  console.log('Builder render - currentPageData:', currentPageData);
-  
   // Builder store - now synced with current page
   const setRootInstance = useBuilderStore((state) => state.setRootInstance);
   const addInstance = useBuilderStore((state) => state.addInstance);
@@ -64,23 +58,6 @@ const Builder: React.FC = () => {
   useEffect(() => {
     const { initCountersFromRegistry } = useStyleStore.getState();
     initCountersFromRegistry();
-  }, []);
-  
-  // Initialize first page if none exists
-  useEffect(() => {
-    if (allPages.length === 0) {
-      // Create initial root instance
-      const initialRoot: ComponentInstance = {
-        id: 'root',
-        type: 'Div',
-        label: 'Body',
-        props: {},
-        styleSourceIds: ['root-style'],
-        children: [],
-      };
-      const pageId = addPage('Page 1', initialRoot);
-      setCurrentPage(pageId);
-    }
   }, []);
   
   // Sync rootInstance when page changes

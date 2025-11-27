@@ -19,9 +19,27 @@ interface PageStore {
   getAllPages: () => PageData[];
 }
 
+// Create initial page
+const initialRoot: ComponentInstance = {
+  id: 'root',
+  type: 'Div',
+  label: 'Body',
+  props: {},
+  styleSourceIds: ['root-style'],
+  children: [],
+};
+
+const initialPageId = 'page-1';
+
 export const usePageStore = create<PageStore>((set, get) => ({
-  pages: {},
-  currentPageId: '',
+  pages: {
+    [initialPageId]: {
+      id: initialPageId,
+      name: 'Page 1',
+      rootInstance: initialRoot,
+    },
+  },
+  currentPageId: initialPageId,
   
   addPage: (name, rootInstance) => {
     const state = get();

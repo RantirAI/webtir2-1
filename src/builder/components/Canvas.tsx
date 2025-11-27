@@ -59,12 +59,6 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
   // Ensure pages is always an array
   const safePages = Array.isArray(pages) ? pages : [];
   
-  // Debug logging
-  console.log('Canvas render - pages:', pages);
-  console.log('Canvas render - safePages:', safePages);
-  console.log('Canvas render - allPages:', allPages);
-  console.log('Canvas render - currentPage:', currentPage);
-  
   const rootInstance = useBuilderStore((state) => state.rootInstance);
   const selectedInstanceId = useBuilderStore((state) => state.selectedInstanceId);
   const hoveredInstanceId = useBuilderStore((state) => state.hoveredInstanceId);
