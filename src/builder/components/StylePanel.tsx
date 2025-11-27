@@ -1534,6 +1534,59 @@ export const StylePanel: React.FC<StylePanelProps> = ({
         </TabsContent>
 
         <TabsContent value="settings" className="flex-1 min-h-0 m-0 p-4 overflow-y-auto overflow-x-hidden">
+          {selectedInstance.label === 'Navigation' && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-foreground">Navigation Template</label>
+                <Select
+                  value={selectedInstance.props?.template || 'logo-left-menu-right'}
+                  onValueChange={(value) => {
+                    const { applyTemplateToStyles } = require('../utils/navigationTemplates');
+                    const { setStyle } = useStyleStore.getState();
+                    
+                    // Update the template prop
+                    updateInstance(selectedInstance.id, {
+                      props: { ...selectedInstance.props, template: value }
+                    });
+                    
+                    // Find child components
+                    const logoBox = selectedInstance.children?.find(c => c.children?.some(ch => ch.type === 'Image'));
+                    const linksBox = selectedInstance.children?.find(c => c.children?.some(ch => ch.type === 'Link'));
+                    const buttonBox = selectedInstance.children?.find(c => c.children?.some(ch => ch.type === 'Button'));
+                    
+                    if (logoBox && linksBox) {
+                      applyTemplateToStyles(
+                        value,
+                        selectedInstance.styleSourceIds?.[0],
+                        logoBox.styleSourceIds?.[0],
+                        linksBox.styleSourceIds?.[0],
+                        buttonBox?.styleSourceIds?.[0],
+                        setStyle
+                      );
+                    }
+                  }}
+                >
+                  <SelectTrigger className="h-8 text-xs">
+                    <SelectValue placeholder="Select template" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="logo-left-menu-right">Logo Left + Menu Right</SelectItem>
+                    <SelectItem value="logo-right-menu-left">Logo Right + Menu Left</SelectItem>
+                    <SelectItem value="logo-center-split">Logo Center + Split Menu</SelectItem>
+                    <SelectItem value="stacked-center">Stacked (Logo Top, Menu Bottom)</SelectItem>
+                    <SelectItem value="center-hamburger">Center Logo + Hamburger Right</SelectItem>
+                    <SelectItem value="logo-left-menu-center">Logo Left + Menu Center</SelectItem>
+                    <SelectItem value="minimal-logo">Minimal (Logo Left Only)</SelectItem>
+                    <SelectItem value="mega-menu">Mega Menu Layout</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  Choose a layout template for your navigation
+                </p>
+              </div>
+            </div>
+          )}
+
           {selectedInstance.type === 'Table' && (
             <div className="space-y-4">
               <div className="space-y-2">
