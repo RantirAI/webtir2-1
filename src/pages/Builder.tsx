@@ -224,8 +224,8 @@ const Builder: React.FC = () => {
         const buttonBoxId = generateId();
         const buttonId = generateId();
 
-        const { createStyleSource, setStyle } = useStyleStore.getState();
-        const navStyleId = createStyleSource('local', `nav-${navId}`);
+        const { createStyleSource, setStyle, getNextAutoClassName } = useStyleStore.getState();
+        const navStyleId = createStyleSource('local', getNextAutoClassName('navigation'));
         setStyle(navStyleId, 'display', 'flex');
         setStyle(navStyleId, 'flexDirection', 'row');
         setStyle(navStyleId, 'alignItems', 'center');
@@ -235,15 +235,23 @@ const Builder: React.FC = () => {
         setStyle(navStyleId, 'borderBottom', '1px solid hsl(var(--border))');
         setStyle(navStyleId, 'width', '100%');
 
-        const logoBoxStyleId = createStyleSource('local', `logo-box-${logoBoxId}`);
+        const logoBoxStyleId = createStyleSource('local', getNextAutoClassName('div'));
         setStyle(logoBoxStyleId, 'display', 'flex');
         setStyle(logoBoxStyleId, 'alignItems', 'center');
         setStyle(logoBoxStyleId, 'gap', '8px');
 
-        const linksBoxStyleId = createStyleSource('local', `links-box-${linksBoxId}`);
+        const linksBoxStyleId = createStyleSource('local', getNextAutoClassName('div'));
         setStyle(linksBoxStyleId, 'display', 'flex');
         setStyle(linksBoxStyleId, 'gap', '24px');
         setStyle(linksBoxStyleId, 'alignItems', 'center');
+        
+        // Create style sources for child elements
+        const logoImageStyleId = createStyleSource('local', getNextAutoClassName('image'));
+        const link1StyleId = createStyleSource('local', getNextAutoClassName('link'));
+        const link2StyleId = createStyleSource('local', getNextAutoClassName('link'));
+        const link3StyleId = createStyleSource('local', getNextAutoClassName('link'));
+        const buttonBoxStyleId = createStyleSource('local', getNextAutoClassName('div'));
+        const buttonStyleId = createStyleSource('local', getNextAutoClassName('button'));
 
         const navInstance: ComponentInstance = {
           id: navId,
@@ -253,15 +261,15 @@ const Builder: React.FC = () => {
           styleSourceIds: [navStyleId],
           children: [
             { id: logoBoxId, type: 'Box' as ComponentType, label: 'Logo Container', props: {}, styleSourceIds: [logoBoxStyleId], children: [
-              { id: logoId, type: 'Image' as ComponentType, label: 'Image', props: { src: '/placeholder.svg', alt: 'Image' }, styleSourceIds: [], children: [] },
+              { id: logoId, type: 'Image' as ComponentType, label: 'Image', props: { src: '/placeholder.svg', alt: 'Image' }, styleSourceIds: [logoImageStyleId], children: [] },
             ]},
             { id: linksBoxId, type: 'Box' as ComponentType, label: 'Navigation Links', props: {}, styleSourceIds: [linksBoxStyleId], children: [
-              { id: link1Id, type: 'Link' as ComponentType, label: 'Link', props: { href: '#', children: 'Link' }, styleSourceIds: [], children: [] },
-              { id: link2Id, type: 'Link' as ComponentType, label: 'Link', props: { href: '#', children: 'Link' }, styleSourceIds: [], children: [] },
-              { id: link3Id, type: 'Link' as ComponentType, label: 'Link', props: { href: '#', children: 'Link' }, styleSourceIds: [], children: [] },
+              { id: link1Id, type: 'Link' as ComponentType, label: 'Link', props: { href: '#', children: 'Link' }, styleSourceIds: [link1StyleId], children: [] },
+              { id: link2Id, type: 'Link' as ComponentType, label: 'Link', props: { href: '#', children: 'Link' }, styleSourceIds: [link2StyleId], children: [] },
+              { id: link3Id, type: 'Link' as ComponentType, label: 'Link', props: { href: '#', children: 'Link' }, styleSourceIds: [link3StyleId], children: [] },
             ]},
-            { id: buttonBoxId, type: 'Box' as ComponentType, label: 'Button Container', props: {}, styleSourceIds: [], children: [
-              { id: buttonId, type: 'Button' as ComponentType, label: 'Button', props: { children: 'Button' }, styleSourceIds: [], children: [] },
+            { id: buttonBoxId, type: 'Box' as ComponentType, label: 'Button Container', props: {}, styleSourceIds: [buttonBoxStyleId], children: [
+              { id: buttonId, type: 'Button' as ComponentType, label: 'Button', props: { children: 'Button' }, styleSourceIds: [buttonStyleId], children: [] },
             ]},
           ],
         };
@@ -278,14 +286,14 @@ const Builder: React.FC = () => {
         const item2Id = generateId();
         const item3Id = generateId();
 
-        const { createStyleSource, setStyle } = useStyleStore.getState();
-        const dropdownStyleId = createStyleSource('local', `dropdown-${dropdownId}`);
+        const { createStyleSource, setStyle, getNextAutoClassName } = useStyleStore.getState();
+        const dropdownStyleId = createStyleSource('local', getNextAutoClassName('dropdown'));
         setStyle(dropdownStyleId, 'display', 'flex');
         setStyle(dropdownStyleId, 'flexDirection', 'column');
         setStyle(dropdownStyleId, 'position', 'relative');
         setStyle(dropdownStyleId, 'width', 'fit-content');
 
-        const menuStyleId = createStyleSource('local', `dropdown-menu-${menuId}`);
+        const menuStyleId = createStyleSource('local', getNextAutoClassName('div'));
         setStyle(menuStyleId, 'display', 'flex');
         setStyle(menuStyleId, 'flexDirection', 'column');
         setStyle(menuStyleId, 'position', 'absolute');
@@ -300,6 +308,12 @@ const Builder: React.FC = () => {
         setStyle(menuStyleId, 'boxShadow', '0 10px 15px -3px rgba(0, 0, 0, 0.1)');
         setStyle(menuStyleId, 'zIndex', '50');
         setStyle(menuStyleId, 'gap', '4px');
+        
+        // Create style sources for child elements
+        const triggerButtonStyleId = createStyleSource('local', getNextAutoClassName('button'));
+        const menuLink1StyleId = createStyleSource('local', getNextAutoClassName('link'));
+        const menuLink2StyleId = createStyleSource('local', getNextAutoClassName('link'));
+        const menuButtonStyleId = createStyleSource('local', getNextAutoClassName('button'));
 
         const dropdownInstance: ComponentInstance = {
           id: dropdownId,
@@ -308,11 +322,11 @@ const Builder: React.FC = () => {
           props: {},
           styleSourceIds: [dropdownStyleId],
           children: [
-            { id: triggerId, type: 'Button' as ComponentType, label: 'Button', props: { children: 'Button' }, styleSourceIds: [], children: [] },
+            { id: triggerId, type: 'Button' as ComponentType, label: 'Button', props: { children: 'Button' }, styleSourceIds: [triggerButtonStyleId], children: [] },
             { id: menuId, type: 'Box' as ComponentType, label: 'Box', props: {}, styleSourceIds: [menuStyleId], children: [
-              { id: item1Id, type: 'Link' as ComponentType, label: 'Link', props: { href: '#', children: 'Link' }, styleSourceIds: [], children: [] },
-              { id: item2Id, type: 'Link' as ComponentType, label: 'Link', props: { href: '#', children: 'Link' }, styleSourceIds: [], children: [] },
-              { id: item3Id, type: 'Button' as ComponentType, label: 'Button', props: { children: 'Button' }, styleSourceIds: [], children: [] },
+              { id: item1Id, type: 'Link' as ComponentType, label: 'Link', props: { href: '#', children: 'Link' }, styleSourceIds: [menuLink1StyleId], children: [] },
+              { id: item2Id, type: 'Link' as ComponentType, label: 'Link', props: { href: '#', children: 'Link' }, styleSourceIds: [menuLink2StyleId], children: [] },
+              { id: item3Id, type: 'Button' as ComponentType, label: 'Button', props: { children: 'Button' }, styleSourceIds: [menuButtonStyleId], children: [] },
             ]},
           ],
         };
@@ -338,8 +352,8 @@ const Builder: React.FC = () => {
         const categorySelectId = generateId();
         const buttonId = generateId();
 
-        const { createStyleSource, setStyle } = useStyleStore.getState();
-        const formStyleId = createStyleSource('local', `form-${formId}`);
+        const { createStyleSource, setStyle, getNextAutoClassName } = useStyleStore.getState();
+        const formStyleId = createStyleSource('local', getNextAutoClassName('form'));
         setStyle(formStyleId, 'display', 'flex');
         setStyle(formStyleId, 'flexDirection', 'column');
         setStyle(formStyleId, 'gap', '20px');
@@ -349,10 +363,22 @@ const Builder: React.FC = () => {
         setStyle(formStyleId, 'borderRadius', '8px');
         setStyle(formStyleId, 'maxWidth', '500px');
 
-        const fieldBoxStyleId = createStyleSource('local', `field-box-${nameBoxId}`);
+        const fieldBoxStyleId = createStyleSource('local', getNextAutoClassName('div'));
         setStyle(fieldBoxStyleId, 'display', 'flex');
         setStyle(fieldBoxStyleId, 'flexDirection', 'column');
         setStyle(fieldBoxStyleId, 'gap', '8px');
+        
+        // Create style sources for child elements
+        const headingStyleId = createStyleSource('local', getNextAutoClassName('heading'));
+        const nameLabelStyleId = createStyleSource('local', getNextAutoClassName('text'));
+        const nameInputStyleId = createStyleSource('local', getNextAutoClassName('input'));
+        const emailLabelStyleId = createStyleSource('local', getNextAutoClassName('text'));
+        const emailInputStyleId = createStyleSource('local', getNextAutoClassName('input'));
+        const messageLabelStyleId = createStyleSource('local', getNextAutoClassName('text'));
+        const messageTextareaStyleId = createStyleSource('local', getNextAutoClassName('textarea'));
+        const categoryLabelStyleId = createStyleSource('local', getNextAutoClassName('text'));
+        const categorySelectStyleId = createStyleSource('local', getNextAutoClassName('select'));
+        const submitButtonStyleId = createStyleSource('local', getNextAutoClassName('button'));
 
         const formInstance: ComponentInstance = {
           id: formId,
@@ -361,25 +387,25 @@ const Builder: React.FC = () => {
           props: {},
           styleSourceIds: [formStyleId],
           children: [
-            { id: headingId, type: 'Heading' as ComponentType, label: 'Heading', props: { level: 'h2', children: 'Heading' }, styleSourceIds: [], children: [] },
+            { id: headingId, type: 'Heading' as ComponentType, label: 'Heading', props: { level: 'h2', children: 'Heading' }, styleSourceIds: [headingStyleId], children: [] },
             { id: nameBoxId, type: 'Box' as ComponentType, label: 'Box', props: {}, styleSourceIds: [fieldBoxStyleId], children: [
-              { id: nameLabelId, type: 'Text' as ComponentType, label: 'Text', props: { children: 'Label' }, styleSourceIds: [], children: [] },
-              { id: nameInputId, type: 'TextInput' as ComponentType, label: 'TextInput', props: { placeholder: 'Input', type: 'text' }, styleSourceIds: [], children: [] },
+              { id: nameLabelId, type: 'Text' as ComponentType, label: 'Text', props: { children: 'Label' }, styleSourceIds: [nameLabelStyleId], children: [] },
+              { id: nameInputId, type: 'TextInput' as ComponentType, label: 'TextInput', props: { placeholder: 'Input', type: 'text' }, styleSourceIds: [nameInputStyleId], children: [] },
             ] },
             { id: emailBoxId, type: 'Box' as ComponentType, label: 'Box', props: {}, styleSourceIds: [fieldBoxStyleId], children: [
-              { id: emailLabelId, type: 'Text' as ComponentType, label: 'Text', props: { children: 'Label' }, styleSourceIds: [], children: [] },
-              { id: emailInputId, type: 'TextInput' as ComponentType, label: 'TextInput', props: { placeholder: 'Input', type: 'email' }, styleSourceIds: [], children: [] },
+              { id: emailLabelId, type: 'Text' as ComponentType, label: 'Text', props: { children: 'Label' }, styleSourceIds: [emailLabelStyleId], children: [] },
+              { id: emailInputId, type: 'TextInput' as ComponentType, label: 'TextInput', props: { placeholder: 'Input', type: 'email' }, styleSourceIds: [emailInputStyleId], children: [] },
             ] },
             { id: messageBoxId, type: 'Box' as ComponentType, label: 'Box', props: {}, styleSourceIds: [fieldBoxStyleId], children: [
-              { id: messageLabelId, type: 'Text' as ComponentType, label: 'Text', props: { children: 'Label' }, styleSourceIds: [], children: [] },
-              { id: messageTextareaId, type: 'TextArea' as ComponentType, label: 'TextArea', props: { placeholder: 'Input', rows: 4 }, styleSourceIds: [], children: [] },
+              { id: messageLabelId, type: 'Text' as ComponentType, label: 'Text', props: { children: 'Label' }, styleSourceIds: [messageLabelStyleId], children: [] },
+              { id: messageTextareaId, type: 'TextArea' as ComponentType, label: 'TextArea', props: { placeholder: 'Input', rows: 4 }, styleSourceIds: [messageTextareaStyleId], children: [] },
             ] },
             { id: categoryBoxId, type: 'Box' as ComponentType, label: 'Box', props: {}, styleSourceIds: [fieldBoxStyleId], children: [
-              { id: categoryLabelId, type: 'Text' as ComponentType, label: 'Text', props: { children: 'Label' }, styleSourceIds: [], children: [] },
+              { id: categoryLabelId, type: 'Text' as ComponentType, label: 'Text', props: { children: 'Label' }, styleSourceIds: [categoryLabelStyleId], children: [] },
               { id: categorySelectId, type: 'Select' as ComponentType, label: 'Select', props: { placeholder: 'Select', options: [
-                { id: '1', label: 'Option 1', value: 'option1' }, { id: '2', label: 'Option 2', value: 'option2' }, { id: '3', label: 'Option 3', value: 'option3' } ] }, styleSourceIds: [], children: [] },
+                { id: '1', label: 'Option 1', value: 'option1' }, { id: '2', label: 'Option 2', value: 'option2' }, { id: '3', label: 'Option 3', value: 'option3' } ] }, styleSourceIds: [categorySelectStyleId], children: [] },
             ] },
-            { id: buttonId, type: 'FormButton' as ComponentType, label: 'FormButton', props: { text: 'Button', type: 'submit' }, styleSourceIds: [], children: [] },
+            { id: buttonId, type: 'FormButton' as ComponentType, label: 'FormButton', props: { text: 'Button', type: 'submit' }, styleSourceIds: [submitButtonStyleId], children: [] },
           ],
         };
         addInstance(formInstance, computeParentId());
@@ -391,11 +417,15 @@ const Builder: React.FC = () => {
         const boxId = generateId();
         const labelId = generateId();
         const radioId = generateId();
-        const { createStyleSource, setStyle } = useStyleStore.getState();
-        const boxStyleId = createStyleSource('local', `radio-group-${boxId}`);
+        const { createStyleSource, setStyle, getNextAutoClassName } = useStyleStore.getState();
+        const boxStyleId = createStyleSource('local', getNextAutoClassName('div'));
         setStyle(boxStyleId, 'display', 'flex');
         setStyle(boxStyleId, 'flexDirection', 'column');
         setStyle(boxStyleId, 'gap', '8px');
+        
+        const labelStyleId = createStyleSource('local', getNextAutoClassName('text'));
+        const radioGroupStyleId = createStyleSource('local', getNextAutoClassName('radio'));
+        
         const container: ComponentInstance = {
           id: boxId,
           type: 'Box' as ComponentType,
@@ -403,9 +433,9 @@ const Builder: React.FC = () => {
           props: {},
           styleSourceIds: [boxStyleId],
           children: [
-            { id: labelId, type: 'Text' as ComponentType, label: 'Group Label', props: { children: 'Choose an option:' }, styleSourceIds: [], children: [] },
+            { id: labelId, type: 'Text' as ComponentType, label: 'Group Label', props: { children: 'Choose an option:' }, styleSourceIds: [labelStyleId], children: [] },
             { id: radioId, type: 'RadioGroup' as ComponentType, label: 'Radio Options', props: { name: 'radio-group', options: [
-              { id: '1', label: 'Option 1', value: 'option1' }, { id: '2', label: 'Option 2', value: 'option2' }, { id: '3', label: 'Option 3', value: 'option3' } ] }, styleSourceIds: [], children: [] },
+              { id: '1', label: 'Option 1', value: 'option1' }, { id: '2', label: 'Option 2', value: 'option2' }, { id: '3', label: 'Option 3', value: 'option3' } ] }, styleSourceIds: [radioGroupStyleId], children: [] },
           ],
         };
         addInstance(container, computeParentId());
@@ -431,8 +461,8 @@ const Builder: React.FC = () => {
         const cell5Id = generateId();
         const cell6Id = generateId();
         
-        const { createStyleSource, setStyle } = useStyleStore.getState();
-        const tableStyleId = createStyleSource('local', `table-${tableId}`);
+        const { createStyleSource, setStyle, getNextAutoClassName } = useStyleStore.getState();
+        const tableStyleId = createStyleSource('local', getNextAutoClassName('table'));
         setStyle(tableStyleId, 'width', '100%');
         setStyle(tableStyleId, 'display', 'flex');
         setStyle(tableStyleId, 'flexDirection', 'column');
@@ -440,7 +470,7 @@ const Builder: React.FC = () => {
         setStyle(tableStyleId, 'borderRadius', '8px');
         setStyle(tableStyleId, 'overflow', 'hidden');
         
-        const headerRowStyleId = createStyleSource('local', `header-row-${headerRowId}`);
+        const headerRowStyleId = createStyleSource('local', getNextAutoClassName('div'));
         setStyle(headerRowStyleId, 'display', 'flex');
         setStyle(headerRowStyleId, 'gap', '0');
         setStyle(headerRowStyleId, 'padding', '0');
@@ -448,23 +478,25 @@ const Builder: React.FC = () => {
         setStyle(headerRowStyleId, 'fontWeight', '600');
         setStyle(headerRowStyleId, 'borderBottom', '2px solid hsl(var(--border))');
         
-        const rowStyleId = createStyleSource('local', `row-${row1Id}`);
+        const rowStyleId = createStyleSource('local', getNextAutoClassName('div'));
         setStyle(rowStyleId, 'display', 'flex');
         setStyle(rowStyleId, 'gap', '0');
         setStyle(rowStyleId, 'padding', '0');
         setStyle(rowStyleId, 'borderBottom', '1px solid hsl(var(--border))');
 
-        const cellStyleId = createStyleSource('local', `cell-${cell1Id}`);
+        const cellStyleId = createStyleSource('local', getNextAutoClassName('cell'));
         setStyle(cellStyleId, 'flex', '1');
         setStyle(cellStyleId, 'padding', '12px');
         setStyle(cellStyleId, 'borderRight', '1px solid hsl(var(--border))');
+        
+        const containerStyleId = createStyleSource('local', getNextAutoClassName('container'));
         
         const containerInstance: ComponentInstance = {
           id: containerId,
           type: 'Container' as ComponentType,
           label: 'Table',
           props: {},
-          styleSourceIds: [],
+          styleSourceIds: [containerStyleId],
           children: [
             { id: tableId, type: 'Box' as ComponentType, label: 'Table', props: {}, styleSourceIds: [tableStyleId], children: [
               { id: theadId, type: 'Box' as ComponentType, label: 'Table Head', props: {}, styleSourceIds: [], children: [
@@ -502,13 +534,25 @@ const Builder: React.FC = () => {
         const orderedListId = generateId();
         const unorderedListId = generateId();
         
+        const { createStyleSource, getNextAutoClassName } = useStyleStore.getState();
+        const h1StyleId = createStyleSource('local', getNextAutoClassName('heading'));
+        const h2StyleId = createStyleSource('local', getNextAutoClassName('heading'));
+        const h3StyleId = createStyleSource('local', getNextAutoClassName('heading'));
+        const h4StyleId = createStyleSource('local', getNextAutoClassName('heading'));
+        const h5StyleId = createStyleSource('local', getNextAutoClassName('heading'));
+        const h6StyleId = createStyleSource('local', getNextAutoClassName('heading'));
+        const textStyleId = createStyleSource('local', getNextAutoClassName('text'));
+        const blockquoteStyleId = createStyleSource('local', getNextAutoClassName('blockquote'));
+        const orderedListStyleId = createStyleSource('local', getNextAutoClassName('list'));
+        const unorderedListStyleId = createStyleSource('local', getNextAutoClassName('list'));
+        
         defaultChildren.push(
           {
             id: headingId,
             type: 'Heading',
             label: 'Heading',
             props: { level: 'h1', children: 'Heading 1' },
-            styleSourceIds: [],
+            styleSourceIds: [h1StyleId],
             children: [],
           },
           {
@@ -516,7 +560,7 @@ const Builder: React.FC = () => {
             type: 'Heading',
             label: 'Heading',
             props: { level: 'h2', children: 'Heading 2' },
-            styleSourceIds: [],
+            styleSourceIds: [h2StyleId],
             children: [],
           },
           {
@@ -524,7 +568,7 @@ const Builder: React.FC = () => {
             type: 'Heading',
             label: 'Heading',
             props: { level: 'h3', children: 'Heading 3' },
-            styleSourceIds: [],
+            styleSourceIds: [h3StyleId],
             children: [],
           },
           {
@@ -532,7 +576,7 @@ const Builder: React.FC = () => {
             type: 'Heading',
             label: 'Heading',
             props: { level: 'h4', children: 'Heading 4' },
-            styleSourceIds: [],
+            styleSourceIds: [h4StyleId],
             children: [],
           },
           {
@@ -540,7 +584,7 @@ const Builder: React.FC = () => {
             type: 'Heading',
             label: 'Heading',
             props: { level: 'h5', children: 'Heading 5' },
-            styleSourceIds: [],
+            styleSourceIds: [h5StyleId],
             children: [],
           },
           {
@@ -548,7 +592,7 @@ const Builder: React.FC = () => {
             type: 'Heading',
             label: 'Heading',
             props: { level: 'h6', children: 'Heading 6' },
-            styleSourceIds: [],
+            styleSourceIds: [h6StyleId],
             children: [],
           },
           {
@@ -556,7 +600,7 @@ const Builder: React.FC = () => {
             type: 'Text',
             label: 'Text',
             props: { children: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.' },
-            styleSourceIds: [],
+            styleSourceIds: [textStyleId],
             children: [],
           },
           {
@@ -564,7 +608,7 @@ const Builder: React.FC = () => {
             type: 'Blockquote',
             label: 'Blockquote',
             props: { children: 'Block quote' },
-            styleSourceIds: [],
+            styleSourceIds: [blockquoteStyleId],
             children: [],
           },
           {
@@ -572,7 +616,7 @@ const Builder: React.FC = () => {
             type: 'OrderedList',
             label: 'Numbered List',
             props: { items: ['Item 1', 'Item 2', 'Item 3'] },
-            styleSourceIds: [],
+            styleSourceIds: [orderedListStyleId],
             children: [],
           },
           {
@@ -580,22 +624,21 @@ const Builder: React.FC = () => {
             type: 'UnorderedList',
             label: 'Bulleted List',
             props: { items: ['Item A', 'Item B', 'Item C'] },
-            styleSourceIds: [],
+            styleSourceIds: [unorderedListStyleId],
             children: [],
           }
         );
       }
 
-      // Only create style source with default styles for Button component
-      let styleSourceId: string | undefined;
-      if (componentType === 'Button' && meta.defaultStyles && Object.keys(meta.defaultStyles).length > 0) {
-        const { createStyleSource, setStyle } = useStyleStore.getState();
-        // Use "button" as the class name for Button components
-        styleSourceId = createStyleSource('local', 'button');
-        
-        // Apply default styles
+      // Create auto-class name and style source for all component types
+      const { createStyleSource, setStyle, getNextAutoClassName } = useStyleStore.getState();
+      const autoClassName = getNextAutoClassName(componentType);
+      const styleSourceId = createStyleSource('local', autoClassName);
+      
+      // Apply default styles if they exist
+      if (meta.defaultStyles && Object.keys(meta.defaultStyles).length > 0) {
         Object.entries(meta.defaultStyles).forEach(([property, value]) => {
-          setStyle(styleSourceId!, property, value);
+          setStyle(styleSourceId, property, value);
         });
       }
 
@@ -604,7 +647,7 @@ const Builder: React.FC = () => {
         type: meta.type,
         label: meta.label,
         props: { ...meta.defaultProps },
-        styleSourceIds: styleSourceId ? [styleSourceId] : [],
+        styleSourceIds: [styleSourceId],
         children: defaultChildren,
       };
 
