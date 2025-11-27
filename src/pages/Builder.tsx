@@ -225,7 +225,8 @@ const Builder: React.FC = () => {
         const buttonId = generateId();
 
         const { createStyleSource, setStyle, getNextAutoClassName } = useStyleStore.getState();
-        const navStyleId = createStyleSource('local', getNextAutoClassName('navigation'));
+        const navClassName = getNextAutoClassName('navigation');
+        const navStyleId = createStyleSource('local', navClassName);
         setStyle(navStyleId, 'display', 'flex');
         setStyle(navStyleId, 'flexDirection', 'row');
         setStyle(navStyleId, 'alignItems', 'center');
@@ -235,23 +236,31 @@ const Builder: React.FC = () => {
         setStyle(navStyleId, 'borderBottom', '1px solid hsl(var(--border))');
         setStyle(navStyleId, 'width', '100%');
 
-        const logoBoxStyleId = createStyleSource('local', getNextAutoClassName('div'));
+        const logoBoxClassName = getNextAutoClassName('div');
+        const logoBoxStyleId = createStyleSource('local', logoBoxClassName);
         setStyle(logoBoxStyleId, 'display', 'flex');
         setStyle(logoBoxStyleId, 'alignItems', 'center');
         setStyle(logoBoxStyleId, 'gap', '8px');
 
-        const linksBoxStyleId = createStyleSource('local', getNextAutoClassName('div'));
+        const linksBoxClassName = getNextAutoClassName('div');
+        const linksBoxStyleId = createStyleSource('local', linksBoxClassName);
         setStyle(linksBoxStyleId, 'display', 'flex');
         setStyle(linksBoxStyleId, 'gap', '24px');
         setStyle(linksBoxStyleId, 'alignItems', 'center');
         
         // Create style sources for child elements
-        const logoImageStyleId = createStyleSource('local', getNextAutoClassName('image'));
-        const link1StyleId = createStyleSource('local', getNextAutoClassName('link'));
-        const link2StyleId = createStyleSource('local', getNextAutoClassName('link'));
-        const link3StyleId = createStyleSource('local', getNextAutoClassName('link'));
-        const buttonBoxStyleId = createStyleSource('local', getNextAutoClassName('div'));
-        const buttonStyleId = createStyleSource('local', getNextAutoClassName('button'));
+        const logoImageClassName = getNextAutoClassName('image');
+        const logoImageStyleId = createStyleSource('local', logoImageClassName);
+        const link1ClassName = getNextAutoClassName('link');
+        const link1StyleId = createStyleSource('local', link1ClassName);
+        const link2ClassName = getNextAutoClassName('link');
+        const link2StyleId = createStyleSource('local', link2ClassName);
+        const link3ClassName = getNextAutoClassName('link');
+        const link3StyleId = createStyleSource('local', link3ClassName);
+        const buttonBoxClassName = getNextAutoClassName('div');
+        const buttonBoxStyleId = createStyleSource('local', buttonBoxClassName);
+        const buttonClassName = getNextAutoClassName('button');
+        const buttonStyleId = createStyleSource('local', buttonClassName);
 
         const navInstance: ComponentInstance = {
           id: navId,
@@ -287,13 +296,15 @@ const Builder: React.FC = () => {
         const item3Id = generateId();
 
         const { createStyleSource, setStyle, getNextAutoClassName } = useStyleStore.getState();
-        const dropdownStyleId = createStyleSource('local', getNextAutoClassName('dropdown'));
+        const dropdownClassName = getNextAutoClassName('dropdown');
+        const dropdownStyleId = createStyleSource('local', dropdownClassName);
         setStyle(dropdownStyleId, 'display', 'flex');
         setStyle(dropdownStyleId, 'flexDirection', 'column');
         setStyle(dropdownStyleId, 'position', 'relative');
         setStyle(dropdownStyleId, 'width', 'fit-content');
 
-        const menuStyleId = createStyleSource('local', getNextAutoClassName('div'));
+        const menuClassName = getNextAutoClassName('div');
+        const menuStyleId = createStyleSource('local', menuClassName);
         setStyle(menuStyleId, 'display', 'flex');
         setStyle(menuStyleId, 'flexDirection', 'column');
         setStyle(menuStyleId, 'position', 'absolute');
@@ -310,10 +321,14 @@ const Builder: React.FC = () => {
         setStyle(menuStyleId, 'gap', '4px');
         
         // Create style sources for child elements
-        const triggerButtonStyleId = createStyleSource('local', getNextAutoClassName('button'));
-        const menuLink1StyleId = createStyleSource('local', getNextAutoClassName('link'));
-        const menuLink2StyleId = createStyleSource('local', getNextAutoClassName('link'));
-        const menuButtonStyleId = createStyleSource('local', getNextAutoClassName('button'));
+        const triggerButtonClassName = getNextAutoClassName('button');
+        const triggerButtonStyleId = createStyleSource('local', triggerButtonClassName);
+        const menuLink1ClassName = getNextAutoClassName('link');
+        const menuLink1StyleId = createStyleSource('local', menuLink1ClassName);
+        const menuLink2ClassName = getNextAutoClassName('link');
+        const menuLink2StyleId = createStyleSource('local', menuLink2ClassName);
+        const menuButtonClassName = getNextAutoClassName('button');
+        const menuButtonStyleId = createStyleSource('local', menuButtonClassName);
 
         const dropdownInstance: ComponentInstance = {
           id: dropdownId,
@@ -353,7 +368,8 @@ const Builder: React.FC = () => {
         const buttonId = generateId();
 
         const { createStyleSource, setStyle, getNextAutoClassName } = useStyleStore.getState();
-        const formStyleId = createStyleSource('local', getNextAutoClassName('form'));
+        const formClassName = getNextAutoClassName('form');
+        const formStyleId = createStyleSource('local', formClassName);
         setStyle(formStyleId, 'display', 'flex');
         setStyle(formStyleId, 'flexDirection', 'column');
         setStyle(formStyleId, 'gap', '20px');
@@ -363,22 +379,33 @@ const Builder: React.FC = () => {
         setStyle(formStyleId, 'borderRadius', '8px');
         setStyle(formStyleId, 'maxWidth', '500px');
 
-        const fieldBoxStyleId = createStyleSource('local', getNextAutoClassName('div'));
+        const fieldBoxClassName = getNextAutoClassName('div');
+        const fieldBoxStyleId = createStyleSource('local', fieldBoxClassName);
         setStyle(fieldBoxStyleId, 'display', 'flex');
         setStyle(fieldBoxStyleId, 'flexDirection', 'column');
         setStyle(fieldBoxStyleId, 'gap', '8px');
         
         // Create style sources for child elements
-        const headingStyleId = createStyleSource('local', getNextAutoClassName('heading'));
-        const nameLabelStyleId = createStyleSource('local', getNextAutoClassName('text'));
-        const nameInputStyleId = createStyleSource('local', getNextAutoClassName('input'));
-        const emailLabelStyleId = createStyleSource('local', getNextAutoClassName('text'));
-        const emailInputStyleId = createStyleSource('local', getNextAutoClassName('input'));
-        const messageLabelStyleId = createStyleSource('local', getNextAutoClassName('text'));
-        const messageTextareaStyleId = createStyleSource('local', getNextAutoClassName('textarea'));
-        const categoryLabelStyleId = createStyleSource('local', getNextAutoClassName('text'));
-        const categorySelectStyleId = createStyleSource('local', getNextAutoClassName('select'));
-        const submitButtonStyleId = createStyleSource('local', getNextAutoClassName('button'));
+        const headingClassName = getNextAutoClassName('heading');
+        const headingStyleId = createStyleSource('local', headingClassName);
+        const nameLabelClassName = getNextAutoClassName('text');
+        const nameLabelStyleId = createStyleSource('local', nameLabelClassName);
+        const nameInputClassName = getNextAutoClassName('input');
+        const nameInputStyleId = createStyleSource('local', nameInputClassName);
+        const emailLabelClassName = getNextAutoClassName('text');
+        const emailLabelStyleId = createStyleSource('local', emailLabelClassName);
+        const emailInputClassName = getNextAutoClassName('input');
+        const emailInputStyleId = createStyleSource('local', emailInputClassName);
+        const messageLabelClassName = getNextAutoClassName('text');
+        const messageLabelStyleId = createStyleSource('local', messageLabelClassName);
+        const messageTextareaClassName = getNextAutoClassName('textarea');
+        const messageTextareaStyleId = createStyleSource('local', messageTextareaClassName);
+        const categoryLabelClassName = getNextAutoClassName('text');
+        const categoryLabelStyleId = createStyleSource('local', categoryLabelClassName);
+        const categorySelectClassName = getNextAutoClassName('select');
+        const categorySelectStyleId = createStyleSource('local', categorySelectClassName);
+        const submitButtonClassName = getNextAutoClassName('button');
+        const submitButtonStyleId = createStyleSource('local', submitButtonClassName);
 
         const formInstance: ComponentInstance = {
           id: formId,
@@ -418,13 +445,16 @@ const Builder: React.FC = () => {
         const labelId = generateId();
         const radioId = generateId();
         const { createStyleSource, setStyle, getNextAutoClassName } = useStyleStore.getState();
-        const boxStyleId = createStyleSource('local', getNextAutoClassName('div'));
+        const boxClassName = getNextAutoClassName('div');
+        const boxStyleId = createStyleSource('local', boxClassName);
         setStyle(boxStyleId, 'display', 'flex');
         setStyle(boxStyleId, 'flexDirection', 'column');
         setStyle(boxStyleId, 'gap', '8px');
         
-        const labelStyleId = createStyleSource('local', getNextAutoClassName('text'));
-        const radioGroupStyleId = createStyleSource('local', getNextAutoClassName('radio'));
+        const labelClassName = getNextAutoClassName('text');
+        const labelStyleId = createStyleSource('local', labelClassName);
+        const radioGroupClassName = getNextAutoClassName('radio');
+        const radioGroupStyleId = createStyleSource('local', radioGroupClassName);
         
         const container: ComponentInstance = {
           id: boxId,
@@ -462,7 +492,8 @@ const Builder: React.FC = () => {
         const cell6Id = generateId();
         
         const { createStyleSource, setStyle, getNextAutoClassName } = useStyleStore.getState();
-        const tableStyleId = createStyleSource('local', getNextAutoClassName('table'));
+        const tableClassName = getNextAutoClassName('table');
+        const tableStyleId = createStyleSource('local', tableClassName);
         setStyle(tableStyleId, 'width', '100%');
         setStyle(tableStyleId, 'display', 'flex');
         setStyle(tableStyleId, 'flexDirection', 'column');
@@ -470,7 +501,8 @@ const Builder: React.FC = () => {
         setStyle(tableStyleId, 'borderRadius', '8px');
         setStyle(tableStyleId, 'overflow', 'hidden');
         
-        const headerRowStyleId = createStyleSource('local', getNextAutoClassName('div'));
+        const headerRowClassName = getNextAutoClassName('div');
+        const headerRowStyleId = createStyleSource('local', headerRowClassName);
         setStyle(headerRowStyleId, 'display', 'flex');
         setStyle(headerRowStyleId, 'gap', '0');
         setStyle(headerRowStyleId, 'padding', '0');
@@ -478,18 +510,21 @@ const Builder: React.FC = () => {
         setStyle(headerRowStyleId, 'fontWeight', '600');
         setStyle(headerRowStyleId, 'borderBottom', '2px solid hsl(var(--border))');
         
-        const rowStyleId = createStyleSource('local', getNextAutoClassName('div'));
+        const rowClassName = getNextAutoClassName('div');
+        const rowStyleId = createStyleSource('local', rowClassName);
         setStyle(rowStyleId, 'display', 'flex');
         setStyle(rowStyleId, 'gap', '0');
         setStyle(rowStyleId, 'padding', '0');
         setStyle(rowStyleId, 'borderBottom', '1px solid hsl(var(--border))');
 
-        const cellStyleId = createStyleSource('local', getNextAutoClassName('cell'));
+        const cellClassName = getNextAutoClassName('cell');
+        const cellStyleId = createStyleSource('local', cellClassName);
         setStyle(cellStyleId, 'flex', '1');
         setStyle(cellStyleId, 'padding', '12px');
         setStyle(cellStyleId, 'borderRight', '1px solid hsl(var(--border))');
         
-        const containerStyleId = createStyleSource('local', getNextAutoClassName('container'));
+        const containerClassName = getNextAutoClassName('container');
+        const containerStyleId = createStyleSource('local', containerClassName);
         
         const containerInstance: ComponentInstance = {
           id: containerId,
@@ -535,16 +570,26 @@ const Builder: React.FC = () => {
         const unorderedListId = generateId();
         
         const { createStyleSource, getNextAutoClassName } = useStyleStore.getState();
-        const h1StyleId = createStyleSource('local', getNextAutoClassName('heading'));
-        const h2StyleId = createStyleSource('local', getNextAutoClassName('heading'));
-        const h3StyleId = createStyleSource('local', getNextAutoClassName('heading'));
-        const h4StyleId = createStyleSource('local', getNextAutoClassName('heading'));
-        const h5StyleId = createStyleSource('local', getNextAutoClassName('heading'));
-        const h6StyleId = createStyleSource('local', getNextAutoClassName('heading'));
-        const textStyleId = createStyleSource('local', getNextAutoClassName('text'));
-        const blockquoteStyleId = createStyleSource('local', getNextAutoClassName('blockquote'));
-        const orderedListStyleId = createStyleSource('local', getNextAutoClassName('list'));
-        const unorderedListStyleId = createStyleSource('local', getNextAutoClassName('list'));
+        const h1ClassName = getNextAutoClassName('heading');
+        const h1StyleId = createStyleSource('local', h1ClassName);
+        const h2ClassName = getNextAutoClassName('heading');
+        const h2StyleId = createStyleSource('local', h2ClassName);
+        const h3ClassName = getNextAutoClassName('heading');
+        const h3StyleId = createStyleSource('local', h3ClassName);
+        const h4ClassName = getNextAutoClassName('heading');
+        const h4StyleId = createStyleSource('local', h4ClassName);
+        const h5ClassName = getNextAutoClassName('heading');
+        const h5StyleId = createStyleSource('local', h5ClassName);
+        const h6ClassName = getNextAutoClassName('heading');
+        const h6StyleId = createStyleSource('local', h6ClassName);
+        const textClassName = getNextAutoClassName('text');
+        const textStyleId = createStyleSource('local', textClassName);
+        const blockquoteClassName = getNextAutoClassName('blockquote');
+        const blockquoteStyleId = createStyleSource('local', blockquoteClassName);
+        const orderedListClassName = getNextAutoClassName('list');
+        const orderedListStyleId = createStyleSource('local', orderedListClassName);
+        const unorderedListClassName = getNextAutoClassName('list');
+        const unorderedListStyleId = createStyleSource('local', unorderedListClassName);
         
         defaultChildren.push(
           {

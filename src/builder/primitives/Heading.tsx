@@ -43,7 +43,8 @@ export const Heading: React.FC<HeadingProps> = ({
     // If instance has no style source, create one
     if (!instance.styleSourceIds || instance.styleSourceIds.length === 0) {
       const { createStyleSource, getNextAutoClassName } = useStyleStore.getState();
-      const styleSourceId = createStyleSource('local', getNextAutoClassName('heading'));
+      const headingClassName = getNextAutoClassName('heading');
+      const styleSourceId = createStyleSource('local', headingClassName);
       
       // Apply default styles
       setStyle(styleSourceId, 'fontSize', fontSizeMap[level]);
