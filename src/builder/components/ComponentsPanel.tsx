@@ -317,16 +317,29 @@ export const ComponentsPanel: React.FC = () => {
       // Auto-classes for form components
       const headingClassName = getNextAutoClassName('heading');
       const headingStyleId = createStyleSource('local', headingClassName);
+      setStyle(headingStyleId, 'fontSize', '32px');
+      setStyle(headingStyleId, 'fontWeight', '700');
+      setStyle(headingStyleId, 'lineHeight', '1.2');
+      setStyle(headingStyleId, 'color', 'hsl(var(--foreground))');
       const nameLabelClassName = getNextAutoClassName('label');
       const nameLabelStyleId = createStyleSource('local', nameLabelClassName);
+      setStyle(nameLabelStyleId, 'fontSize', '16px');
+      setStyle(nameLabelStyleId, 'lineHeight', '1.5');
+      setStyle(nameLabelStyleId, 'color', 'hsl(var(--foreground))');
       const nameInputClassName = getNextAutoClassName('input');
       const nameInputStyleId = createStyleSource('local', nameInputClassName);
       const emailLabelClassName = getNextAutoClassName('label');
       const emailLabelStyleId = createStyleSource('local', emailLabelClassName);
+      setStyle(emailLabelStyleId, 'fontSize', '16px');
+      setStyle(emailLabelStyleId, 'lineHeight', '1.5');
+      setStyle(emailLabelStyleId, 'color', 'hsl(var(--foreground))');
       const emailInputClassName = getNextAutoClassName('input');
       const emailInputStyleId = createStyleSource('local', emailInputClassName);
       const messageLabelClassName = getNextAutoClassName('label');
       const messageLabelStyleId = createStyleSource('local', messageLabelClassName);
+      setStyle(messageLabelStyleId, 'fontSize', '16px');
+      setStyle(messageLabelStyleId, 'lineHeight', '1.5');
+      setStyle(messageLabelStyleId, 'color', 'hsl(var(--foreground))');
       const messageTextareaClassName = getNextAutoClassName('textarea');
       const messageTextareaStyleId = createStyleSource('local', messageTextareaClassName);
       const submitButtonClassName = getNextAutoClassName('button');
@@ -454,6 +467,9 @@ export const ComponentsPanel: React.FC = () => {
       // Auto-classes for child components
       const labelClassName = getNextAutoClassName('text');
       const labelStyleId = createStyleSource('local', labelClassName);
+      setStyle(labelStyleId, 'fontSize', '16px');
+      setStyle(labelStyleId, 'lineHeight', '1.5');
+      setStyle(labelStyleId, 'color', 'hsl(var(--foreground))');
       const radioGroupClassName = getNextAutoClassName('radio');
       const radioGroupStyleId = createStyleSource('local', radioGroupClassName);
       
@@ -700,14 +716,21 @@ export const ComponentsPanel: React.FC = () => {
       const h2StyleId = createStyleSource('local', h2ClassName);
       setStyle(h2StyleId, 'fontSize', '32px');
       setStyle(h2StyleId, 'fontWeight', '700');
+      setStyle(h2StyleId, 'lineHeight', '1.2');
+      setStyle(h2StyleId, 'color', 'hsl(var(--foreground))');
       
       const h3ClassName = getNextAutoClassName('heading');
       const h3StyleId = createStyleSource('local', h3ClassName);
       setStyle(h3StyleId, 'fontSize', '24px');
       setStyle(h3StyleId, 'fontWeight', '700');
+      setStyle(h3StyleId, 'lineHeight', '1.2');
+      setStyle(h3StyleId, 'color', 'hsl(var(--foreground))');
       
       const textClassName = getNextAutoClassName('text');
       const textStyleId = createStyleSource('local', textClassName);
+      setStyle(textStyleId, 'fontSize', '16px');
+      setStyle(textStyleId, 'lineHeight', '1.5');
+      setStyle(textStyleId, 'color', 'hsl(var(--foreground))');
       
       const headingId = generateId();
       defaultChildren.push(

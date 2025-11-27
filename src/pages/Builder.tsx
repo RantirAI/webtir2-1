@@ -569,27 +569,76 @@ const Builder: React.FC = () => {
         const orderedListId = generateId();
         const unorderedListId = generateId();
         
-        const { createStyleSource, getNextAutoClassName } = useStyleStore.getState();
+        const { createStyleSource, setStyle, getNextAutoClassName } = useStyleStore.getState();
         const h1ClassName = getNextAutoClassName('heading');
         const h1StyleId = createStyleSource('local', h1ClassName);
+        setStyle(h1StyleId, 'fontSize', '48px');
+        setStyle(h1StyleId, 'fontWeight', '700');
+        setStyle(h1StyleId, 'lineHeight', '1.2');
+        setStyle(h1StyleId, 'color', 'hsl(var(--foreground))');
+        
         const h2ClassName = getNextAutoClassName('heading');
         const h2StyleId = createStyleSource('local', h2ClassName);
+        setStyle(h2StyleId, 'fontSize', '32px');
+        setStyle(h2StyleId, 'fontWeight', '700');
+        setStyle(h2StyleId, 'lineHeight', '1.2');
+        setStyle(h2StyleId, 'color', 'hsl(var(--foreground))');
+        
         const h3ClassName = getNextAutoClassName('heading');
         const h3StyleId = createStyleSource('local', h3ClassName);
+        setStyle(h3StyleId, 'fontSize', '24px');
+        setStyle(h3StyleId, 'fontWeight', '700');
+        setStyle(h3StyleId, 'lineHeight', '1.2');
+        setStyle(h3StyleId, 'color', 'hsl(var(--foreground))');
+        
         const h4ClassName = getNextAutoClassName('heading');
         const h4StyleId = createStyleSource('local', h4ClassName);
+        setStyle(h4StyleId, 'fontSize', '18px');
+        setStyle(h4StyleId, 'fontWeight', '700');
+        setStyle(h4StyleId, 'lineHeight', '1.2');
+        setStyle(h4StyleId, 'color', 'hsl(var(--foreground))');
+        
         const h5ClassName = getNextAutoClassName('heading');
         const h5StyleId = createStyleSource('local', h5ClassName);
+        setStyle(h5StyleId, 'fontSize', '16px');
+        setStyle(h5StyleId, 'fontWeight', '700');
+        setStyle(h5StyleId, 'lineHeight', '1.2');
+        setStyle(h5StyleId, 'color', 'hsl(var(--foreground))');
+        
         const h6ClassName = getNextAutoClassName('heading');
         const h6StyleId = createStyleSource('local', h6ClassName);
+        setStyle(h6StyleId, 'fontSize', '14px');
+        setStyle(h6StyleId, 'fontWeight', '700');
+        setStyle(h6StyleId, 'lineHeight', '1.2');
+        setStyle(h6StyleId, 'color', 'hsl(var(--foreground))');
+        
         const textClassName = getNextAutoClassName('text');
         const textStyleId = createStyleSource('local', textClassName);
+        setStyle(textStyleId, 'fontSize', '16px');
+        setStyle(textStyleId, 'lineHeight', '1.5');
+        setStyle(textStyleId, 'color', 'hsl(var(--foreground))');
+        
         const blockquoteClassName = getNextAutoClassName('blockquote');
         const blockquoteStyleId = createStyleSource('local', blockquoteClassName);
+        setStyle(blockquoteStyleId, 'fontSize', '16px');
+        setStyle(blockquoteStyleId, 'fontStyle', 'italic');
+        setStyle(blockquoteStyleId, 'borderLeft', '4px solid hsl(var(--border))');
+        setStyle(blockquoteStyleId, 'paddingLeft', '16px');
+        setStyle(blockquoteStyleId, 'marginLeft', '0');
+        setStyle(blockquoteStyleId, 'color', 'hsl(var(--muted-foreground))');
         const orderedListClassName = getNextAutoClassName('list');
         const orderedListStyleId = createStyleSource('local', orderedListClassName);
+        setStyle(orderedListStyleId, 'fontSize', '16px');
+        setStyle(orderedListStyleId, 'lineHeight', '1.5');
+        setStyle(orderedListStyleId, 'paddingLeft', '24px');
+        setStyle(orderedListStyleId, 'color', 'hsl(var(--foreground))');
+        
         const unorderedListClassName = getNextAutoClassName('list');
         const unorderedListStyleId = createStyleSource('local', unorderedListClassName);
+        setStyle(unorderedListStyleId, 'fontSize', '16px');
+        setStyle(unorderedListStyleId, 'lineHeight', '1.5');
+        setStyle(unorderedListStyleId, 'paddingLeft', '24px');
+        setStyle(unorderedListStyleId, 'color', 'hsl(var(--foreground))');
         
         defaultChildren.push(
           {
