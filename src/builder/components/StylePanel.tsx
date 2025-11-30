@@ -27,6 +27,7 @@ import { VideoUpload } from './VideoUpload';
 import { ShadowManager } from './ShadowManager';
 import { ShadowItem } from '../store/types';
 import { compileMetadataToCSS } from '../utils/cssCompiler';
+import { applyHeadingTypography } from '../utils/headingTypography';
 import '../styles/style-panel.css';
 import '../styles/tokens.css';
 
@@ -1165,9 +1166,16 @@ export const StylePanel: React.FC<StylePanelProps> = ({
                     <button
                       key={num}
                       onClick={() => {
+                        // Update the heading tag
                         updateInstance(selectedInstance.id, {
                           props: { ...selectedInstance.props, level: tag },
                         });
+                        
+                        // Apply default typography for the selected heading level
+                        if (selectedInstance.styleSourceIds && selectedInstance.styleSourceIds.length > 0) {
+                          const styleSourceId = selectedInstance.styleSourceIds[0];
+                          applyHeadingTypography(styleSourceId, tag, setStyle);
+                        }
                       }}
                       className={`h-7 flex items-center justify-center rounded border text-xs font-medium transition-colors ${
                         isActive
