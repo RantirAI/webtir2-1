@@ -605,12 +605,13 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
         setNodeRef(node);
         onCanvasRef?.(node);
       }}
-      className={`absolute inset-0 ${isPreviewMode ? 'overflow-auto' : 'overflow-auto'} bg-[#e5e7eb] dark:bg-zinc-800 builder-canvas flex items-center justify-center`}
+      className={`absolute inset-0 ${isPreviewMode ? 'overflow-auto' : 'overflow-auto'} bg-[#e5e7eb] dark:bg-zinc-800 builder-canvas flex items-start justify-center`}
       style={{
         backgroundImage: isPreviewMode ? 'none' : `radial-gradient(circle, #9ca3af 1px, transparent 1px)`,
         backgroundSize: '20px 20px',
         backgroundPosition: 'center',
         cursor: isPanMode ? (isPanning ? 'grabbing' : 'grab') : 'default',
+        paddingTop: isPreviewMode ? 0 : 64, // ensure canvas content clears the top toolbar
       }}
       onMouseDown={handleMouseDown}
       onMouseMove={(e) => {
@@ -624,11 +625,10 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
       onTouchEnd={handleTouchEnd}
     >
       <div 
-        className="transition-transform origin-top-left inline-flex items-start justify-start gap-8"
+        className="transition-transform origin-top inline-flex items-start justify-center gap-8"
         style={{
           transform: isPreviewMode ? 'none' : `scale(${zoom / 100})`,
-          transformOrigin: 'top left',
-          padding: isPreviewMode ? '0' : '4rem', // Reduced padding for better visibility
+          padding: isPreviewMode ? '0' : '4rem', // Small margin around pages for visibility
           minHeight: isPreviewMode ? 'auto' : '100vh',
           minWidth: isPreviewMode ? 'auto' : '100%',
         }}
