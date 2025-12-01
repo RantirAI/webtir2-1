@@ -1451,8 +1451,9 @@ export const StylePanel: React.FC<StylePanelProps> = ({
 
             {/* Backgrounds */}
             <AccordionSection title="Backgrounds" section="backgrounds" properties={['backgroundColor', 'backgroundImage', 'backgroundSize', 'backgroundPosition', 'backgroundRepeat', 'backgroundClip']}>
-        <div className="Col" style={{ gap: '4px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '26px 1fr', gap: '2px', alignItems: 'center' }}>
+        <div className="Col" style={{ gap: '8px' }}>
+          {/* Color and Image side by side */}
+          <div style={{ display: 'grid', gridTemplateColumns: '26px 1fr 26px 1fr', gap: '4px', alignItems: 'center' }}>
             <label className={`Label ${getPropertyColorClass('backgroundColor')}`}>
               Color<PropertyIndicator property="backgroundColor" />
             </label>
@@ -1460,8 +1461,86 @@ export const StylePanel: React.FC<StylePanelProps> = ({
               value={computedStyles.backgroundColor || 'transparent'}
               onChange={(val) => updateStyle('backgroundColor', val)}
             />
+            <label className={`Label ${getPropertyColorClass('backgroundImage')}`}>
+              Image<PropertyIndicator property="backgroundImage" />
+            </label>
+            <div className="flex items-center gap-1">
+              <ImageUpload
+                currentValue={computedStyles.backgroundImage?.match(/url\(['"]?(.+?)['"]?\)/)?.[1] || ''}
+                onImageChange={(url) => {
+                  if (url) {
+                    updateStyle('backgroundImage', `url(${url})`);
+                    // Set defaults if not already set
+                    if (!computedStyles.backgroundSize) updateStyle('backgroundSize', 'cover');
+                    if (!computedStyles.backgroundPosition) updateStyle('backgroundPosition', 'center');
+                    if (!computedStyles.backgroundRepeat) updateStyle('backgroundRepeat', 'no-repeat');
+                  } else {
+                    updateStyle('backgroundImage', '');
+                  }
+                }}
+                mode="background"
+                compact
+              />
+            </div>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '26px 1fr', gap: '2px', alignItems: 'center' }}>
+
+          {/* Show additional background settings when image is set */}
+          {computedStyles.backgroundImage && (
+            <>
+              <div style={{ display: 'grid', gridTemplateColumns: '26px 1fr 26px 1fr', gap: '4px', alignItems: 'center' }}>
+                <label className={`Label ${getPropertyColorClass('backgroundSize')}`}>
+                  Size<PropertyIndicator property="backgroundSize" />
+                </label>
+                <select
+                  className="Select"
+                  value={computedStyles.backgroundSize || 'cover'}
+                  onChange={(e) => updateStyle('backgroundSize', e.target.value)}
+                  style={{ maxWidth: '80px' }}
+                >
+                  <option value="cover">Cover</option>
+                  <option value="contain">Contain</option>
+                  <option value="auto">Auto</option>
+                </select>
+                <label className={`Label ${getPropertyColorClass('backgroundPosition')}`}>
+                  Pos<PropertyIndicator property="backgroundPosition" />
+                </label>
+                <select
+                  className="Select"
+                  value={computedStyles.backgroundPosition || 'center'}
+                  onChange={(e) => updateStyle('backgroundPosition', e.target.value)}
+                  style={{ maxWidth: '80px' }}
+                >
+                  <option value="center">Center</option>
+                  <option value="top">Top</option>
+                  <option value="bottom">Bottom</option>
+                  <option value="left">Left</option>
+                  <option value="right">Right</option>
+                  <option value="top left">Top Left</option>
+                  <option value="top right">Top Right</option>
+                  <option value="bottom left">Bottom Left</option>
+                  <option value="bottom right">Bottom Right</option>
+                </select>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '26px 1fr', gap: '4px', alignItems: 'center' }}>
+                <label className={`Label ${getPropertyColorClass('backgroundRepeat')}`}>
+                  Repeat<PropertyIndicator property="backgroundRepeat" />
+                </label>
+                <select
+                  className="Select"
+                  value={computedStyles.backgroundRepeat || 'no-repeat'}
+                  onChange={(e) => updateStyle('backgroundRepeat', e.target.value)}
+                  style={{ maxWidth: '90px' }}
+                >
+                  <option value="no-repeat">No Repeat</option>
+                  <option value="repeat">Repeat</option>
+                  <option value="repeat-x">Repeat X</option>
+                  <option value="repeat-y">Repeat Y</option>
+                </select>
+              </div>
+            </>
+          )}
+
+          <div style={{ display: 'grid', gridTemplateColumns: '26px 1fr', gap: '4px', alignItems: 'center' }}>
             <label className={`Label ${getPropertyColorClass('backgroundClip')}`}>
               Clip<PropertyIndicator property="backgroundClip" />
             </label>
@@ -2041,76 +2120,6 @@ export const StylePanel: React.FC<StylePanelProps> = ({
                   </label>
                 </div>
               </div>
-            </div>
-          )}
-
-          {(selectedInstance.type === 'Container' || selectedInstance.type === 'Div' || selectedInstance.type === 'Section') && (
-            <div className="space-y-4">
-              <ImageUpload
-                currentValue={computedStyles.backgroundImage?.match(/url\(['"]?(.+?)['"]?\)/)?.[1] || ''}
-                onImageChange={(url) => {
-                  if (url) {
-                    updateStyle('backgroundImage', `url(${url})`);
-                    updateStyle('backgroundSize', 'cover');
-                    updateStyle('backgroundPosition', 'center');
-                    updateStyle('backgroundRepeat', 'no-repeat');
-                  } else {
-                    updateStyle('backgroundImage', '');
-                  }
-                }}
-                mode="background"
-                label="Background Image"
-              />
-
-              {computedStyles.backgroundImage && (
-                <div className="space-y-3 pt-3 border-t border-border">
-                  <div className="space-y-2">
-                    <label className="text-xs font-semibold text-foreground">Background Size</label>
-                    <select
-                      className="w-full h-8 px-2 text-xs rounded-md border border-border bg-background"
-                      value={computedStyles.backgroundSize || 'cover'}
-                      onChange={(e) => updateStyle('backgroundSize', e.target.value)}
-                    >
-                      <option value="cover">Cover</option>
-                      <option value="contain">Contain</option>
-                      <option value="auto">Auto</option>
-                    </select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-xs font-semibold text-foreground">Background Position</label>
-                    <select
-                      className="w-full h-8 px-2 text-xs rounded-md border border-border bg-background"
-                      value={computedStyles.backgroundPosition || 'center'}
-                      onChange={(e) => updateStyle('backgroundPosition', e.target.value)}
-                    >
-                      <option value="center">Center</option>
-                      <option value="top">Top</option>
-                      <option value="bottom">Bottom</option>
-                      <option value="left">Left</option>
-                      <option value="right">Right</option>
-                      <option value="top left">Top Left</option>
-                      <option value="top right">Top Right</option>
-                      <option value="bottom left">Bottom Left</option>
-                      <option value="bottom right">Bottom Right</option>
-                    </select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-xs font-semibold text-foreground">Background Repeat</label>
-                    <select
-                      className="w-full h-8 px-2 text-xs rounded-md border border-border bg-background"
-                      value={computedStyles.backgroundRepeat || 'no-repeat'}
-                      onChange={(e) => updateStyle('backgroundRepeat', e.target.value)}
-                    >
-                      <option value="no-repeat">No Repeat</option>
-                      <option value="repeat">Repeat</option>
-                      <option value="repeat-x">Repeat X</option>
-                      <option value="repeat-y">Repeat Y</option>
-                    </select>
-                  </div>
-                </div>
-              )}
             </div>
           )}
 
@@ -2797,9 +2806,9 @@ export const StylePanel: React.FC<StylePanelProps> = ({
           )}
 
           {selectedInstance.type !== 'Image' && 
-           selectedInstance.type !== 'Container' && 
-           selectedInstance.type !== 'Div' && 
-           selectedInstance.type !== 'Section' &&
+           selectedInstance.type !== 'Video' &&
+           selectedInstance.type !== 'Youtube' &&
+           selectedInstance.type !== 'Lottie' &&
            selectedInstance.type !== 'Table' &&
            selectedInstance.type !== 'Navigation' &&
            selectedInstance.type !== 'FormButton' &&
