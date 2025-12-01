@@ -3,7 +3,7 @@ import { useBuilderStore } from '../store/useBuilderStore';
 import { useStyleStore } from '../store/useStyleStore';
 import { PseudoState } from '../store/types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Paintbrush, Plus, Square, Type, Heading as HeadingIcon, MousePointerClick, Image as ImageIcon, Link as LinkIcon, X, ChevronDown, ChevronRight, Settings as SettingsIcon, Zap, Database, RotateCcw, Info, AlignLeft, AlignCenter, AlignRight, AlignJustify, ArrowRight, ArrowDown, ArrowLeft, ArrowUp, Box, LayoutList, LayoutGrid, Minus, EyeOff, FileText, Home, Copy, Trash2 } from 'lucide-react';
+import { Paintbrush, Plus, Square, Type, Heading as HeadingIcon, MousePointerClick, Image as ImageIcon, Link as LinkIcon, X, ChevronDown, ChevronRight, Settings as SettingsIcon, Zap, Database, RotateCcw, Info, AlignLeft, AlignCenter, AlignRight, AlignJustify, ArrowRight, ArrowDown, ArrowLeft, ArrowUp, Box, LayoutList, LayoutGrid, Minus, EyeOff, FileText, Home, Copy, Trash2, Pencil } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Input } from '@/components/ui/input';
@@ -28,6 +28,7 @@ import { ShadowManager } from './ShadowManager';
 import { ShadowItem } from '../store/types';
 import { compileMetadataToCSS } from '../utils/cssCompiler';
 import { applyHeadingTypography } from '../utils/headingTypography';
+import { AttributeRow } from './AttributeRow';
 import '../styles/style-panel.css';
 import '../styles/tokens.css';
 
@@ -1844,8 +1845,8 @@ export const StylePanel: React.FC<StylePanelProps> = ({
               )}
             </div>
 
-            {/* Custom Attributes Section - Global for all components */}
-            <div className="space-y-1">
+            {/* Custom Attributes Section - Per-component unique */}
+            <div className="space-y-0.5">
               <div 
                 className="flex items-center justify-between cursor-pointer py-0.5"
                 onClick={() => setOpenSections(prev => ({ ...prev, customAttributes: !prev.customAttributes }))}
@@ -1857,10 +1858,12 @@ export const StylePanel: React.FC<StylePanelProps> = ({
                     variant="ghost"
                     onClick={(e) => {
                       e.stopPropagation();
-                      const currentAttrs = selectedInstance.attributes || {};
-                      const newKey = `data-attr-${Object.keys(currentAttrs).length + 1}`;
+                      // Get THIS instance's current attributes only
+                      const thisInstanceAttrs = selectedInstance.attributes || {};
+                      const newKey = `data-attr-${Object.keys(thisInstanceAttrs).length + 1}`;
+                      // Update only THIS specific instance
                       updateInstance(selectedInstance.id, { 
-                        attributes: { ...currentAttrs, [newKey]: '' } 
+                        attributes: { ...thisInstanceAttrs, [newKey]: '' } 
                       });
                       setOpenSections(prev => ({ ...prev, customAttributes: true }));
                     }}
@@ -1872,53 +1875,31 @@ export const StylePanel: React.FC<StylePanelProps> = ({
                 {openSections.customAttributes ? <ChevronDown className="w-2.5 h-2.5" /> : <ChevronRight className="w-2.5 h-2.5" />}
               </div>
               {openSections.customAttributes && (
-                <div className="space-y-1">
+                <div className="space-y-0.5">
                   {Object.keys(selectedInstance.attributes || {}).length > 0 ? (
-                    <div className="space-y-1">
+                    <div className="space-y-0.5">
                       {Object.entries(selectedInstance.attributes || {}).map(([name, value], index) => (
-                        <div key={index} className="flex items-center gap-1 p-1 bg-muted/50 rounded">
-                          <Input
-                            type="text"
-                            value={name}
-                            onChange={(e) => {
-                              const newName = e.target.value.replace(/[^a-zA-Z0-9_-]/g, '');
-                              if (['id', 'class', 'style'].includes(newName.toLowerCase())) return;
-                              const currentAttrs = { ...selectedInstance.attributes };
-                              delete currentAttrs[name];
-                              currentAttrs[newName] = value;
-                              updateInstance(selectedInstance.id, { attributes: currentAttrs });
-                            }}
-                            className="h-5 text-[10px] flex-1"
-                            placeholder="name"
-                          />
-                          <Input
-                            type="text"
-                            value={value}
-                            onChange={(e) => {
-                              updateInstance(selectedInstance.id, {
-                                attributes: { ...selectedInstance.attributes, [name]: e.target.value }
-                              });
-                            }}
-                            className="h-5 text-[10px] flex-1"
-                            placeholder="value"
-                          />
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => {
-                              const currentAttrs = { ...selectedInstance.attributes };
-                              delete currentAttrs[name];
-                              updateInstance(selectedInstance.id, { attributes: currentAttrs });
-                            }}
-                            className="h-5 w-5 p-0"
-                          >
-                            <X className="w-2.5 h-2.5" />
-                          </Button>
-                        </div>
+                        <AttributeRow
+                          key={`${selectedInstance.id}-attr-${name}-${index}`}
+                          name={name}
+                          value={value}
+                          instanceId={selectedInstance.id}
+                          onSave={(oldName, newName, newValue) => {
+                            const currentAttrs = { ...selectedInstance.attributes };
+                            delete currentAttrs[oldName];
+                            currentAttrs[newName] = newValue;
+                            updateInstance(selectedInstance.id, { attributes: currentAttrs });
+                          }}
+                          onDelete={(attrName) => {
+                            const currentAttrs = { ...selectedInstance.attributes };
+                            delete currentAttrs[attrName];
+                            updateInstance(selectedInstance.id, { attributes: currentAttrs });
+                          }}
+                        />
                       ))}
                     </div>
                   ) : (
-                    <p className="text-[9px] text-muted-foreground">
+                    <p className="text-[9px] text-muted-foreground pl-1">
                       No custom attributes
                     </p>
                   )}
