@@ -30,8 +30,8 @@ export const Div: React.FC<DivProps> = ({
   const isRoot = instance.id === 'root';
 
   // Only essential inline styles - let CSS classes control all layout/sizing
+  // No default background color - divs should be transparent by default
   const defaultStyles: React.CSSProperties = {
-    backgroundColor: isRoot ? '#ffffff' : undefined,
     ...(dataBindingProps.style || {}), // Apply visibility and other data binding styles
   };
 
