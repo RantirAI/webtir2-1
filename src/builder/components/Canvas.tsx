@@ -620,9 +620,9 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
         backgroundPosition: 'center',
         cursor: isPanMode ? (isPanning ? 'grabbing' : 'grab') : 'default',
         paddingTop: isPreviewMode ? 0 : (isRulersView ? 48 : 64),
-        paddingLeft: isRulersView ? 280 : 0,
-        paddingRight: isRulersView ? 280 : 0,
-        backgroundColor: isRulersView ? 'hsl(var(--muted))' : undefined,
+        paddingLeft: isPreviewMode ? 0 : (isRulersView ? 280 : 0),
+        paddingRight: isPreviewMode ? 0 : (isRulersView ? 280 : 0),
+        backgroundColor: isPreviewMode ? undefined : (isRulersView ? 'hsl(var(--muted))' : undefined),
       }}
       onMouseDown={handleMouseDown}
       onMouseMove={(e) => {
