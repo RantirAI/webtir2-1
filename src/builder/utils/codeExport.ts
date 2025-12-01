@@ -44,6 +44,21 @@ function instanceToHTML(instance: ComponentInstance, indent: number = 1): string
   
   const classAttr = classNames ? ` class="${classNames}"` : '';
   
+  // Build ID attribute
+  const idAttr = instance.idAttribute ? ` id="${instance.idAttribute}"` : '';
+  
+  // Build custom attributes
+  let customAttrs = '';
+  if (instance.attributes && Object.keys(instance.attributes).length > 0) {
+    customAttrs = Object.entries(instance.attributes)
+      .filter(([name]) => !['id', 'class', 'style', 'className'].includes(name.toLowerCase()))
+      .map(([name, value]) => ` ${name}="${value}"`)
+      .join('');
+  }
+  
+  // Visibility attribute (data-hidden if hidden)
+  const visibilityAttr = instance.visibility === 'hidden' ? ' style="display: none;"' : '';
+  
   // Generate tag based on component type
   let tag = 'div';
   let selfClosing = false;
@@ -66,6 +81,19 @@ function instanceToHTML(instance: ComponentInstance, indent: number = 1): string
       selfClosing = true;
       attrs = ` src="${instance.props.src || ''}" alt="${instance.props.alt || ''}"`;
       break;
+    case 'Video':
+      tag = 'video';
+      attrs = ` src="${instance.props.src || ''}"`;
+      if (instance.props.autoplay) attrs += ' autoplay';
+      if (instance.props.loop) attrs += ' loop';
+      if (instance.props.muted) attrs += ' muted';
+      if (instance.props.controls) attrs += ' controls';
+      break;
+    case 'Youtube':
+      // YouTube embeds as iframe wrapper
+      tag = 'div';
+      const videoId = instance.props.videoId || 'dQw4w9WgXcQ';
+      return `${spaces}<div${idAttr}${classAttr}${customAttrs} style="position: relative; width: 100%; padding-bottom: 56.25%;">\n${spaces}  <iframe src="https://www.youtube.com/embed/${videoId}" title="YouTube video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;"></iframe>\n${spaces}</div>`;
     case 'Link':
       tag = 'a';
       attrs = ` href="${instance.props.href || '#'}"`;
@@ -100,12 +128,15 @@ function instanceToHTML(instance: ComponentInstance, indent: number = 1): string
       break;
   }
   
+  // Combine all attributes
+  const allAttrs = `${idAttr}${classAttr}${attrs}${customAttrs}${visibilityAttr}`;
+  
   // Get text content
   const textContent = instance.props.children || instance.props.text || '';
   
   // Self-closing tags
   if (selfClosing) {
-    return `${spaces}<${tag}${classAttr}${attrs} />`;
+    return `${spaces}<${tag}${allAttrs} />`;
   }
   
   // Tags with children
@@ -113,16 +144,16 @@ function instanceToHTML(instance: ComponentInstance, indent: number = 1): string
     const childrenHTML = instance.children
       .map(child => instanceToHTML(child, indent + 1))
       .join('\n');
-    return `${spaces}<${tag}${classAttr}${attrs}>\n${childrenHTML}\n${spaces}</${tag}>`;
+    return `${spaces}<${tag}${allAttrs}>\n${childrenHTML}\n${spaces}</${tag}>`;
   }
   
   // Tags with text content
   if (textContent) {
-    return `${spaces}<${tag}${classAttr}${attrs}>${textContent}</${tag}>`;
+    return `${spaces}<${tag}${allAttrs}>${textContent}</${tag}>`;
   }
   
   // Empty tags
-  return `${spaces}<${tag}${classAttr}${attrs}></${tag}>`;
+  return `${spaces}<${tag}${allAttrs}></${tag}>`;
 }
 
 // Export CSS

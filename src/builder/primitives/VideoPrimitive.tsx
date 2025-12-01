@@ -46,15 +46,18 @@ export const VideoPrimitive: React.FC<VideoPrimitiveProps> = ({
 }) => {
   const videoInfo = parseVideoUrl(src || '');
   
-  // YouTube embed
+  // YouTube embed - always render, don't require loop
   if (videoInfo.type === 'youtube' && videoInfo.id) {
-    const params = new URLSearchParams({
-      autoplay: autoplay ? '1' : '0',
-      loop: loop ? '1' : '0',
-      mute: muted ? '1' : '0',
-      controls: controls ? '1' : '0',
-      playlist: loop ? videoInfo.id : '',
-    });
+    const params = new URLSearchParams();
+    params.set('autoplay', autoplay ? '1' : '0');
+    params.set('mute', muted ? '1' : '0');
+    params.set('controls', controls ? '1' : '0');
+    if (loop) {
+      params.set('loop', '1');
+      params.set('playlist', videoInfo.id); // Required for YouTube loop
+    }
+    // Enable JS API for play/pause controls
+    params.set('enablejsapi', '1');
     
     return (
       <div
@@ -85,14 +88,18 @@ export const VideoPrimitive: React.FC<VideoPrimitiveProps> = ({
     );
   }
   
-  // Vimeo embed
+  // Vimeo embed - always render, don't require loop
   if (videoInfo.type === 'vimeo' && videoInfo.id) {
-    const params = new URLSearchParams({
-      autoplay: autoplay ? '1' : '0',
-      loop: loop ? '1' : '0',
-      muted: muted ? '1' : '0',
-      controls: controls ? '1' : '0',
-    });
+    const params = new URLSearchParams();
+    params.set('autoplay', autoplay ? '1' : '0');
+    params.set('muted', muted ? '1' : '0');
+    if (loop) {
+      params.set('loop', '1');
+    }
+    // Vimeo uses different param for controls
+    if (!controls) {
+      params.set('controls', '0');
+    }
     
     return (
       <div
@@ -132,6 +139,7 @@ export const VideoPrimitive: React.FC<VideoPrimitiveProps> = ({
       loop={loop}
       muted={muted}
       controls={controls}
+      playsInline
       className={className}
       style={{
         width: '100%',
