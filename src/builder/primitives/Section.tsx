@@ -42,11 +42,13 @@ export const Section: React.FC<SectionProps> = ({
   };
 
   const finalStyles = defaultStyles;
+  const classNames = (instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean);
+  if (isNewlyAdded) classNames.push('animate-fade-in');
 
   return (
     <section
       data-instance-id={instance.id}
-      className={`builder-section ${(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')} ${isNewlyAdded ? 'animate-fade-in' : ''}`}
+      className={classNames.length > 0 ? classNames.join(' ') : undefined}
       style={finalStyles}
       onClick={isPreviewMode ? undefined : (e) => {
         e.stopPropagation();
