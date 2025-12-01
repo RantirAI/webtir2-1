@@ -12,6 +12,7 @@ interface ContainerProps {
   onHoverEnd?: () => void;
   onContextMenu?: (e: React.MouseEvent) => void;
   isPreviewMode?: boolean;
+  dataBindingProps?: Record<string, any>;
 }
 
 export const Container: React.FC<ContainerProps> = ({
@@ -24,6 +25,7 @@ export const Container: React.FC<ContainerProps> = ({
   onHoverEnd,
   onContextMenu,
   isPreviewMode,
+  dataBindingProps = {},
 }) => {
   const containerType = instance.props.containerType || 'container';
   const [isNewlyAdded, setIsNewlyAdded] = useState(true);
@@ -40,11 +42,15 @@ export const Container: React.FC<ContainerProps> = ({
     outline: isNewlyAdded ? '2px dashed hsl(var(--primary) / 0.5)' : 'none',
     outlineOffset: '-2px',
     transition: 'outline 0.3s ease-out',
+    ...(dataBindingProps.style || {}),
   };
 
   const finalStyles = defaultStyles;
   const classNames = (instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean);
   if (isNewlyAdded) classNames.push('animate-fade-in');
+
+  // Extract non-style dataBindingProps
+  const { style: _style, ...restDataBindingProps } = dataBindingProps;
 
   return (
     <div
@@ -64,6 +70,7 @@ export const Container: React.FC<ContainerProps> = ({
         onHoverEnd?.();
       }}
       onContextMenu={isPreviewMode ? undefined : onContextMenu}
+      {...restDataBindingProps}
     >
       {children}
     </div>

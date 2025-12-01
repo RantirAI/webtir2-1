@@ -12,6 +12,7 @@ interface ButtonPrimitiveProps {
   onHoverEnd?: () => void;
   onContextMenu?: (e: React.MouseEvent) => void;
   isPreviewMode?: boolean;
+  dataBindingProps?: Record<string, any>;
 }
 
 export const ButtonPrimitive: React.FC<ButtonPrimitiveProps> = ({
@@ -23,14 +24,16 @@ export const ButtonPrimitive: React.FC<ButtonPrimitiveProps> = ({
   onHoverEnd,
   onContextMenu,
   isPreviewMode,
+  dataBindingProps = {},
 }) => {
-  // Using CSS classes only; no inline computed styles
+  // Extract non-style dataBindingProps
+  const { style: dataBindingStyle, ...restDataBindingProps } = dataBindingProps;
 
   return (
     <button
       data-instance-id={instance.id}
       className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
-      style={{ position: 'relative' }}
+      style={{ position: 'relative', ...dataBindingStyle }}
       onClick={isPreviewMode ? undefined : (e) => {
         e.stopPropagation();
         e.preventDefault();
@@ -45,6 +48,7 @@ export const ButtonPrimitive: React.FC<ButtonPrimitiveProps> = ({
         onHoverEnd?.();
       }}
       onContextMenu={isPreviewMode ? undefined : onContextMenu}
+      {...restDataBindingProps}
     >
       {instance.props.children || 'Button'}
     </button>

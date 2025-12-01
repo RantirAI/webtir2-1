@@ -13,6 +13,7 @@ interface HeadingProps {
   onHoverEnd?: () => void;
   onContextMenu?: (e: React.MouseEvent) => void;
   isPreviewMode?: boolean;
+  dataBindingProps?: Record<string, any>;
 }
 
 export const Heading: React.FC<HeadingProps> = ({
@@ -24,6 +25,7 @@ export const Heading: React.FC<HeadingProps> = ({
   onHoverEnd,
   onContextMenu,
   isPreviewMode,
+  dataBindingProps = {},
 }) => {
   const { updateInstance } = useBuilderStore();
   const level = instance.props.level || 'h1';
@@ -40,9 +42,13 @@ export const Heading: React.FC<HeadingProps> = ({
     .filter(Boolean)
     .join(' ');
 
+  // Extract non-style dataBindingProps
+  const { style: dataBindingStyle, ...restDataBindingProps } = dataBindingProps;
+
   return (
     <div
       data-instance-id={instance.id}
+      style={dataBindingStyle}
       onClick={isPreviewMode ? undefined : (e) => {
         e.stopPropagation();
         onSelect?.();
@@ -56,6 +62,7 @@ export const Heading: React.FC<HeadingProps> = ({
         onHoverEnd?.();
       }}
       onContextMenu={isPreviewMode ? undefined : onContextMenu}
+      {...restDataBindingProps}
     >
       <EditableText
         value={instance.props.children || 'Heading'}

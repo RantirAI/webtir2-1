@@ -11,6 +11,7 @@ interface ImagePrimitiveProps {
   onHoverEnd?: () => void;
   onContextMenu?: (e: React.MouseEvent) => void;
   isPreviewMode?: boolean;
+  dataBindingProps?: Record<string, any>;
 }
 
 export const ImagePrimitive: React.FC<ImagePrimitiveProps> = ({
@@ -22,8 +23,10 @@ export const ImagePrimitive: React.FC<ImagePrimitiveProps> = ({
   onHoverEnd,
   onContextMenu,
   isPreviewMode,
+  dataBindingProps = {},
 }) => {
-  // No inline computed styles - use CSS classes only
+  // Extract non-style dataBindingProps
+  const { style: dataBindingStyle, ...restDataBindingProps } = dataBindingProps;
 
   return (
     <img
@@ -31,7 +34,7 @@ export const ImagePrimitive: React.FC<ImagePrimitiveProps> = ({
       className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
       src={instance.props.src || 'https://via.placeholder.com/400x300'}
       alt={instance.props.alt || 'Image'}
-      style={{ position: 'relative' }}
+      style={{ position: 'relative', ...dataBindingStyle }}
       onClick={isPreviewMode ? undefined : (e) => {
         e.stopPropagation();
         onSelect?.();
@@ -45,6 +48,7 @@ export const ImagePrimitive: React.FC<ImagePrimitiveProps> = ({
         onHoverEnd?.();
       }}
       onContextMenu={isPreviewMode ? undefined : onContextMenu}
+      {...restDataBindingProps}
     />
   );
 };

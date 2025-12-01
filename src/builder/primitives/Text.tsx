@@ -13,6 +13,7 @@ interface TextProps {
   onHoverEnd?: () => void;
   onContextMenu?: (e: React.MouseEvent) => void;
   isPreviewMode?: boolean;
+  dataBindingProps?: Record<string, any>;
 }
 
 export const Text: React.FC<TextProps> = ({
@@ -24,6 +25,7 @@ export const Text: React.FC<TextProps> = ({
   onHoverEnd,
   onContextMenu,
   isPreviewMode,
+  dataBindingProps = {},
 }) => {
   const { updateInstance } = useBuilderStore();
 
@@ -33,10 +35,14 @@ export const Text: React.FC<TextProps> = ({
     });
   };
 
+  // Extract non-style dataBindingProps
+  const { style: dataBindingStyle, ...restDataBindingProps } = dataBindingProps;
+
   return (
     <div
       data-instance-id={instance.id}
       className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
+      style={dataBindingStyle}
       onClick={isPreviewMode ? undefined : (e) => {
         e.stopPropagation();
         onSelect?.();
@@ -50,6 +56,7 @@ export const Text: React.FC<TextProps> = ({
         onHoverEnd?.();
       }}
       onContextMenu={isPreviewMode ? undefined : onContextMenu}
+      {...restDataBindingProps}
     >
       <EditableText
         value={instance.props.children || 'Text'}
