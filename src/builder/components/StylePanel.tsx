@@ -1228,7 +1228,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({
             </AccordionSection>
 
             {/* Position */}
-            <AccordionSection title="Position" section="position" properties={['position', 'top', 'right', 'bottom', 'left', 'zIndex']}>
+            <AccordionSection title="Position" section="position" properties={['position', 'top', 'right', 'bottom', 'left', 'zIndex', 'transform']}>
         <div className="Col" style={{ gap: '6px' }}>
           {/* Position Type */}
           <div style={{ display: 'grid', gridTemplateColumns: '50px 1fr', gap: '4px', alignItems: 'center' }}>
@@ -1250,7 +1250,313 @@ export const StylePanel: React.FC<StylePanelProps> = ({
 
           {(computedStyles.position === 'absolute' || computedStyles.position === 'relative' || computedStyles.position === 'fixed' || computedStyles.position === 'sticky') && (
             <>
-              {/* Position Grid - Top/Right/Bottom/Left with visual indicators */}
+              {/* Position Preset Buttons - Webflow-style 3x3 grid for absolute/fixed */}
+              {(computedStyles.position === 'absolute' || computedStyles.position === 'fixed') && (
+                <>
+                  {/* 3x3 Corner/Edge Preset Grid */}
+                  <div style={{ 
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(3, 1fr)',
+                    gap: '2px',
+                    padding: '4px',
+                    border: '1px solid hsl(var(--border))',
+                    borderRadius: '6px',
+                    background: 'hsl(var(--muted) / 0.3)'
+                  }}>
+                    {/* Top-Left */}
+                    <button
+                      onClick={() => {
+                        updateStyle('top', '0');
+                        updateStyle('left', '0');
+                        updateStyle('right', 'auto');
+                        updateStyle('bottom', 'auto');
+                        updateStyle('transform', 'none');
+                      }}
+                      className={`h-6 flex items-center justify-center rounded border text-[9px] transition-colors ${
+                        computedStyles.top === '0' && computedStyles.left === '0' && (computedStyles.right === 'auto' || !computedStyles.right) && (computedStyles.bottom === 'auto' || !computedStyles.bottom)
+                          ? 'bg-primary/20 border-primary text-primary'
+                          : 'bg-background border-input text-muted-foreground hover:bg-accent hover:text-foreground'
+                      }`}
+                      title="Top Left"
+                    >
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+                        <rect x="1" y="1" width="4" height="4" />
+                      </svg>
+                    </button>
+                    {/* Top-Center */}
+                    <button
+                      onClick={() => {
+                        updateStyle('top', '0');
+                        updateStyle('left', '50%');
+                        updateStyle('right', 'auto');
+                        updateStyle('bottom', 'auto');
+                        updateStyle('transform', 'translateX(-50%)');
+                      }}
+                      className={`h-6 flex items-center justify-center rounded border text-[9px] transition-colors ${
+                        computedStyles.top === '0' && computedStyles.left === '50%' && computedStyles.transform?.includes('translateX(-50%)')
+                          ? 'bg-primary/20 border-primary text-primary'
+                          : 'bg-background border-input text-muted-foreground hover:bg-accent hover:text-foreground'
+                      }`}
+                      title="Top Center"
+                    >
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+                        <rect x="4" y="1" width="4" height="4" />
+                      </svg>
+                    </button>
+                    {/* Top-Right */}
+                    <button
+                      onClick={() => {
+                        updateStyle('top', '0');
+                        updateStyle('right', '0');
+                        updateStyle('left', 'auto');
+                        updateStyle('bottom', 'auto');
+                        updateStyle('transform', 'none');
+                      }}
+                      className={`h-6 flex items-center justify-center rounded border text-[9px] transition-colors ${
+                        computedStyles.top === '0' && computedStyles.right === '0' && (computedStyles.left === 'auto' || !computedStyles.left) && (computedStyles.bottom === 'auto' || !computedStyles.bottom)
+                          ? 'bg-primary/20 border-primary text-primary'
+                          : 'bg-background border-input text-muted-foreground hover:bg-accent hover:text-foreground'
+                      }`}
+                      title="Top Right"
+                    >
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+                        <rect x="7" y="1" width="4" height="4" />
+                      </svg>
+                    </button>
+                    {/* Center-Left */}
+                    <button
+                      onClick={() => {
+                        updateStyle('top', '50%');
+                        updateStyle('left', '0');
+                        updateStyle('right', 'auto');
+                        updateStyle('bottom', 'auto');
+                        updateStyle('transform', 'translateY(-50%)');
+                      }}
+                      className={`h-6 flex items-center justify-center rounded border text-[9px] transition-colors ${
+                        computedStyles.top === '50%' && computedStyles.left === '0' && computedStyles.transform?.includes('translateY(-50%)')
+                          ? 'bg-primary/20 border-primary text-primary'
+                          : 'bg-background border-input text-muted-foreground hover:bg-accent hover:text-foreground'
+                      }`}
+                      title="Center Left"
+                    >
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+                        <rect x="1" y="4" width="4" height="4" />
+                      </svg>
+                    </button>
+                    {/* Center */}
+                    <button
+                      onClick={() => {
+                        updateStyle('top', '50%');
+                        updateStyle('left', '50%');
+                        updateStyle('right', 'auto');
+                        updateStyle('bottom', 'auto');
+                        updateStyle('transform', 'translate(-50%, -50%)');
+                      }}
+                      className={`h-6 flex items-center justify-center rounded border text-[9px] transition-colors ${
+                        computedStyles.top === '50%' && computedStyles.left === '50%' && computedStyles.transform?.includes('translate(-50%, -50%)')
+                          ? 'bg-primary/20 border-primary text-primary'
+                          : 'bg-background border-input text-muted-foreground hover:bg-accent hover:text-foreground'
+                      }`}
+                      title="Center"
+                    >
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+                        <rect x="4" y="4" width="4" height="4" />
+                      </svg>
+                    </button>
+                    {/* Center-Right */}
+                    <button
+                      onClick={() => {
+                        updateStyle('top', '50%');
+                        updateStyle('right', '0');
+                        updateStyle('left', 'auto');
+                        updateStyle('bottom', 'auto');
+                        updateStyle('transform', 'translateY(-50%)');
+                      }}
+                      className={`h-6 flex items-center justify-center rounded border text-[9px] transition-colors ${
+                        computedStyles.top === '50%' && computedStyles.right === '0' && computedStyles.transform?.includes('translateY(-50%)')
+                          ? 'bg-primary/20 border-primary text-primary'
+                          : 'bg-background border-input text-muted-foreground hover:bg-accent hover:text-foreground'
+                      }`}
+                      title="Center Right"
+                    >
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+                        <rect x="7" y="4" width="4" height="4" />
+                      </svg>
+                    </button>
+                    {/* Bottom-Left */}
+                    <button
+                      onClick={() => {
+                        updateStyle('bottom', '0');
+                        updateStyle('left', '0');
+                        updateStyle('right', 'auto');
+                        updateStyle('top', 'auto');
+                        updateStyle('transform', 'none');
+                      }}
+                      className={`h-6 flex items-center justify-center rounded border text-[9px] transition-colors ${
+                        computedStyles.bottom === '0' && computedStyles.left === '0' && (computedStyles.right === 'auto' || !computedStyles.right) && (computedStyles.top === 'auto' || !computedStyles.top)
+                          ? 'bg-primary/20 border-primary text-primary'
+                          : 'bg-background border-input text-muted-foreground hover:bg-accent hover:text-foreground'
+                      }`}
+                      title="Bottom Left"
+                    >
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+                        <rect x="1" y="7" width="4" height="4" />
+                      </svg>
+                    </button>
+                    {/* Bottom-Center */}
+                    <button
+                      onClick={() => {
+                        updateStyle('bottom', '0');
+                        updateStyle('left', '50%');
+                        updateStyle('right', 'auto');
+                        updateStyle('top', 'auto');
+                        updateStyle('transform', 'translateX(-50%)');
+                      }}
+                      className={`h-6 flex items-center justify-center rounded border text-[9px] transition-colors ${
+                        computedStyles.bottom === '0' && computedStyles.left === '50%' && computedStyles.transform?.includes('translateX(-50%)')
+                          ? 'bg-primary/20 border-primary text-primary'
+                          : 'bg-background border-input text-muted-foreground hover:bg-accent hover:text-foreground'
+                      }`}
+                      title="Bottom Center"
+                    >
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+                        <rect x="4" y="7" width="4" height="4" />
+                      </svg>
+                    </button>
+                    {/* Bottom-Right */}
+                    <button
+                      onClick={() => {
+                        updateStyle('bottom', '0');
+                        updateStyle('right', '0');
+                        updateStyle('left', 'auto');
+                        updateStyle('top', 'auto');
+                        updateStyle('transform', 'none');
+                      }}
+                      className={`h-6 flex items-center justify-center rounded border text-[9px] transition-colors ${
+                        computedStyles.bottom === '0' && computedStyles.right === '0' && (computedStyles.left === 'auto' || !computedStyles.left) && (computedStyles.top === 'auto' || !computedStyles.top)
+                          ? 'bg-primary/20 border-primary text-primary'
+                          : 'bg-background border-input text-muted-foreground hover:bg-accent hover:text-foreground'
+                      }`}
+                      title="Bottom Right"
+                    >
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+                        <rect x="7" y="7" width="4" height="4" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  {/* Stretch Presets Row */}
+                  <div style={{ 
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(5, 1fr)',
+                    gap: '2px',
+                  }}>
+                    {/* Full Width Top */}
+                    <button
+                      onClick={() => {
+                        updateStyle('top', '0');
+                        updateStyle('left', '0');
+                        updateStyle('right', '0');
+                        updateStyle('bottom', 'auto');
+                        updateStyle('transform', 'none');
+                      }}
+                      className={`h-6 flex items-center justify-center rounded border text-[8px] transition-colors ${
+                        computedStyles.top === '0' && computedStyles.left === '0' && computedStyles.right === '0' && (computedStyles.bottom === 'auto' || !computedStyles.bottom)
+                          ? 'bg-primary/20 border-primary text-primary'
+                          : 'bg-background border-input text-muted-foreground hover:bg-accent hover:text-foreground'
+                      }`}
+                      title="Full Width Top"
+                    >
+                      <svg width="14" height="10" viewBox="0 0 14 10" fill="currentColor">
+                        <rect x="1" y="1" width="12" height="3" />
+                      </svg>
+                    </button>
+                    {/* Full Width Bottom */}
+                    <button
+                      onClick={() => {
+                        updateStyle('bottom', '0');
+                        updateStyle('left', '0');
+                        updateStyle('right', '0');
+                        updateStyle('top', 'auto');
+                        updateStyle('transform', 'none');
+                      }}
+                      className={`h-6 flex items-center justify-center rounded border text-[8px] transition-colors ${
+                        computedStyles.bottom === '0' && computedStyles.left === '0' && computedStyles.right === '0' && (computedStyles.top === 'auto' || !computedStyles.top)
+                          ? 'bg-primary/20 border-primary text-primary'
+                          : 'bg-background border-input text-muted-foreground hover:bg-accent hover:text-foreground'
+                      }`}
+                      title="Full Width Bottom"
+                    >
+                      <svg width="14" height="10" viewBox="0 0 14 10" fill="currentColor">
+                        <rect x="1" y="6" width="12" height="3" />
+                      </svg>
+                    </button>
+                    {/* Full Height Left */}
+                    <button
+                      onClick={() => {
+                        updateStyle('top', '0');
+                        updateStyle('bottom', '0');
+                        updateStyle('left', '0');
+                        updateStyle('right', 'auto');
+                        updateStyle('transform', 'none');
+                      }}
+                      className={`h-6 flex items-center justify-center rounded border text-[8px] transition-colors ${
+                        computedStyles.top === '0' && computedStyles.bottom === '0' && computedStyles.left === '0' && (computedStyles.right === 'auto' || !computedStyles.right)
+                          ? 'bg-primary/20 border-primary text-primary'
+                          : 'bg-background border-input text-muted-foreground hover:bg-accent hover:text-foreground'
+                      }`}
+                      title="Full Height Left"
+                    >
+                      <svg width="10" height="14" viewBox="0 0 10 14" fill="currentColor">
+                        <rect x="1" y="1" width="3" height="12" />
+                      </svg>
+                    </button>
+                    {/* Full Height Right */}
+                    <button
+                      onClick={() => {
+                        updateStyle('top', '0');
+                        updateStyle('bottom', '0');
+                        updateStyle('right', '0');
+                        updateStyle('left', 'auto');
+                        updateStyle('transform', 'none');
+                      }}
+                      className={`h-6 flex items-center justify-center rounded border text-[8px] transition-colors ${
+                        computedStyles.top === '0' && computedStyles.bottom === '0' && computedStyles.right === '0' && (computedStyles.left === 'auto' || !computedStyles.left)
+                          ? 'bg-primary/20 border-primary text-primary'
+                          : 'bg-background border-input text-muted-foreground hover:bg-accent hover:text-foreground'
+                      }`}
+                      title="Full Height Right"
+                    >
+                      <svg width="10" height="14" viewBox="0 0 10 14" fill="currentColor">
+                        <rect x="6" y="1" width="3" height="12" />
+                      </svg>
+                    </button>
+                    {/* Full Overlay */}
+                    <button
+                      onClick={() => {
+                        updateStyle('top', '0');
+                        updateStyle('left', '0');
+                        updateStyle('right', '0');
+                        updateStyle('bottom', '0');
+                        updateStyle('transform', 'none');
+                      }}
+                      className={`h-6 flex items-center justify-center rounded border text-[8px] transition-colors ${
+                        computedStyles.top === '0' && computedStyles.left === '0' && computedStyles.right === '0' && computedStyles.bottom === '0'
+                          ? 'bg-primary/20 border-primary text-primary'
+                          : 'bg-background border-input text-muted-foreground hover:bg-accent hover:text-foreground'
+                      }`}
+                      title="Full Overlay (inset: 0)"
+                    >
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+                        <rect x="1" y="1" width="10" height="10" fillOpacity="0.6" />
+                        <rect x="1" y="1" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="1.5" />
+                      </svg>
+                    </button>
+                  </div>
+                </>
+              )}
+
+              {/* Position Numeric Inputs - Top/Right/Bottom/Left */}
               <div style={{ 
                 display: 'grid',
                 gridTemplateColumns: '1fr 60px 1fr',
