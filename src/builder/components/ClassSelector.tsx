@@ -454,12 +454,6 @@ export const ClassSelector: React.FC<ClassSelectorProps> = ({
                           ) : (
                             <span className="select-none">.{cls.name}</span>
                           )}
-                          {isPrimary && (
-                            <span className="text-[9px] opacity-60 font-sans">CLASS {index + 1}</span>
-                          )}
-                          {!isPrimary && (
-                            <span className="text-[9px] opacity-60 font-sans">CLASS {index + 1}</span>
-                          )}
                           {isLastClass && (
                             <button
                               onClick={(e) => {
@@ -538,10 +532,10 @@ export const ClassSelector: React.FC<ClassSelectorProps> = ({
           )}
         </Popover>
         
-        {/* Class usage counter */}
-        {selectedClasses.length > 0 && activeClass && classUsageCount > 1 && (
-          <div style={{ fontSize: '10px', color: 'hsl(var(--muted-foreground))', marginTop: 'var(--space-1)' }}>
-            Used in {classUsageCount} element{classUsageCount !== 1 ? 's' : ''}
+        {/* Class usage counter - shown below input container */}
+        {selectedClasses.length > 0 && activeClass && (
+          <div style={{ fontSize: '10px', color: 'hsl(var(--muted-foreground))', marginTop: '4px' }}>
+            {classUsageCount} on this page{classUsageCount > 1 ? `, ${classUsageCount - 1} on other pages` : ''}
           </div>
         )}
       </div>

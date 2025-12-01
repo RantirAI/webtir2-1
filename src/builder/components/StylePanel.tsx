@@ -1251,18 +1251,13 @@ export const StylePanel: React.FC<StylePanelProps> = ({
 
           {(computedStyles.position === 'absolute' || computedStyles.position === 'relative' || computedStyles.position === 'fixed' || computedStyles.position === 'sticky') && (
             <>
-              {/* Position Preset Buttons - Webflow-style 3x3 grid for absolute/fixed */}
+              {/* Position Preset Buttons - Webflow-style horizontal row for absolute/fixed */}
               {(computedStyles.position === 'absolute' || computedStyles.position === 'fixed') && (
                 <>
-                  {/* 3x3 Corner/Edge Preset Grid */}
+                  {/* 9 Preset Icons in a Single Horizontal Row */}
                   <div style={{ 
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(3, 1fr)',
+                    display: 'flex',
                     gap: '2px',
-                    padding: '4px',
-                    border: '1px solid hsl(var(--border))',
-                    borderRadius: '6px',
-                    background: 'hsl(var(--muted) / 0.3)'
                   }}>
                     {/* Top-Left */}
                     <button
@@ -1273,15 +1268,15 @@ export const StylePanel: React.FC<StylePanelProps> = ({
                         updateStyle('bottom', 'auto');
                         updateStyle('transform', 'none');
                       }}
-                      className={`h-6 flex items-center justify-center rounded border text-[9px] transition-colors ${
+                      className={`h-6 w-6 flex items-center justify-center rounded border text-[9px] transition-colors ${
                         computedStyles.top === '0' && computedStyles.left === '0' && (computedStyles.right === 'auto' || !computedStyles.right) && (computedStyles.bottom === 'auto' || !computedStyles.bottom)
                           ? 'bg-primary/20 border-primary text-primary'
                           : 'bg-background border-input text-muted-foreground hover:bg-accent hover:text-foreground'
                       }`}
                       title="Top Left"
                     >
-                      <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
-                        <rect x="1" y="1" width="4" height="4" />
+                      <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor">
+                        <rect x="0" y="0" width="4" height="4" />
                       </svg>
                     </button>
                     {/* Top-Center */}
@@ -1293,15 +1288,15 @@ export const StylePanel: React.FC<StylePanelProps> = ({
                         updateStyle('bottom', 'auto');
                         updateStyle('transform', 'translateX(-50%)');
                       }}
-                      className={`h-6 flex items-center justify-center rounded border text-[9px] transition-colors ${
+                      className={`h-6 w-6 flex items-center justify-center rounded border text-[9px] transition-colors ${
                         computedStyles.top === '0' && computedStyles.left === '50%' && computedStyles.transform?.includes('translateX(-50%)')
                           ? 'bg-primary/20 border-primary text-primary'
                           : 'bg-background border-input text-muted-foreground hover:bg-accent hover:text-foreground'
                       }`}
                       title="Top Center"
                     >
-                      <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
-                        <rect x="4" y="1" width="4" height="4" />
+                      <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor">
+                        <rect x="3" y="0" width="4" height="4" />
                       </svg>
                     </button>
                     {/* Top-Right */}
@@ -1313,15 +1308,15 @@ export const StylePanel: React.FC<StylePanelProps> = ({
                         updateStyle('bottom', 'auto');
                         updateStyle('transform', 'none');
                       }}
-                      className={`h-6 flex items-center justify-center rounded border text-[9px] transition-colors ${
+                      className={`h-6 w-6 flex items-center justify-center rounded border text-[9px] transition-colors ${
                         computedStyles.top === '0' && computedStyles.right === '0' && (computedStyles.left === 'auto' || !computedStyles.left) && (computedStyles.bottom === 'auto' || !computedStyles.bottom)
                           ? 'bg-primary/20 border-primary text-primary'
                           : 'bg-background border-input text-muted-foreground hover:bg-accent hover:text-foreground'
                       }`}
                       title="Top Right"
                     >
-                      <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
-                        <rect x="7" y="1" width="4" height="4" />
+                      <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor">
+                        <rect x="6" y="0" width="4" height="4" />
                       </svg>
                     </button>
                     {/* Center-Left */}
@@ -1333,15 +1328,15 @@ export const StylePanel: React.FC<StylePanelProps> = ({
                         updateStyle('bottom', 'auto');
                         updateStyle('transform', 'translateY(-50%)');
                       }}
-                      className={`h-6 flex items-center justify-center rounded border text-[9px] transition-colors ${
+                      className={`h-6 w-6 flex items-center justify-center rounded border text-[9px] transition-colors ${
                         computedStyles.top === '50%' && computedStyles.left === '0' && computedStyles.transform?.includes('translateY(-50%)')
                           ? 'bg-primary/20 border-primary text-primary'
                           : 'bg-background border-input text-muted-foreground hover:bg-accent hover:text-foreground'
                       }`}
                       title="Center Left"
                     >
-                      <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
-                        <rect x="1" y="4" width="4" height="4" />
+                      <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor">
+                        <rect x="0" y="3" width="4" height="4" />
                       </svg>
                     </button>
                     {/* Center */}
@@ -1353,15 +1348,15 @@ export const StylePanel: React.FC<StylePanelProps> = ({
                         updateStyle('bottom', 'auto');
                         updateStyle('transform', 'translate(-50%, -50%)');
                       }}
-                      className={`h-6 flex items-center justify-center rounded border text-[9px] transition-colors ${
+                      className={`h-6 w-6 flex items-center justify-center rounded border text-[9px] transition-colors ${
                         computedStyles.top === '50%' && computedStyles.left === '50%' && computedStyles.transform?.includes('translate(-50%, -50%)')
                           ? 'bg-primary/20 border-primary text-primary'
                           : 'bg-background border-input text-muted-foreground hover:bg-accent hover:text-foreground'
                       }`}
                       title="Center"
                     >
-                      <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
-                        <rect x="4" y="4" width="4" height="4" />
+                      <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor">
+                        <rect x="3" y="3" width="4" height="4" />
                       </svg>
                     </button>
                     {/* Center-Right */}
@@ -1373,15 +1368,15 @@ export const StylePanel: React.FC<StylePanelProps> = ({
                         updateStyle('bottom', 'auto');
                         updateStyle('transform', 'translateY(-50%)');
                       }}
-                      className={`h-6 flex items-center justify-center rounded border text-[9px] transition-colors ${
+                      className={`h-6 w-6 flex items-center justify-center rounded border text-[9px] transition-colors ${
                         computedStyles.top === '50%' && computedStyles.right === '0' && computedStyles.transform?.includes('translateY(-50%)')
                           ? 'bg-primary/20 border-primary text-primary'
                           : 'bg-background border-input text-muted-foreground hover:bg-accent hover:text-foreground'
                       }`}
                       title="Center Right"
                     >
-                      <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
-                        <rect x="7" y="4" width="4" height="4" />
+                      <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor">
+                        <rect x="6" y="3" width="4" height="4" />
                       </svg>
                     </button>
                     {/* Bottom-Left */}
@@ -1393,15 +1388,15 @@ export const StylePanel: React.FC<StylePanelProps> = ({
                         updateStyle('top', 'auto');
                         updateStyle('transform', 'none');
                       }}
-                      className={`h-6 flex items-center justify-center rounded border text-[9px] transition-colors ${
+                      className={`h-6 w-6 flex items-center justify-center rounded border text-[9px] transition-colors ${
                         computedStyles.bottom === '0' && computedStyles.left === '0' && (computedStyles.right === 'auto' || !computedStyles.right) && (computedStyles.top === 'auto' || !computedStyles.top)
                           ? 'bg-primary/20 border-primary text-primary'
                           : 'bg-background border-input text-muted-foreground hover:bg-accent hover:text-foreground'
                       }`}
                       title="Bottom Left"
                     >
-                      <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
-                        <rect x="1" y="7" width="4" height="4" />
+                      <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor">
+                        <rect x="0" y="6" width="4" height="4" />
                       </svg>
                     </button>
                     {/* Bottom-Center */}
@@ -1413,15 +1408,15 @@ export const StylePanel: React.FC<StylePanelProps> = ({
                         updateStyle('top', 'auto');
                         updateStyle('transform', 'translateX(-50%)');
                       }}
-                      className={`h-6 flex items-center justify-center rounded border text-[9px] transition-colors ${
+                      className={`h-6 w-6 flex items-center justify-center rounded border text-[9px] transition-colors ${
                         computedStyles.bottom === '0' && computedStyles.left === '50%' && computedStyles.transform?.includes('translateX(-50%)')
                           ? 'bg-primary/20 border-primary text-primary'
                           : 'bg-background border-input text-muted-foreground hover:bg-accent hover:text-foreground'
                       }`}
                       title="Bottom Center"
                     >
-                      <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
-                        <rect x="4" y="7" width="4" height="4" />
+                      <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor">
+                        <rect x="3" y="6" width="4" height="4" />
                       </svg>
                     </button>
                     {/* Bottom-Right */}
@@ -1433,15 +1428,15 @@ export const StylePanel: React.FC<StylePanelProps> = ({
                         updateStyle('top', 'auto');
                         updateStyle('transform', 'none');
                       }}
-                      className={`h-6 flex items-center justify-center rounded border text-[9px] transition-colors ${
+                      className={`h-6 w-6 flex items-center justify-center rounded border text-[9px] transition-colors ${
                         computedStyles.bottom === '0' && computedStyles.right === '0' && (computedStyles.left === 'auto' || !computedStyles.left) && (computedStyles.top === 'auto' || !computedStyles.top)
                           ? 'bg-primary/20 border-primary text-primary'
                           : 'bg-background border-input text-muted-foreground hover:bg-accent hover:text-foreground'
                       }`}
                       title="Bottom Right"
                     >
-                      <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
-                        <rect x="7" y="7" width="4" height="4" />
+                      <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor">
+                        <rect x="6" y="6" width="4" height="4" />
                       </svg>
                     </button>
                   </div>
