@@ -53,9 +53,10 @@ interface CanvasProps {
   onCanvasRef?: (element: HTMLElement | null) => void;
   onPageChange?: (pageId: string) => void;
   allPages?: Array<{ id: string; name: string; rootInstance: any }>;
+  isRulersView?: boolean;
 }
 
-export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreakpoint, pages, currentPage, pageNames, onPageNameChange, isPanMode, isPreviewMode, onCanvasRef, onPageChange, allPages = [] }) => {
+export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreakpoint, pages, currentPage, pageNames, onPageNameChange, isPanMode, isPreviewMode, onCanvasRef, onPageChange, allPages = [], isRulersView = false }) => {
   // Ensure pages is always an array
   const safePages = Array.isArray(pages) ? pages : [];
   
@@ -597,6 +598,12 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
 
   // Get root instance styles for page body
   const rootStyles = rootInstance ? getComputedStyles(rootInstance.styleSourceIds || []) : {};
+
+  // In rulers view, only show the current page
+  const pagesToRender = isRulersView ? safePages.filter(p => p === currentPage) : safePages;
+
+  // Calculate left/top offsets for rulers view (sidebar widths + ruler size)
+  const rulersOffset = isRulersView ? { left: 280, top: 72 } : { left: 0, top: 0 };
   
   return (
     <div 
@@ -607,11 +614,14 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
       }}
       className={`absolute inset-0 ${isPreviewMode ? 'overflow-auto' : 'overflow-auto'} bg-[#e5e7eb] dark:bg-zinc-800 builder-canvas flex items-start justify-center`}
       style={{
-        backgroundImage: isPreviewMode ? 'none' : `radial-gradient(circle, #9ca3af 1px, transparent 1px)`,
+        backgroundImage: isPreviewMode || isRulersView ? 'none' : `radial-gradient(circle, #9ca3af 1px, transparent 1px)`,
         backgroundSize: '20px 20px',
         backgroundPosition: 'center',
         cursor: isPanMode ? (isPanning ? 'grabbing' : 'grab') : 'default',
-        paddingTop: isPreviewMode ? 0 : 64, // ensure canvas content clears the top toolbar
+        paddingTop: isPreviewMode ? 0 : (isRulersView ? 48 : 64),
+        paddingLeft: isRulersView ? 280 : 0,
+        paddingRight: isRulersView ? 280 : 0,
+        backgroundColor: isRulersView ? 'hsl(var(--muted))' : undefined,
       }}
       onMouseDown={handleMouseDown}
       onMouseMove={(e) => {
@@ -624,16 +634,130 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
+      {/* Rulers for rulers view */}
+      {isRulersView && !isPreviewMode && (
+        <>
+          {/* Horizontal Ruler */}
+          <div 
+            className="fixed bg-background border-b border-border z-[65] flex items-end"
+            style={{ 
+              top: 48,
+              left: 280,
+              right: 280,
+              height: 24,
+            }}
+          >
+            <div className="relative w-full h-full overflow-hidden">
+              {Array.from({ length: Math.ceil(1440 / 100) + 1 }).map((_, i) => (
+                <React.Fragment key={i}>
+                  <div
+                    className="absolute bottom-0"
+                    style={{
+                      left: `calc(50% - 720px + ${i * 100}px)`,
+                      width: '1px',
+                      height: '12px',
+                      backgroundColor: 'hsl(var(--foreground) / 0.5)',
+                    }}
+                  />
+                  <span 
+                    className="absolute text-[9px] font-mono text-muted-foreground"
+                    style={{ 
+                      left: `calc(50% - 720px + ${i * 100}px + 2px)`,
+                      bottom: '12px',
+                    }}
+                  >
+                    {i * 100}
+                  </span>
+                  {/* Minor ticks */}
+                  {Array.from({ length: 9 }).map((_, j) => (
+                    <div
+                      key={`minor-${j}`}
+                      className="absolute bottom-0"
+                      style={{
+                        left: `calc(50% - 720px + ${i * 100 + (j + 1) * 10}px)`,
+                        width: '1px',
+                        height: '6px',
+                        backgroundColor: 'hsl(var(--foreground) / 0.2)',
+                      }}
+                    />
+                  ))}
+                </React.Fragment>
+              ))}
+            </div>
+          </div>
+          
+          {/* Vertical Ruler */}
+          <div 
+            className="fixed bg-background border-r border-border z-[65] flex items-end justify-end"
+            style={{ 
+              top: 72,
+              left: 256,
+              width: 24,
+              bottom: 0,
+            }}
+          >
+            <div className="relative w-full h-full overflow-hidden">
+              {Array.from({ length: Math.ceil(1200 / 100) + 1 }).map((_, i) => (
+                <React.Fragment key={i}>
+                  <div
+                    className="absolute right-0"
+                    style={{
+                      top: `${i * 100}px`,
+                      height: '1px',
+                      width: '12px',
+                      backgroundColor: 'hsl(var(--foreground) / 0.5)',
+                    }}
+                  />
+                  <span 
+                    className="absolute text-[9px] font-mono text-muted-foreground"
+                    style={{ 
+                      top: `${i * 100 + 2}px`,
+                      right: '14px',
+                    }}
+                  >
+                    {i * 100}
+                  </span>
+                  {/* Minor ticks */}
+                  {Array.from({ length: 9 }).map((_, j) => (
+                    <div
+                      key={`minor-${j}`}
+                      className="absolute right-0"
+                      style={{
+                        top: `${i * 100 + (j + 1) * 10}px`,
+                        height: '1px',
+                        width: '6px',
+                        backgroundColor: 'hsl(var(--foreground) / 0.2)',
+                      }}
+                    />
+                  ))}
+                </React.Fragment>
+              ))}
+            </div>
+          </div>
+
+          {/* Corner square */}
+          <div 
+            className="fixed bg-background border-r border-b border-border z-[66]"
+            style={{ 
+              top: 48,
+              left: 256,
+              width: 24,
+              height: 24,
+            }}
+          />
+        </>
+      )}
+
       <div 
-        className="transition-transform origin-top inline-flex items-start justify-center gap-8"
+        className={`transition-transform origin-top inline-flex items-start justify-center ${isRulersView ? '' : 'gap-8'}`}
         style={{
           transform: isPreviewMode ? 'none' : `scale(${zoom / 100})`,
-          padding: isPreviewMode ? '0' : '4rem', // Small margin around pages for visibility
+          padding: isPreviewMode ? '0' : (isRulersView ? '2rem' : '4rem'),
           minHeight: isPreviewMode ? 'auto' : '100vh',
           minWidth: isPreviewMode ? 'auto' : '100%',
         }}
       >
-        {safePages.map((pageId, index) => {
+        {pagesToRender.map((pageId, index) => {
           const pageData = allPages?.find(p => p.id === pageId);
           const pageRootInstance = pageData?.rootInstance;
           const pageStyles = rootStyles as React.CSSProperties;

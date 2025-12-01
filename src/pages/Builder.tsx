@@ -38,6 +38,7 @@ const Builder: React.FC = () => {
   const [canvasElement, setCanvasElement] = useState<HTMLElement | null>(null);
   const [isCodeViewOpen, setIsCodeViewOpen] = useState(false);
   const [sidebarsHidden, setSidebarsHidden] = useState(false);
+  const [isRulersView, setIsRulersView] = useState(false);
   
   // Page store
   const { currentPageId, addPage, setCurrentPage, getCurrentPage, getAllPages } = usePageStore();
@@ -865,6 +866,7 @@ const Builder: React.FC = () => {
           onCanvasRef={setCanvasElement}
           onPageChange={(pageId) => setCurrentPage(pageId)}
           allPages={allPages}
+          isRulersView={isRulersView}
         />
 
         {/* Drop Indicator Overlay */}
@@ -888,14 +890,21 @@ const Builder: React.FC = () => {
         )}
 
         {/* Floating Left Sidebar */}
-        {!isPreviewMode && !isCodeViewOpen && !sidebarsHidden && (
+        {!isPreviewMode && !isCodeViewOpen && !sidebarsHidden && !isRulersView && (
           <div className="absolute left-4 top-4 bottom-4 z-10 transition-all duration-300 animate-slide-in-left">
             <LeftSidebar />
           </div>
         )}
 
+        {/* Fixed Left Sidebar for Rulers View */}
+        {!isPreviewMode && !isCodeViewOpen && !sidebarsHidden && isRulersView && (
+          <div className="absolute left-0 top-12 bottom-0 z-10 transition-all duration-300">
+            <LeftSidebar isRulersView={isRulersView} />
+          </div>
+        )}
+
         {/* Floating Combined Navigation */}
-        {!isPreviewMode && (
+        {!isPreviewMode && !isRulersView && (
           <div 
             className={`absolute top-4 left-1/2 -translate-x-1/2 z-[60] transition-all duration-300 ${
               isCodeViewOpen ? 'scale-[0.85] -translate-y-2' : 'scale-100'
@@ -920,12 +929,44 @@ const Builder: React.FC = () => {
               onCodeViewToggle={() => setIsCodeViewOpen(!isCodeViewOpen)}
               sidebarsHidden={sidebarsHidden}
               onToggleSidebars={() => setSidebarsHidden(!sidebarsHidden)}
+              isRulersView={isRulersView}
+              onRulersViewToggle={() => setIsRulersView(!isRulersView)}
             />
           </div>
         )}
 
+        {/* Fixed Navigation Bar for Rulers View */}
+        {!isPreviewMode && isRulersView && (
+          <div className="absolute top-0 left-0 right-0 z-[60] bg-background border-b border-border">
+            <div className="px-3 py-2">
+              <PageNavigation
+                currentPage={currentPageId}
+                pages={pageIds}
+                onPageChange={(pageId) => setCurrentPage(pageId)}
+                onAddPage={handleAddPage}
+                currentBreakpoint={currentBreakpoint}
+                onBreakpointChange={setCurrentBreakpoint}
+                zoom={zoom}
+                setZoom={setZoom}
+                isPanMode={isPanMode}
+                onPanModeToggle={() => setIsPanMode(!isPanMode)}
+                onPreviewToggle={() => setIsPreviewMode(!isPreviewMode)}
+                projectName={projectName}
+                onProjectNameChange={setProjectName}
+                onProjectSettingsOpen={() => setProjectSettingsOpen(true)}
+                isCodeViewOpen={isCodeViewOpen}
+                onCodeViewToggle={() => setIsCodeViewOpen(!isCodeViewOpen)}
+                sidebarsHidden={sidebarsHidden}
+                onToggleSidebars={() => setSidebarsHidden(!sidebarsHidden)}
+                isRulersView={isRulersView}
+                onRulersViewToggle={() => setIsRulersView(!isRulersView)}
+              />
+            </div>
+          </div>
+        )}
+
         {/* Floating Right Sidebar */}
-        {!isPreviewMode && !isCodeViewOpen && !sidebarsHidden && (
+        {!isPreviewMode && !isCodeViewOpen && !sidebarsHidden && !isRulersView && (
           <div className="absolute right-4 top-4 bottom-4 z-10 transition-all duration-300 animate-slide-in-right">
             <StylePanel
               pages={pageIds}
@@ -937,6 +978,24 @@ const Builder: React.FC = () => {
               onDuplicatePage={handleDuplicatePage}
               onSetHomePage={setHomePage}
               homePage={homePage}
+            />
+          </div>
+        )}
+
+        {/* Fixed Right Sidebar for Rulers View */}
+        {!isPreviewMode && !isCodeViewOpen && !sidebarsHidden && isRulersView && (
+          <div className="absolute right-0 top-12 bottom-0 z-10 transition-all duration-300">
+            <StylePanel
+              pages={pageIds}
+              currentPage={currentPageId}
+              pageNames={pageNames}
+              onPageChange={(pageId) => setCurrentPage(pageId)}
+              onPageNameChange={handlePageNameChange}
+              onDeletePage={handleDeletePage}
+              onDuplicatePage={handleDuplicatePage}
+              onSetHomePage={setHomePage}
+              homePage={homePage}
+              isRulersView={isRulersView}
             />
           </div>
         )}
