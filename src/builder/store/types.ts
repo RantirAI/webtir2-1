@@ -167,13 +167,32 @@ export interface StyleDeclaration {
   [key: string]: string | undefined;
 }
 
-export interface ComponentInstance {
+// Data binding fields available on all components
+export interface ComponentDataBinding {
+  // HTML id attribute for in-page linking
+  idAttribute?: string;
+  // Visibility control
+  visibility?: 'visible' | 'hidden';
+  // Custom HTML attributes (name/value pairs)
+  attributes?: Record<string, string>;
+}
+
+// Dropdown-specific configuration (reusable pattern for Tabs, Accordions)
+export interface DropdownConfig {
+  isOpen?: boolean;       // Show/hide menu in builder
+  openOnHover?: boolean;  // Open menu on hover
+  closeDelayMs?: number;  // Close delay in milliseconds
+}
+
+export interface ComponentInstance extends ComponentDataBinding {
   id: string;
   type: ComponentType;
   label?: string;
   props: Record<string, any>;
   styleSourceIds: string[];
   children: ComponentInstance[];
+  // Component-specific configs
+  dropdownConfig?: DropdownConfig;
 }
 
 export interface ComponentMeta {

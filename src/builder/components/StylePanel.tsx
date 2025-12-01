@@ -96,7 +96,6 @@ export const StylePanel: React.FC<StylePanelProps> = ({
     backgrounds: false,
     borders: false,
     effects: false,
-    dataId: true,
     visibility: true,
     dropdownSettings: true,
     customAttributes: false,
@@ -2850,38 +2849,28 @@ export const StylePanel: React.FC<StylePanelProps> = ({
 
         <TabsContent value="data" className="flex-1 min-h-0 m-0 p-4 overflow-y-auto overflow-x-hidden">
           <div className="space-y-4">
-            {/* ID Section */}
+            {/* ID Section - Global for all components */}
             <div className="space-y-2">
-              <div 
-                className="flex items-center justify-between cursor-pointer"
-                onClick={() => setOpenSections(prev => ({ ...prev, dataId: !prev.dataId }))}
-              >
-                <label className="text-xs font-semibold text-foreground">ID</label>
-                {openSections.dataId ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
-              </div>
-              {openSections.dataId && (
-                <div className="space-y-2 pt-1">
-                  <Input
-                    type="text"
-                    placeholder="For in-page linking"
-                    value={selectedInstance.props?.htmlId || ''}
-                    onChange={(e) => {
-                      updateInstance(selectedInstance.id, {
-                        props: { ...selectedInstance.props, htmlId: e.target.value }
-                      });
-                    }}
-                    className="h-8 text-xs"
-                  />
-                  <p className="text-[10px] text-muted-foreground">
-                    Set a unique ID for targeting with CSS or JavaScript
-                  </p>
-                </div>
-              )}
+              <label className="text-xs font-semibold text-foreground">ID</label>
+              <Input
+                type="text"
+                placeholder="For in-page linking"
+                value={selectedInstance.idAttribute || ''}
+                onChange={(e) => {
+                  // Validate: strip invalid characters, ensure uniqueness hint
+                  const sanitized = e.target.value.replace(/[^a-zA-Z0-9_-]/g, '');
+                  updateInstance(selectedInstance.id, { idAttribute: sanitized });
+                }}
+                className="h-8 text-xs"
+              />
+              <p className="text-[10px] text-muted-foreground">
+                Set a unique ID for targeting with CSS or JavaScript
+              </p>
             </div>
 
             <Separator />
 
-            {/* Visibility Section */}
+            {/* Visibility Section - Global for all components */}
             <div className="space-y-2">
               <div 
                 className="flex items-center justify-between cursor-pointer"
@@ -2896,12 +2885,10 @@ export const StylePanel: React.FC<StylePanelProps> = ({
                     <span className="text-xs text-muted-foreground mr-2">Visibility</span>
                     <ToggleGroup 
                       type="single" 
-                      value={selectedInstance.props?.visibility || 'visible'}
+                      value={selectedInstance.visibility || 'visible'}
                       onValueChange={(value) => {
                         if (value) {
-                          updateInstance(selectedInstance.id, {
-                            props: { ...selectedInstance.props, visibility: value }
-                          });
+                          updateInstance(selectedInstance.id, { visibility: value as 'visible' | 'hidden' });
                         }
                       }}
                       className="h-7"
@@ -2913,20 +2900,12 @@ export const StylePanel: React.FC<StylePanelProps> = ({
                         Hidden
                       </ToggleGroupItem>
                     </ToggleGroup>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="h-7 w-7 p-0"
-                      onClick={() => {
-                        // Add breakpoint-specific visibility
-                      }}
-                    >
-                      <Plus className="w-3 h-3" />
-                    </Button>
                   </div>
-                  <p className="text-[10px] text-muted-foreground">
-                    None
-                  </p>
+                  {selectedInstance.visibility === 'hidden' && (
+                    <p className="text-[10px] text-yellow-600 dark:text-yellow-400">
+                      Element is hidden (display: none)
+                    </p>
+                  )}
                 </div>
               )}
             </div>
@@ -2947,13 +2926,16 @@ export const StylePanel: React.FC<StylePanelProps> = ({
                   {openSections.dropdownSettings && (
                     <div className="space-y-3 pt-1">
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-muted-foreground">Menu</span>
+                        <span className="text-xs text-muted-foreground w-16">Menu</span>
                         <ToggleGroup 
                           type="single" 
-                          value={selectedInstance.props?.showMenuInBuilder ? 'show' : 'hide'}
+                          value={selectedInstance.dropdownConfig?.isOpen ? 'show' : 'hide'}
                           onValueChange={(value) => {
                             updateInstance(selectedInstance.id, {
-                              props: { ...selectedInstance.props, showMenuInBuilder: value === 'show' }
+                              dropdownConfig: { 
+                                ...selectedInstance.dropdownConfig, 
+                                isOpen: value === 'show' 
+                              }
                             });
                           }}
                           className="h-7"
@@ -2968,13 +2950,16 @@ export const StylePanel: React.FC<StylePanelProps> = ({
                       </div>
 
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-muted-foreground">Close Delay</span>
+                        <span className="text-xs text-muted-foreground w-16">Close Delay</span>
                         <Input
                           type="number"
-                          value={selectedInstance.props?.closeDelay || 0}
+                          value={selectedInstance.dropdownConfig?.closeDelayMs || 0}
                           onChange={(e) => {
                             updateInstance(selectedInstance.id, {
-                              props: { ...selectedInstance.props, closeDelay: parseInt(e.target.value) || 0 }
+                              dropdownConfig: { 
+                                ...selectedInstance.dropdownConfig, 
+                                closeDelayMs: parseInt(e.target.value) || 0 
+                              }
                             });
                           }}
                           className="h-7 w-20 text-xs"
@@ -2985,10 +2970,13 @@ export const StylePanel: React.FC<StylePanelProps> = ({
                       <div className="flex items-center space-x-2">
                         <Checkbox
                           id="open-on-hover"
-                          checked={selectedInstance.props?.openOnHover || false}
+                          checked={selectedInstance.dropdownConfig?.openOnHover || false}
                           onCheckedChange={(checked) => {
                             updateInstance(selectedInstance.id, {
-                              props: { ...selectedInstance.props, openOnHover: checked }
+                              dropdownConfig: { 
+                                ...selectedInstance.dropdownConfig, 
+                                openOnHover: !!checked 
+                              }
                             });
                           }}
                         />
@@ -3021,79 +3009,86 @@ export const StylePanel: React.FC<StylePanelProps> = ({
               </>
             )}
 
-            {/* Custom Attributes Section */}
+            {/* Custom Attributes Section - Global for all components */}
             <div className="space-y-2">
               <div 
                 className="flex items-center justify-between cursor-pointer"
                 onClick={() => setOpenSections(prev => ({ ...prev, customAttributes: !prev.customAttributes }))}
               >
                 <label className="text-xs font-semibold text-foreground">Custom attributes</label>
-                {openSections.customAttributes ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+                <div className="flex items-center gap-1">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-6 w-6 p-0"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const currentAttrs = selectedInstance.attributes || {};
+                      const newKey = `data-attr-${Object.keys(currentAttrs).length + 1}`;
+                      updateInstance(selectedInstance.id, {
+                        attributes: { ...currentAttrs, [newKey]: '' }
+                      });
+                      // Auto-expand when adding
+                      setOpenSections(prev => ({ ...prev, customAttributes: true }));
+                    }}
+                  >
+                    <Plus className="w-3 h-3" />
+                  </Button>
+                  {openSections.customAttributes ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+                </div>
               </div>
               {openSections.customAttributes && (
                 <div className="space-y-2 pt-1">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] text-muted-foreground">Custom Attributes</span>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="h-6 w-6 p-0"
-                      onClick={() => {
-                        const currentAttrs = selectedInstance.props?.customAttributes || [];
-                        updateInstance(selectedInstance.id, {
-                          props: {
-                            ...selectedInstance.props,
-                            customAttributes: [...currentAttrs, { name: '', value: '' }]
-                          }
-                        });
-                      }}
-                    >
-                      <Plus className="w-3 h-3" />
-                    </Button>
-                  </div>
-                  
-                  {(selectedInstance.props?.customAttributes || []).length > 0 ? (
+                  {Object.keys(selectedInstance.attributes || {}).length > 0 ? (
                     <div className="space-y-2">
-                      {(selectedInstance.props?.customAttributes || []).map((attr: { name: string; value: string }, index: number) => (
-                        <div key={index} className="flex items-center gap-2 p-2 bg-muted/50 rounded-md">
-                          <div className="flex-1 space-y-1">
-                            <Input
-                              type="text"
-                              value={attr.name}
-                              onChange={(e) => {
-                                const newAttrs = [...(selectedInstance.props?.customAttributes || [])];
-                                newAttrs[index] = { ...attr, name: e.target.value };
-                                updateInstance(selectedInstance.id, {
-                                  props: { ...selectedInstance.props, customAttributes: newAttrs }
-                                });
-                              }}
-                              className="h-6 text-xs"
-                              placeholder="Attribute name"
-                            />
-                            <Input
-                              type="text"
-                              value={attr.value}
-                              onChange={(e) => {
-                                const newAttrs = [...(selectedInstance.props?.customAttributes || [])];
-                                newAttrs[index] = { ...attr, value: e.target.value };
-                                updateInstance(selectedInstance.id, {
-                                  props: { ...selectedInstance.props, customAttributes: newAttrs }
-                                });
-                              }}
-                              className="h-6 text-xs"
-                              placeholder="Attribute value"
-                            />
+                      {Object.entries(selectedInstance.attributes || {}).map(([name, value], index) => (
+                        <div key={index} className="flex items-start gap-2 p-2 bg-muted/50 rounded-md">
+                          <div className="flex-1 space-y-1.5">
+                            <div className="space-y-0.5">
+                              <label className="text-[10px] text-muted-foreground">Name</label>
+                              <Input
+                                type="text"
+                                value={name}
+                                onChange={(e) => {
+                                  const newName = e.target.value.replace(/[^a-zA-Z0-9_-]/g, '');
+                                  // Prevent reserved attributes
+                                  if (['id', 'class', 'style'].includes(newName.toLowerCase())) return;
+                                  const currentAttrs = { ...selectedInstance.attributes };
+                                  delete currentAttrs[name];
+                                  currentAttrs[newName] = value;
+                                  updateInstance(selectedInstance.id, { attributes: currentAttrs });
+                                }}
+                                className="h-6 text-xs"
+                                placeholder="data-test-id"
+                              />
+                            </div>
+                            <div className="space-y-0.5">
+                              <label className="text-[10px] text-muted-foreground">Value</label>
+                              <Input
+                                type="text"
+                                value={value}
+                                onChange={(e) => {
+                                  updateInstance(selectedInstance.id, {
+                                    attributes: { 
+                                      ...selectedInstance.attributes, 
+                                      [name]: e.target.value 
+                                    }
+                                  });
+                                }}
+                                className="h-6 text-xs"
+                                placeholder="value"
+                              />
+                            </div>
                           </div>
                           <Button
                             size="sm"
                             variant="ghost"
                             onClick={() => {
-                              const newAttrs = (selectedInstance.props?.customAttributes || []).filter((_: any, i: number) => i !== index);
-                              updateInstance(selectedInstance.id, {
-                                props: { ...selectedInstance.props, customAttributes: newAttrs }
-                              });
+                              const currentAttrs = { ...selectedInstance.attributes };
+                              delete currentAttrs[name];
+                              updateInstance(selectedInstance.id, { attributes: currentAttrs });
                             }}
-                            className="h-6 w-6 p-0"
+                            className="h-6 w-6 p-0 mt-4"
                           >
                             <X className="w-3 h-3" />
                           </Button>
@@ -3101,7 +3096,9 @@ export const StylePanel: React.FC<StylePanelProps> = ({
                       ))}
                     </div>
                   ) : (
-                    <p className="text-[10px] text-muted-foreground">None</p>
+                    <p className="text-[10px] text-muted-foreground">
+                      No custom attributes. Click + to add data-* or aria-* attributes.
+                    </p>
                   )}
                 </div>
               )}
