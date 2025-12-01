@@ -788,12 +788,13 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
       )}
 
       <div 
-        className={`transition-transform origin-top inline-flex items-start justify-center ${isRulersView ? '' : 'gap-8'}`}
+        className={`transition-transform origin-top ${isPreviewMode ? 'flex w-full' : 'inline-flex'} items-start justify-center ${isRulersView ? '' : 'gap-8'}`}
         style={{
           transform: isPreviewMode ? 'none' : `scale(${zoom / 100})`,
           padding: isPreviewMode ? '0' : (isRulersView ? '2rem' : '4rem'),
-          minHeight: isPreviewMode ? 'auto' : '100vh',
-          minWidth: isPreviewMode ? 'auto' : '100%',
+          minHeight: isPreviewMode ? '100vh' : '100vh',
+          minWidth: isPreviewMode ? '100%' : '100%',
+          width: isPreviewMode ? '100%' : 'auto',
         }}
       >
         {pagesToRender.map((pageId, index) => {
