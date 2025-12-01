@@ -481,13 +481,40 @@ export const componentRegistry: Record<string, ComponentMeta> = {
     type: 'Dropdown',
     label: 'Dropdown',
     icon: 'ChevronDown',
-    defaultProps: {},
+    defaultProps: {
+      triggerText: 'Dropdown',
+      openOnHover: false,
+      closeDelay: 0,
+      menuItems: [
+        { label: 'Option 1', href: '#' },
+        { label: 'Option 2', href: '#' },
+        { label: 'Option 3', href: '#' },
+      ],
+    },
     defaultStyles: {
-      display: 'flex',
-      flexDirection: 'column',
+      display: 'inline-flex',
       position: 'relative',
     },
-    propsDefinition: {},
+    propsDefinition: {
+      triggerText: {
+        type: 'string',
+        label: 'Trigger Text',
+        control: 'text',
+        defaultValue: 'Dropdown',
+      },
+      openOnHover: {
+        type: 'boolean',
+        label: 'Open on Hover',
+        control: 'checkbox',
+        defaultValue: false,
+      },
+      closeDelay: {
+        type: 'number',
+        label: 'Close Delay (ms)',
+        control: 'number',
+        defaultValue: 0,
+      },
+    },
   },
   Form: {
     type: 'Form',

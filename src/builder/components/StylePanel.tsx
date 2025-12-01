@@ -96,6 +96,10 @@ export const StylePanel: React.FC<StylePanelProps> = ({
     backgrounds: false,
     borders: false,
     effects: false,
+    dataId: true,
+    visibility: true,
+    dropdownSettings: true,
+    customAttributes: false,
   });
 
   const toggleSection = (section: keyof typeof openSections) => {
@@ -2845,8 +2849,263 @@ export const StylePanel: React.FC<StylePanelProps> = ({
         </TabsContent>
 
         <TabsContent value="data" className="flex-1 min-h-0 m-0 p-4 overflow-y-auto overflow-x-hidden">
-          <div className="text-sm text-muted-foreground text-center">
-            Data binding coming soon
+          <div className="space-y-4">
+            {/* ID Section */}
+            <div className="space-y-2">
+              <div 
+                className="flex items-center justify-between cursor-pointer"
+                onClick={() => setOpenSections(prev => ({ ...prev, dataId: !prev.dataId }))}
+              >
+                <label className="text-xs font-semibold text-foreground">ID</label>
+                {openSections.dataId ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+              </div>
+              {openSections.dataId && (
+                <div className="space-y-2 pt-1">
+                  <Input
+                    type="text"
+                    placeholder="For in-page linking"
+                    value={selectedInstance.props?.htmlId || ''}
+                    onChange={(e) => {
+                      updateInstance(selectedInstance.id, {
+                        props: { ...selectedInstance.props, htmlId: e.target.value }
+                      });
+                    }}
+                    className="h-8 text-xs"
+                  />
+                  <p className="text-[10px] text-muted-foreground">
+                    Set a unique ID for targeting with CSS or JavaScript
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <Separator />
+
+            {/* Visibility Section */}
+            <div className="space-y-2">
+              <div 
+                className="flex items-center justify-between cursor-pointer"
+                onClick={() => setOpenSections(prev => ({ ...prev, visibility: !prev.visibility }))}
+              >
+                <label className="text-xs font-semibold text-foreground">Visibility</label>
+                {openSections.visibility ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+              </div>
+              {openSections.visibility && (
+                <div className="space-y-2 pt-1">
+                  <div className="flex items-center gap-1">
+                    <span className="text-xs text-muted-foreground mr-2">Visibility</span>
+                    <ToggleGroup 
+                      type="single" 
+                      value={selectedInstance.props?.visibility || 'visible'}
+                      onValueChange={(value) => {
+                        if (value) {
+                          updateInstance(selectedInstance.id, {
+                            props: { ...selectedInstance.props, visibility: value }
+                          });
+                        }
+                      }}
+                      className="h-7"
+                    >
+                      <ToggleGroupItem value="visible" className="text-xs h-7 px-3">
+                        Visible
+                      </ToggleGroupItem>
+                      <ToggleGroupItem value="hidden" className="text-xs h-7 px-3">
+                        Hidden
+                      </ToggleGroupItem>
+                    </ToggleGroup>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-7 w-7 p-0"
+                      onClick={() => {
+                        // Add breakpoint-specific visibility
+                      }}
+                    >
+                      <Plus className="w-3 h-3" />
+                    </Button>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground">
+                    None
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <Separator />
+
+            {/* Dropdown Settings - Only show for Dropdown components */}
+            {selectedInstance.type === 'Dropdown' && (
+              <>
+                <div className="space-y-2">
+                  <div 
+                    className="flex items-center justify-between cursor-pointer"
+                    onClick={() => setOpenSections(prev => ({ ...prev, dropdownSettings: !prev.dropdownSettings }))}
+                  >
+                    <label className="text-xs font-semibold text-foreground">Dropdown settings</label>
+                    {openSections.dropdownSettings ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+                  </div>
+                  {openSections.dropdownSettings && (
+                    <div className="space-y-3 pt-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground">Menu</span>
+                        <ToggleGroup 
+                          type="single" 
+                          value={selectedInstance.props?.showMenuInBuilder ? 'show' : 'hide'}
+                          onValueChange={(value) => {
+                            updateInstance(selectedInstance.id, {
+                              props: { ...selectedInstance.props, showMenuInBuilder: value === 'show' }
+                            });
+                          }}
+                          className="h-7"
+                        >
+                          <ToggleGroupItem value="show" className="text-xs h-7 px-3">
+                            Show
+                          </ToggleGroupItem>
+                          <ToggleGroupItem value="hide" className="text-xs h-7 px-3">
+                            Hide
+                          </ToggleGroupItem>
+                        </ToggleGroup>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground">Close Delay</span>
+                        <Input
+                          type="number"
+                          value={selectedInstance.props?.closeDelay || 0}
+                          onChange={(e) => {
+                            updateInstance(selectedInstance.id, {
+                              props: { ...selectedInstance.props, closeDelay: parseInt(e.target.value) || 0 }
+                            });
+                          }}
+                          className="h-7 w-20 text-xs"
+                        />
+                        <span className="text-[10px] text-muted-foreground">MS</span>
+                      </div>
+
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="open-on-hover"
+                          checked={selectedInstance.props?.openOnHover || false}
+                          onCheckedChange={(checked) => {
+                            updateInstance(selectedInstance.id, {
+                              props: { ...selectedInstance.props, openOnHover: checked }
+                            });
+                          }}
+                        />
+                        <label htmlFor="open-on-hover" className="text-xs font-medium cursor-pointer">
+                          Open menu on hover
+                        </label>
+                      </div>
+
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full h-8 text-xs"
+                        onClick={() => {
+                          const currentItems = selectedInstance.props?.menuItems || [];
+                          updateInstance(selectedInstance.id, {
+                            props: {
+                              ...selectedInstance.props,
+                              menuItems: [...currentItems, { label: 'New Link', href: '#' }]
+                            }
+                          });
+                        }}
+                      >
+                        <Plus className="w-3 h-3 mr-1" />
+                        Add Link
+                      </Button>
+                    </div>
+                  )}
+                </div>
+                <Separator />
+              </>
+            )}
+
+            {/* Custom Attributes Section */}
+            <div className="space-y-2">
+              <div 
+                className="flex items-center justify-between cursor-pointer"
+                onClick={() => setOpenSections(prev => ({ ...prev, customAttributes: !prev.customAttributes }))}
+              >
+                <label className="text-xs font-semibold text-foreground">Custom attributes</label>
+                {openSections.customAttributes ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+              </div>
+              {openSections.customAttributes && (
+                <div className="space-y-2 pt-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] text-muted-foreground">Custom Attributes</span>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-6 w-6 p-0"
+                      onClick={() => {
+                        const currentAttrs = selectedInstance.props?.customAttributes || [];
+                        updateInstance(selectedInstance.id, {
+                          props: {
+                            ...selectedInstance.props,
+                            customAttributes: [...currentAttrs, { name: '', value: '' }]
+                          }
+                        });
+                      }}
+                    >
+                      <Plus className="w-3 h-3" />
+                    </Button>
+                  </div>
+                  
+                  {(selectedInstance.props?.customAttributes || []).length > 0 ? (
+                    <div className="space-y-2">
+                      {(selectedInstance.props?.customAttributes || []).map((attr: { name: string; value: string }, index: number) => (
+                        <div key={index} className="flex items-center gap-2 p-2 bg-muted/50 rounded-md">
+                          <div className="flex-1 space-y-1">
+                            <Input
+                              type="text"
+                              value={attr.name}
+                              onChange={(e) => {
+                                const newAttrs = [...(selectedInstance.props?.customAttributes || [])];
+                                newAttrs[index] = { ...attr, name: e.target.value };
+                                updateInstance(selectedInstance.id, {
+                                  props: { ...selectedInstance.props, customAttributes: newAttrs }
+                                });
+                              }}
+                              className="h-6 text-xs"
+                              placeholder="Attribute name"
+                            />
+                            <Input
+                              type="text"
+                              value={attr.value}
+                              onChange={(e) => {
+                                const newAttrs = [...(selectedInstance.props?.customAttributes || [])];
+                                newAttrs[index] = { ...attr, value: e.target.value };
+                                updateInstance(selectedInstance.id, {
+                                  props: { ...selectedInstance.props, customAttributes: newAttrs }
+                                });
+                              }}
+                              className="h-6 text-xs"
+                              placeholder="Attribute value"
+                            />
+                          </div>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => {
+                              const newAttrs = (selectedInstance.props?.customAttributes || []).filter((_: any, i: number) => i !== index);
+                              updateInstance(selectedInstance.id, {
+                                props: { ...selectedInstance.props, customAttributes: newAttrs }
+                              });
+                            }}
+                            className="h-6 w-6 p-0"
+                          >
+                            <X className="w-3 h-3" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-[10px] text-muted-foreground">None</p>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </TabsContent>
       </Tabs>
