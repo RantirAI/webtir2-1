@@ -34,10 +34,15 @@ export const Heading: React.FC<HeadingProps> = ({
     });
   };
 
+  // Get className from styleSourceIds to apply directly to heading element
+  const className = (instance.styleSourceIds || [])
+    .map((id) => useStyleStore.getState().styleSources[id]?.name)
+    .filter(Boolean)
+    .join(' ');
+
   return (
     <div
       data-instance-id={instance.id}
-      className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
       onClick={isPreviewMode ? undefined : (e) => {
         e.stopPropagation();
         onSelect?.();
@@ -56,7 +61,7 @@ export const Heading: React.FC<HeadingProps> = ({
         value={instance.props.children || 'Heading'}
         onChange={handleTextChange}
         as={level as any}
-        style={{}}
+        className={className}
         isSelected={isSelected}
       />
     </div>
