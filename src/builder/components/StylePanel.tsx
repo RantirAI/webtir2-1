@@ -29,8 +29,86 @@ import { ShadowItem } from '../store/types';
 import { compileMetadataToCSS } from '../utils/cssCompiler';
 import { applyHeadingTypography } from '../utils/headingTypography';
 import { AttributeRow } from './AttributeRow';
+import { ComponentInstance } from '../store/types';
 import '../styles/style-panel.css';
 import '../styles/tokens.css';
+
+// Helper to find path from root to an instance
+const findPathToInstance = (
+  root: ComponentInstance | null,
+  targetId: string,
+  path: ComponentInstance[] = []
+): ComponentInstance[] | null => {
+  if (!root) return null;
+  if (root.id === targetId) return [...path, root];
+  
+  for (const child of root.children || []) {
+    const result = findPathToInstance(child, targetId, [...path, root]);
+    if (result) return result;
+  }
+  return null;
+};
+
+// Component to show "Relative to" indicator for positioned elements
+const PositionRelativeToIndicator: React.FC<{ instanceId: string; positionType: string }> = ({ instanceId, positionType }) => {
+  const { rootInstance } = useBuilderStore();
+  const { styleSources, getComputedStyles } = useStyleStore();
+  
+  // Find the path from root to this instance
+  const path = findPathToInstance(rootInstance, instanceId) || [];
+  
+  // Find the nearest positioned ancestor (not static)
+  let relativeTo: { name: string; className: string } | null = null;
+  
+  if (positionType === 'fixed') {
+    relativeTo = { name: 'Viewport', className: '' };
+  } else if (positionType === 'absolute') {
+    // Walk up the path (excluding the current element) to find nearest positioned ancestor
+    for (let i = path.length - 2; i >= 0; i--) {
+      const ancestor = path[i];
+      const ancestorStyles = getComputedStyles(ancestor.styleSourceIds || []);
+      const ancestorPosition = ancestorStyles.position;
+      
+      if (ancestorPosition && ancestorPosition !== 'static') {
+        const className = ancestor.styleSourceIds?.[0] 
+          ? styleSources[ancestor.styleSourceIds[0]]?.name || '' 
+          : '';
+        relativeTo = { 
+          name: ancestor.label || ancestor.type, 
+          className 
+        };
+        break;
+      }
+    }
+    
+    // If no positioned ancestor found, it's relative to body/page
+    if (!relativeTo) {
+      relativeTo = { name: 'Body', className: '' };
+    }
+  }
+  
+  if (!relativeTo) return null;
+  
+  return (
+    <div style={{ 
+      display: 'flex', 
+      alignItems: 'center', 
+      gap: '4px',
+      padding: '4px 8px',
+      background: 'hsl(var(--muted) / 0.5)',
+      borderRadius: '4px',
+      fontSize: '10px'
+    }}>
+      <span style={{ color: 'hsl(var(--muted-foreground))' }}>Relative to:</span>
+      <span style={{ 
+        fontWeight: 500, 
+        color: relativeTo.className ? 'hsl(217, 91%, 60%)' : 'hsl(var(--foreground))'
+      }}>
+        {relativeTo.className ? `.${relativeTo.className}` : relativeTo.name}
+      </span>
+    </div>
+  );
+};
 
 interface StylePanelProps {
   pages: string[];
@@ -1151,17 +1229,16 @@ export const StylePanel: React.FC<StylePanelProps> = ({
 
             {/* Position */}
             <AccordionSection title="Position" section="position" properties={['position', 'top', 'right', 'bottom', 'left', 'zIndex']}>
-        <div className="Col" style={{ gap: '4px' }}>
+        <div className="Col" style={{ gap: '6px' }}>
           {/* Position Type */}
-          <div style={{ display: 'grid', gridTemplateColumns: '26px 1fr', gap: '2px', alignItems: 'center' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '50px 1fr', gap: '4px', alignItems: 'center' }}>
             <label className={`Label ${getPropertyColorClass('position')}`}>
-              Pos<PropertyIndicator property="position" />
+              Position<PropertyIndicator property="position" />
             </label>
             <select
               className="Select"
               value={computedStyles.position || 'static'}
               onChange={(e) => updateStyle('position', e.target.value)}
-              style={{ maxWidth: '120px' }}
             >
               <option value="static">Static</option>
               <option value="relative">Relative</option>
@@ -1173,70 +1250,97 @@ export const StylePanel: React.FC<StylePanelProps> = ({
 
           {(computedStyles.position === 'absolute' || computedStyles.position === 'relative' || computedStyles.position === 'fixed' || computedStyles.position === 'sticky') && (
             <>
-              {/* Position Grid - Top/Right/Bottom/Left */}
+              {/* Position Grid - Top/Right/Bottom/Left with visual indicators */}
               <div style={{ 
                 display: 'grid',
-                gridTemplateColumns: '1fr 1fr 1fr',
-                gridTemplateRows: '1fr 1fr 1fr',
-                gap: '4px',
-                padding: 'var(--space-2)',
+                gridTemplateColumns: '1fr 60px 1fr',
+                gridTemplateRows: 'auto auto auto',
+                gap: '2px',
+                padding: '8px',
                 border: '1px solid hsl(var(--border))',
-                borderRadius: '4px',
+                borderRadius: '6px',
                 background: 'hsl(var(--muted) / 0.3)'
               }}>
-                <div style={{ gridColumn: '2' }}>
+                {/* Top */}
+                <div style={{ gridColumn: '2', gridRow: '1', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
+                  <span className="Label" style={{ fontSize: '8px', color: 'hsl(var(--muted-foreground))' }}>Top</span>
                   <UnitInput
                     value={computedStyles.top || ''}
                     onChange={(val) => updateStyle('top', val)}
                     placeholder="Auto"
                     className="SpaceInputSmall"
-                    style={{ textAlign: 'center' }}
+                    style={{ textAlign: 'center', width: '56px' }}
                   />
                 </div>
-                <div style={{ gridColumn: '1', gridRow: '2' }}>
+                {/* Left */}
+                <div style={{ gridColumn: '1', gridRow: '2', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '2px' }}>
+                  <span className="Label" style={{ fontSize: '8px', color: 'hsl(var(--muted-foreground))' }}>Left</span>
                   <UnitInput
                     value={computedStyles.left || ''}
                     onChange={(val) => updateStyle('left', val)}
                     placeholder="Auto"
                     className="SpaceInputSmall"
-                    style={{ textAlign: 'center' }}
+                    style={{ textAlign: 'center', width: '56px' }}
                   />
                 </div>
-                <div style={{ gridColumn: '2', gridRow: '2', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <span className="Label" style={{ fontSize: '9px', color: 'hsl(var(--muted-foreground))' }}>Auto</span>
+                {/* Center visual indicator */}
+                <div style={{ 
+                  gridColumn: '2', 
+                  gridRow: '2', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  minHeight: '32px'
+                }}>
+                  <div style={{
+                    width: '28px',
+                    height: '28px',
+                    border: '2px dashed hsl(var(--border))',
+                    borderRadius: '4px',
+                    background: 'hsl(var(--background))',
+                  }} />
                 </div>
-                <div style={{ gridColumn: '3', gridRow: '2' }}>
+                {/* Right */}
+                <div style={{ gridColumn: '3', gridRow: '2', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '2px' }}>
+                  <span className="Label" style={{ fontSize: '8px', color: 'hsl(var(--muted-foreground))' }}>Right</span>
                   <UnitInput
                     value={computedStyles.right || ''}
                     onChange={(val) => updateStyle('right', val)}
                     placeholder="Auto"
                     className="SpaceInputSmall"
-                    style={{ textAlign: 'center' }}
+                    style={{ textAlign: 'center', width: '56px' }}
                   />
                 </div>
-                <div style={{ gridColumn: '2', gridRow: '3' }}>
+                {/* Bottom */}
+                <div style={{ gridColumn: '2', gridRow: '3', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
                   <UnitInput
                     value={computedStyles.bottom || ''}
                     onChange={(val) => updateStyle('bottom', val)}
                     placeholder="Auto"
                     className="SpaceInputSmall"
-                    style={{ textAlign: 'center' }}
+                    style={{ textAlign: 'center', width: '56px' }}
                   />
+                  <span className="Label" style={{ fontSize: '8px', color: 'hsl(var(--muted-foreground))' }}>Bottom</span>
                 </div>
               </div>
 
-          {/* Z-Index */}
-          <div style={{ display: 'grid', gridTemplateColumns: '26px 1fr', gap: '2px', alignItems: 'center' }}>
-            <label className={`Label ${getPropertyColorClass('zIndex')}`}>
-              Z<PropertyIndicator property="zIndex" />
-            </label>
+              {/* Relative To Indicator - for absolute/fixed positioning */}
+              {(computedStyles.position === 'absolute' || computedStyles.position === 'fixed') && (
+                <PositionRelativeToIndicator instanceId={selectedInstance.id} positionType={computedStyles.position} />
+              )}
+
+              {/* Z-Index */}
+              <div style={{ display: 'grid', gridTemplateColumns: '50px 1fr', gap: '4px', alignItems: 'center' }}>
+                <label className={`Label ${getPropertyColorClass('zIndex')}`}>
+                  z-index<PropertyIndicator property="zIndex" />
+                </label>
                 <input
                   className="Input"
                   type="number"
                   value={computedStyles.zIndex?.toString() || ''}
                   onChange={(e) => updateStyle('zIndex', e.target.value)}
                   placeholder="Auto"
-                  style={{ maxWidth: '48px' }}
+                  style={{ maxWidth: '60px' }}
                 />
               </div>
             </>
