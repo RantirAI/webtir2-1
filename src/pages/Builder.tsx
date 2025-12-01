@@ -867,6 +867,7 @@ const Builder: React.FC = () => {
           onPageChange={(pageId) => setCurrentPage(pageId)}
           allPages={allPages}
           isRulersView={isRulersView}
+          isCodeViewOpen={isCodeViewOpen}
         />
 
         {/* Drop Indicator Overlay */}
@@ -935,8 +936,8 @@ const Builder: React.FC = () => {
           </div>
         )}
 
-        {/* Fixed Navigation Bar for Rulers View */}
-        {!isPreviewMode && isRulersView && (
+        {/* Fixed Navigation Bar for Rulers View (only when not in code view) */}
+        {!isPreviewMode && isRulersView && !isCodeViewOpen && (
           <div className="absolute top-0 left-0 right-0 z-[60] bg-background border-b border-border">
             <PageNavigation
               currentPage={currentPageId}
@@ -958,6 +959,36 @@ const Builder: React.FC = () => {
               sidebarsHidden={sidebarsHidden}
               onToggleSidebars={() => setSidebarsHidden(!sidebarsHidden)}
               isRulersView={isRulersView}
+              onRulersViewToggle={() => setIsRulersView(!isRulersView)}
+            />
+          </div>
+        )}
+
+        {/* Floating Navigation Bar for Rulers View in Code View mode */}
+        {!isPreviewMode && isRulersView && isCodeViewOpen && (
+          <div 
+            className="absolute top-4 left-1/2 -translate-x-1/2 z-[60] transition-all duration-300 scale-[0.85] -translate-y-2"
+          >
+            <PageNavigation
+              currentPage={currentPageId}
+              pages={pageIds}
+              onPageChange={(pageId) => setCurrentPage(pageId)}
+              onAddPage={handleAddPage}
+              currentBreakpoint={currentBreakpoint}
+              onBreakpointChange={setCurrentBreakpoint}
+              zoom={zoom}
+              setZoom={setZoom}
+              isPanMode={isPanMode}
+              onPanModeToggle={() => setIsPanMode(!isPanMode)}
+              onPreviewToggle={() => setIsPreviewMode(!isPreviewMode)}
+              projectName={projectName}
+              onProjectNameChange={setProjectName}
+              onProjectSettingsOpen={() => setProjectSettingsOpen(true)}
+              isCodeViewOpen={isCodeViewOpen}
+              onCodeViewToggle={() => setIsCodeViewOpen(!isCodeViewOpen)}
+              sidebarsHidden={sidebarsHidden}
+              onToggleSidebars={() => setSidebarsHidden(!sidebarsHidden)}
+              isRulersView={false}
               onRulersViewToggle={() => setIsRulersView(!isRulersView)}
             />
           </div>

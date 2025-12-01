@@ -54,9 +54,10 @@ interface CanvasProps {
   onPageChange?: (pageId: string) => void;
   allPages?: Array<{ id: string; name: string; rootInstance: any }>;
   isRulersView?: boolean;
+  isCodeViewOpen?: boolean;
 }
 
-export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreakpoint, pages, currentPage, pageNames, onPageNameChange, isPanMode, isPreviewMode, onCanvasRef, onPageChange, allPages = [], isRulersView = false }) => {
+export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreakpoint, pages, currentPage, pageNames, onPageNameChange, isPanMode, isPreviewMode, onCanvasRef, onPageChange, allPages = [], isRulersView = false, isCodeViewOpen = false }) => {
   // Ensure pages is always an array
   const safePages = Array.isArray(pages) ? pages : [];
   
@@ -634,16 +635,16 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
-      {/* Rulers for rulers view */}
-      {isRulersView && !isPreviewMode && (
+      {/* Rulers for rulers view - hidden when code view is open */}
+      {isRulersView && !isPreviewMode && !isCodeViewOpen && (
         <>
           {/* Horizontal Ruler */}
           <div 
-            className="fixed bg-background border-b border-border z-[65] flex items-end"
+            className="fixed bg-background border-b border-border z-[45] flex items-end"
             style={{ 
-              top: 48,
+              top: 52,
               left: 280,
-              right: 280,
+              right: 256,
               height: 24,
             }}
           >
@@ -688,9 +689,9 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
           
           {/* Vertical Ruler */}
           <div 
-            className="fixed bg-background border-r border-border z-[65] flex items-end justify-end"
+            className="fixed bg-background border-r border-border z-[45] flex items-end justify-end"
             style={{ 
-              top: 72,
+              top: 76,
               left: 256,
               width: 24,
               bottom: 0,
@@ -737,12 +738,12 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
 
           {/* Corner square */}
           <div 
-            className="fixed bg-background border-r border-b border-border z-[66]"
+            className="fixed bg-background border-r border-b border-border z-[46]"
             style={{ 
-              top: 48,
+              top: 52,
               left: 256,
               width: 24,
-              height: 24,
+              height: 28,
             }}
           />
         </>
