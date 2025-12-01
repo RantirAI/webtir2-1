@@ -29,6 +29,7 @@ import { RadioPrimitive } from '../primitives/RadioPrimitive';
 import { CheckboxPrimitive } from '../primitives/CheckboxPrimitive';
 import { NavigationPrimitive } from '../primitives/NavigationPrimitive';
 import { CellPrimitive } from '../primitives/CellPrimitive';
+import { DropdownPrimitive } from '../primitives/DropdownPrimitive';
 import { breakpoints } from './PageNavigation';
 import { ContextMenu } from './ContextMenu';
 import { SelectionOverlay } from './SelectionOverlay';
@@ -552,6 +553,25 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
         );
       case 'Cell':
         return wrapWithDraggable(<CellPrimitive key={instance.id} {...commonProps} />);
+      case 'Dropdown': {
+        // Check if menu should be forced open in builder
+        const forceMenuOpen = instance.props?.showMenuInBuilder ?? false;
+        
+        // If Dropdown has children (composite structure), render them inside the dropdown
+        const content = (
+          <DropdownPrimitive 
+            {...commonProps} 
+            forceMenuOpen={forceMenuOpen}
+          >
+            {instance.children.map((child) => renderInstance(child))}
+          </DropdownPrimitive>
+        );
+        return isPreviewMode ? content : (
+          <DroppableContainer key={instance.id} instance={instance} {...commonProps}>
+            {content}
+          </DroppableContainer>
+        );
+      }
       case 'Navigation': {
         // If Navigation has children (new composite structure), render as Div container
         if (instance.children && instance.children.length > 0) {

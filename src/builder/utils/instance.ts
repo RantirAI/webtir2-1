@@ -25,20 +25,31 @@ export function canDropInside(instanceType: string, draggedType?: string): boole
     return false;
   }
   
-  // RichText can only contain rich text elements
+  // RichText can contain many element types for rich content
   if (instanceType === 'RichText') {
-    const richTextTypes = ['Heading', 'Text', 'Blockquote', 'OrderedList', 'UnorderedList', 'CodeBlock', 'Link', 'Image'];
+    const richTextTypes = ['Heading', 'Text', 'Blockquote', 'OrderedList', 'UnorderedList', 'CodeBlock', 'Link', 'Image', 'Button', 'Div', 'Container'];
     return !draggedType || richTextTypes.includes(draggedType);
   }
   
-  // Rich text elements cannot contain other elements
-  const richTextTypes = ['Blockquote', 'OrderedList', 'UnorderedList', 'CodeBlock'];
-  if (richTextTypes.includes(instanceType)) {
+  // Rich text leaf elements cannot contain other elements
+  const leafTypes = ['Blockquote', 'OrderedList', 'UnorderedList', 'CodeBlock', 'Text', 'Heading', 'Image', 'Button', 'Link'];
+  if (leafTypes.includes(instanceType)) {
     return false;
   }
   
   // Determine which components can have children
-  // Composite components (Navigation, Form, Dropdown, Table) are actually Div/Box containers
-  const containerTypes = ['Div', 'Container', 'Section', 'Box', 'Navigation', 'Form', 'Table', 'Dropdown'];
+  // All container/composite components can accept any child component
+  const containerTypes = [
+    'Div', 
+    'Container', 
+    'Section', 
+    'Box', 
+    'Navigation', 
+    'Form', 
+    'Table', 
+    'Dropdown',
+    'RichText',
+    'Cell'
+  ];
   return containerTypes.includes(instanceType);
 }
