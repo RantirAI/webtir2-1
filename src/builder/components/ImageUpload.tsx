@@ -3,6 +3,7 @@ import { Upload, X, Check, Loader2, Image as ImageIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { toast } from '@/hooks/use-toast';
 
 interface ImageUploadProps {
@@ -10,6 +11,7 @@ interface ImageUploadProps {
   onImageChange: (url: string) => void;
   mode: 'src' | 'background';
   label?: string;
+  compact?: boolean;
 }
 
 export const ImageUpload: React.FC<ImageUploadProps> = ({
@@ -17,6 +19,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
   onImageChange,
   mode,
   label = 'Image',
+  compact = false,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -101,6 +104,96 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
   const handleUploadClick = () => {
     fileInputRef.current?.click();
   };
+
+  // Compact mode - small button that opens a popover
+  if (compact) {
+    return (
+      <>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={handleFileSelect}
+        />
+        <Popover>
+          <PopoverTrigger asChild>
+            <button
+              className="w-7 h-7 rounded border border-input flex items-center justify-center hover:bg-accent transition-colors overflow-hidden"
+              style={previewUrl ? { backgroundImage: `url(${previewUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}
+            >
+              {!previewUrl && <ImageIcon className="w-3.5 h-3.5 text-muted-foreground" />}
+            </button>
+          </PopoverTrigger>
+          <PopoverContent className="w-64 p-3" align="start">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-semibold">Background Image</label>
+                {previewUrl && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 px-2 text-xs"
+                    onClick={handleRemoveImage}
+                  >
+                    <X className="w-3 h-3 mr-1" />
+                    Clear
+                  </Button>
+                )}
+              </div>
+              
+              {previewUrl && (
+                <div className="relative rounded-md overflow-hidden border border-border h-20">
+                  <div
+                    className="w-full h-full bg-cover bg-center"
+                    style={{ backgroundImage: `url(${previewUrl})` }}
+                  />
+                </div>
+              )}
+              
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full h-8"
+                onClick={handleUploadClick}
+                disabled={isUploading}
+              >
+                {isUploading ? (
+                  <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                ) : (
+                  <Upload className="w-3 h-3 mr-1" />
+                )}
+                {previewUrl ? 'Replace' : 'Upload'}
+              </Button>
+              
+              <div className="space-y-1">
+                <label className="text-[10px] text-muted-foreground">Image URL</label>
+                <div className="flex gap-1">
+                  <Input
+                    type="text"
+                    placeholder="https://..."
+                    value={urlInput}
+                    onChange={(e) => handleUrlChange(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleUrlApply()}
+                    className="flex-1 h-7 text-xs"
+                  />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 px-2"
+                    onClick={handleUrlApply}
+                    disabled={!urlInput.trim() || urlInput === previewUrl}
+                  >
+                    <Check className="w-3 h-3" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </PopoverContent>
+        </Popover>
+      </>
+    );
+  }
 
   return (
     <div className="space-y-3">
