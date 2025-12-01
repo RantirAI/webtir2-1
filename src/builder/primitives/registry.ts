@@ -24,8 +24,6 @@ export const componentRegistry: Record<string, ComponentMeta> = {
       flexDirection: 'column',
       padding: '16px',
       gap: '8px',
-      backgroundColor: 'hsl(var(--muted))',
-      borderRadius: '8px',
       minHeight: '100px',
     },
     propsDefinition: {},
@@ -64,7 +62,6 @@ export const componentRegistry: Record<string, ComponentMeta> = {
     defaultStyles: {
       fontSize: '16px',
       lineHeight: '1.5',
-      color: 'hsl(var(--foreground))',
     },
     propsDefinition: {
       children: {
@@ -87,7 +84,6 @@ export const componentRegistry: Record<string, ComponentMeta> = {
       fontSize: '48px',
       fontWeight: '700',
       lineHeight: '1.2',
-      color: 'hsl(var(--foreground))',
     },
     propsDefinition: {
       level: {
@@ -131,7 +127,6 @@ export const componentRegistry: Record<string, ComponentMeta> = {
       borderLeft: '4px solid hsl(var(--border))',
       paddingLeft: '16px',
       marginLeft: '0',
-      color: 'hsl(var(--muted-foreground))',
     },
     propsDefinition: {
       children: {
@@ -153,7 +148,6 @@ export const componentRegistry: Record<string, ComponentMeta> = {
       fontSize: '16px',
       lineHeight: '1.5',
       paddingLeft: '24px',
-      color: 'hsl(var(--foreground))',
     },
     propsDefinition: {},
   },
@@ -168,7 +162,6 @@ export const componentRegistry: Record<string, ComponentMeta> = {
       fontSize: '16px',
       lineHeight: '1.5',
       paddingLeft: '24px',
-      color: 'hsl(var(--foreground))',
     },
     propsDefinition: {},
   },
@@ -182,11 +175,9 @@ export const componentRegistry: Record<string, ComponentMeta> = {
     defaultStyles: {
       fontSize: '14px',
       fontFamily: 'monospace',
-      backgroundColor: 'hsl(var(--muted))',
       padding: '16px',
       borderRadius: '8px',
       overflow: 'auto',
-      color: 'hsl(var(--foreground))',
     },
     propsDefinition: {
       children: {
@@ -863,8 +854,6 @@ export const componentRegistry: Record<string, ComponentMeta> = {
     },
     defaultStyles: {
       width: '100%',
-      backgroundColor: 'hsl(var(--background))',
-      color: 'hsl(var(--foreground))',
       borderBottom: '1px solid hsl(var(--border))',
     },
     propsDefinition: {},
