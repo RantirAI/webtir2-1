@@ -898,7 +898,7 @@ const Builder: React.FC = () => {
 
         {/* Fixed Left Sidebar for Rulers View */}
         {!isPreviewMode && !isCodeViewOpen && !sidebarsHidden && isRulersView && (
-          <div className="absolute left-0 top-12 bottom-0 z-10 transition-all duration-300">
+          <div className="absolute left-0 bottom-0 z-10 transition-all duration-300" style={{ top: 'calc(48px + 10px)' }}>
             <LeftSidebar isRulersView={isRulersView} />
           </div>
         )}
@@ -938,30 +938,28 @@ const Builder: React.FC = () => {
         {/* Fixed Navigation Bar for Rulers View */}
         {!isPreviewMode && isRulersView && (
           <div className="absolute top-0 left-0 right-0 z-[60] bg-background border-b border-border">
-            <div className="px-3 py-2">
-              <PageNavigation
-                currentPage={currentPageId}
-                pages={pageIds}
-                onPageChange={(pageId) => setCurrentPage(pageId)}
-                onAddPage={handleAddPage}
-                currentBreakpoint={currentBreakpoint}
-                onBreakpointChange={setCurrentBreakpoint}
-                zoom={zoom}
-                setZoom={setZoom}
-                isPanMode={isPanMode}
-                onPanModeToggle={() => setIsPanMode(!isPanMode)}
-                onPreviewToggle={() => setIsPreviewMode(!isPreviewMode)}
-                projectName={projectName}
-                onProjectNameChange={setProjectName}
-                onProjectSettingsOpen={() => setProjectSettingsOpen(true)}
-                isCodeViewOpen={isCodeViewOpen}
-                onCodeViewToggle={() => setIsCodeViewOpen(!isCodeViewOpen)}
-                sidebarsHidden={sidebarsHidden}
-                onToggleSidebars={() => setSidebarsHidden(!sidebarsHidden)}
-                isRulersView={isRulersView}
-                onRulersViewToggle={() => setIsRulersView(!isRulersView)}
-              />
-            </div>
+            <PageNavigation
+              currentPage={currentPageId}
+              pages={pageIds}
+              onPageChange={(pageId) => setCurrentPage(pageId)}
+              onAddPage={handleAddPage}
+              currentBreakpoint={currentBreakpoint}
+              onBreakpointChange={setCurrentBreakpoint}
+              zoom={zoom}
+              setZoom={setZoom}
+              isPanMode={isPanMode}
+              onPanModeToggle={() => setIsPanMode(!isPanMode)}
+              onPreviewToggle={() => setIsPreviewMode(!isPreviewMode)}
+              projectName={projectName}
+              onProjectNameChange={setProjectName}
+              onProjectSettingsOpen={() => setProjectSettingsOpen(true)}
+              isCodeViewOpen={isCodeViewOpen}
+              onCodeViewToggle={() => setIsCodeViewOpen(!isCodeViewOpen)}
+              sidebarsHidden={sidebarsHidden}
+              onToggleSidebars={() => setSidebarsHidden(!sidebarsHidden)}
+              isRulersView={isRulersView}
+              onRulersViewToggle={() => setIsRulersView(!isRulersView)}
+            />
           </div>
         )}
 
@@ -984,7 +982,7 @@ const Builder: React.FC = () => {
 
         {/* Fixed Right Sidebar for Rulers View */}
         {!isPreviewMode && !isCodeViewOpen && !sidebarsHidden && isRulersView && (
-          <div className="absolute right-0 top-12 bottom-0 z-10 transition-all duration-300">
+          <div className="absolute right-0 bottom-0 z-10 transition-all duration-300" style={{ top: 'calc(48px + 10px)' }}>
             <StylePanel
               pages={pageIds}
               currentPage={currentPageId}
