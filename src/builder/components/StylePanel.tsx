@@ -231,6 +231,79 @@ export const StylePanel: React.FC<StylePanelProps> = ({
             </div>
           </TabsContent>
         </Tabs>
+
+        {/* Page Settings Drawer - also available when no element selected */}
+        <Sheet open={pageSettingsOpen} onOpenChange={setPageSettingsOpen}>
+          <SheetContent side="right" className="w-[340px] overflow-y-auto p-4">
+            <SheetHeader className="pb-3 space-y-1">
+              <SheetTitle className="text-sm">Page Settings</SheetTitle>
+              <SheetDescription className="text-xs">Configure settings for this page</SheetDescription>
+            </SheetHeader>
+            <div className="mt-3 space-y-3">
+              {/* Page Name */}
+              <div className="space-y-1.5">
+                <Label htmlFor="page-name-no-sel" className="text-xs">Page Name</Label>
+                <Input
+                  id="page-name-no-sel"
+                  value={pageNames[selectedPageForSettings] || ''}
+                  onChange={(e) => onPageNameChange(selectedPageForSettings, e.target.value)}
+                  className="h-7 text-xs"
+                />
+                <div className="flex items-center gap-2 mt-1.5">
+                  <Checkbox 
+                    id="home-page-no-sel"
+                    checked={homePage === selectedPageForSettings}
+                    onCheckedChange={(checked) => {
+                      if (checked) onSetHomePage(selectedPageForSettings);
+                    }}
+                    className="h-3 w-3"
+                  />
+                  <Label htmlFor="home-page-no-sel" className="text-xs font-normal">
+                    Make "{pageNames[selectedPageForSettings]}" the home page
+                  </Label>
+                </div>
+              </div>
+
+              {/* Path */}
+              <div className="space-y-1.5">
+                <Label htmlFor="page-path-no-sel" className="text-xs">Path</Label>
+                <Input
+                  id="page-path-no-sel"
+                  value={`/${pageNames[selectedPageForSettings]?.toLowerCase().replace(/\s+/g, '-') || ''}`}
+                  disabled
+                  className="bg-muted h-7 text-xs"
+                />
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-2 pt-2">
+                <Button
+                  variant="outline"
+                  className="flex items-center gap-1.5 h-7 text-xs"
+                  onClick={() => {
+                    onDuplicatePage(selectedPageForSettings);
+                    setPageSettingsOpen(false);
+                  }}
+                >
+                  <Copy className="w-3 h-3" />
+                  Duplicate
+                </Button>
+                <Button
+                  variant="destructive"
+                  className="flex items-center gap-1.5 h-7 text-xs"
+                  onClick={() => {
+                    onDeletePage(selectedPageForSettings);
+                    setPageSettingsOpen(false);
+                  }}
+                  disabled={safePages.length === 1}
+                >
+                  <Trash2 className="w-3 h-3" />
+                  Delete
+                </Button>
+              </div>
+            </div>
+          </SheetContent>
+        </Sheet>
       </div>
     );
   }
@@ -546,7 +619,39 @@ export const StylePanel: React.FC<StylePanelProps> = ({
 
               {/* Class Selector - Multi-class support */}
             <div style={{ padding: 'var(--space-3)', borderBottom: '1px solid hsl(var(--border))' }}>
-              <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'flex-start', marginBottom: 'var(--space-2)' }}>
+              {/* Row 1: Auto-class preview and Reset button */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--space-2)' }}>
+                <ClassSelector 
+                  selectedClasses={[]}
+                  onAddClass={() => {}}
+                  onRemoveClass={() => {}}
+                  onClassClick={() => {}}
+                  activeClassIndex={null}
+                  componentType={selectedInstance.type}
+                  showAutoClassPreview={true}
+                  previewOnly={true}
+                />
+                {classes.length > 0 && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-5 w-5 p-0 text-foreground hover:text-primary flex-shrink-0"
+                          onClick={handleResetStyles}
+                        >
+                          <RotateCcw className="w-3 h-3" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Reset styles to default</TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
+              </div>
+
+              {/* Row 2: Class input with dropdown */}
+              <div style={{ display: 'flex', gap: '4px', alignItems: 'stretch' }}>
                 <div style={{ flex: 1 }}>
                   <ClassSelector 
                     selectedClasses={classes}
@@ -555,17 +660,17 @@ export const StylePanel: React.FC<StylePanelProps> = ({
                     onClassClick={handleClassClick}
                     activeClassIndex={activeClassIndex}
                     componentType={selectedInstance.type}
-                    showAutoClassPreview={true}
+                    showAutoClassPreview={false}
                   />
                 </div>
                 
-                {/* State dropdown on same line */}
+                {/* State dropdown next to input, same height */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button 
                       variant="outline" 
                       size="sm" 
-                      className={`h-9 w-6 p-0 justify-center border border-border flex-shrink-0 ${currentPseudoState !== 'default' ? 'bg-green-500/10 border-green-500/50' : ''}`}
+                      className={`h-[36px] w-[28px] p-0 justify-center border border-border flex-shrink-0 ${currentPseudoState !== 'default' ? 'bg-green-500/10 border-green-500/50' : ''}`}
                       title={`State: ${currentPseudoState}`}
                     >
                       <ChevronDown className="w-2.5 h-2.5 text-muted-foreground" />
@@ -597,24 +702,6 @@ export const StylePanel: React.FC<StylePanelProps> = ({
                     })}
                   </DropdownMenuContent>
                 </DropdownMenu>
-                
-                {classes.length > 0 && (
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-5 w-5 p-0 text-foreground hover:text-primary flex-shrink-0"
-                          onClick={handleResetStyles}
-                        >
-                          <RotateCcw className="w-3 h-3" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>Reset styles to default</TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                )}
               </div>
 
               {classes.length === 0 && (

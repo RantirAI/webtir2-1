@@ -21,6 +21,7 @@ interface ClassSelectorProps {
   activeClassIndex: number | null;
   componentType?: string; // For auto-class preview
   showAutoClassPreview?: boolean; // Whether to show auto-class preview
+  previewOnly?: boolean; // Only show the auto-class preview, not the input
 }
 
 export const ClassSelector: React.FC<ClassSelectorProps> = ({
@@ -31,6 +32,7 @@ export const ClassSelector: React.FC<ClassSelectorProps> = ({
   activeClassIndex,
   componentType = 'div',
   showAutoClassPreview = false,
+  previewOnly = false,
 }) => {
   const [inputValue, setInputValue] = useState('');
   const [isOpen, setIsOpen] = useState(false);
@@ -165,6 +167,118 @@ export const ClassSelector: React.FC<ClassSelectorProps> = ({
   const classUsageCount = activeClass && rootInstance 
     ? countClassUsage(rootInstance, activeClass.id)
     : 0;
+
+  // If previewOnly, just render the auto-class preview
+  if (previewOnly) {
+    return (
+      <TooltipProvider>
+        <div className="flex items-center gap-1" style={{ fontSize: '10px', color: 'hsl(var(--muted-foreground))' }}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="flex items-center gap-1 font-mono cursor-help">
+                <span>Next:</span>
+                <span className="font-semibold text-foreground">{nextAutoClassName}</span>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent side="top" className="text-xs max-w-xs">
+              <div className="space-y-1">
+                <div className="font-semibold">Auto-class Generator</div>
+                <div>Next class name: <code className="font-mono">{nextAutoClassName}</code></div>
+                <div className="text-muted-foreground">
+                  {autoClassConfig.noneFirst && nextAutoClassName.indexOf('-') === -1
+                    ? 'First class uses no numeric suffix'
+                    : `Sequential numbering from ${autoClassConfig.startIndex}`}
+                </div>
+              </div>
+            </TooltipContent>
+          </Tooltip>
+
+          <Dialog open={configOpen} onOpenChange={setConfigOpen}>
+            <DialogTrigger asChild>
+              <Button variant="ghost" size="sm" className="h-5 w-5 p-0">
+                <Settings className="w-3 h-3" />
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md p-3">
+              <DialogHeader className="pb-1">
+                <DialogTitle className="text-sm">Auto-class Configuration</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-2 py-1">
+                <div className="space-y-1">
+                  <Label htmlFor="startIndex" className="text-xs">Start Index</Label>
+                  <Input
+                    id="startIndex"
+                    type="number"
+                    min="1"
+                    value={autoClassConfig.startIndex || 1}
+                    onChange={(e) => setAutoClassConfig({ startIndex: parseInt(e.target.value) || 1 })}
+                    className="font-mono text-xs h-7"
+                  />
+                  <p className="text-[10px] text-muted-foreground">
+                    First number in sequence (default: 1)
+                  </p>
+                </div>
+
+                <div className="space-y-1">
+                  <Label htmlFor="padding" className="text-xs">Zero Padding</Label>
+                  <Input
+                    id="padding"
+                    type="number"
+                    min="0"
+                    max="6"
+                    value={autoClassConfig.padding || 0}
+                    onChange={(e) => setAutoClassConfig({ padding: parseInt(e.target.value) || 0 })}
+                    className="font-mono text-xs h-7"
+                  />
+                  <p className="text-[10px] text-muted-foreground">
+                    Digits with zero-padding (0 = none, 3 = 001, 002...)
+                  </p>
+                </div>
+
+                <div className="space-y-1">
+                  <Label htmlFor="separator" className="text-xs">Separator</Label>
+                  <Input
+                    id="separator"
+                    type="text"
+                    maxLength={1}
+                    value={autoClassConfig.separator || '-'}
+                    onChange={(e) => setAutoClassConfig({ separator: e.target.value || '-' })}
+                    className="font-mono text-xs h-7"
+                  />
+                  <p className="text-[10px] text-muted-foreground">
+                    Character between base and number (default: -)
+                  </p>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="noneFirst" className="text-xs">No suffix for first class</Label>
+                    <p className="text-[10px] text-muted-foreground">
+                      First class uses base name only (e.g., "button" not "button-1")
+                    </p>
+                  </div>
+                  <Switch
+                    id="noneFirst"
+                    checked={autoClassConfig.noneFirst || false}
+                    onCheckedChange={(checked) => setAutoClassConfig({ noneFirst: checked })}
+                  />
+                </div>
+
+                <div className="pt-2 border-t">
+                  <p className="text-[10px] text-muted-foreground">
+                    <strong>Preview:</strong> {nextAutoClassName}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground mt-1">
+                    Counters support up to 1,000,000+ classes per component type
+                  </p>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </TooltipProvider>
+    );
+  }
 
   return (
     <TooltipProvider>
