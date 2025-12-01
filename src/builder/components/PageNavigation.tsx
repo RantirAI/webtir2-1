@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Plus, ChevronDown, Monitor, Tablet, Smartphone, Download, Save, Eye, ZoomIn, ZoomOut, Sun, Moon, Hand, FileCode, FileText, Palette, Zap, X, PanelLeftClose } from 'lucide-react';
+import { Plus, ChevronDown, Monitor, Tablet, Smartphone, Download, Save, Eye, ZoomIn, ZoomOut, Sun, Moon, Hand, FileCode, FileText, Palette, Zap, X, PanelLeftClose, Ruler } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Separator } from '@/components/ui/separator';
 import { useTheme } from 'next-themes';
@@ -29,6 +29,8 @@ interface PageNavigationProps {
   onCodeViewToggle?: () => void;
   sidebarsHidden?: boolean;
   onToggleSidebars?: () => void;
+  isRulersView?: boolean;
+  onRulersViewToggle?: () => void;
 }
 
 export const breakpoints = [
@@ -57,6 +59,8 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
   onCodeViewToggle,
   sidebarsHidden = false,
   onToggleSidebars,
+  isRulersView = false,
+  onRulersViewToggle,
 }) => {
   // Ensure pages is always an array
   const safePages = Array.isArray(pages) ? pages : [];
@@ -237,6 +241,19 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
       >
         {isCodeViewOpen ? <X className="w-4 h-4" /> : <FileCode className="w-4 h-4" />}
       </Button>
+
+      {/* Rulers View Toggle */}
+      {!isCodeViewOpen && onRulersViewToggle && (
+        <Button
+          variant="ghost"
+          size="sm"
+          className={`h-8 px-2 ${isRulersView ? 'bg-[#F5F5F5] dark:bg-zinc-800' : ''}`}
+          onClick={onRulersViewToggle}
+          title={isRulersView ? "Exit Rulers View" : "Rulers View"}
+        >
+          <Ruler className="w-4 h-4" />
+        </Button>
+      )}
 
       {/* Sidebar Toggle */}
       {!isCodeViewOpen && onToggleSidebars && (

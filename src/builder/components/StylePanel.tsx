@@ -41,6 +41,7 @@ interface StylePanelProps {
   onDuplicatePage: (pageId: string) => void;
   onSetHomePage: (pageId: string) => void;
   homePage: string;
+  isRulersView?: boolean;
 }
 
 export const StylePanel: React.FC<StylePanelProps> = ({
@@ -53,6 +54,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({
   onDuplicatePage,
   onSetHomePage,
   homePage,
+  isRulersView = false,
 }) => {
   const { getSelectedInstance, updateInstance } = useBuilderStore();
   const { setStyle, getComputedStyles, styleSources, createStyleSource, nextLocalClassName, renameStyleSource, deleteStyleSource, currentPseudoState, setCurrentPseudoState, resetStyles, setStyleMetadata, getStyleMetadata, getPropertyState } = useStyleStore();
@@ -170,7 +172,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({
 
   if (!selectedInstance) {
     return (
-      <div className="w-64 h-full bg-background border border-border rounded-lg shadow-xl flex flex-col overflow-hidden backdrop-blur-md bg-white/70 dark:bg-zinc-900/70">
+      <div className={`w-64 h-full bg-background border border-border shadow-xl flex flex-col overflow-hidden backdrop-blur-md bg-white/70 dark:bg-zinc-900/70 ${isRulersView ? 'rounded-none p-2' : 'rounded-lg'}`}>
         <Tabs defaultValue="styles" className="flex-1 flex flex-col">
           <TabsList className="w-full grid grid-cols-3 rounded-none border-b bg-transparent h-10 p-1 gap-1">
             <TabsTrigger 
@@ -545,7 +547,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({
 
 
   return (
-    <div className="w-64 h-full bg-background border border-border rounded-lg shadow-xl flex flex-col overflow-hidden backdrop-blur-md bg-white/70 dark:bg-zinc-900/70">
+    <div className={`w-64 h-full bg-background border border-border shadow-xl flex flex-col overflow-hidden backdrop-blur-md bg-white/70 dark:bg-zinc-900/70 ${isRulersView ? 'rounded-none p-2' : 'rounded-lg'}`}>
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
         <TabsList className="w-full grid grid-cols-3 rounded-none border-b bg-transparent h-10 p-1 gap-1 flex-shrink-0">
           <TabsTrigger 
