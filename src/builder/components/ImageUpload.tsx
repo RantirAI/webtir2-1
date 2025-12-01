@@ -128,7 +128,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
           <PopoverContent className="w-64 p-3" align="start">
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-semibold">Background Image</label>
+                <label className="text-xs font-semibold">{mode === 'src' ? 'Image Source' : 'Background Image'}</label>
                 {previewUrl && (
                   <Button
                     variant="ghost"
