@@ -198,13 +198,13 @@ export const StylePanel: React.FC<StylePanelProps> = ({
   const getPropertySource = (property: string): 'active' | 'inherited' | 'none' => {
     if (!selectedInstance || !activeStyleSourceId) return 'none';
     
-    // Check if defined on the active class
+    // Check if defined on the active class - only return active if value is non-empty
     const activeValue = getPropertyState(activeStyleSourceId, property);
-    if (activeValue !== undefined) return 'active';
+    if (activeValue !== undefined && activeValue !== '' && activeValue !== 'auto' && activeValue !== 'none') return 'active';
     
     // Check if it exists in computed (inherited from parent classes)
     const computedValue = (computedStyles as any)[property];
-    if (computedValue !== undefined && computedValue !== '') return 'inherited';
+    if (computedValue !== undefined && computedValue !== '' && computedValue !== 'auto' && computedValue !== 'none') return 'inherited';
     
     return 'none';
   };
@@ -214,12 +214,13 @@ export const StylePanel: React.FC<StylePanelProps> = ({
     const source = getPropertySource(property);
     if (source === 'active') return 'text-blue-600 dark:text-blue-400';
     if (source === 'inherited') return 'text-yellow-600 dark:text-yellow-400';
-    return ''; // grey/default
+    return ''; // grey/default - no color for empty/reset values
   };
 
   // Helper component to render property indicator dot
   const PropertyIndicator: React.FC<{ property: string }> = ({ property }) => {
     const source = getPropertySource(property);
+    // Don't show indicator for empty/reset/default values
     if (source === 'none') return null;
     
     const color = source === 'active' 

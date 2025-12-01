@@ -29,7 +29,7 @@ export const InputLabelPrimitive: React.FC<InputLabelPrimitiveProps> = ({
     <label
       data-instance-id={instanceId}
       htmlFor={htmlFor}
-      className={`block text-sm font-medium text-foreground ${className}`}
+      className={className || undefined}
       style={style}
     >
       <EditableText
@@ -37,7 +37,7 @@ export const InputLabelPrimitive: React.FC<InputLabelPrimitiveProps> = ({
         onChange={handleTextChange}
         as="span"
       />
-      {required && <span className="text-destructive ml-1">*</span>}
+      {required && <span style={{ color: 'hsl(var(--destructive))', marginLeft: '4px' }}>*</span>}
     </label>
   );
 };
