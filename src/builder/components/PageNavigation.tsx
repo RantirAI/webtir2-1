@@ -136,10 +136,10 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
 
   return (
     <div 
-      className={`backdrop-blur-md border border-border px-3 py-2 flex items-center gap-2 ${
+      className={`backdrop-blur-md border border-border flex items-center gap-2 ${
         isRulersView 
-          ? 'rounded-none shadow-none bg-background' 
-          : 'rounded-lg shadow-lg bg-white/70 dark:bg-zinc-900/70'
+          ? 'rounded-none shadow-none bg-background w-full px-4 py-2' 
+          : 'rounded-lg shadow-lg bg-white/70 dark:bg-zinc-900/70 px-3 py-2'
       }`}
     >
       {/* App Icon and Project Name */}
