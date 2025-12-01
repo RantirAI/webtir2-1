@@ -12,6 +12,7 @@ interface LinkPrimitiveProps {
   onHoverEnd?: () => void;
   onContextMenu?: (e: React.MouseEvent) => void;
   isPreviewMode?: boolean;
+  dataBindingProps?: Record<string, any>;
 }
 
 export const LinkPrimitive: React.FC<LinkPrimitiveProps> = ({
@@ -23,15 +24,16 @@ export const LinkPrimitive: React.FC<LinkPrimitiveProps> = ({
   onHoverEnd,
   onContextMenu,
   isPreviewMode,
+  dataBindingProps = {},
 }) => {
-  // Using CSS classes only; no inline computed styles
+  const { style: dataBindingStyle, ...restDataBindingProps } = dataBindingProps;
 
   return (
     <a
       data-instance-id={instance.id}
       className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
       href={instance.props.href || '#'}
-      style={{ position: 'relative' }}
+      style={{ position: 'relative', ...dataBindingStyle }}
       onClick={isPreviewMode ? undefined : (e) => {
         e.stopPropagation();
         e.preventDefault();
@@ -46,6 +48,7 @@ export const LinkPrimitive: React.FC<LinkPrimitiveProps> = ({
         onHoverEnd?.();
       }}
       onContextMenu={isPreviewMode ? undefined : onContextMenu}
+      {...restDataBindingProps}
     >
       {instance.props.children || 'Link'}
     </a>

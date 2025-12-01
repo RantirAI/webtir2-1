@@ -285,6 +285,29 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
     const isHovered = instance.id === hoveredInstanceId;
     const isContainer = ['Div', 'Container', 'Section', 'Navigation'].includes(instance.type);
 
+    // Build data binding props
+    const dataBindingProps: Record<string, any> = {};
+    
+    // Apply idAttribute as HTML id
+    if (instance.idAttribute) {
+      dataBindingProps.id = instance.idAttribute;
+    }
+    
+    // Apply visibility
+    if (instance.visibility === 'hidden') {
+      dataBindingProps.style = { ...dataBindingProps.style, display: 'none' };
+    }
+    
+    // Apply custom attributes (spread them, but block reserved ones)
+    if (instance.attributes) {
+      Object.entries(instance.attributes).forEach(([key, value]) => {
+        // Block reserved HTML attributes that might conflict
+        if (!['id', 'class', 'className', 'style'].includes(key.toLowerCase())) {
+          dataBindingProps[key] = value;
+        }
+      });
+    }
+
     const commonProps = {
       instance,
       isSelected,
@@ -294,6 +317,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
       onHoverEnd: isPreviewMode ? undefined : () => setHoveredInstanceId(null),
       onContextMenu: isPreviewMode ? undefined : (e: React.MouseEvent) => handleContextMenu(e, instance),
       isPreviewMode,
+      dataBindingProps, // Pass data binding props to primitives
     } as any;
 
     const wrapWithDraggable = (content: React.ReactNode) => (

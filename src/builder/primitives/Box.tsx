@@ -12,6 +12,7 @@ interface DivProps {
   onHoverEnd?: () => void;
   onContextMenu?: (e: React.MouseEvent) => void;
   isPreviewMode?: boolean;
+  dataBindingProps?: Record<string, any>;
 }
 
 export const Div: React.FC<DivProps> = ({
@@ -24,17 +25,22 @@ export const Div: React.FC<DivProps> = ({
   onHoverEnd,
   onContextMenu,
   isPreviewMode,
+  dataBindingProps = {},
 }) => {
   const isRoot = instance.id === 'root';
 
   // Only essential inline styles - let CSS classes control all layout/sizing
   const defaultStyles: React.CSSProperties = {
     backgroundColor: isRoot ? '#ffffff' : undefined,
+    ...(dataBindingProps.style || {}), // Apply visibility and other data binding styles
   };
 
   const finalStyles = defaultStyles;
 
   const classNames = (instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ');
+  
+  // Extract non-style dataBindingProps
+  const { style: _style, ...restDataBindingProps } = dataBindingProps;
   
   return (
     <div
@@ -54,6 +60,7 @@ export const Div: React.FC<DivProps> = ({
         onHoverEnd?.();
       }}
       onContextMenu={isPreviewMode ? undefined : onContextMenu}
+      {...restDataBindingProps}
     >
       {children}
     </div>

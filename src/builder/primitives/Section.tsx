@@ -12,6 +12,7 @@ interface SectionProps {
   onHoverEnd?: () => void;
   onContextMenu?: (e: React.MouseEvent) => void;
   isPreviewMode?: boolean;
+  dataBindingProps?: Record<string, any>;
 }
 
 export const Section: React.FC<SectionProps> = ({
@@ -24,6 +25,7 @@ export const Section: React.FC<SectionProps> = ({
   onHoverEnd,
   onContextMenu,
   isPreviewMode,
+  dataBindingProps = {},
 }) => {
   const [isNewlyAdded, setIsNewlyAdded] = useState(true);
 
@@ -39,11 +41,15 @@ export const Section: React.FC<SectionProps> = ({
     outline: isNewlyAdded ? '2px dashed hsl(var(--primary) / 0.5)' : 'none',
     outlineOffset: '-2px',
     transition: 'outline 0.3s ease-out',
+    ...(dataBindingProps.style || {}),
   };
 
   const finalStyles = defaultStyles;
   const classNames = (instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean);
   if (isNewlyAdded) classNames.push('animate-fade-in');
+
+  // Extract non-style dataBindingProps
+  const { style: _style, ...restDataBindingProps } = dataBindingProps;
 
   return (
     <section
@@ -63,6 +69,7 @@ export const Section: React.FC<SectionProps> = ({
         onHoverEnd?.();
       }}
       onContextMenu={isPreviewMode ? undefined : onContextMenu}
+      {...restDataBindingProps}
     >
       {children}
     </section>
