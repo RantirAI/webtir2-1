@@ -15,7 +15,6 @@ interface DropdownPrimitiveProps {
   onHoverEnd?: () => void;
   onContextMenu?: (e: React.MouseEvent) => void;
   isPreviewMode?: boolean;
-  forceMenuOpen?: boolean; // For styling in the builder
 }
 
 export const DropdownPrimitive: React.FC<DropdownPrimitiveProps> = ({
@@ -28,25 +27,27 @@ export const DropdownPrimitive: React.FC<DropdownPrimitiveProps> = ({
   onHoverEnd,
   onContextMenu,
   isPreviewMode,
-  forceMenuOpen,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const updateInstance = useBuilderStore((state) => state.updateInstance);
 
-  // Get props with defaults
+  // Get config from dropdownConfig (new typed approach)
+  const dropdownConfig = instance.dropdownConfig || {};
   const triggerText = instance.props?.triggerText || 'Dropdown';
-  const openOnHover = instance.props?.openOnHover ?? false;
-  const closeDelay = instance.props?.closeDelay ?? 0;
+  const openOnHover = dropdownConfig.openOnHover ?? instance.props?.openOnHover ?? false;
+  const closeDelay = dropdownConfig.closeDelayMs ?? instance.props?.closeDelay ?? 0;
   const menuItems = instance.props?.menuItems || [
     { label: 'Option 1', href: '#' },
     { label: 'Option 2', href: '#' },
     { label: 'Option 3', href: '#' },
   ];
 
-  // Check if menu should be shown (either in preview mode or forced open in builder)
-  const showMenu = isPreviewMode ? isOpen : (forceMenuOpen ?? isOpen);
+  // In builder mode, use dropdownConfig.isOpen to show/hide for styling
+  // In preview mode, use local isOpen state for actual interaction
+  const forceMenuOpen = !isPreviewMode && dropdownConfig.isOpen;
+  const showMenu = isPreviewMode ? isOpen : forceMenuOpen;
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -71,7 +72,8 @@ export const DropdownPrimitive: React.FC<DropdownPrimitiveProps> = ({
     };
   }, []);
 
-  const handleToggle = () => {
+  const handleToggle = (e: React.MouseEvent) => {
+    e.stopPropagation();
     if (isPreviewMode) {
       setIsOpen(!isOpen);
     }
@@ -124,12 +126,27 @@ export const DropdownPrimitive: React.FC<DropdownPrimitiveProps> = ({
   // Get computed styles
   const computedStyles = useStyleStore.getState().getComputedStyles(instance.styleSourceIds || []);
 
+  // Apply visibility
+  const visibilityStyle = instance.visibility === 'hidden' ? { display: 'none' } : {};
+
+  // Build custom attributes
+  const customAttrs: Record<string, string> = {};
+  if (instance.attributes) {
+    Object.entries(instance.attributes).forEach(([key, value]) => {
+      customAttrs[key] = value;
+    });
+  }
+  // Add dropdown-specific data attributes for runtime
+  if (openOnHover) customAttrs['data-open-on-hover'] = 'true';
+  if (closeDelay > 0) customAttrs['data-close-delay'] = String(closeDelay);
+
   return (
     <div
       ref={dropdownRef}
       data-instance-id={instance.id}
+      id={instance.idAttribute || undefined}
       className={`relative inline-block ${classNames}`}
-      style={computedStyles as React.CSSProperties}
+      style={{ ...computedStyles, ...visibilityStyle } as React.CSSProperties}
       onClick={isPreviewMode ? undefined : (e) => {
         e.stopPropagation();
         onSelect?.();
@@ -137,12 +154,15 @@ export const DropdownPrimitive: React.FC<DropdownPrimitiveProps> = ({
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onContextMenu={isPreviewMode ? undefined : onContextMenu}
+      {...customAttrs}
     >
       {/* Trigger Button */}
       <button
         type="button"
         onClick={handleToggle}
-        className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-md border border-border bg-background hover:bg-accent transition-colors"
+        className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-md border border-border bg-background text-foreground hover:bg-accent transition-colors"
+        aria-expanded={showMenu}
+        aria-haspopup="true"
       >
         {isPreviewMode ? (
           <span>{triggerText}</span>
@@ -154,7 +174,7 @@ export const DropdownPrimitive: React.FC<DropdownPrimitiveProps> = ({
           />
         )}
         <ChevronDown 
-          className={`w-4 h-4 transition-transform ${showMenu ? 'rotate-180' : ''}`} 
+          className={`w-4 h-4 transition-transform duration-200 ${showMenu ? 'rotate-180' : ''}`} 
         />
       </button>
 
@@ -163,6 +183,7 @@ export const DropdownPrimitive: React.FC<DropdownPrimitiveProps> = ({
         <div 
           className="absolute top-full left-0 mt-1 min-w-[180px] rounded-md border border-border bg-background shadow-lg z-50"
           data-dropdown-menu
+          role="menu"
         >
           <div className="py-1">
             {/* Render children if they exist (composite structure) */}
@@ -174,6 +195,17 @@ export const DropdownPrimitive: React.FC<DropdownPrimitiveProps> = ({
                 <div
                   key={index}
                   className="block px-4 py-2 text-sm text-foreground hover:bg-accent cursor-pointer"
+                  role="menuitem"
+                  onClick={(e) => {
+                    if (isPreviewMode) {
+                      e.stopPropagation();
+                      setIsOpen(false);
+                      // Navigate if href exists
+                      if (item.href && item.href !== '#') {
+                        window.location.href = item.href;
+                      }
+                    }
+                  }}
                 >
                   {isPreviewMode ? (
                     <span>{item.label}</span>

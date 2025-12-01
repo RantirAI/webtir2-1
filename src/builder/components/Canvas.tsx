@@ -554,15 +554,9 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
       case 'Cell':
         return wrapWithDraggable(<CellPrimitive key={instance.id} {...commonProps} />);
       case 'Dropdown': {
-        // Check if menu should be forced open in builder
-        const forceMenuOpen = instance.props?.showMenuInBuilder ?? false;
-        
-        // If Dropdown has children (composite structure), render them inside the dropdown
+        // DropdownPrimitive now handles isOpen state from dropdownConfig internally
         const content = (
-          <DropdownPrimitive 
-            {...commonProps} 
-            forceMenuOpen={forceMenuOpen}
-          >
+          <DropdownPrimitive {...commonProps}>
             {instance.children.map((child) => renderInstance(child))}
           </DropdownPrimitive>
         );
