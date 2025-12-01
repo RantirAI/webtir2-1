@@ -389,47 +389,47 @@ const Index = () => {
       {/* Feature Cards Grid */}
       <section className="max-w-[720px] mx-auto px-6 py-12">
         <div className="grid grid-cols-2 gap-4">
-          {/* Card 1 */}
+          {/* Blue Card - Interactive Experiences */}
           <div className="rounded-2xl bg-blue-50 dark:bg-blue-950/20 p-6 space-y-4">
-            <h3 className="text-lg font-semibold text-foreground">Make your product interactive</h3>
+            <h3 className="text-lg font-semibold text-foreground">Interactive Experiences</h3>
             <p className="text-sm text-muted-foreground">
-              Don't waste months building your positive drag-n-drop interface. Embed Webtir and let your users build, configure, and preview instantly.
+              Turn static ideas into live, interactive builders. Give your users the power to click, edit, preview, and configure instantly. Drop Webtir into your product and unlock highly intuitive user-driven editing without months of custom interface work.
             </p>
             <div className="rounded-lg overflow-hidden h-64">
-              <img src={featureBlue} alt="Editor Interface Preview" className="w-full h-full object-cover" />
+              <img src={featureBlue} alt="Interactive editing engine" className="w-full h-full object-cover" />
             </div>
           </div>
 
-          {/* Card 2 */}
+          {/* Green Card - Lightweight, Smart, and Extensible */}
           <div className="rounded-2xl bg-green-50 dark:bg-green-950/20 p-6 space-y-4">
-            <h3 className="text-lg font-semibold text-foreground">Lightweight & full-featured</h3>
+            <h3 className="text-lg font-semibold text-foreground">Lightweight, Smart & Extensible</h3>
             <p className="text-sm text-muted-foreground">
-              Make the editor as simple or as complete as you need with support for variables, class-based styling, AI, and real-time collaboration. AI and more.
+              A flexible editor that scales with your stack. Variable-driven styling, class-based controls, responsive layout tools, and optional AI-powered assistive inputs. Keep it minimal or extend it into a full design system editor.
             </p>
             <div className="rounded-lg overflow-hidden h-64">
-              <img src={featureGreen} alt="AI-Powered Features" className="w-full h-full object-cover" />
+              <img src={featureGreen} alt="Extensible editing core" className="w-full h-full object-cover" />
             </div>
           </div>
 
-          {/* Card 3 */}
+          {/* Yellow/Orange Card - Integrates With Your Logic */}
           <div className="rounded-2xl bg-orange-50 dark:bg-orange-950/20 p-6 space-y-4">
-            <h3 className="text-lg font-semibold text-foreground">Integrate your UI and logic</h3>
+            <h3 className="text-lg font-semibold text-foreground">Integrates With Your Logic</h3>
             <p className="text-sm text-muted-foreground">
-              Connect Webtir to your React components and business logic. No need to rip out your current framework. Drop it on top of what you have.
+              Connect your UI to real data and real components. Map your React/Vue/Svelte components, bind props, connect APIs, or drop in your own backend actions. Webtir sits on top of your existing logic—letting it drive the editor effortlessly.
             </p>
             <div className="rounded-lg overflow-hidden h-64">
-              <img src={featureOrange} alt="Component Integration" className="w-full h-full object-cover" />
+              <img src={featureOrange} alt="Deep integration layer" className="w-full h-full object-cover" />
             </div>
           </div>
 
-          {/* Card 4 */}
+          {/* Purple Card - Theme It to Match Your Brand */}
           <div className="rounded-2xl bg-purple-50 dark:bg-purple-950/20 p-6 space-y-4">
-            <h3 className="text-lg font-semibold text-foreground">Matches with your brand</h3>
+            <h3 className="text-lg font-semibold text-foreground">Theme It to Match Your Brand</h3>
             <p className="text-sm text-muted-foreground">
-              Fully theme the editor with your design system. Control colors, fonts, and behaviors, allowing for a seamless integration with your brand identity.
+              Make the editor feel like it belongs to your product. Customizable colors, shadows, borders, typography, tokens, and branded component presets. Align your editor with your design system so it feels fully yours.
             </p>
             <div className="rounded-lg overflow-hidden h-64">
-              <img src={featurePurple} alt="Brand Customization" className="w-full h-full object-cover" />
+              <img src={featurePurple} alt="Theming system" className="w-full h-full object-cover" />
             </div>
           </div>
         </div>
