@@ -34,10 +34,12 @@ export const Div: React.FC<DivProps> = ({
 
   const finalStyles = defaultStyles;
 
+  const classNames = (instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ');
+  
   return (
     <div
       data-instance-id={instance.id}
-      className={`builder-div ${(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}`}
+      className={classNames || undefined}
       style={finalStyles}
       onClick={isPreviewMode ? undefined : (e) => {
         e.stopPropagation();

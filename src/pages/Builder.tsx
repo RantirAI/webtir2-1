@@ -898,7 +898,7 @@ const Builder: React.FC = () => {
 
         {/* Fixed Left Sidebar for Rulers View */}
         {!isPreviewMode && !isCodeViewOpen && !sidebarsHidden && isRulersView && (
-          <div className="absolute left-0 bottom-0 z-10 transition-all duration-300" style={{ top: 'calc(48px + 10px)' }}>
+          <div className="absolute left-0 bottom-0 z-10 transition-all duration-300" style={{ top: '48px' }}>
             <LeftSidebar isRulersView={isRulersView} />
           </div>
         )}
@@ -982,7 +982,7 @@ const Builder: React.FC = () => {
 
         {/* Fixed Right Sidebar for Rulers View */}
         {!isPreviewMode && !isCodeViewOpen && !sidebarsHidden && isRulersView && (
-          <div className="absolute right-0 bottom-0 z-10 transition-all duration-300" style={{ top: 'calc(48px + 10px)' }}>
+          <div className="absolute right-0 bottom-0 z-10 transition-all duration-300" style={{ top: '48px' }}>
             <StylePanel
               pages={pageIds}
               currentPage={currentPageId}

@@ -39,6 +39,6 @@ export function canDropInside(instanceType: string, draggedType?: string): boole
   
   // Determine which components can have children
   // Composite components (Navigation, Form, Dropdown, Table) are actually Div/Box containers
-  const containerTypes = ['Div', 'Container', 'Section', 'Box'];
+  const containerTypes = ['Div', 'Container', 'Section', 'Box', 'Navigation', 'Form', 'Table', 'Dropdown'];
   return containerTypes.includes(instanceType);
 }
