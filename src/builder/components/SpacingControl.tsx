@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
@@ -150,9 +150,16 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
     };
   }, [dragState, onUpdate, isMarginLinked, isPaddingLinked]);
 
-  const getPropertyState = (property: string): { color: string; source: string; isEditable: boolean } => {
+  const getPropertyColor = (property: string, value: string): string => {
+    // Check if value is default (0, empty, or unset)
+    const isDefaultValue = !value || value === '0' || value === '';
+    
+    if (isDefaultValue) {
+      return '#999999';
+    }
+
     if (!styleSourceIds || styleSourceIds.length === 0) {
-      return { color: '#999', source: 'Not set (click to define)', isEditable: true };
+      return '#999999';
     }
 
     const lastClassIndex = styleSourceIds.length - 1;
@@ -160,34 +167,52 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
     const breakpoint = currentBreakpointId || 'base';
     const state = currentPseudoState || 'default';
     
+    // Check if property is defined in the active (last) class
+    const lastClassKey = `${lastClassId}:${breakpoint}:${state}:${property}`;
+    if (styles[lastClassKey]) {
+      return '#007bff'; // Blue for active class
+    }
+
+    // Check if property is inherited from any previous class
+    for (let i = lastClassIndex - 1; i >= 0; i--) {
+      const classId = styleSourceIds[i];
+      const key = `${classId}:${breakpoint}:${state}:${property}`;
+      if (styles[key]) {
+        return '#f7c600'; // Yellow for inherited class
+      }
+    }
+
+    return '#999999'; // Gray for default/unset
+  };
+
+  const getSourceTooltip = (property: string): string => {
+    if (!styleSourceIds || styleSourceIds.length === 0) {
+      return 'Default value';
+    }
+
+    const lastClassIndex = styleSourceIds.length - 1;
+    const lastClassId = styleSourceIds[lastClassIndex];
+    const breakpoint = currentBreakpointId || 'base';
+    const state = currentPseudoState || 'default';
+    
+    // Check if property is defined in the active (last) class
     const lastClassKey = `${lastClassId}:${breakpoint}:${state}:${property}`;
     if (styles[lastClassKey]) {
       const lastClassName = styleSources[lastClassId]?.name || lastClassId;
-      return { 
-        color: '#3b82f6',
-        source: `Active in Class ${lastClassIndex + 1} (.${lastClassName})`,
-        isEditable: true 
-      };
+      return `From .${lastClassName} (Active Class)`;
     }
 
+    // Check if property is inherited from any previous class
     for (let i = lastClassIndex - 1; i >= 0; i--) {
       const classId = styleSourceIds[i];
       const key = `${classId}:${breakpoint}:${state}:${property}`;
       if (styles[key]) {
         const className = styleSources[classId]?.name || classId;
-        return { 
-          color: '#ea9005',
-          source: `Inherited from Class ${i + 1} (.${className}) - click to override in Class ${lastClassIndex + 1}`,
-          isEditable: true
-        };
+        return `Inherited from .${className}`;
       }
     }
 
-    return { 
-      color: '#999', 
-      source: `Not set - click to define in Class ${lastClassIndex + 1}`, 
-      isEditable: true 
-    };
+    return 'Default value';
   };
 
   const parseValue = (value: string): { num: number; unit: string } => {
@@ -330,8 +355,8 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
     const isOpen = editingProperty?.property === property;
     const isDragging = dragState?.property === property && dragState?.isDragging;
     const isHovered = hoveredProperty === property;
-    const inputRef = useRef<HTMLDivElement>(null);
-    const propertyState = getPropertyState(property);
+    const propertyColor = getPropertyColor(property, value);
+    const tooltip = getSourceTooltip(property);
     
     return (
       <>
@@ -339,7 +364,6 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
           <Tooltip>
             <TooltipTrigger asChild>
               <div
-                ref={inputRef}
                 onMouseEnter={() => !dragState?.isDragging && setHoveredProperty(property)}
                 onMouseLeave={() => setHoveredProperty(null)}
                 onMouseDown={(e) => handleMouseDown(e, property, value)}
@@ -351,19 +375,21 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
                 }}
               >
                 <div style={{
-                  padding: '4px 8px',
+                  padding: '2px 6px',
                   fontSize: '11px',
-                  fontWeight: 500,
-                  color: 'hsl(var(--foreground) / 0.7)',
+                  fontWeight: 600,
+                  color: propertyColor,
                   userSelect: 'none',
-                  minWidth: '24px',
+                  minWidth: '28px',
                   textAlign: 'center',
-                  transition: 'all 0.2s ease',
-                  backgroundColor: isHovered && !isDragging && !isOpen 
-                    ? 'hsl(var(--accent))' 
-                    : 'transparent',
+                  transition: 'all 0.15s ease',
+                  textDecoration: isHovered && !isDragging && !isOpen ? 'underline' : 'none',
+                  backgroundColor: isDragging 
+                    ? `${propertyColor}15` 
+                    : isHovered && !isOpen 
+                      ? `${propertyColor}0a` 
+                      : 'transparent',
                   borderRadius: '3px',
-                  cursor: 'pointer',
                 }}>
                   {value || '0'}
                 </div>
@@ -371,7 +397,7 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
             </TooltipTrigger>
             <TooltipContent side="right" className="text-xs">
               <div className="font-medium">{getPropertyLabel(property)}</div>
-              <div className="text-muted-foreground">{propertyState.source}</div>
+              <div className="text-muted-foreground">{tooltip}</div>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
@@ -447,123 +473,89 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
   };
 
   return (
-    <div style={{ 
-      position: 'relative',
-      width: '100%',
-      padding: '16px 12px',
-    }}>
-      {/* Label */}
-      <div style={{
-        fontSize: '8px',
-        fontWeight: 600,
-        letterSpacing: '0.1em',
-        textTransform: 'uppercase',
-        color: 'hsl(var(--muted-foreground))',
-        marginBottom: '12px',
-      }}>
-        PADDING & MARGIN
-      </div>
+    <div className="space-y-2">
+      <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Padding & Margin</Label>
+      
+      <TooltipProvider delayDuration={300}>
+        <div className="relative w-full" style={{ padding: '8px' }}>
+          {/* SVG Container with preserved aspect ratio */}
+          <div className="relative w-full" style={{ paddingBottom: '52.31%' /* 113/216 aspect ratio */ }}>
+            <svg
+              className="absolute inset-0 w-full h-full"
+              viewBox="0 0 216 113"
+              preserveAspectRatio="xMidYMid meet"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <mask id="mask0_716_4155" style={{ maskType: 'luminance' }} maskUnits="userSpaceOnUse" x="0" y="0" width="216" height="112">
+                <path d="M212.998 0.710083H3.01156C1.63094 0.710083 0.511719 1.8293 0.511719 3.20993V109.203C0.511719 110.584 1.63094 111.703 3.01156 111.703H212.998C214.379 111.703 215.498 110.584 215.498 109.203V3.20993C215.498 1.8293 214.379 0.710083 212.998 0.710083Z" fill="white"/>
+              </mask>
+              <g mask="url(#mask0_716_4155)">
+                <path d="M215.998 0.210083H0.0117188L81.5066 56.2066H134.503L215.998 0.210083Z" className="fill-muted/50"/>
+                <path d="M215.999 112.203L134.504 56.2066L215.999 0.210083V112.203Z" className="fill-muted/30"/>
+                <path d="M215.998 112.203H0.0117188L81.5066 56.2065H134.503L215.998 112.203Z" className="fill-muted/50"/>
+                <path d="M0.0117188 0.210083L81.5066 56.2066L0.0117188 112.203V0.210083Z" className="fill-muted/30"/>
+              </g>
+              <path d="M212.998 0.710083H3.01156C1.63094 0.710083 0.511719 1.8293 0.511719 3.20993V109.203C0.511719 110.584 1.63094 111.703 3.01156 111.703H212.998C214.379 111.703 215.498 110.584 215.498 109.203V3.20993C215.498 1.8293 214.379 0.710083 212.998 0.710083Z" className="stroke-border" strokeWidth="0.999937"/>
+              <path d="M176.001 25.7085H40.0096C38.629 25.7085 37.5098 26.8277 37.5098 28.2083V84.2048C37.5098 85.5855 38.629 86.7047 40.0096 86.7047H176.001C177.382 86.7047 178.501 85.5855 178.501 84.2048V28.2083C178.501 26.8277 177.382 25.7085 176.001 25.7085Z" className="fill-muted/40 stroke-border" strokeWidth="0.999937"/>
+              <mask id="mask1_716_4155" style={{ maskType: 'luminance' }} maskUnits="userSpaceOnUse" x="40" y="28" width="136" height="56">
+                <path d="M175.001 28.7083H41.0097C40.7336 28.7083 40.5098 28.9321 40.5098 29.2082V83.2048C40.5098 83.481 40.7336 83.7048 41.0097 83.7048H175.001C175.277 83.7048 175.501 83.481 175.501 83.2048V29.2082C175.501 28.9321 175.277 28.7083 175.001 28.7083Z" fill="white"/>
+              </mask>
+              <g mask="url(#mask1_716_4155)">
+                <path d="M215.998 0.210083H0.0117188L81.5066 56.2066H134.503L215.998 0.210083Z" className="fill-muted/50"/>
+                <path d="M215.999 112.203L134.504 56.2066L215.999 0.210083V112.203Z" className="fill-muted/30"/>
+                <path d="M215.998 112.203H0.0117188L81.5066 56.2065H134.503L215.998 112.203Z" className="fill-muted/50"/>
+                <path d="M0.0117188 0.210083L81.5066 56.2066L0.0117188 112.203V0.210083Z" className="fill-muted/30"/>
+              </g>
+              <path d="M175.001 28.7083H41.0097C40.7336 28.7083 40.5098 28.9321 40.5098 29.2082V83.2048C40.5098 83.481 40.7336 83.7048 41.0097 83.7048H175.001C175.277 83.7048 175.501 83.481 175.501 83.2048V29.2082C175.501 28.9321 175.277 28.7083 175.001 28.7083Z" className="stroke-border" strokeWidth="0.999937"/>
+              <path d="M138.002 53.7068H78.0058C77.7297 53.7068 77.5059 53.9306 77.5059 54.2068V58.2065C77.5059 58.4826 77.7297 58.7065 78.0058 58.7065H138.002C138.278 58.7065 138.502 58.4826 138.502 58.2065V54.2068C138.502 53.9306 138.278 53.7068 138.002 53.7068Z" className="fill-muted/40 stroke-border" strokeWidth="0.999937"/>
+            </svg>
 
-      {/* Clean spacing box diagram */}
-      <div style={{
-        position: 'relative',
-        width: '100%',
-        border: '1px solid hsl(var(--border) / 0.3)',
-        borderRadius: '6px',
-        padding: '32px 24px',
-        background: 'hsl(var(--background))',
-      }}>
-        {/* Margin Top */}
-        <div style={{
-          position: 'absolute',
-          top: '8px',
-          left: '50%',
-          transform: 'translateX(-50%)',
-        }}>
-          {renderSpacingInput('marginTop', marginTop)}
-        </div>
+            {/* Interactive spacing values - positioned with percentages matching SVG coordinates */}
+            <div className="absolute inset-0">
+              {/* Margin Top */}
+              <div className="absolute" style={{ top: '6%', left: '50%', transform: 'translateX(-50%)' }}>
+                {renderSpacingInput('marginTop', marginTop)}
+              </div>
 
-        {/* Margin Right */}
-        <div style={{
-          position: 'absolute',
-          right: '8px',
-          top: '50%',
-          transform: 'translateY(-50%)',
-        }}>
-          {renderSpacingInput('marginRight', marginRight)}
-        </div>
+              {/* Margin Right */}
+              <div className="absolute" style={{ top: '50%', right: '4%', transform: 'translateY(-50%)' }}>
+                {renderSpacingInput('marginRight', marginRight)}
+              </div>
 
-        {/* Margin Bottom */}
-        <div style={{
-          position: 'absolute',
-          bottom: '8px',
-          left: '50%',
-          transform: 'translateX(-50%)',
-        }}>
-          {renderSpacingInput('marginBottom', marginBottom)}
-        </div>
+              {/* Margin Bottom */}
+              <div className="absolute" style={{ bottom: '6%', left: '50%', transform: 'translateX(-50%)' }}>
+                {renderSpacingInput('marginBottom', marginBottom)}
+              </div>
 
-        {/* Margin Left */}
-        <div style={{
-          position: 'absolute',
-          left: '8px',
-          top: '50%',
-          transform: 'translateY(-50%)',
-        }}>
-          {renderSpacingInput('marginLeft', marginLeft)}
-        </div>
+              {/* Margin Left */}
+              <div className="absolute" style={{ top: '50%', left: '4%', transform: 'translateY(-50%)' }}>
+                {renderSpacingInput('marginLeft', marginLeft)}
+              </div>
 
-        {/* Inner padding box */}
-        <div style={{
-          position: 'relative',
-          width: '100%',
-          border: '1px solid hsl(var(--border) / 0.2)',
-          borderRadius: '4px',
-          padding: '32px 24px',
-          background: 'hsl(var(--muted) / 0.03)',
-          minHeight: '80px',
-        }}>
-          {/* Padding Top */}
-          <div style={{
-            position: 'absolute',
-            top: '8px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-          }}>
-            {renderSpacingInput('paddingTop', paddingTop)}
-          </div>
+              {/* Padding Top */}
+              <div className="absolute" style={{ top: '28%', left: '50%', transform: 'translateX(-50%)' }}>
+                {renderSpacingInput('paddingTop', paddingTop)}
+              </div>
 
-          {/* Padding Right */}
-          <div style={{
-            position: 'absolute',
-            right: '8px',
-            top: '50%',
-            transform: 'translateY(-50%)',
-          }}>
-            {renderSpacingInput('paddingRight', paddingRight)}
-          </div>
+              {/* Padding Right */}
+              <div className="absolute" style={{ top: '50%', right: '20%', transform: 'translateY(-50%)' }}>
+                {renderSpacingInput('paddingRight', paddingRight)}
+              </div>
 
-          {/* Padding Bottom */}
-          <div style={{
-            position: 'absolute',
-            bottom: '8px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-          }}>
-            {renderSpacingInput('paddingBottom', paddingBottom)}
-          </div>
+              {/* Padding Bottom */}
+              <div className="absolute" style={{ bottom: '28%', left: '50%', transform: 'translateX(-50%)' }}>
+                {renderSpacingInput('paddingBottom', paddingBottom)}
+              </div>
 
-          {/* Padding Left */}
-          <div style={{
-            position: 'absolute',
-            left: '8px',
-            top: '50%',
-            transform: 'translateY(-50%)',
-          }}>
-            {renderSpacingInput('paddingLeft', paddingLeft)}
+              {/* Padding Left */}
+              <div className="absolute" style={{ top: '50%', left: '20%', transform: 'translateY(-50%)' }}>
+                {renderSpacingInput('paddingLeft', paddingLeft)}
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      </TooltipProvider>
     </div>
   );
 };
