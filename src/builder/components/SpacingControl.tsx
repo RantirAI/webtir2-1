@@ -296,6 +296,7 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
 
   const handlePopoverValueChange = (value: string) => {
     if (editingProperty) {
+      // Allow empty string for proper backspace behavior
       setEditingProperty({ ...editingProperty, value });
     }
   };
@@ -311,9 +312,12 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
       const isMargin = editingProperty.property.startsWith('margin');
       const shouldLinkAll = (isMargin && isMarginLinked) || (!isMargin && isPaddingLinked) || isShiftPressed;
       
+      // If value is empty, default to 0
+      const cleanValue = editingProperty.value.trim() === '' ? '0' : editingProperty.value;
+      
       const finalValue = editingProperty.unit === 'auto' 
         ? 'auto' 
-        : `${editingProperty.value}${editingProperty.unit}`;
+        : `${cleanValue}${editingProperty.unit}`;
       
       if (shouldLinkAll) {
         const propertyType = isMargin ? 'margin' : 'padding';
@@ -433,8 +437,8 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
                 </div>
                 <div className="flex gap-2">
                   <Input
-                    type="number"
-                    value={editingProperty?.value || '0'}
+                    type="text"
+                    value={editingProperty?.value ?? ''}
                     onChange={(e) => handlePopoverValueChange(e.target.value)}
                     onKeyDown={handleKeyDown}
                     className="flex-1"
@@ -474,7 +478,7 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
 
   return (
     <div className="space-y-2">
-      <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Padding & Margin</Label>
+      <Label className="text-xs font-medium text-muted-foreground tracking-wider">padding & margin</Label>
       
       <TooltipProvider delayDuration={300}>
         <div className="relative w-full" style={{ padding: '8px' }}>
