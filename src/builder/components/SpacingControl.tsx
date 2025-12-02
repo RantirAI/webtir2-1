@@ -441,6 +441,7 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
                     value={editingProperty?.value ?? ''}
                     onChange={(e) => handlePopoverValueChange(e.target.value)}
                     onKeyDown={handleKeyDown}
+                    onFocus={(e) => e.target.select()}
                     className="flex-1"
                     autoFocus
                     disabled={editingProperty?.unit === 'auto'}
