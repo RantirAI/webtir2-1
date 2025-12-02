@@ -3,7 +3,6 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Link2, Link2Off, AlignCenter } from 'lucide-react';
 import { useStyleStore } from '../store/useStyleStore';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
@@ -17,8 +16,8 @@ interface SpacingControlProps {
   paddingBottom?: string;
   paddingLeft?: string;
   onUpdate: (property: string, value: string) => void;
-  styleSourceIds: string[]; // Array of class IDs for this component
-  activeClassIndex: number | null; // Currently active class index (0 = primary, 1+ = combo)
+  styleSourceIds: string[];
+  activeClassIndex: number | null;
   isMarginLinked?: boolean;
   isPaddingLinked?: boolean;
   onMarginLinkChange?: (linked: boolean) => void;
@@ -43,7 +42,6 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
   onPaddingLinkChange,
 }) => {
   const { styleSources, styles, currentBreakpointId, currentPseudoState } = useStyleStore();
-  // Use controlled state if props are provided, otherwise use local state
   const [localIsMarginLinked, setLocalIsMarginLinked] = useState(false);
   const [localIsPaddingLinked, setLocalIsPaddingLinked] = useState(false);
   
@@ -65,6 +63,7 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
       setLocalIsPaddingLinked(value);
     }
   };
+  
   const [hoveredProperty, setHoveredProperty] = useState<string | null>(null);
   const [dragState, setDragState] = useState<{
     isDragging: boolean;
@@ -102,7 +101,6 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
     };
   }, []);
 
-  // Global drag handling
   useEffect(() => {
     if (!dragState?.isDragging) return;
 
@@ -118,7 +116,6 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
       const isMargin = dragState.property.startsWith('margin');
       const shouldLinkAll = (isMargin && isMarginLinked) || (!isMargin && isPaddingLinked) || e.shiftKey;
       
-      // If chainlink is active or Shift is pressed, update all sides
       if (shouldLinkAll) {
         const propertyType = isMargin ? 'margin' : 'padding';
         const sides = ['Top', 'Right', 'Bottom', 'Left'];
@@ -139,7 +136,6 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
       document.body.style.cursor = '';
     };
 
-    // Add listeners to document to catch all mouse movements
     document.addEventListener('mousemove', handleGlobalMouseMove, true);
     document.addEventListener('mouseup', handleGlobalMouseUp, true);
     
@@ -152,48 +148,41 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
       document.body.style.userSelect = '';
       document.body.style.cursor = '';
     };
-  }, [dragState, onUpdate]);
+  }, [dragState, onUpdate, isMarginLinked, isPaddingLinked]);
 
-  // Determine property color state (blue = active, yellow/orange = inherited, gray = default)
-  // STRICT RULE: Only show editable state for the LAST class in chain
   const getPropertyState = (property: string): { color: string; source: string; isEditable: boolean } => {
-    // If no classes exist, everything is gray/default
     if (!styleSourceIds || styleSourceIds.length === 0) {
       return { color: '#999', source: 'Not set (click to define)', isEditable: true };
     }
 
-    // Always check the LAST class in the chain (only editable one)
     const lastClassIndex = styleSourceIds.length - 1;
     const lastClassId = styleSourceIds[lastClassIndex];
     const breakpoint = currentBreakpointId || 'base';
     const state = currentPseudoState || 'default';
     
-    // Check if property is defined in the LAST (active) class
     const lastClassKey = `${lastClassId}:${breakpoint}:${state}:${property}`;
     if (styles[lastClassKey]) {
       const lastClassName = styleSources[lastClassId]?.name || lastClassId;
       return { 
-        color: '#3b82f6', // Blue for active (defined on last class)
+        color: '#3b82f6',
         source: `Active in Class ${lastClassIndex + 1} (.${lastClassName})`,
         isEditable: true 
       };
     }
 
-    // Check if property is inherited from previous classes
     for (let i = lastClassIndex - 1; i >= 0; i--) {
       const classId = styleSourceIds[i];
       const key = `${classId}:${breakpoint}:${state}:${property}`;
       if (styles[key]) {
         const className = styleSources[classId]?.name || classId;
         return { 
-          color: '#ea9005', // Orange for inherited - can be overridden in last class
+          color: '#ea9005',
           source: `Inherited from Class ${i + 1} (.${className}) - click to override in Class ${lastClassIndex + 1}`,
           isEditable: true
         };
       }
     }
 
-    // Not set in any class - can be defined in last class
     return { 
       color: '#999', 
       source: `Not set - click to define in Class ${lastClassIndex + 1}`, 
@@ -213,9 +202,7 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
   };
 
   const handleMouseDown = (e: React.MouseEvent, property: string, currentValue: string) => {
-    // Don't allow dragging for "auto" values
     if (currentValue === 'auto') {
-      // Just open the popover for editing
       const { num, unit } = parseValue(currentValue);
       setEditingProperty({
         property,
@@ -225,7 +212,6 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
       return;
     }
     
-    // Only handle left click
     if (e.button !== 0) return;
     
     e.preventDefault();
@@ -247,15 +233,12 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
         hasMoved = true;
       }
       
-      // Start drag if moved more than 5px in any direction
       if (!dragInitiated && (deltaX > 5 || deltaY > 5)) {
         dragInitiated = true;
         
-        // Remove initial listeners
         document.removeEventListener('mousemove', handleInitialMouseMove);
         document.removeEventListener('mouseup', handleInitialMouseUp);
         
-        // Set drag state which will trigger the global drag handler
         setDragState({
           isDragging: true,
           property,
@@ -270,7 +253,6 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
       const endTime = Date.now();
       const timeDiff = endTime - startTime;
       
-      // If it was a quick click without movement, open popover
       if (!dragInitiated && timeDiff < 300 && !hasMoved) {
         setEditingProperty({
           property,
@@ -283,7 +265,6 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
       document.removeEventListener('mouseup', handleInitialMouseUp);
     };
     
-    // Initial listeners to detect click vs drag
     document.addEventListener('mousemove', handleInitialMouseMove);
     document.addEventListener('mouseup', handleInitialMouseUp);
   };
@@ -305,12 +286,10 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
       const isMargin = editingProperty.property.startsWith('margin');
       const shouldLinkAll = (isMargin && isMarginLinked) || (!isMargin && isPaddingLinked) || isShiftPressed;
       
-      // Handle 'auto' unit separately
       const finalValue = editingProperty.unit === 'auto' 
         ? 'auto' 
         : `${editingProperty.value}${editingProperty.unit}`;
       
-      // If chainlink is active or Shift is pressed, update all sides
       if (shouldLinkAll) {
         const propertyType = isMargin ? 'margin' : 'padding';
         const sides = ['Top', 'Right', 'Bottom', 'Left'];
@@ -372,22 +351,19 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
                 }}
               >
                 <div style={{
-                  padding: '2px 6px',
+                  padding: '4px 8px',
                   fontSize: '11px',
-                  fontWeight: 600,
-                  color: propertyState.color,
+                  fontWeight: 500,
+                  color: 'hsl(var(--foreground) / 0.7)',
                   userSelect: 'none',
-                  minWidth: '28px',
+                  minWidth: '24px',
                   textAlign: 'center',
-                  transition: 'color 0.3s ease, background-color 0.3s ease, transform 0.15s ease',
-                  textDecoration: isHovered && !isDragging && !isOpen ? 'underline' : 'none',
-                  backgroundColor: isDragging 
-                    ? `${propertyState.color}15` 
-                    : isHovered && !isOpen 
-                    ? `${propertyState.color}0a` 
+                  transition: 'all 0.2s ease',
+                  backgroundColor: isHovered && !isDragging && !isOpen 
+                    ? 'hsl(var(--accent))' 
                     : 'transparent',
-                  borderRadius: '2px',
-                  transform: isHovered && !isDragging && !isOpen ? 'scale(1.05)' : 'scale(1)',
+                  borderRadius: '3px',
+                  cursor: 'pointer',
                 }}>
                   {value || '0'}
                 </div>
@@ -400,7 +376,6 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
           </Tooltip>
         </TooltipProvider>
         
-        {/* Popover rendered separately */}
         {isOpen && (
           <Popover 
             open={true} 
@@ -471,192 +446,122 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
     );
   };
 
-  // Determine link icon color based on active class
-  const linkIconColor = activeClassIndex === 0 ? '#3b82f6' : activeClassIndex !== null ? '#3b82f6' : '#999';
-
   return (
     <div style={{ 
       position: 'relative',
       width: '100%',
-      padding: '12px',
+      padding: '16px 12px',
     }}>
-      {/* SVG Background with Margin and Padding Visual */}
-      <svg width="100%" height="120" viewBox="0 0 216 120" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }}>
-        {/* Margin Area (Outer Box with Diagonal Pattern) */}
-        <mask id="mask0" style={{maskType: 'luminance'}} maskUnits="userSpaceOnUse" x="0" y="0" width="216" height="120">
-          <path d="M212 0H4C1.79 0 0 1.79 0 4V116C0 118.21 1.79 120 4 120H212C214.21 120 216 118.21 216 116V4C216 1.79 214.21 0 212 0Z" fill="white"/>
-        </mask>
-        <g mask="url(#mask0)">
-          <path d="M216 0H0L81.5 60H134.5L216 0Z" fill="#F8F8F8"/>
-          <path d="M216 120L134.5 60L216 0V120Z" fill="#F1F3F5"/>
-          <path d="M216 120H0L81.5 60H134.5L216 120Z" fill="#F8F8F8"/>
-          <path d="M0 0L81.5 60L0 120V0Z" fill="#F1F3F5"/>
-        </g>
-        <rect x="0.5" y="0.5" width="215" height="119" rx="3.5" stroke="#E6E6E6"/>
-        
-        {/* Padding Area (Inner Box) */}
-        <rect x="37.5" y="28.5" width="141" height="63" rx="3.5" fill="#F5F5F5" stroke="#E6E6E6"/>
-        <mask id="mask1" style={{maskType: 'luminance'}} maskUnits="userSpaceOnUse" x="40" y="31" width="136" height="58">
-          <path d="M175 31H41C40.45 31 40 31.45 40 32V88C40 88.55 40.45 89 41 89H175C175.55 89 176 88.55 176 88V32C176 31.45 175.55 31 175 31Z" fill="white"/>
-        </mask>
-        <g mask="url(#mask1)">
-          <path d="M216 0H0L81.5 60H134.5L216 0Z" fill="#FCFCFC"/>
-          <path d="M216 120L134.5 60L216 0V120Z" fill="#F8F8F8"/>
-          <path d="M216 120H0L81.5 60H134.5L216 120Z" fill="#FCFCFC"/>
-          <path d="M0 0L81.5 60L0 120V0Z" fill="#F8F8F8"/>
-        </g>
-        
-        {/* Content Box (Center) */}
-        <rect x="88.5" y="50.5" width="39" height="19" rx="2.5" fill="#FAFAFA" stroke="#E6E6E6"/>
-      </svg>
+      {/* Label */}
+      <div style={{
+        fontSize: '8px',
+        fontWeight: 600,
+        letterSpacing: '0.1em',
+        textTransform: 'uppercase',
+        color: 'hsl(var(--muted-foreground))',
+        marginBottom: '12px',
+      }}>
+        PADDING & MARGIN
+      </div>
 
-      {/* Interactive Spacing Inputs Overlaid on SVG */}
-      <div style={{ position: 'relative', width: '100%', height: '120px' }}>
-        {/* MARGIN Label with Chainlink - Inside outer box */}
-        <div style={{ 
-          position: 'absolute', 
-          top: '4px', 
-          left: '8px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '4px',
-          zIndex: 10
+      {/* Clean spacing box diagram */}
+      <div style={{
+        position: 'relative',
+        width: '100%',
+        border: '1px solid hsl(var(--border) / 0.3)',
+        borderRadius: '6px',
+        padding: '32px 24px',
+        background: 'hsl(var(--background))',
+      }}>
+        {/* Margin Top */}
+        <div style={{
+          position: 'absolute',
+          top: '8px',
+          left: '50%',
+          transform: 'translateX(-50%)',
         }}>
-          <span style={{ 
-            fontSize: '9px',
-            fontWeight: 600,
-            color: '#999',
-            textTransform: 'uppercase',
-            letterSpacing: '0.5px'
-          }}>MARGIN</span>
-          <button
-            onClick={() => setIsMarginLinked(!isMarginLinked)}
-            style={{
-              background: isMarginLinked ? '#3b82f6' : '#6b7280',
-              border: 'none',
-              borderRadius: '3px',
-              padding: '4px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              color: '#fff',
-              transition: 'all 0.2s ease'
-            }}
-            title={isMarginLinked ? "Unlink margins" : "Link all margins"}
-          >
-            {isMarginLinked ? <Link2 className="w-3 h-3" /> : <Link2Off className="w-3 h-3" />}
-          </button>
-        </div>
-
-        {/* Auto-Center Button - Top right of margin area */}
-        <TooltipProvider delayDuration={300}>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                onClick={() => {
-                  onUpdate('marginLeft', 'auto');
-                  onUpdate('marginRight', 'auto');
-                }}
-                style={{
-                  position: 'absolute',
-                  top: '4px',
-                  right: '8px',
-                  background: (marginLeft === 'auto' && marginRight === 'auto') ? '#3b82f6' : '#6b7280',
-                  border: 'none',
-                  borderRadius: '3px',
-                  padding: '4px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  color: '#fff',
-                  transition: 'all 0.2s ease',
-                  zIndex: 10
-                }}
-              >
-                <AlignCenter className="w-3 h-3" />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="left" className="text-xs">
-              <div className="font-medium">Auto Center</div>
-              <div className="text-muted-foreground">Set left/right margins to auto</div>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-
-        {/* PADDING Label with Chainlink - Inside inner box */}
-        <div style={{ 
-          position: 'absolute', 
-          top: '32px', 
-          left: '45px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '4px',
-          zIndex: 10
-        }}>
-          <span style={{ 
-            fontSize: '9px',
-            fontWeight: 600,
-            color: '#999',
-            textTransform: 'uppercase',
-            letterSpacing: '0.5px'
-          }}>PADDING</span>
-          <button
-            onClick={() => setIsPaddingLinked(!isPaddingLinked)}
-            style={{
-              background: isPaddingLinked ? '#3b82f6' : '#6b7280',
-              border: 'none',
-              borderRadius: '3px',
-              padding: '4px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              color: '#fff',
-              transition: 'all 0.2s ease'
-            }}
-            title={isPaddingLinked ? "Unlink paddings" : "Link all paddings"}
-          >
-            {isPaddingLinked ? <Link2 className="w-3 h-3" /> : <Link2Off className="w-3 h-3" />}
-          </button>
-        </div>
-
-        {/* Margin Top - In the margin area (between outer box top and padding box top at y=28.5) */}
-        <div style={{ position: 'absolute', top: '-6px', left: '50%', transform: 'translateX(-50%)' }}>
           {renderSpacingInput('marginTop', marginTop)}
         </div>
 
-        {/* Margin Right - In the margin area */}
-        <div style={{ position: 'absolute', top: '50px', right: '38px', transform: 'translateY(-50%)' }}>
+        {/* Margin Right */}
+        <div style={{
+          position: 'absolute',
+          right: '8px',
+          top: '50%',
+          transform: 'translateY(-50%)',
+        }}>
           {renderSpacingInput('marginRight', marginRight)}
         </div>
 
-        {/* Margin Bottom - In the margin area */}
-        <div style={{ position: 'absolute', bottom: '18px', left: '50%', transform: 'translateX(-50%)' }}>
+        {/* Margin Bottom */}
+        <div style={{
+          position: 'absolute',
+          bottom: '8px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+        }}>
           {renderSpacingInput('marginBottom', marginBottom)}
         </div>
 
-        {/* Margin Left - In the margin area */}
-        <div style={{ position: 'absolute', top: '50px', left: '38px', transform: 'translateY(-50%)' }}>
+        {/* Margin Left */}
+        <div style={{
+          position: 'absolute',
+          left: '8px',
+          top: '50%',
+          transform: 'translateY(-50%)',
+        }}>
           {renderSpacingInput('marginLeft', marginLeft)}
         </div>
 
-        {/* Padding Top - In the padding area (between padding box at y=28.5 and content box at y=50.5) */}
-        <div style={{ position: 'absolute', top: '19px', left: '50%', transform: 'translateX(-50%)' }}>
-          {renderSpacingInput('paddingTop', paddingTop)}
-        </div>
+        {/* Inner padding box */}
+        <div style={{
+          position: 'relative',
+          width: '100%',
+          border: '1px solid hsl(var(--border) / 0.2)',
+          borderRadius: '4px',
+          padding: '32px 24px',
+          background: 'hsl(var(--muted) / 0.03)',
+          minHeight: '80px',
+        }}>
+          {/* Padding Top */}
+          <div style={{
+            position: 'absolute',
+            top: '8px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+          }}>
+            {renderSpacingInput('paddingTop', paddingTop)}
+          </div>
 
-        {/* Padding Right - In the padding area */}
-        <div style={{ position: 'absolute', top: '50px', right: '76px', transform: 'translateY(-50%)' }}>
-          {renderSpacingInput('paddingRight', paddingRight)}
-        </div>
+          {/* Padding Right */}
+          <div style={{
+            position: 'absolute',
+            right: '8px',
+            top: '50%',
+            transform: 'translateY(-50%)',
+          }}>
+            {renderSpacingInput('paddingRight', paddingRight)}
+          </div>
 
-        {/* Padding Bottom - In the padding area */}
-        <div style={{ position: 'absolute', bottom: '44px', left: '50%', transform: 'translateX(-50%)' }}>
-          {renderSpacingInput('paddingBottom', paddingBottom)}
-        </div>
+          {/* Padding Bottom */}
+          <div style={{
+            position: 'absolute',
+            bottom: '8px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+          }}>
+            {renderSpacingInput('paddingBottom', paddingBottom)}
+          </div>
 
-        {/* Padding Left - In the padding area */}
-        <div style={{ position: 'absolute', top: '50px', left: '76px', transform: 'translateY(-50%)' }}>
-          {renderSpacingInput('paddingLeft', paddingLeft)}
+          {/* Padding Left */}
+          <div style={{
+            position: 'absolute',
+            left: '8px',
+            top: '50%',
+            transform: 'translateY(-50%)',
+          }}>
+            {renderSpacingInput('paddingLeft', paddingLeft)}
+          </div>
         </div>
       </div>
     </div>
