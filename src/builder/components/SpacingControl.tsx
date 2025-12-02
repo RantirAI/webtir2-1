@@ -1,11 +1,10 @@
-import React, { useState, useRef, useEffect } from "react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { useStyleStore } from "../store/useStyleStore";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { cn } from "@/lib/utils"; // Assuming you have a cn utility, if not, standard string interp works
+import React, { useState, useRef, useEffect } from 'react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { useStyleStore } from '../store/useStyleStore';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface SpacingControlProps {
   marginTop?: string;
@@ -26,14 +25,14 @@ interface SpacingControlProps {
 }
 
 export const SpacingControl: React.FC<SpacingControlProps> = ({
-  marginTop = "0",
-  marginRight = "0",
-  marginBottom = "0",
-  marginLeft = "0",
-  paddingTop = "0",
-  paddingRight = "0",
-  paddingBottom = "0",
-  paddingLeft = "0",
+  marginTop = '0',
+  marginRight = '0',
+  marginBottom = '0',
+  marginLeft = '0',
+  paddingTop = '0',
+  paddingRight = '0',
+  paddingBottom = '0',
+  paddingLeft = '0',
   onUpdate,
   styleSourceIds,
   activeClassIndex,
@@ -45,10 +44,10 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
   const { styleSources, styles, currentBreakpointId, currentPseudoState } = useStyleStore();
   const [localIsMarginLinked, setLocalIsMarginLinked] = useState(false);
   const [localIsPaddingLinked, setLocalIsPaddingLinked] = useState(false);
-
+  
   const isMarginLinked = externalIsMarginLinked !== undefined ? externalIsMarginLinked : localIsMarginLinked;
   const isPaddingLinked = externalIsPaddingLinked !== undefined ? externalIsPaddingLinked : localIsPaddingLinked;
-
+  
   const setIsMarginLinked = (value: boolean) => {
     if (onMarginLinkChange) {
       onMarginLinkChange(value);
@@ -56,7 +55,7 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
       setLocalIsMarginLinked(value);
     }
   };
-
+  
   const setIsPaddingLinked = (value: boolean) => {
     if (onPaddingLinkChange) {
       onPaddingLinkChange(value);
@@ -64,7 +63,7 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
       setLocalIsPaddingLinked(value);
     }
   };
-
+  
   const [hoveredProperty, setHoveredProperty] = useState<string | null>(null);
   const [dragState, setDragState] = useState<{
     isDragging: boolean;
@@ -82,23 +81,23 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Shift") {
+      if (e.key === 'Shift') {
         setIsShiftPressed(true);
       }
     };
 
     const handleKeyUp = (e: KeyboardEvent) => {
-      if (e.key === "Shift") {
+      if (e.key === 'Shift') {
         setIsShiftPressed(false);
       }
     };
 
-    window.addEventListener("keydown", handleKeyDown);
-    window.addEventListener("keyup", handleKeyUp);
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
 
     return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-      window.removeEventListener("keyup", handleKeyUp);
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
     };
   }, []);
 
@@ -107,21 +106,21 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
 
     const handleGlobalMouseMove = (e: MouseEvent) => {
       if (!dragState) return;
-
+      
       e.preventDefault();
       e.stopPropagation();
-
+      
       const deltaY = dragState.startY - e.clientY;
       const newValue = Math.max(0, dragState.startValue + Math.round(deltaY));
-
-      const isMargin = dragState.property.startsWith("margin");
+      
+      const isMargin = dragState.property.startsWith('margin');
       const shouldLinkAll = (isMargin && isMarginLinked) || (!isMargin && isPaddingLinked) || e.shiftKey;
-
+      
       if (shouldLinkAll) {
-        const propertyType = isMargin ? "margin" : "padding";
-        const sides = ["Top", "Right", "Bottom", "Left"];
-
-        sides.forEach((side) => {
+        const propertyType = isMargin ? 'margin' : 'padding';
+        const sides = ['Top', 'Right', 'Bottom', 'Left'];
+        
+        sides.forEach(side => {
           onUpdate(`${propertyType}${side}`, `${newValue}${dragState.unit}`);
         });
       } else {
@@ -133,41 +132,41 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
       e.preventDefault();
       e.stopPropagation();
       setDragState(null);
-      document.body.style.userSelect = "";
-      document.body.style.cursor = "";
+      document.body.style.userSelect = '';
+      document.body.style.cursor = '';
     };
 
-    document.addEventListener("mousemove", handleGlobalMouseMove, true);
-    document.addEventListener("mouseup", handleGlobalMouseUp, true);
-
-    document.body.style.userSelect = "none";
-    document.body.style.cursor = "ns-resize";
+    document.addEventListener('mousemove', handleGlobalMouseMove, true);
+    document.addEventListener('mouseup', handleGlobalMouseUp, true);
+    
+    document.body.style.userSelect = 'none';
+    document.body.style.cursor = 'ns-resize';
 
     return () => {
-      document.removeEventListener("mousemove", handleGlobalMouseMove, true);
-      document.removeEventListener("mouseup", handleGlobalMouseUp, true);
-      document.body.style.userSelect = "";
-      document.body.style.cursor = "";
+      document.removeEventListener('mousemove', handleGlobalMouseMove, true);
+      document.removeEventListener('mouseup', handleGlobalMouseUp, true);
+      document.body.style.userSelect = '';
+      document.body.style.cursor = '';
     };
   }, [dragState, onUpdate, isMarginLinked, isPaddingLinked]);
 
   const getPropertyState = (property: string): { color: string; source: string; isEditable: boolean } => {
     if (!styleSourceIds || styleSourceIds.length === 0) {
-      return { color: "#999", source: "Not set (click to define)", isEditable: true };
+      return { color: '#999', source: 'Not set (click to define)', isEditable: true };
     }
 
     const lastClassIndex = styleSourceIds.length - 1;
     const lastClassId = styleSourceIds[lastClassIndex];
-    const breakpoint = currentBreakpointId || "base";
-    const state = currentPseudoState || "default";
-
+    const breakpoint = currentBreakpointId || 'base';
+    const state = currentPseudoState || 'default';
+    
     const lastClassKey = `${lastClassId}:${breakpoint}:${state}:${property}`;
     if (styles[lastClassKey]) {
       const lastClassName = styleSources[lastClassId]?.name || lastClassId;
-      return {
-        color: "#3b82f6",
+      return { 
+        color: '#3b82f6',
         source: `Active in Class ${lastClassIndex + 1} (.${lastClassName})`,
-        isEditable: true,
+        isEditable: true 
       };
     }
 
@@ -176,34 +175,34 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
       const key = `${classId}:${breakpoint}:${state}:${property}`;
       if (styles[key]) {
         const className = styleSources[classId]?.name || classId;
-        return {
-          color: "#ea9005",
+        return { 
+          color: '#ea9005',
           source: `Inherited from Class ${i + 1} (.${className}) - click to override in Class ${lastClassIndex + 1}`,
-          isEditable: true,
+          isEditable: true
         };
       }
     }
 
-    return {
-      color: "#999",
-      source: `Not set - click to define in Class ${lastClassIndex + 1}`,
-      isEditable: true,
+    return { 
+      color: '#999', 
+      source: `Not set - click to define in Class ${lastClassIndex + 1}`, 
+      isEditable: true 
     };
   };
 
   const parseValue = (value: string): { num: number; unit: string } => {
-    if (value === "auto") {
-      return { num: 0, unit: "auto" };
+    if (value === 'auto') {
+      return { num: 0, unit: 'auto' };
     }
     const match = value.match(/^(-?\d+(?:\.\d+)?)(px|rem|em|%|vh|vw)?$/);
     if (match) {
-      return { num: parseFloat(match[1]), unit: match[2] || "px" };
+      return { num: parseFloat(match[1]), unit: match[2] || 'px' };
     }
-    return { num: 0, unit: "px" };
+    return { num: 0, unit: 'px' };
   };
 
   const handleMouseDown = (e: React.MouseEvent, property: string, currentValue: string) => {
-    if (currentValue === "auto") {
+    if (currentValue === 'auto') {
       const { num, unit } = parseValue(currentValue);
       setEditingProperty({
         property,
@@ -212,34 +211,34 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
       });
       return;
     }
-
+    
     if (e.button !== 0) return;
-
+    
     e.preventDefault();
     e.stopPropagation();
-
+    
     const startX = e.clientX;
     const startY = e.clientY;
     const startTime = Date.now();
     let hasMoved = false;
     let dragInitiated = false;
-
+    
     const { num, unit } = parseValue(currentValue);
-
+    
     const handleInitialMouseMove = (moveEvent: MouseEvent) => {
       const deltaX = Math.abs(moveEvent.clientX - startX);
       const deltaY = Math.abs(moveEvent.clientY - startY);
-
+      
       if (deltaX > 0 || deltaY > 0) {
         hasMoved = true;
       }
-
+      
       if (!dragInitiated && (deltaX > 5 || deltaY > 5)) {
         dragInitiated = true;
-
-        document.removeEventListener("mousemove", handleInitialMouseMove);
-        document.removeEventListener("mouseup", handleInitialMouseUp);
-
+        
+        document.removeEventListener('mousemove', handleInitialMouseMove);
+        document.removeEventListener('mouseup', handleInitialMouseUp);
+        
         setDragState({
           isDragging: true,
           property,
@@ -249,11 +248,11 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
         });
       }
     };
-
+    
     const handleInitialMouseUp = () => {
       const endTime = Date.now();
       const timeDiff = endTime - startTime;
-
+      
       if (!dragInitiated && timeDiff < 300 && !hasMoved) {
         setEditingProperty({
           property,
@@ -261,13 +260,13 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
           unit,
         });
       }
-
-      document.removeEventListener("mousemove", handleInitialMouseMove);
-      document.removeEventListener("mouseup", handleInitialMouseUp);
+      
+      document.removeEventListener('mousemove', handleInitialMouseMove);
+      document.removeEventListener('mouseup', handleInitialMouseUp);
     };
-
-    document.addEventListener("mousemove", handleInitialMouseMove);
-    document.addEventListener("mouseup", handleInitialMouseUp);
+    
+    document.addEventListener('mousemove', handleInitialMouseMove);
+    document.addEventListener('mouseup', handleInitialMouseUp);
   };
 
   const handlePopoverValueChange = (value: string) => {
@@ -284,16 +283,18 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
 
   const handlePopoverClose = (applyChanges: boolean = true) => {
     if (editingProperty && applyChanges) {
-      const isMargin = editingProperty.property.startsWith("margin");
+      const isMargin = editingProperty.property.startsWith('margin');
       const shouldLinkAll = (isMargin && isMarginLinked) || (!isMargin && isPaddingLinked) || isShiftPressed;
-
-      const finalValue = editingProperty.unit === "auto" ? "auto" : `${editingProperty.value}${editingProperty.unit}`;
-
+      
+      const finalValue = editingProperty.unit === 'auto' 
+        ? 'auto' 
+        : `${editingProperty.value}${editingProperty.unit}`;
+      
       if (shouldLinkAll) {
-        const propertyType = isMargin ? "margin" : "padding";
-        const sides = ["Top", "Right", "Bottom", "Left"];
-
-        sides.forEach((side) => {
+        const propertyType = isMargin ? 'margin' : 'padding';
+        const sides = ['Top', 'Right', 'Bottom', 'Left'];
+        
+        sides.forEach(side => {
           onUpdate(`${propertyType}${side}`, finalValue);
         });
       } else {
@@ -304,23 +305,23 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && editingProperty) {
+    if (e.key === 'Enter' && editingProperty) {
       handlePopoverClose(true);
-    } else if (e.key === "Escape") {
+    } else if (e.key === 'Escape') {
       setEditingProperty(null);
     }
   };
 
   const getPropertyLabel = (property: string): string => {
     const labels: Record<string, string> = {
-      marginTop: "Margin Top",
-      marginRight: "Margin Right",
-      marginBottom: "Margin Bottom",
-      marginLeft: "Margin Left",
-      paddingTop: "Padding Top",
-      paddingRight: "Padding Right",
-      paddingBottom: "Padding Bottom",
-      paddingLeft: "Padding Left",
+      marginTop: 'Margin Top',
+      marginRight: 'Margin Right',
+      marginBottom: 'Margin Bottom',
+      marginLeft: 'Margin Left',
+      paddingTop: 'Padding Top',
+      paddingRight: 'Padding Right',
+      paddingBottom: 'Padding Bottom',
+      paddingLeft: 'Padding Left',
     };
     return labels[property] || property;
   };
@@ -331,8 +332,7 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
     const isHovered = hoveredProperty === property;
     const inputRef = useRef<HTMLDivElement>(null);
     const propertyState = getPropertyState(property);
-
-    // Clean styling matching screenshot
+    
     return (
       <>
         <TooltipProvider delayDuration={300}>
@@ -344,30 +344,28 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
                 onMouseLeave={() => setHoveredProperty(null)}
                 onMouseDown={(e) => handleMouseDown(e, property, value)}
                 onContextMenu={(e) => e.preventDefault()}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  cursor: isDragging ? "ns-resize" : "pointer",
-                  position: "relative",
+                style={{ 
+                  display: 'inline-block', 
+                  cursor: isDragging ? 'ns-resize' : 'pointer',
+                  position: 'relative'
                 }}
               >
-                <div
-                  style={{
-                    padding: "2px 4px",
-                    fontSize: "11px",
-                    lineHeight: "1",
-                    fontWeight: 500,
-                    color: "hsl(var(--foreground))",
-                    userSelect: "none",
-                    minWidth: "20px",
-                    textAlign: "center",
-                    transition: "all 0.1s ease",
-                    backgroundColor: isHovered && !isDragging && !isOpen ? "hsl(var(--accent) / 0.5)" : "transparent",
-                    borderRadius: "2px",
-                  }}
-                >
-                  {value || "0"}
+                <div style={{
+                  padding: '4px 8px',
+                  fontSize: '11px',
+                  fontWeight: 500,
+                  color: 'hsl(var(--foreground) / 0.7)',
+                  userSelect: 'none',
+                  minWidth: '24px',
+                  textAlign: 'center',
+                  transition: 'all 0.2s ease',
+                  backgroundColor: isHovered && !isDragging && !isOpen 
+                    ? 'hsl(var(--accent))' 
+                    : 'transparent',
+                  borderRadius: '3px',
+                  cursor: 'pointer',
+                }}>
+                  {value || '0'}
                 </div>
               </div>
             </TooltipTrigger>
@@ -377,10 +375,10 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
-
+        
         {isOpen && (
-          <Popover
-            open={true}
+          <Popover 
+            open={true} 
             onOpenChange={(open) => {
               if (!open) {
                 handlePopoverClose(true);
@@ -389,10 +387,10 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
             modal={true}
           >
             <PopoverTrigger asChild>
-              <div style={{ position: "absolute", left: 0, top: 0, width: 0, height: 0, pointerEvents: "none" }} />
+              <div style={{ position: 'absolute', left: 0, top: 0, width: 0, height: 0, pointerEvents: 'none' }} />
             </PopoverTrigger>
-            <PopoverContent
-              className="w-64 p-4 bg-background border shadow-lg"
+            <PopoverContent 
+              className="w-64 p-4 bg-background border shadow-lg" 
               align="start"
               side="right"
               sideOffset={8}
@@ -403,21 +401,24 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <Label className="text-sm font-medium">{getPropertyLabel(property)}</Label>
-                  {(isShiftPressed || (property.startsWith("margin") ? isMarginLinked : isPaddingLinked)) && (
+                  {(isShiftPressed || (property.startsWith('margin') ? isMarginLinked : isPaddingLinked)) && (
                     <span className="text-xs text-muted-foreground">All sides</span>
                   )}
                 </div>
                 <div className="flex gap-2">
                   <Input
                     type="number"
-                    value={editingProperty?.value || "0"}
+                    value={editingProperty?.value || '0'}
                     onChange={(e) => handlePopoverValueChange(e.target.value)}
                     onKeyDown={handleKeyDown}
                     className="flex-1"
                     autoFocus
-                    disabled={editingProperty?.unit === "auto"}
+                    disabled={editingProperty?.unit === 'auto'}
                   />
-                  <Select value={editingProperty?.unit || "px"} onValueChange={handlePopoverUnitChange}>
+                   <Select
+                    value={editingProperty?.unit || 'px'}
+                    onValueChange={handlePopoverUnitChange}
+                  >
                     <SelectTrigger className="w-20">
                       <SelectValue />
                     </SelectTrigger>
@@ -434,7 +435,7 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
                 </div>
                 {!isMarginLinked && !isPaddingLinked && (
                   <p className="text-xs text-muted-foreground">
-                    Hold Shift to change all {property.startsWith("margin") ? "margins" : "paddings"}
+                    Hold Shift to change all {property.startsWith('margin') ? 'margins' : 'paddings'}
                   </p>
                 )}
               </div>
@@ -446,86 +447,120 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
   };
 
   return (
-    <div className="flex flex-col gap-3 p-4 w-full">
-      {/* Header Label */}
-      <div className="text-[10px] font-bold tracking-widest text-muted-foreground/70 uppercase">Spacing</div>
+    <div style={{ 
+      position: 'relative',
+      width: '100%',
+      padding: '16px 12px',
+    }}>
+      {/* Label */}
+      <div style={{
+        fontSize: '8px',
+        fontWeight: 600,
+        letterSpacing: '0.1em',
+        textTransform: 'uppercase',
+        color: 'hsl(var(--muted-foreground))',
+        marginBottom: '12px',
+      }}>
+        PADDING & MARGIN
+      </div>
 
-      <div className="relative w-full">
-        <div className="text-[9px] font-semibold text-muted-foreground/50 uppercase tracking-wider mb-2">
-          Padding & Margin
+      {/* Clean spacing box diagram */}
+      <div style={{
+        position: 'relative',
+        width: '100%',
+        border: '1px solid hsl(var(--border) / 0.3)',
+        borderRadius: '6px',
+        padding: '32px 24px',
+        background: 'hsl(var(--background))',
+      }}>
+        {/* Margin Top */}
+        <div style={{
+          position: 'absolute',
+          top: '8px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+        }}>
+          {renderSpacingInput('marginTop', marginTop)}
         </div>
 
-        {/* Main Box Container */}
-        <div
-          className="relative w-full h-[140px] border border-border/40 rounded-sm bg-background/20 select-none overflow-hidden"
-          style={{ background: "linear-gradient(to bottom right, rgba(255,255,255,0.05), rgba(0,0,0,0.02))" }}
-        >
-          {/* SVG Overlay for diagonal connecting lines */}
-          <svg className="absolute inset-0 w-full h-full pointer-events-none stroke-border/30" style={{ zIndex: 0 }}>
-            {/* Lines connecting outer corners to inner corners */}
-            {/* Top Left */}
-            <line x1="0" y1="0" x2="48" y2="34" strokeWidth="1" />
-            {/* Top Right */}
-            <line x1="100%" y1="0" x2="calc(100% - 48px)" y2="34" strokeWidth="1" />
-            {/* Bottom Left */}
-            <line x1="0" y1="100%" x2="48" y2="calc(100% - 34px)" strokeWidth="1" />
-            {/* Bottom Right */}
-            <line x1="100%" y1="100%" x2="calc(100% - 48px)" y2="calc(100% - 34px)" strokeWidth="1" />
-          </svg>
+        {/* Margin Right */}
+        <div style={{
+          position: 'absolute',
+          right: '8px',
+          top: '50%',
+          transform: 'translateY(-50%)',
+        }}>
+          {renderSpacingInput('marginRight', marginRight)}
+        </div>
 
-          {/* MARGIN LABELS (Text inside the outer trapezoids) */}
-          <div className="absolute top-1 left-2 text-[8px] text-muted-foreground/40 font-mono pointer-events-none">
-            MARGIN
+        {/* Margin Bottom */}
+        <div style={{
+          position: 'absolute',
+          bottom: '8px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+        }}>
+          {renderSpacingInput('marginBottom', marginBottom)}
+        </div>
+
+        {/* Margin Left */}
+        <div style={{
+          position: 'absolute',
+          left: '8px',
+          top: '50%',
+          transform: 'translateY(-50%)',
+        }}>
+          {renderSpacingInput('marginLeft', marginLeft)}
+        </div>
+
+        {/* Inner padding box */}
+        <div style={{
+          position: 'relative',
+          width: '100%',
+          border: '1px solid hsl(var(--border) / 0.2)',
+          borderRadius: '4px',
+          padding: '32px 24px',
+          background: 'hsl(var(--muted) / 0.03)',
+          minHeight: '80px',
+        }}>
+          {/* Padding Top */}
+          <div style={{
+            position: 'absolute',
+            top: '8px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+          }}>
+            {renderSpacingInput('paddingTop', paddingTop)}
           </div>
 
-          {/* Margin Top */}
-          <div className="absolute top-2 left-1/2 -translate-x-1/2 z-10">
-            {renderSpacingInput("marginTop", marginTop)}
+          {/* Padding Right */}
+          <div style={{
+            position: 'absolute',
+            right: '8px',
+            top: '50%',
+            transform: 'translateY(-50%)',
+          }}>
+            {renderSpacingInput('paddingRight', paddingRight)}
           </div>
 
-          {/* Margin Right */}
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 z-10">
-            {renderSpacingInput("marginRight", marginRight)}
+          {/* Padding Bottom */}
+          <div style={{
+            position: 'absolute',
+            bottom: '8px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+          }}>
+            {renderSpacingInput('paddingBottom', paddingBottom)}
           </div>
 
-          {/* Margin Bottom */}
-          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-10">
-            {renderSpacingInput("marginBottom", marginBottom)}
-          </div>
-
-          {/* Margin Left */}
-          <div className="absolute left-3 top-1/2 -translate-y-1/2 z-10">
-            {renderSpacingInput("marginLeft", marginLeft)}
-          </div>
-
-          {/* Inner Padding Box */}
-          <div className="absolute inset-x-12 inset-y-[34px] border border-border/40 bg-muted/5 rounded-[2px] z-0">
-            <div className="absolute top-1 left-2 text-[8px] text-muted-foreground/40 font-mono pointer-events-none">
-              PADDING
-            </div>
-
-            {/* Padding Top */}
-            <div className="absolute top-1 left-1/2 -translate-x-1/2 z-10">
-              {renderSpacingInput("paddingTop", paddingTop)}
-            </div>
-
-            {/* Padding Right */}
-            <div className="absolute right-2 top-1/2 -translate-y-1/2 z-10">
-              {renderSpacingInput("paddingRight", paddingRight)}
-            </div>
-
-            {/* Padding Bottom */}
-            <div className="absolute bottom-1 left-1/2 -translate-x-1/2 z-10">
-              {renderSpacingInput("paddingBottom", paddingBottom)}
-            </div>
-
-            {/* Padding Left */}
-            <div className="absolute left-2 top-1/2 -translate-y-1/2 z-10">
-              {renderSpacingInput("paddingLeft", paddingLeft)}
-            </div>
-
-            {/* Central Pill/Element */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-1.5 bg-border/20 rounded-full border border-border/10" />
+          {/* Padding Left */}
+          <div style={{
+            position: 'absolute',
+            left: '8px',
+            top: '50%',
+            transform: 'translateY(-50%)',
+          }}>
+            {renderSpacingInput('paddingLeft', paddingLeft)}
           </div>
         </div>
       </div>
