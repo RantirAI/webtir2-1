@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useBuilderStore } from '../store/useBuilderStore';
 import { useStyleStore } from '../store/useStyleStore';
-import { PseudoState } from '../store/types';
+import { PseudoState, ComponentType } from '../store/types';
+import { componentSupportsPropertyGroup, showBackgroundImageControl } from '../utils/componentPropertyMap';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Paintbrush, Plus, Square, Type, Heading as HeadingIcon, MousePointerClick, Image as ImageIcon, Link as LinkIcon, X, ChevronDown, ChevronRight, Settings as SettingsIcon, Zap, Database, RotateCcw, Info, AlignLeft, AlignCenter, AlignRight, AlignJustify, ArrowRight, ArrowDown, ArrowLeft, ArrowUp, Box, LayoutList, LayoutGrid, Minus, EyeOff, FileText, Home, Copy, Trash2, Pencil } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
@@ -797,6 +798,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({
             </div>
 
             {/* Layout */}
+            {componentSupportsPropertyGroup(selectedInstance.type as ComponentType, 'layout') && (
             <AccordionSection title="Layout" section="layout" properties={['display', 'flexDirection', 'justifyContent', 'alignItems', 'flexWrap', 'gap', 'gridTemplateColumns', 'gridTemplateRows', 'gridAutoFlow', 'placeItems', 'placeContent']}>
               <div className="Col" style={{ gap: 'var(--space-2)' }}>
           {/* Display Type with Icon Buttons */}
@@ -1123,8 +1125,10 @@ export const StylePanel: React.FC<StylePanelProps> = ({
           )}
         </div>
             </AccordionSection>
+            )}
 
             {/* Space */}
+            {componentSupportsPropertyGroup(selectedInstance.type as ComponentType, 'space') && (
             <AccordionSection title="Space" section="space" properties={['marginTop', 'marginRight', 'marginBottom', 'marginLeft', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft']}>
         <SpacingControl
           marginTop={computedStyles.marginTop}
@@ -1144,8 +1148,10 @@ export const StylePanel: React.FC<StylePanelProps> = ({
           onPaddingLinkChange={setIsPaddingLinked}
         />
             </AccordionSection>
+            )}
 
             {/* Size */}
+            {componentSupportsPropertyGroup(selectedInstance.type as ComponentType, 'size') && (
             <AccordionSection title="Size" section="size" properties={['width', 'height', 'minWidth', 'minHeight', 'maxWidth', 'maxHeight']}>
         <div className="Col" style={{ gap: '4px' }}>
           {/* Width and Height */}
@@ -1227,8 +1233,10 @@ export const StylePanel: React.FC<StylePanelProps> = ({
           </div>
         </div>
             </AccordionSection>
+            )}
 
             {/* Position */}
+            {componentSupportsPropertyGroup(selectedInstance.type as ComponentType, 'position') && (
             <AccordionSection title="Position" section="position" properties={['position', 'top', 'right', 'bottom', 'left', 'zIndex', 'transform']}>
         <div className="Col" style={{ gap: '6px' }}>
           {/* Position Type */}
@@ -1649,8 +1657,10 @@ export const StylePanel: React.FC<StylePanelProps> = ({
           )}
         </div>
             </AccordionSection>
+            )}
 
             {/* Typography */}
+            {componentSupportsPropertyGroup(selectedInstance.type as ComponentType, 'typography') && (
             <AccordionSection title="Typography" section="typography" properties={['fontFamily', 'fontSize', 'fontWeight', 'lineHeight', 'letterSpacing', 'textAlign', 'textDecoration', 'textTransform', 'color', 'textIndent', 'wordBreak', 'whiteSpace', 'textOverflow']}>
         <div className="Col" style={{ gap: '8px' }}>
           {/* Heading Tag Selector - Only for Heading components */}
@@ -1855,8 +1865,10 @@ export const StylePanel: React.FC<StylePanelProps> = ({
           </div>
         </div>
             </AccordionSection>
+            )}
 
             {/* Backgrounds */}
+            {componentSupportsPropertyGroup(selectedInstance.type as ComponentType, 'backgrounds') && (
             <AccordionSection title="Backgrounds" section="backgrounds" properties={['backgroundColor', 'backgroundImage', 'backgroundSize', 'backgroundPosition', 'backgroundRepeat', 'backgroundClip']}>
         <div className="Col" style={{ gap: '8px' }}>
           {/* Color and Image side by side */}
@@ -1965,8 +1977,10 @@ export const StylePanel: React.FC<StylePanelProps> = ({
           </div>
         </div>
             </AccordionSection>
+            )}
 
             {/* Borders */}
+            {componentSupportsPropertyGroup(selectedInstance.type as ComponentType, 'borders') && (
             <AccordionSection title="Borders" section="borders" properties={['borderWidth', 'borderStyle', 'borderColor', 'borderRadius', 'borderTopLeftRadius', 'borderTopRightRadius', 'borderBottomRightRadius', 'borderBottomLeftRadius']}>
         <div className="Col" style={{ gap: '4px' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '26px 1fr', gap: '2px', alignItems: 'center' }}>
@@ -2015,8 +2029,10 @@ export const StylePanel: React.FC<StylePanelProps> = ({
           </div>
         </div>
             </AccordionSection>
+            )}
 
             {/* Effects */}
+            {componentSupportsPropertyGroup(selectedInstance.type as ComponentType, 'effects') && (
             <AccordionSection title="Effects" section="effects" properties={['opacity', 'mixBlendMode', 'boxShadow', 'filter', 'backdropFilter', 'transform', 'transition', 'cursor', 'outline', 'outlineWidth', 'outlineStyle', 'outlineColor']}>
         <div className="Col" style={{ gap: '4px' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '26px 1fr', gap: '2px', alignItems: 'center' }}>
@@ -2115,7 +2131,8 @@ export const StylePanel: React.FC<StylePanelProps> = ({
             </select>
           </div>
         </div>
-      </AccordionSection>
+            </AccordionSection>
+            )}
           </div>
         </TabsContent>
 
