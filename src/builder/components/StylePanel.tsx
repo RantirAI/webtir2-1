@@ -3109,8 +3109,8 @@ export const StylePanel: React.FC<StylePanelProps> = ({
                     </div>
                   )}
 
-                  {/* Link/Button Settings */}
-                  {(selectedInstance.type === 'Link' || selectedInstance.type === 'Button') && (
+                  {/* Link Settings */}
+                  {selectedInstance.type === 'Link' && (
                     <div className="space-y-2">
                       <div className="space-y-1">
                         <label className="text-[10px] text-muted-foreground">URL</label>
@@ -3136,6 +3136,98 @@ export const StylePanel: React.FC<StylePanelProps> = ({
                           <option value="_self">Same Window</option>
                           <option value="_blank">New Tab</option>
                         </select>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Button Settings */}
+                  {selectedInstance.type === 'Button' && (
+                    <div className="space-y-2">
+                      <div className="space-y-1">
+                        <label className="text-[10px] text-muted-foreground">Button Text</label>
+                        <Input
+                          type="text"
+                          placeholder="Button"
+                          value={selectedInstance.props.children || selectedInstance.props.text || ''}
+                          onChange={(e) => {
+                            updateInstance(selectedInstance.id, {
+                              props: { ...selectedInstance.props, children: e.target.value, text: e.target.value }
+                            });
+                          }}
+                          className="h-5 text-[10px]"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] text-muted-foreground">Button Type</label>
+                        <select
+                          className="w-full h-5 px-1 text-[10px] rounded border border-border bg-background"
+                          value={selectedInstance.props.variant || 'primary'}
+                          onChange={(e) => updateInstance(selectedInstance.id, { props: { ...selectedInstance.props, variant: e.target.value }})}
+                        >
+                          <option value="primary">Primary</option>
+                          <option value="secondary">Secondary</option>
+                          <option value="outline">Outline</option>
+                          <option value="ghost">Ghost</option>
+                          <option value="link">Link</option>
+                        </select>
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] text-muted-foreground">URL (optional)</label>
+                        <Input
+                          type="text"
+                          placeholder="https://..."
+                          value={selectedInstance.props.href || selectedInstance.props.url || ''}
+                          onChange={(e) => {
+                            updateInstance(selectedInstance.id, {
+                              props: { ...selectedInstance.props, href: e.target.value, url: e.target.value }
+                            });
+                          }}
+                          className="h-5 text-[10px]"
+                        />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          id="button-new-tab"
+                          checked={selectedInstance.props.target === '_blank'}
+                          onChange={(e) => updateInstance(selectedInstance.id, { 
+                            props: { ...selectedInstance.props, target: e.target.checked ? '_blank' : '_self' }
+                          })}
+                          className="h-3 w-3"
+                        />
+                        <label htmlFor="button-new-tab" className="text-[10px] text-muted-foreground">Open in new tab</label>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="space-y-1">
+                          <label className="text-[10px] text-muted-foreground">Icon Left</label>
+                          <select
+                            className="w-full h-5 px-1 text-[10px] rounded border border-border bg-background"
+                            value={selectedInstance.props.iconLeft || ''}
+                            onChange={(e) => updateInstance(selectedInstance.id, { props: { ...selectedInstance.props, iconLeft: e.target.value }})}
+                          >
+                            <option value="">None</option>
+                            <option value="chevron-left">Chevron Left</option>
+                            <option value="arrow-left">Arrow Left</option>
+                            <option value="plus">Plus</option>
+                            <option value="check">Check</option>
+                            <option value="download">Download</option>
+                          </select>
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] text-muted-foreground">Icon Right</label>
+                          <select
+                            className="w-full h-5 px-1 text-[10px] rounded border border-border bg-background"
+                            value={selectedInstance.props.iconRight || ''}
+                            onChange={(e) => updateInstance(selectedInstance.id, { props: { ...selectedInstance.props, iconRight: e.target.value }})}
+                          >
+                            <option value="">None</option>
+                            <option value="chevron-right">Chevron Right</option>
+                            <option value="arrow-right">Arrow Right</option>
+                            <option value="external-link">External Link</option>
+                            <option value="plus">Plus</option>
+                            <option value="x">Close</option>
+                          </select>
+                        </div>
                       </div>
                     </div>
                   )}
