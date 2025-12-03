@@ -5,6 +5,12 @@ import { ChevronDown } from 'lucide-react';
 import { EditableText } from '../components/EditableText';
 import { useBuilderStore } from '../store/useBuilderStore';
 
+interface DropdownItem {
+  label: string;
+  href: string;
+  id?: string;
+}
+
 interface DropdownPrimitiveProps {
   instance: ComponentInstance;
   children?: React.ReactNode;
@@ -38,10 +44,12 @@ export const DropdownPrimitive: React.FC<DropdownPrimitiveProps> = ({
   const triggerText = instance.props?.triggerText || 'Dropdown';
   const openOnHover = dropdownConfig.openOnHover ?? instance.props?.openOnHover ?? false;
   const closeDelay = dropdownConfig.closeDelayMs ?? instance.props?.closeDelay ?? 0;
-  const menuItems = instance.props?.menuItems || [
-    { label: 'Option 1', href: '#' },
-    { label: 'Option 2', href: '#' },
-    { label: 'Option 3', href: '#' },
+  const closeOnSelect = dropdownConfig.closeOnSelect ?? instance.props?.closeOnSelect ?? true;
+  const menuPosition = dropdownConfig.menuPosition ?? instance.props?.menuPosition ?? 'left';
+  const menuItems: DropdownItem[] = instance.props?.menuItems || [
+    { label: 'Option 1', href: '#', id: '1' },
+    { label: 'Option 2', href: '#', id: '2' },
+    { label: 'Option 3', href: '#', id: '3' },
   ];
 
   // In builder mode, use dropdownConfig.isOpen to show/hide for styling
@@ -117,6 +125,19 @@ export const DropdownPrimitive: React.FC<DropdownPrimitiveProps> = ({
     });
   };
 
+  const handleItemClick = (e: React.MouseEvent, item: DropdownItem) => {
+    if (isPreviewMode) {
+      e.stopPropagation();
+      if (closeOnSelect) {
+        setIsOpen(false);
+      }
+      // Navigate if href exists
+      if (item.href && item.href !== '#') {
+        window.location.href = item.href;
+      }
+    }
+  };
+
   // Get class names from style sources
   const classNames = (instance.styleSourceIds || [])
     .map((id) => useStyleStore.getState().styleSources[id]?.name)
@@ -139,6 +160,34 @@ export const DropdownPrimitive: React.FC<DropdownPrimitiveProps> = ({
   // Add dropdown-specific data attributes for runtime
   if (openOnHover) customAttrs['data-open-on-hover'] = 'true';
   if (closeDelay > 0) customAttrs['data-close-delay'] = String(closeDelay);
+  customAttrs['data-menu-position'] = menuPosition;
+
+  // Menu position classes
+  const menuPositionClass = menuPosition === 'right' ? 'right-0' : 'left-0';
+
+  // Get trigger styles from props (for customization)
+  const triggerBgColor = instance.props?.triggerBgColor || '';
+  const triggerTextColor = instance.props?.triggerTextColor || '';
+  const triggerBorderRadius = instance.props?.triggerBorderRadius || '';
+  
+  // Get menu styles from props
+  const menuBgColor = instance.props?.menuBgColor || '';
+  const menuBorderRadius = instance.props?.menuBorderRadius || '';
+  const menuShadow = instance.props?.menuShadow || '';
+  const itemPadding = instance.props?.itemPadding || '';
+  const itemHoverBgColor = instance.props?.itemHoverBgColor || '';
+
+  const triggerStyles: React.CSSProperties = {
+    ...(triggerBgColor && { backgroundColor: triggerBgColor }),
+    ...(triggerTextColor && { color: triggerTextColor }),
+    ...(triggerBorderRadius && { borderRadius: triggerBorderRadius }),
+  };
+
+  const menuStyles: React.CSSProperties = {
+    ...(menuBgColor && { backgroundColor: menuBgColor }),
+    ...(menuBorderRadius && { borderRadius: menuBorderRadius }),
+    ...(menuShadow && { boxShadow: menuShadow }),
+  };
 
   return (
     <div
@@ -161,6 +210,7 @@ export const DropdownPrimitive: React.FC<DropdownPrimitiveProps> = ({
         type="button"
         onClick={handleToggle}
         className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-md border border-border bg-background text-foreground hover:bg-accent transition-colors"
+        style={triggerStyles}
         aria-expanded={showMenu}
         aria-haspopup="true"
       >
@@ -181,7 +231,8 @@ export const DropdownPrimitive: React.FC<DropdownPrimitiveProps> = ({
       {/* Dropdown Menu */}
       {showMenu && (
         <div 
-          className="absolute top-full left-0 mt-1 min-w-[180px] rounded-md border border-border bg-background shadow-lg z-50"
+          className={`absolute top-full ${menuPositionClass} mt-1 min-w-[180px] rounded-md border border-border bg-background shadow-lg z-50`}
+          style={menuStyles}
           data-dropdown-menu
           role="menu"
         >
@@ -191,20 +242,22 @@ export const DropdownPrimitive: React.FC<DropdownPrimitiveProps> = ({
               children
             ) : (
               /* Otherwise render default menu items */
-              menuItems.map((item: { label: string; href: string }, index: number) => (
+              menuItems.map((item: DropdownItem, index: number) => (
                 <div
-                  key={index}
-                  className="block px-4 py-2 text-sm text-foreground hover:bg-accent cursor-pointer"
+                  key={item.id || index}
+                  className="block px-4 py-2 text-sm text-foreground hover:bg-accent cursor-pointer transition-colors"
+                  style={{
+                    ...(itemPadding && { padding: itemPadding }),
+                  }}
                   role="menuitem"
-                  onClick={(e) => {
-                    if (isPreviewMode) {
-                      e.stopPropagation();
-                      setIsOpen(false);
-                      // Navigate if href exists
-                      if (item.href && item.href !== '#') {
-                        window.location.href = item.href;
-                      }
+                  onClick={(e) => handleItemClick(e, item)}
+                  onMouseEnter={(e) => {
+                    if (itemHoverBgColor) {
+                      (e.currentTarget as HTMLElement).style.backgroundColor = itemHoverBgColor;
                     }
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.currentTarget as HTMLElement).style.backgroundColor = '';
                   }}
                 >
                   {isPreviewMode ? (
