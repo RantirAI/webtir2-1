@@ -704,7 +704,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({
             </div>
 
             {/* Quick Content Editor for Button/Dropdown - in Style tab for easy access */}
-            {(selectedInstance.type === 'Button' || selectedInstance.type === 'Dropdown') && (
+            {(selectedInstance.type === 'Button' || selectedInstance.type === 'Dropdown' || selectedInstance.dropdownConfig || selectedInstance.props?.triggerText !== undefined) && (
               <div style={{ 
                 padding: 'var(--space-2) var(--space-3)',
                 borderBottom: '1px solid hsl(var(--border))',
