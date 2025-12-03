@@ -703,48 +703,6 @@ export const StylePanel: React.FC<StylePanelProps> = ({
               </div>
             </div>
 
-            {/* Content Section for Button/Dropdown - styled like Layout section */}
-            {(selectedInstance.type === 'Button' || selectedInstance.type === 'Dropdown' || selectedInstance.dropdownConfig || selectedInstance.props?.triggerText !== undefined) && (
-              <div className="Section">
-                <div 
-                  className="SectionHeader"
-                  style={{ cursor: 'default' }}
-                >
-                  <span className="SectionTitle">Content</span>
-                </div>
-                <div className="SectionContent">
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                      <label className="text-[10px] text-muted-foreground" style={{ minWidth: '50px' }}>
-                        {selectedInstance.type === 'Button' ? 'Text' : 'Label'}
-                      </label>
-                      <Input
-                        type="text"
-                        placeholder={selectedInstance.type === 'Button' ? 'Button' : 'Dropdown'}
-                        value={
-                          selectedInstance.type === 'Button' 
-                            ? (selectedInstance.props.children || selectedInstance.props.text || '')
-                            : (selectedInstance.props?.triggerText || 'Dropdown')
-                        }
-                        onChange={(e) => {
-                          if (selectedInstance.type === 'Button') {
-                            updateInstance(selectedInstance.id, {
-                              props: { ...selectedInstance.props, children: e.target.value, text: e.target.value }
-                            });
-                          } else {
-                            updateInstance(selectedInstance.id, {
-                              props: { ...selectedInstance.props, triggerText: e.target.value }
-                            });
-                          }
-                        }}
-                        className="h-6 text-[10px] flex-1"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
               {/* Class Selector - Multi-class support */}
             <div style={{ padding: 'var(--space-3)', borderBottom: '1px solid hsl(var(--border))' }}>
               {/* Row 1: Auto-class preview and Reset button */}
@@ -838,6 +796,48 @@ export const StylePanel: React.FC<StylePanelProps> = ({
                 </div>
               )}
             </div>
+
+            {/* Content Section for Button/Dropdown - after class selector, before Layout */}
+            {(selectedInstance.type === 'Button' || selectedInstance.type === 'Dropdown' || selectedInstance.dropdownConfig || selectedInstance.props?.triggerText !== undefined) && (
+              <div className="Section">
+                <div 
+                  className="SectionHeader"
+                  style={{ cursor: 'default' }}
+                >
+                  <span className="SectionTitle">Content</span>
+                </div>
+                <div className="SectionContent">
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                      <label className="text-[10px] text-muted-foreground" style={{ minWidth: '50px' }}>
+                        {selectedInstance.type === 'Button' ? 'Text' : 'Label'}
+                      </label>
+                      <Input
+                        type="text"
+                        placeholder={selectedInstance.type === 'Button' ? 'Button' : 'Dropdown'}
+                        value={
+                          selectedInstance.type === 'Button' 
+                            ? (selectedInstance.props.children || selectedInstance.props.text || '')
+                            : (selectedInstance.props?.triggerText || 'Dropdown')
+                        }
+                        onChange={(e) => {
+                          if (selectedInstance.type === 'Button') {
+                            updateInstance(selectedInstance.id, {
+                              props: { ...selectedInstance.props, children: e.target.value, text: e.target.value }
+                            });
+                          } else {
+                            updateInstance(selectedInstance.id, {
+                              props: { ...selectedInstance.props, triggerText: e.target.value }
+                            });
+                          }
+                        }}
+                        className="h-6 text-[10px] flex-1 text-foreground bg-background"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Layout */}
             {componentSupportsPropertyGroup(selectedInstance.type as ComponentType, 'layout') && (
