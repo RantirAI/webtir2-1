@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { ComponentInstance } from '../store/types';
 import { useStyleStore } from '../store/useStyleStore';
+import { useBuilderStore } from '../store/useBuilderStore';
 import { ChevronLeft, ChevronRight, ArrowLeft, ArrowRight, ExternalLink, Download, Plus, Minus, Check, X, LucideIcon } from 'lucide-react';
 
 interface ButtonPrimitiveProps {
@@ -40,6 +41,11 @@ export const ButtonPrimitive: React.FC<ButtonPrimitiveProps> = ({
   isPreviewMode,
   dataBindingProps = {},
 }) => {
+  const updateInstance = useBuilderStore((state) => state.updateInstance);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editValue, setEditValue] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
+
   // Extract non-style dataBindingProps
   const { style: dataBindingStyle, ...restDataBindingProps } = dataBindingProps;
 
@@ -57,6 +63,46 @@ export const ButtonPrimitive: React.FC<ButtonPrimitiveProps> = ({
     .filter(Boolean)
     .join(' ');
 
+  // Handle inline editing
+  useEffect(() => {
+    if (isEditing && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [isEditing]);
+
+  useEffect(() => {
+    setEditValue(buttonText);
+  }, [buttonText]);
+
+  const handleDoubleClick = (e: React.MouseEvent) => {
+    if (isPreviewMode) return;
+    e.stopPropagation();
+    e.preventDefault();
+    setIsEditing(true);
+  };
+
+  const handleBlur = () => {
+    setIsEditing(false);
+    if (editValue.trim()) {
+      updateInstance(instance.id, {
+        props: { ...instance.props, children: editValue, text: editValue }
+      });
+    } else {
+      setEditValue(buttonText);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleBlur();
+    } else if (e.key === 'Escape') {
+      setEditValue(buttonText);
+      setIsEditing(false);
+    }
+  };
+
   // Render icon component
   const renderIcon = (iconName: string, position: 'left' | 'right') => {
     if (!iconName) return null;
@@ -65,16 +111,41 @@ export const ButtonPrimitive: React.FC<ButtonPrimitiveProps> = ({
     return (
       <IconComponent 
         size={14} 
-        className={position === 'left' ? 'mr-1.5' : 'ml-1.5'} 
+        className={position === 'left' ? 'mr-1.5 flex-shrink-0' : 'ml-1.5 flex-shrink-0'} 
       />
     );
   };
+
+  // Button text content (inline editable)
+  const textContent = isEditing ? (
+    <input
+      ref={inputRef}
+      type="text"
+      value={editValue}
+      onChange={(e) => setEditValue(e.target.value)}
+      onBlur={handleBlur}
+      onKeyDown={handleKeyDown}
+      onClick={(e) => e.stopPropagation()}
+      style={{
+        all: 'unset',
+        width: '100%',
+        minWidth: '20px',
+        textAlign: 'inherit',
+        font: 'inherit',
+        color: 'inherit',
+        background: 'transparent',
+        cursor: 'text',
+      }}
+    />
+  ) : (
+    <span onDoubleClick={handleDoubleClick}>{buttonText}</span>
+  );
 
   // Button content
   const buttonContent = (
     <>
       {renderIcon(iconLeft, 'left')}
-      <span>{buttonText}</span>
+      {textContent}
       {renderIcon(iconRight, 'right')}
     </>
   );
@@ -89,6 +160,7 @@ export const ButtonPrimitive: React.FC<ButtonPrimitiveProps> = ({
       display: 'inline-flex',
       alignItems: 'center',
       justifyContent: 'center',
+      cursor: isEditing ? 'text' : 'pointer',
       ...dataBindingStyle 
     },
     onMouseEnter: isPreviewMode ? undefined : (e: React.MouseEvent) => {
@@ -122,10 +194,12 @@ export const ButtonPrimitive: React.FC<ButtonPrimitiveProps> = ({
     <button
       {...commonProps}
       onClick={isPreviewMode ? undefined : (e) => {
+        if (isEditing) return;
         e.stopPropagation();
         e.preventDefault();
         onSelect?.();
       }}
+      onDoubleClick={handleDoubleClick}
     >
       {buttonContent}
     </button>
