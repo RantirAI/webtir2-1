@@ -107,14 +107,12 @@ function instanceToReact(instance: ComponentInstance, indent: number = 0): strin
   
   if (!meta) return '';
 
-  // Determine tag - Button becomes anchor if it has href
-  const buttonHasLink = instance.type === 'Button' && (instance.props.href || instance.props.url);
   const tag = instance.type === 'Div' ? 'div' : 
               instance.type === 'Container' ? 'div' :
               instance.type === 'Section' ? (instance.props.htmlTag || 'section') :
               instance.type === 'Text' ? 'p' :
               instance.type === 'Heading' ? (instance.props.level || 'h2') :
-              instance.type === 'Button' ? (buttonHasLink ? 'a' : 'button') :
+              instance.type === 'Button' ? 'button' :
               instance.type === 'Image' ? 'img' :
               instance.type === 'Link' ? 'a' : 'div';
 
@@ -138,13 +136,6 @@ function instanceToReact(instance: ComponentInstance, indent: number = 0): strin
   }
   if (instance.type === 'Link' && instance.props.href) {
     props.push(`href="${instance.props.href}"`);
-  }
-  if (instance.type === 'Button' && buttonHasLink) {
-    props.push(`href="${instance.props.href || instance.props.url}"`);
-    if (instance.props.target === '_blank') {
-      props.push('target="_blank"');
-      props.push('rel="noopener noreferrer"');
-    }
   }
 
   const propsString = props.length > 0 ? ' ' + props.join(' ') : '';
@@ -199,14 +190,12 @@ function instanceToHTML(instance: ComponentInstance, indent: number = 0): string
   
   if (!meta) return '';
 
-  // Determine tag - Button becomes anchor if it has href
-  const buttonHasLink = instance.type === 'Button' && (instance.props.href || instance.props.url);
   const tag = instance.type === 'Div' ? 'div' : 
               instance.type === 'Container' ? 'div' :
               instance.type === 'Section' ? (instance.props.htmlTag || 'section') :
               instance.type === 'Text' ? 'p' :
               instance.type === 'Heading' ? (instance.props.level || 'h2') :
-              instance.type === 'Button' ? (buttonHasLink ? 'a' : 'button') :
+              instance.type === 'Button' ? 'button' :
               instance.type === 'Image' ? 'img' :
               instance.type === 'Link' ? 'a' :
               instance.type === 'Video' ? 'video' :
@@ -233,13 +222,6 @@ function instanceToHTML(instance: ComponentInstance, indent: number = 0): string
   }
   if (instance.type === 'Link' && instance.props.href) {
     attrs.push(`href="${instance.props.href}"`);
-  }
-  if (instance.type === 'Button' && buttonHasLink) {
-    attrs.push(`href="${instance.props.href || instance.props.url}"`);
-    if (instance.props.target === '_blank') {
-      attrs.push('target="_blank"');
-      attrs.push('rel="noopener noreferrer"');
-    }
   }
   if (instance.type === 'Video' && instance.props.src) {
     attrs.push(`src="${instance.props.src}"`);

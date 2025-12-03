@@ -73,19 +73,8 @@ function instanceToHTML(instance: ComponentInstance, indent: number = 1): string
       tag = instance.props.level || 'h2';
       break;
     case 'Button':
-      // If Button has href, render as anchor
-      if (instance.props.href || instance.props.url) {
-        tag = 'a';
-        const href = instance.props.href || instance.props.url || '#';
-        const target = instance.props.target || '_self';
-        attrs = ` href="${href}"${target === '_blank' ? ' target="_blank" rel="noopener noreferrer"' : ''}`;
-      } else {
-        tag = 'button';
-      }
-      break;
     case 'FormButton':
       tag = 'button';
-      attrs = ` type="${instance.props.type || 'button'}"`;
       break;
     case 'Image':
       tag = 'img';
