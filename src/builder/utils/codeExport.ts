@@ -99,7 +99,7 @@ function instanceToHTML(instance: ComponentInstance, indent: number = 1): string
       attrs = ` href="${instance.props.href || '#'}"`;
       break;
     case 'Section':
-      tag = 'section';
+      tag = instance.props.htmlTag || 'section';
       break;
     case 'TextInput':
       tag = 'input';
