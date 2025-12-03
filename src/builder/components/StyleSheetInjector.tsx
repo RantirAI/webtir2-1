@@ -3,7 +3,15 @@ import { useStyleStore } from '../store/useStyleStore';
 import { PseudoState } from '../store/types';
 import { compileMetadataToCSS } from '../utils/cssCompiler';
 
+// Map custom property names to valid CSS property names
+const propertyAliases: Record<string, string> = {
+  backgroundGradient: 'background-image',
+};
+
 function toCssProp(prop: string) {
+  if (propertyAliases[prop]) {
+    return propertyAliases[prop];
+  }
   return prop.replace(/([A-Z])/g, '-$1').toLowerCase();
 }
 

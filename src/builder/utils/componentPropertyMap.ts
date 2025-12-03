@@ -245,7 +245,7 @@ export const propertyGroupProperties: Record<StylePropertyGroup, string[]> = {
   size: ['width', 'height', 'minWidth', 'minHeight', 'maxWidth', 'maxHeight', 'overflow', 'objectFit', 'objectPosition'],
   position: ['position', 'top', 'right', 'bottom', 'left', 'zIndex', 'transform'],
   typography: ['fontFamily', 'fontSize', 'fontWeight', 'lineHeight', 'letterSpacing', 'textAlign', 'color', 'textDecoration', 'textTransform', 'whiteSpace'],
-  backgrounds: ['backgroundColor', 'backgroundImage', 'backgroundSize', 'backgroundPosition', 'backgroundRepeat'],
+  backgrounds: ['backgroundColor', 'backgroundGradient', 'backgroundImage', 'backgroundSize', 'backgroundPosition', 'backgroundRepeat'],
   borders: ['borderWidth', 'borderColor', 'borderStyle', 'borderRadius', 'borderTopWidth', 'borderRightWidth', 'borderBottomWidth', 'borderLeftWidth', 'borderTopLeftRadius', 'borderTopRightRadius', 'borderBottomLeftRadius', 'borderBottomRightRadius'],
   effects: ['boxShadow', 'opacity', 'cursor'],
 };

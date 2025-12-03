@@ -3,13 +3,22 @@ import { ComponentInstance, StyleDeclaration } from '../store/types';
 import { useStyleStore } from '../store/useStyleStore';
 import { componentRegistry } from '../primitives/registry';
 
+// Map custom property names to valid CSS property names
+const propertyAliases: Record<string, string> = {
+  backgroundGradient: 'background-image',
+};
+
 // Convert style object to CSS string
 function styleObjectToCSS(styles: StyleDeclaration): string {
   return Object.entries(styles)
     .filter(([_, value]) => value && value !== 'initial' && value !== 'inherit')
     .map(([property, value]) => {
-      // Convert camelCase to kebab-case
-      const cssProperty = property.replace(/([A-Z])/g, '-$1').toLowerCase();
+      // Check for property alias first
+      let cssProperty = propertyAliases[property];
+      if (!cssProperty) {
+        // Convert camelCase to kebab-case
+        cssProperty = property.replace(/([A-Z])/g, '-$1').toLowerCase();
+      }
       return `  ${cssProperty}: ${value};`;
     })
     .join('\n');
