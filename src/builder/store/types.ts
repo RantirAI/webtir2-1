@@ -182,6 +182,8 @@ export interface DropdownConfig {
   isOpen?: boolean;       // Show/hide menu in builder
   openOnHover?: boolean;  // Open menu on hover
   closeDelayMs?: number;  // Close delay in milliseconds
+  closeOnSelect?: boolean; // Close menu when item is selected
+  menuPosition?: 'left' | 'right'; // Menu alignment
 }
 
 export interface ComponentInstance extends ComponentDataBinding {

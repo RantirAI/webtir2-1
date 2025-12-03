@@ -2643,9 +2643,23 @@ export const StylePanel: React.FC<StylePanelProps> = ({
 
                   {/* Dropdown Settings */}
                   {selectedInstance.type === 'Dropdown' && (
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-1">
-                        <span className="text-[10px] text-muted-foreground w-14">Menu</span>
+                    <div className="space-y-3">
+                      {/* Label Text */}
+                      <div className="space-y-1">
+                        <label className="text-[10px] text-muted-foreground">Label Text</label>
+                        <Input
+                          type="text"
+                          value={selectedInstance.props?.triggerText || 'Dropdown'}
+                          onChange={(e) => updateInstance(selectedInstance.id, { 
+                            props: { ...selectedInstance.props, triggerText: e.target.value }
+                          })}
+                          className="h-6 text-[10px]"
+                        />
+                      </div>
+
+                      {/* Menu Visibility (Builder) */}
+                      <div className="space-y-1">
+                        <label className="text-[10px] text-muted-foreground">Menu (Builder)</label>
                         <ToggleGroup 
                           type="single" 
                           value={selectedInstance.dropdownConfig?.isOpen ? 'show' : 'hide'}
@@ -2654,38 +2668,257 @@ export const StylePanel: React.FC<StylePanelProps> = ({
                               dropdownConfig: { ...selectedInstance.dropdownConfig, isOpen: value === 'show' }
                             });
                           }}
-                          className="h-6"
+                          className="w-full h-6"
                         >
-                          <ToggleGroupItem value="show" className="text-[10px] h-6 px-2">Show</ToggleGroupItem>
-                          <ToggleGroupItem value="hide" className="text-[10px] h-6 px-2">Hide</ToggleGroupItem>
+                          <ToggleGroupItem value="show" className="flex-1 text-[10px] h-6 px-2">Show</ToggleGroupItem>
+                          <ToggleGroupItem value="hide" className="flex-1 text-[10px] h-6 px-2">Hide</ToggleGroupItem>
                         </ToggleGroup>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <span className="text-[10px] text-muted-foreground w-14">Delay</span>
-                        <Input
-                          type="number"
-                          value={selectedInstance.dropdownConfig?.closeDelayMs || 0}
-                          onChange={(e) => {
-                            updateInstance(selectedInstance.id, {
-                              dropdownConfig: { ...selectedInstance.dropdownConfig, closeDelayMs: parseInt(e.target.value) || 0 }
-                            });
+
+                      {/* Menu Position */}
+                      <div className="space-y-1">
+                        <label className="text-[10px] text-muted-foreground">Menu Position</label>
+                        <ToggleGroup 
+                          type="single" 
+                          value={selectedInstance.dropdownConfig?.menuPosition || 'left'}
+                          onValueChange={(value) => {
+                            if (value) {
+                              updateInstance(selectedInstance.id, {
+                                dropdownConfig: { ...selectedInstance.dropdownConfig, menuPosition: value as 'left' | 'right' }
+                              });
+                            }
                           }}
-                          className="h-5 w-16 text-[10px]"
-                        />
-                        <span className="text-[9px] text-muted-foreground">ms</span>
+                          className="w-full h-6"
+                        >
+                          <ToggleGroupItem value="left" className="flex-1 text-[10px] h-6 px-2">Left</ToggleGroupItem>
+                          <ToggleGroupItem value="right" className="flex-1 text-[10px] h-6 px-2">Right</ToggleGroupItem>
+                        </ToggleGroup>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <Checkbox
-                          id="open-on-hover"
-                          checked={selectedInstance.dropdownConfig?.openOnHover || false}
-                          onCheckedChange={(checked) => {
-                            updateInstance(selectedInstance.id, {
-                              dropdownConfig: { ...selectedInstance.dropdownConfig, openOnHover: !!checked }
-                            });
-                          }}
-                          className="h-3 w-3"
-                        />
-                        <label htmlFor="open-on-hover" className="text-[10px]">Open on hover</label>
+
+                      {/* Behavior */}
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] text-muted-foreground">Behavior</label>
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-1.5">
+                            <Checkbox
+                              id="open-on-hover"
+                              checked={selectedInstance.dropdownConfig?.openOnHover || false}
+                              onCheckedChange={(checked) => {
+                                updateInstance(selectedInstance.id, {
+                                  dropdownConfig: { ...selectedInstance.dropdownConfig, openOnHover: !!checked }
+                                });
+                              }}
+                              className="h-3 w-3"
+                            />
+                            <label htmlFor="open-on-hover" className="text-[10px]">Open on hover</label>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <Checkbox
+                              id="close-on-select"
+                              checked={selectedInstance.dropdownConfig?.closeOnSelect !== false}
+                              onCheckedChange={(checked) => {
+                                updateInstance(selectedInstance.id, {
+                                  dropdownConfig: { ...selectedInstance.dropdownConfig, closeOnSelect: !!checked }
+                                });
+                              }}
+                              className="h-3 w-3"
+                            />
+                            <label htmlFor="close-on-select" className="text-[10px]">Close on select</label>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Close Delay */}
+                      <div className="space-y-1">
+                        <label className="text-[10px] text-muted-foreground">Close Delay</label>
+                        <div className="flex items-center gap-1">
+                          <Input
+                            type="number"
+                            value={selectedInstance.dropdownConfig?.closeDelayMs || 0}
+                            onChange={(e) => {
+                              updateInstance(selectedInstance.id, {
+                                dropdownConfig: { ...selectedInstance.dropdownConfig, closeDelayMs: parseInt(e.target.value) || 0 }
+                              });
+                            }}
+                            className="h-5 w-16 text-[10px]"
+                          />
+                          <span className="text-[9px] text-muted-foreground">ms</span>
+                        </div>
+                      </div>
+
+                      {/* Menu Items */}
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between">
+                          <label className="text-[10px] text-muted-foreground">Menu Items</label>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => {
+                              const currentItems = selectedInstance.props?.menuItems || [];
+                              const newItem = { 
+                                label: `Option ${currentItems.length + 1}`, 
+                                href: '#', 
+                                id: String(Date.now()) 
+                              };
+                              updateInstance(selectedInstance.id, {
+                                props: { ...selectedInstance.props, menuItems: [...currentItems, newItem] }
+                              });
+                            }}
+                            className="h-5 px-1.5 text-[9px]"
+                          >
+                            <Plus className="w-3 h-3 mr-0.5" /> Add
+                          </Button>
+                        </div>
+                        <div className="space-y-1 max-h-[150px] overflow-y-auto">
+                          {(selectedInstance.props?.menuItems || []).map((item: { label: string; href: string; id?: string }, index: number) => (
+                            <div key={item.id || index} className="flex items-center gap-1 p-1.5 rounded border border-border bg-muted/30">
+                              <div className="flex-1 space-y-1">
+                                <Input
+                                  type="text"
+                                  placeholder="Label"
+                                  value={item.label}
+                                  onChange={(e) => {
+                                    const items = [...(selectedInstance.props?.menuItems || [])];
+                                    items[index] = { ...items[index], label: e.target.value };
+                                    updateInstance(selectedInstance.id, {
+                                      props: { ...selectedInstance.props, menuItems: items }
+                                    });
+                                  }}
+                                  className="h-5 text-[9px]"
+                                />
+                                <Input
+                                  type="text"
+                                  placeholder="URL (e.g. /page or https://...)"
+                                  value={item.href}
+                                  onChange={(e) => {
+                                    const items = [...(selectedInstance.props?.menuItems || [])];
+                                    items[index] = { ...items[index], href: e.target.value };
+                                    updateInstance(selectedInstance.id, {
+                                      props: { ...selectedInstance.props, menuItems: items }
+                                    });
+                                  }}
+                                  className="h-5 text-[9px]"
+                                />
+                              </div>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => {
+                                  const items = [...(selectedInstance.props?.menuItems || [])];
+                                  items.splice(index, 1);
+                                  updateInstance(selectedInstance.id, {
+                                    props: { ...selectedInstance.props, menuItems: items }
+                                  });
+                                }}
+                                className="h-5 w-5 p-0 text-destructive hover:text-destructive"
+                              >
+                                <X className="w-3 h-3" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <Separator className="my-2" />
+
+                      {/* Trigger Styling */}
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-medium text-foreground">Trigger Styling</label>
+                        <div className="grid grid-cols-2 gap-1">
+                          <div className="space-y-0.5">
+                            <label className="text-[9px] text-muted-foreground">Background</label>
+                            <ColorPicker
+                              value={selectedInstance.props?.triggerBgColor || 'transparent'}
+                              onChange={(val) => updateInstance(selectedInstance.id, {
+                                props: { ...selectedInstance.props, triggerBgColor: val }
+                              })}
+                            />
+                          </div>
+                          <div className="space-y-0.5">
+                            <label className="text-[9px] text-muted-foreground">Text Color</label>
+                            <ColorPicker
+                              value={selectedInstance.props?.triggerTextColor || ''}
+                              onChange={(val) => updateInstance(selectedInstance.id, {
+                                props: { ...selectedInstance.props, triggerTextColor: val }
+                              })}
+                            />
+                          </div>
+                        </div>
+                        <div className="space-y-0.5">
+                          <label className="text-[9px] text-muted-foreground">Border Radius</label>
+                          <Input
+                            type="text"
+                            placeholder="6px"
+                            value={selectedInstance.props?.triggerBorderRadius || ''}
+                            onChange={(e) => updateInstance(selectedInstance.id, {
+                              props: { ...selectedInstance.props, triggerBorderRadius: e.target.value }
+                            })}
+                            className="h-5 text-[9px]"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Menu Styling */}
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-medium text-foreground">Menu Styling</label>
+                        <div className="grid grid-cols-2 gap-1">
+                          <div className="space-y-0.5">
+                            <label className="text-[9px] text-muted-foreground">Background</label>
+                            <ColorPicker
+                              value={selectedInstance.props?.menuBgColor || ''}
+                              onChange={(val) => updateInstance(selectedInstance.id, {
+                                props: { ...selectedInstance.props, menuBgColor: val }
+                              })}
+                            />
+                          </div>
+                          <div className="space-y-0.5">
+                            <label className="text-[9px] text-muted-foreground">Hover Color</label>
+                            <ColorPicker
+                              value={selectedInstance.props?.itemHoverBgColor || ''}
+                              onChange={(val) => updateInstance(selectedInstance.id, {
+                                props: { ...selectedInstance.props, itemHoverBgColor: val }
+                              })}
+                            />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-1">
+                          <div className="space-y-0.5">
+                            <label className="text-[9px] text-muted-foreground">Border Radius</label>
+                            <Input
+                              type="text"
+                              placeholder="6px"
+                              value={selectedInstance.props?.menuBorderRadius || ''}
+                              onChange={(e) => updateInstance(selectedInstance.id, {
+                                props: { ...selectedInstance.props, menuBorderRadius: e.target.value }
+                              })}
+                              className="h-5 text-[9px]"
+                            />
+                          </div>
+                          <div className="space-y-0.5">
+                            <label className="text-[9px] text-muted-foreground">Item Padding</label>
+                            <Input
+                              type="text"
+                              placeholder="8px 16px"
+                              value={selectedInstance.props?.itemPadding || ''}
+                              onChange={(e) => updateInstance(selectedInstance.id, {
+                                props: { ...selectedInstance.props, itemPadding: e.target.value }
+                              })}
+                              className="h-5 text-[9px]"
+                            />
+                          </div>
+                        </div>
+                        <div className="space-y-0.5">
+                          <label className="text-[9px] text-muted-foreground">Box Shadow</label>
+                          <Input
+                            type="text"
+                            placeholder="0 4px 12px rgba(0,0,0,0.15)"
+                            value={selectedInstance.props?.menuShadow || ''}
+                            onChange={(e) => updateInstance(selectedInstance.id, {
+                              props: { ...selectedInstance.props, menuShadow: e.target.value }
+                            })}
+                            className="h-5 text-[9px]"
+                          />
+                        </div>
                       </div>
                     </div>
                   )}
