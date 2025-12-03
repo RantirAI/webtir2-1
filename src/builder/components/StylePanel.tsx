@@ -703,6 +703,42 @@ export const StylePanel: React.FC<StylePanelProps> = ({
               </div>
             </div>
 
+            {/* Quick Content Editor for Button/Dropdown - in Style tab for easy access */}
+            {(selectedInstance.type === 'Button' || selectedInstance.type === 'Dropdown') && (
+              <div style={{ 
+                padding: 'var(--space-2) var(--space-3)',
+                borderBottom: '1px solid hsl(var(--border))',
+                background: 'hsl(var(--muted) / 0.3)'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                  <label className="text-[10px] text-muted-foreground whitespace-nowrap">
+                    {selectedInstance.type === 'Button' ? 'Button Text' : 'Label'}
+                  </label>
+                  <Input
+                    type="text"
+                    placeholder={selectedInstance.type === 'Button' ? 'Button' : 'Dropdown'}
+                    value={
+                      selectedInstance.type === 'Button' 
+                        ? (selectedInstance.props.children || selectedInstance.props.text || '')
+                        : (selectedInstance.props?.triggerText || 'Dropdown')
+                    }
+                    onChange={(e) => {
+                      if (selectedInstance.type === 'Button') {
+                        updateInstance(selectedInstance.id, {
+                          props: { ...selectedInstance.props, children: e.target.value, text: e.target.value }
+                        });
+                      } else {
+                        updateInstance(selectedInstance.id, {
+                          props: { ...selectedInstance.props, triggerText: e.target.value }
+                        });
+                      }
+                    }}
+                    className="h-6 text-[10px] flex-1"
+                  />
+                </div>
+              </div>
+            )}
+
               {/* Class Selector - Multi-class support */}
             <div style={{ padding: 'var(--space-3)', borderBottom: '1px solid hsl(var(--border))' }}>
               {/* Row 1: Auto-class preview and Reset button */}
