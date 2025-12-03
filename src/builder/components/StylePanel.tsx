@@ -1869,10 +1869,10 @@ export const StylePanel: React.FC<StylePanelProps> = ({
 
             {/* Backgrounds */}
             {componentSupportsPropertyGroup(selectedInstance.type as ComponentType, 'backgrounds') && (
-            <AccordionSection title="Backgrounds" section="backgrounds" properties={['backgroundColor', 'backgroundImage', 'backgroundSize', 'backgroundPosition', 'backgroundRepeat', 'backgroundClip']}>
+            <AccordionSection title="Backgrounds" section="backgrounds" properties={['backgroundColor', 'backgroundGradient', 'backgroundImage', 'backgroundSize', 'backgroundPosition', 'backgroundRepeat', 'backgroundClip']}>
         <div className="Col" style={{ gap: '8px' }}>
-          {/* Color and Image side by side */}
-          <div style={{ display: 'grid', gridTemplateColumns: '26px 1fr 26px 1fr', gap: '4px', alignItems: 'center' }}>
+          {/* Color */}
+          <div style={{ display: 'grid', gridTemplateColumns: '40px 1fr', gap: '4px', alignItems: 'center' }}>
             <label className={`Label ${getPropertyColorClass('backgroundColor')}`}>
               Color<PropertyIndicator property="backgroundColor" />
             </label>
@@ -1880,86 +1880,133 @@ export const StylePanel: React.FC<StylePanelProps> = ({
               value={computedStyles.backgroundColor || 'transparent'}
               onChange={(val) => updateStyle('backgroundColor', val)}
             />
-            <label className={`Label ${getPropertyColorClass('backgroundImage')}`}>
-              Image<PropertyIndicator property="backgroundImage" />
-            </label>
-            <div className="flex items-center gap-1">
-              <ImageUpload
-                currentValue={computedStyles.backgroundImage?.match(/url\(['"]?(.+?)['"]?\)/)?.[1] || ''}
-                onImageChange={(url) => {
-                  if (url) {
-                    updateStyle('backgroundImage', `url(${url})`);
-                    // Set defaults if not already set
-                    if (!computedStyles.backgroundSize) updateStyle('backgroundSize', 'cover');
-                    if (!computedStyles.backgroundPosition) updateStyle('backgroundPosition', 'center');
-                    if (!computedStyles.backgroundRepeat) updateStyle('backgroundRepeat', 'no-repeat');
-                  } else {
-                    updateStyle('backgroundImage', '');
-                  }
-                }}
-                mode="background"
-                compact
-              />
-            </div>
           </div>
 
-          {/* Show additional background settings when image is set */}
-          {computedStyles.backgroundImage && (
+          {/* Gradient - only for layout components like Section */}
+          {showBackgroundImageControl(selectedInstance.type as ComponentType) && (
+            <div style={{ display: 'grid', gridTemplateColumns: '40px 1fr', gap: '4px', alignItems: 'center' }}>
+              <label className={`Label ${getPropertyColorClass('backgroundGradient')}`}>
+                Gradient<PropertyIndicator property="backgroundGradient" />
+              </label>
+              <div className="flex items-center gap-2">
+                <input
+                  className="Input flex-1"
+                  type="text"
+                  value={computedStyles.backgroundGradient || ''}
+                  onChange={(e) => updateStyle('backgroundGradient', e.target.value)}
+                  placeholder="linear-gradient(90deg, #000, #fff)"
+                  style={{ fontSize: '10px' }}
+                />
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        type="button"
+                        className="p-1 rounded hover:bg-accent"
+                        onClick={() => {
+                          if (!computedStyles.backgroundGradient) {
+                            updateStyle('backgroundGradient', 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.5))');
+                          }
+                        }}
+                      >
+                        <Zap className="w-3 h-3" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="left">
+                      <p className="text-xs">Add default gradient</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+            </div>
+          )}
+
+          {/* Background Image - only for components that support it */}
+          {showBackgroundImageControl(selectedInstance.type as ComponentType) && (
             <>
-              <div style={{ display: 'grid', gridTemplateColumns: '26px 1fr 26px 1fr', gap: '4px', alignItems: 'center' }}>
-                <label className={`Label ${getPropertyColorClass('backgroundSize')}`}>
-                  Size<PropertyIndicator property="backgroundSize" />
+              <div style={{ display: 'grid', gridTemplateColumns: '40px 1fr', gap: '4px', alignItems: 'center' }}>
+                <label className={`Label ${getPropertyColorClass('backgroundImage')}`}>
+                  Image<PropertyIndicator property="backgroundImage" />
                 </label>
-                <select
-                  className="Select"
-                  value={computedStyles.backgroundSize || 'cover'}
-                  onChange={(e) => updateStyle('backgroundSize', e.target.value)}
-                  style={{ maxWidth: '80px' }}
-                >
-                  <option value="cover">Cover</option>
-                  <option value="contain">Contain</option>
-                  <option value="auto">Auto</option>
-                </select>
-                <label className={`Label ${getPropertyColorClass('backgroundPosition')}`}>
-                  Pos<PropertyIndicator property="backgroundPosition" />
-                </label>
-                <select
-                  className="Select"
-                  value={computedStyles.backgroundPosition || 'center'}
-                  onChange={(e) => updateStyle('backgroundPosition', e.target.value)}
-                  style={{ maxWidth: '80px' }}
-                >
-                  <option value="center">Center</option>
-                  <option value="top">Top</option>
-                  <option value="bottom">Bottom</option>
-                  <option value="left">Left</option>
-                  <option value="right">Right</option>
-                  <option value="top left">Top Left</option>
-                  <option value="top right">Top Right</option>
-                  <option value="bottom left">Bottom Left</option>
-                  <option value="bottom right">Bottom Right</option>
-                </select>
+                <div className="flex items-center gap-1">
+                  <ImageUpload
+                    currentValue={computedStyles.backgroundImage?.match(/url\(['"]?(.+?)['"]?\)/)?.[1] || ''}
+                    onImageChange={(url) => {
+                      if (url) {
+                        updateStyle('backgroundImage', `url(${url})`);
+                        // Set defaults if not already set
+                        if (!computedStyles.backgroundSize) updateStyle('backgroundSize', 'cover');
+                        if (!computedStyles.backgroundPosition) updateStyle('backgroundPosition', 'center');
+                        if (!computedStyles.backgroundRepeat) updateStyle('backgroundRepeat', 'no-repeat');
+                      } else {
+                        updateStyle('backgroundImage', '');
+                      }
+                    }}
+                    mode="background"
+                    compact
+                  />
+                </div>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '26px 1fr', gap: '4px', alignItems: 'center' }}>
-                <label className={`Label ${getPropertyColorClass('backgroundRepeat')}`}>
-                  Repeat<PropertyIndicator property="backgroundRepeat" />
-                </label>
-                <select
-                  className="Select"
-                  value={computedStyles.backgroundRepeat || 'no-repeat'}
-                  onChange={(e) => updateStyle('backgroundRepeat', e.target.value)}
-                  style={{ maxWidth: '90px' }}
-                >
-                  <option value="no-repeat">No Repeat</option>
-                  <option value="repeat">Repeat</option>
-                  <option value="repeat-x">Repeat X</option>
-                  <option value="repeat-y">Repeat Y</option>
-                </select>
-              </div>
+
+              {/* Show additional background settings when image is set */}
+              {computedStyles.backgroundImage && (
+                <>
+                  <div style={{ display: 'grid', gridTemplateColumns: '40px 1fr 40px 1fr', gap: '4px', alignItems: 'center' }}>
+                    <label className={`Label ${getPropertyColorClass('backgroundSize')}`}>
+                      Size<PropertyIndicator property="backgroundSize" />
+                    </label>
+                    <select
+                      className="Select"
+                      value={computedStyles.backgroundSize || 'cover'}
+                      onChange={(e) => updateStyle('backgroundSize', e.target.value)}
+                      style={{ maxWidth: '80px' }}
+                    >
+                      <option value="cover">Cover</option>
+                      <option value="contain">Contain</option>
+                      <option value="auto">Auto</option>
+                    </select>
+                    <label className={`Label ${getPropertyColorClass('backgroundPosition')}`}>
+                      Pos<PropertyIndicator property="backgroundPosition" />
+                    </label>
+                    <select
+                      className="Select"
+                      value={computedStyles.backgroundPosition || 'center'}
+                      onChange={(e) => updateStyle('backgroundPosition', e.target.value)}
+                      style={{ maxWidth: '80px' }}
+                    >
+                      <option value="center">Center</option>
+                      <option value="top">Top</option>
+                      <option value="bottom">Bottom</option>
+                      <option value="left">Left</option>
+                      <option value="right">Right</option>
+                      <option value="top left">Top Left</option>
+                      <option value="top right">Top Right</option>
+                      <option value="bottom left">Bottom Left</option>
+                      <option value="bottom right">Bottom Right</option>
+                    </select>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '40px 1fr', gap: '4px', alignItems: 'center' }}>
+                    <label className={`Label ${getPropertyColorClass('backgroundRepeat')}`}>
+                      Repeat<PropertyIndicator property="backgroundRepeat" />
+                    </label>
+                    <select
+                      className="Select"
+                      value={computedStyles.backgroundRepeat || 'no-repeat'}
+                      onChange={(e) => updateStyle('backgroundRepeat', e.target.value)}
+                      style={{ maxWidth: '90px' }}
+                    >
+                      <option value="no-repeat">No Repeat</option>
+                      <option value="repeat">Repeat</option>
+                      <option value="repeat-x">Repeat X</option>
+                      <option value="repeat-y">Repeat Y</option>
+                    </select>
+                  </div>
+                </>
+              )}
             </>
           )}
 
-          <div style={{ display: 'grid', gridTemplateColumns: '26px 1fr', gap: '4px', alignItems: 'center' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '40px 1fr', gap: '4px', alignItems: 'center' }}>
             <label className={`Label ${getPropertyColorClass('backgroundClip')}`}>
               Clip<PropertyIndicator property="backgroundClip" />
             </label>
