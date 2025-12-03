@@ -3109,8 +3109,8 @@ export const StylePanel: React.FC<StylePanelProps> = ({
                     </div>
                   )}
 
-                  {/* Link/Button Settings */}
-                  {(selectedInstance.type === 'Link' || selectedInstance.type === 'Button') && (
+                  {/* Link Settings */}
+                  {selectedInstance.type === 'Link' && (
                     <div className="space-y-2">
                       <div className="space-y-1">
                         <label className="text-[10px] text-muted-foreground">URL</label>
@@ -3136,6 +3136,106 @@ export const StylePanel: React.FC<StylePanelProps> = ({
                           <option value="_self">Same Window</option>
                           <option value="_blank">New Tab</option>
                         </select>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Button Settings */}
+                  {selectedInstance.type === 'Button' && (
+                    <div className="space-y-3">
+                      {/* Button Text */}
+                      <div className="space-y-1">
+                        <label className="text-[10px] text-muted-foreground">Button Text</label>
+                        <Input
+                          type="text"
+                          placeholder="Button"
+                          value={selectedInstance.props.children || selectedInstance.props.text || ''}
+                          onChange={(e) => {
+                            updateInstance(selectedInstance.id, {
+                              props: { ...selectedInstance.props, children: e.target.value, text: e.target.value }
+                            });
+                          }}
+                          className="h-6 text-[10px]"
+                        />
+                      </div>
+
+                      {/* Button Variant */}
+                      <div className="space-y-1">
+                        <label className="text-[10px] text-muted-foreground">Button Type</label>
+                        <select
+                          className="w-full h-6 px-2 text-[10px] rounded border border-border bg-background"
+                          value={selectedInstance.props.buttonVariant || 'primary'}
+                          onChange={(e) => updateInstance(selectedInstance.id, { props: { ...selectedInstance.props, buttonVariant: e.target.value }})}
+                        >
+                          <option value="primary">Primary</option>
+                          <option value="secondary">Secondary</option>
+                          <option value="outline">Outline</option>
+                          <option value="ghost">Ghost</option>
+                        </select>
+                      </div>
+
+                      {/* URL Link */}
+                      <div className="space-y-1">
+                        <label className="text-[10px] text-muted-foreground">URL Link</label>
+                        <Input
+                          type="text"
+                          placeholder="https://... (optional)"
+                          value={selectedInstance.props.href || selectedInstance.props.url || ''}
+                          onChange={(e) => {
+                            updateInstance(selectedInstance.id, {
+                              props: { ...selectedInstance.props, href: e.target.value, url: e.target.value }
+                            });
+                          }}
+                          className="h-6 text-[10px]"
+                        />
+                      </div>
+
+                      {/* Open in New Tab */}
+                      <div className="flex items-center gap-2">
+                        <Checkbox
+                          id="button-new-tab"
+                          checked={selectedInstance.props.target === '_blank'}
+                          onCheckedChange={(checked) => {
+                            updateInstance(selectedInstance.id, {
+                              props: { ...selectedInstance.props, target: checked ? '_blank' : '_self' }
+                            });
+                          }}
+                          className="h-3.5 w-3.5"
+                        />
+                        <label htmlFor="button-new-tab" className="text-[10px] text-muted-foreground">Open in new tab</label>
+                      </div>
+
+                      {/* Icon Selection */}
+                      <div className="space-y-1">
+                        <label className="text-[10px] text-muted-foreground">Icon</label>
+                        <div className="flex gap-1">
+                          <select
+                            className="flex-1 h-6 px-2 text-[10px] rounded border border-border bg-background"
+                            value={selectedInstance.props.icon || 'none'}
+                            onChange={(e) => updateInstance(selectedInstance.id, { props: { ...selectedInstance.props, icon: e.target.value }})}
+                          >
+                            <option value="none">None</option>
+                            <option value="arrow">Arrow Right</option>
+                            <option value="arrow-left">Arrow Left</option>
+                            <option value="download">Download</option>
+                            <option value="external">External Link</option>
+                            <option value="plus">Plus</option>
+                            <option value="check">Check</option>
+                            <option value="mail">Mail</option>
+                            <option value="cart">Cart</option>
+                            <option value="play">Play</option>
+                          </select>
+                          {selectedInstance.props.icon && selectedInstance.props.icon !== 'none' && (
+                            <select
+                              className="w-16 h-6 px-1 text-[10px] rounded border border-border bg-background"
+                              value={selectedInstance.props.iconPosition || 'left'}
+                              onChange={(e) => updateInstance(selectedInstance.id, { props: { ...selectedInstance.props, iconPosition: e.target.value }})}
+                            >
+                              <option value="left">Left</option>
+                              <option value="right">Right</option>
+                            </select>
+                          )}
+                        </div>
                       </div>
                     </div>
                   )}
