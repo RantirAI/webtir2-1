@@ -798,7 +798,11 @@ export const StylePanel: React.FC<StylePanelProps> = ({
             </div>
 
             {/* Content Section for Button/Dropdown - after class selector, before Layout */}
-            {(selectedInstance.type === 'Button' || selectedInstance.type === 'Dropdown' || selectedInstance.dropdownConfig || selectedInstance.props?.triggerText !== undefined) && (
+            {(selectedInstance.type === 'Button' || 
+              selectedInstance.type === 'Dropdown' || 
+              selectedInstance.dropdownConfig || 
+              selectedInstance.props?.triggerText !== undefined ||
+              (selectedInstance.props?.children !== undefined && selectedInstance.label?.toLowerCase().includes('button'))) && (
               <div className="Section">
                 <div 
                   className="SectionHeader"
@@ -807,21 +811,22 @@ export const StylePanel: React.FC<StylePanelProps> = ({
                   <span className="SectionTitle">Content</span>
                 </div>
                 <div className="SectionContent">
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+                    {/* Text/Label Input */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                       <label className="text-[10px] text-muted-foreground" style={{ minWidth: '50px' }}>
-                        {selectedInstance.type === 'Button' ? 'Text' : 'Label'}
+                        {(selectedInstance.type === 'Button' || selectedInstance.label?.toLowerCase().includes('button')) ? 'Text' : 'Label'}
                       </label>
                       <Input
                         type="text"
-                        placeholder={selectedInstance.type === 'Button' ? 'Button' : 'Dropdown'}
+                        placeholder={(selectedInstance.type === 'Button' || selectedInstance.label?.toLowerCase().includes('button')) ? 'Button' : 'Dropdown'}
                         value={
-                          selectedInstance.type === 'Button' 
+                          (selectedInstance.type === 'Button' || selectedInstance.label?.toLowerCase().includes('button'))
                             ? (selectedInstance.props.children || selectedInstance.props.text || '')
                             : (selectedInstance.props?.triggerText || 'Dropdown')
                         }
                         onChange={(e) => {
-                          if (selectedInstance.type === 'Button') {
+                          if (selectedInstance.type === 'Button' || selectedInstance.label?.toLowerCase().includes('button')) {
                             updateInstance(selectedInstance.id, {
                               props: { ...selectedInstance.props, children: e.target.value, text: e.target.value }
                             });
@@ -834,6 +839,66 @@ export const StylePanel: React.FC<StylePanelProps> = ({
                         className="h-6 text-[10px] flex-1 text-foreground bg-background"
                       />
                     </div>
+
+                    {/* Dropdown Menu Items - only show for Dropdown */}
+                    {(selectedInstance.type === 'Dropdown' || selectedInstance.dropdownConfig || selectedInstance.props?.menuItems) && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <label className="text-[10px] text-muted-foreground">Menu Items</label>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => {
+                              const currentItems = selectedInstance.props?.menuItems || [];
+                              const newItem = { 
+                                label: `Option ${currentItems.length + 1}`, 
+                                href: '#', 
+                                id: String(Date.now()) 
+                              };
+                              updateInstance(selectedInstance.id, {
+                                props: { ...selectedInstance.props, menuItems: [...currentItems, newItem] }
+                              });
+                            }}
+                            className="h-5 px-1.5 text-[9px]"
+                          >
+                            <Plus className="w-3 h-3 mr-0.5" /> Add
+                          </Button>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxHeight: '120px', overflowY: 'auto' }}>
+                          {(selectedInstance.props?.menuItems || []).map((item: { label: string; href: string; id?: string }, index: number) => (
+                            <div key={item.id || index} className="flex items-center gap-1 p-1.5 rounded border border-border bg-muted/30">
+                              <Input
+                                type="text"
+                                placeholder="Label"
+                                value={item.label}
+                                onChange={(e) => {
+                                  const items = [...(selectedInstance.props?.menuItems || [])];
+                                  items[index] = { ...items[index], label: e.target.value };
+                                  updateInstance(selectedInstance.id, {
+                                    props: { ...selectedInstance.props, menuItems: items }
+                                  });
+                                }}
+                                className="h-5 text-[9px] flex-1 text-foreground bg-background"
+                              />
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => {
+                                  const items = [...(selectedInstance.props?.menuItems || [])];
+                                  items.splice(index, 1);
+                                  updateInstance(selectedInstance.id, {
+                                    props: { ...selectedInstance.props, menuItems: items }
+                                  });
+                                }}
+                                className="h-5 w-5 p-0 text-destructive hover:text-destructive"
+                              >
+                                <X className="w-3 h-3" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
