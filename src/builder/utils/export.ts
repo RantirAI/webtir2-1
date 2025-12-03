@@ -109,7 +109,7 @@ function instanceToReact(instance: ComponentInstance, indent: number = 0): strin
 
   const tag = instance.type === 'Div' ? 'div' : 
               instance.type === 'Container' ? 'div' :
-              instance.type === 'Section' ? 'section' :
+              instance.type === 'Section' ? (instance.props.htmlTag || 'section') :
               instance.type === 'Text' ? 'p' :
               instance.type === 'Heading' ? (instance.props.level || 'h2') :
               instance.type === 'Button' ? 'button' :
@@ -192,7 +192,7 @@ function instanceToHTML(instance: ComponentInstance, indent: number = 0): string
 
   const tag = instance.type === 'Div' ? 'div' : 
               instance.type === 'Container' ? 'div' :
-              instance.type === 'Section' ? 'section' :
+              instance.type === 'Section' ? (instance.props.htmlTag || 'section') :
               instance.type === 'Text' ? 'p' :
               instance.type === 'Heading' ? (instance.props.level || 'h2') :
               instance.type === 'Button' ? 'button' :

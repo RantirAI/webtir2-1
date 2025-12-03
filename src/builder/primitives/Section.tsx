@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, createElement } from 'react';
 import { ComponentInstance } from '../store/types';
 import { useStyleStore } from '../store/useStyleStore';
 
@@ -14,6 +14,9 @@ interface SectionProps {
   isPreviewMode?: boolean;
   dataBindingProps?: Record<string, any>;
 }
+
+// Valid HTML tags for Section component
+type SectionTag = 'section' | 'div' | 'article' | 'aside' | 'header' | 'footer' | 'main' | 'nav';
 
 export const Section: React.FC<SectionProps> = ({
   instance,
@@ -36,6 +39,9 @@ export const Section: React.FC<SectionProps> = ({
     return () => clearTimeout(timer);
   }, []);
 
+  // Get the HTML tag from props, default to 'section'
+  const htmlTag: SectionTag = (instance.props?.htmlTag as SectionTag) || 'section';
+
   // Only essential inline styles - let CSS classes control all layout/sizing
   const defaultStyles: React.CSSProperties = {
     outline: isNewlyAdded ? '2px dashed hsl(var(--primary) / 0.5)' : 'none',
@@ -51,27 +57,25 @@ export const Section: React.FC<SectionProps> = ({
   // Extract non-style dataBindingProps
   const { style: _style, ...restDataBindingProps } = dataBindingProps;
 
-  return (
-    <section
-      data-instance-id={instance.id}
-      className={classNames.length > 0 ? classNames.join(' ') : undefined}
-      style={finalStyles}
-      onClick={isPreviewMode ? undefined : (e) => {
-        e.stopPropagation();
-        onSelect?.();
-      }}
-      onMouseEnter={isPreviewMode ? undefined : (e) => {
-        e.stopPropagation();
-        onHover?.();
-      }}
-      onMouseLeave={isPreviewMode ? undefined : (e) => {
-        e.stopPropagation();
-        onHoverEnd?.();
-      }}
-      onContextMenu={isPreviewMode ? undefined : onContextMenu}
-      {...restDataBindingProps}
-    >
-      {children}
-    </section>
-  );
+  const elementProps = {
+    'data-instance-id': instance.id,
+    className: classNames.length > 0 ? classNames.join(' ') : undefined,
+    style: finalStyles,
+    onClick: isPreviewMode ? undefined : (e: React.MouseEvent) => {
+      e.stopPropagation();
+      onSelect?.();
+    },
+    onMouseEnter: isPreviewMode ? undefined : (e: React.MouseEvent) => {
+      e.stopPropagation();
+      onHover?.();
+    },
+    onMouseLeave: isPreviewMode ? undefined : (e: React.MouseEvent) => {
+      e.stopPropagation();
+      onHoverEnd?.();
+    },
+    onContextMenu: isPreviewMode ? undefined : onContextMenu,
+    ...restDataBindingProps,
+  };
+
+  return createElement(htmlTag, elementProps, children);
 };
