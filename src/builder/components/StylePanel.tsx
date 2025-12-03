@@ -2377,6 +2377,179 @@ export const StylePanel: React.FC<StylePanelProps> = ({
               )}
             </div>
 
+            {/* Content Editing Section - For text-based components */}
+            {(selectedInstance.type === 'Text' || selectedInstance.type === 'Heading' || selectedInstance.type === 'Link' || 
+              selectedInstance.type === 'Blockquote' || selectedInstance.type === 'Cell' || selectedInstance.type === 'InputLabel' ||
+              selectedInstance.type === 'CheckboxField' || selectedInstance.type === 'FormButton' || selectedInstance.type === 'Button' ||
+              selectedInstance.type === 'OrderedList' || selectedInstance.type === 'UnorderedList') && (
+              <>
+                <Separator className="my-1" />
+                <div className="space-y-2">
+                  <label className="text-[10px] font-semibold text-foreground uppercase tracking-wide">Content</label>
+                  
+                  {/* Text / Heading / Link / Blockquote / Cell - children prop */}
+                  {(selectedInstance.type === 'Text' || selectedInstance.type === 'Heading' || 
+                    selectedInstance.type === 'Link' || selectedInstance.type === 'Blockquote' || 
+                    selectedInstance.type === 'Cell') && (
+                    <div className="space-y-1">
+                      <label className="text-[10px] text-muted-foreground">Text Content</label>
+                      <Textarea
+                        value={selectedInstance.props.children || ''}
+                        onChange={(e) => updateInstance(selectedInstance.id, { props: { ...selectedInstance.props, children: e.target.value }})}
+                        className="min-h-[60px] text-[11px] resize-y"
+                        placeholder="Enter text content..."
+                      />
+                    </div>
+                  )}
+
+                  {/* Button / FormButton - text or children prop */}
+                  {(selectedInstance.type === 'Button' || selectedInstance.type === 'FormButton') && (
+                    <div className="space-y-1">
+                      <label className="text-[10px] text-muted-foreground">Button Text</label>
+                      <Input
+                        type="text"
+                        value={selectedInstance.props.children || selectedInstance.props.text || ''}
+                        onChange={(e) => updateInstance(selectedInstance.id, { props: { ...selectedInstance.props, children: e.target.value, text: e.target.value }})}
+                        className="h-6 text-[10px]"
+                        placeholder="Button text..."
+                      />
+                    </div>
+                  )}
+
+                  {/* InputLabel - text prop */}
+                  {selectedInstance.type === 'InputLabel' && (
+                    <div className="space-y-1">
+                      <label className="text-[10px] text-muted-foreground">Label Text</label>
+                      <Input
+                        type="text"
+                        value={selectedInstance.props.text || ''}
+                        onChange={(e) => updateInstance(selectedInstance.id, { props: { ...selectedInstance.props, text: e.target.value }})}
+                        className="h-6 text-[10px]"
+                        placeholder="Label text..."
+                      />
+                    </div>
+                  )}
+
+                  {/* CheckboxField - label prop */}
+                  {selectedInstance.type === 'CheckboxField' && (
+                    <div className="space-y-1">
+                      <label className="text-[10px] text-muted-foreground">Label Text</label>
+                      <Input
+                        type="text"
+                        value={selectedInstance.props.label || ''}
+                        onChange={(e) => updateInstance(selectedInstance.id, { props: { ...selectedInstance.props, label: e.target.value }})}
+                        className="h-6 text-[10px]"
+                        placeholder="Checkbox label..."
+                      />
+                    </div>
+                  )}
+
+                  {/* OrderedList / UnorderedList - items prop */}
+                  {(selectedInstance.type === 'OrderedList' || selectedInstance.type === 'UnorderedList') && (
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between">
+                        <label className="text-[10px] text-muted-foreground">List Items</label>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => {
+                            const currentItems = selectedInstance.props.items || ['Item 1', 'Item 2', 'Item 3'];
+                            updateInstance(selectedInstance.id, {
+                              props: { ...selectedInstance.props, items: [...currentItems, `Item ${currentItems.length + 1}`] }
+                            });
+                          }}
+                          className="h-4 text-[9px] px-1"
+                        >
+                          <Plus className="w-2.5 h-2.5" />
+                        </Button>
+                      </div>
+                      <div className="space-y-1 max-h-32 overflow-y-auto">
+                        {(selectedInstance.props.items || ['Item 1', 'Item 2', 'Item 3']).map((item: string, i: number) => (
+                          <div key={i} className="flex items-center gap-1">
+                            <span className="text-[9px] text-muted-foreground w-4">{selectedInstance.type === 'OrderedList' ? `${i + 1}.` : '•'}</span>
+                            <Input
+                              value={item}
+                              onChange={(e) => {
+                                const newItems = [...(selectedInstance.props.items || ['Item 1', 'Item 2', 'Item 3'])];
+                                newItems[i] = e.target.value;
+                                updateInstance(selectedInstance.id, { props: { ...selectedInstance.props, items: newItems }});
+                              }}
+                              className="h-5 text-[10px] flex-1"
+                              placeholder={`Item ${i + 1}`}
+                            />
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => {
+                                const newItems = (selectedInstance.props.items || ['Item 1', 'Item 2', 'Item 3']).filter((_: string, idx: number) => idx !== i);
+                                if (newItems.length > 0) {
+                                  updateInstance(selectedInstance.id, { props: { ...selectedInstance.props, items: newItems }});
+                                }
+                              }}
+                              className="h-4 w-4 p-0"
+                              disabled={(selectedInstance.props.items || []).length <= 1}
+                            >
+                              <X className="w-2 h-2" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Link - href prop */}
+                  {selectedInstance.type === 'Link' && (
+                    <>
+                      <div className="space-y-1">
+                        <label className="text-[10px] text-muted-foreground">URL</label>
+                        <Input
+                          type="text"
+                          value={selectedInstance.props.href || ''}
+                          onChange={(e) => updateInstance(selectedInstance.id, { props: { ...selectedInstance.props, href: e.target.value }})}
+                          className="h-6 text-[10px]"
+                          placeholder="https://..."
+                        />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={selectedInstance.props.target === '_blank'}
+                          onChange={(e) => updateInstance(selectedInstance.id, { props: { ...selectedInstance.props, target: e.target.checked ? '_blank' : '_self' }})}
+                          className="w-3 h-3"
+                        />
+                        <label className="text-[10px] text-muted-foreground">Open in new tab</label>
+                      </div>
+                    </>
+                  )}
+
+                  {/* Heading - tag selection */}
+                  {selectedInstance.type === 'Heading' && (
+                    <div className="space-y-1">
+                      <label className="text-[10px] text-muted-foreground">Heading Level</label>
+                      <select
+                        className="w-full h-6 px-2 text-[10px] rounded border border-border bg-background"
+                        value={selectedInstance.props.tag || 'h2'}
+                        onChange={(e) => {
+                          updateInstance(selectedInstance.id, { props: { ...selectedInstance.props, tag: e.target.value }});
+                          // Apply heading typography
+                          if (activeStyleSourceId) {
+                            applyHeadingTypography(e.target.value as 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6', activeStyleSourceId, setStyle);
+                          }
+                        }}
+                      >
+                        <option value="h1">H1</option>
+                        <option value="h2">H2</option>
+                        <option value="h3">H3</option>
+                        <option value="h4">H4</option>
+                        <option value="h5">H5</option>
+                        <option value="h6">H6</option>
+                      </select>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+
             {/* Component-Specific Settings */}
             {(selectedInstance.type === 'Section' || selectedInstance.type === 'Image' || selectedInstance.type === 'Video' || selectedInstance.type === 'Youtube' || 
               selectedInstance.type === 'Lottie' || selectedInstance.type === 'Navigation' || selectedInstance.type === 'Dropdown' ||
