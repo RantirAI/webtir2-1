@@ -11,7 +11,7 @@ export interface PrebuiltComponent {
 
 interface PrebuiltStore {
   prebuiltComponents: PrebuiltComponent[];
-  prebuiltInstanceIds: Set<string>; // Track which instance IDs are prebuilt
+  prebuiltInstanceIds: string[]; // Array for better serialization
   
   addPrebuilt: (name: string, instance: ComponentInstance) => void;
   removePrebuilt: (id: string) => void;
@@ -25,7 +25,7 @@ export const usePrebuiltStore = create<PrebuiltStore>()(
   persist(
     (set, get) => ({
       prebuiltComponents: [],
-      prebuiltInstanceIds: new Set<string>(),
+      prebuiltInstanceIds: [],
 
       addPrebuilt: (name, instance) => {
         const newPrebuilt: PrebuiltComponent = {
@@ -37,16 +37,16 @@ export const usePrebuiltStore = create<PrebuiltStore>()(
         
         set((state) => ({
           prebuiltComponents: [...state.prebuiltComponents, newPrebuilt],
-          prebuiltInstanceIds: new Set([...state.prebuiltInstanceIds, instance.id]),
+          prebuiltInstanceIds: [...state.prebuiltInstanceIds, instance.id],
         }));
       },
 
       removePrebuilt: (id) => {
         set((state) => {
           const prebuilt = state.prebuiltComponents.find(p => p.id === id);
-          const newInstanceIds = new Set(state.prebuiltInstanceIds);
+          let newInstanceIds = [...state.prebuiltInstanceIds];
           if (prebuilt) {
-            newInstanceIds.delete(prebuilt.instance.id);
+            newInstanceIds = newInstanceIds.filter(iid => iid !== prebuilt.instance.id);
           }
           return {
             prebuiltComponents: state.prebuiltComponents.filter(p => p.id !== id),
@@ -64,34 +64,28 @@ export const usePrebuiltStore = create<PrebuiltStore>()(
       },
 
       isPrebuiltInstance: (instanceId) => {
-        return get().prebuiltInstanceIds.has(instanceId);
+        return get().prebuiltInstanceIds.includes(instanceId);
       },
 
       markAsPrebuilt: (instanceId) => {
-        set((state) => ({
-          prebuiltInstanceIds: new Set([...state.prebuiltInstanceIds, instanceId]),
-        }));
+        set((state) => {
+          if (state.prebuiltInstanceIds.includes(instanceId)) {
+            return state;
+          }
+          return {
+            prebuiltInstanceIds: [...state.prebuiltInstanceIds, instanceId],
+          };
+        });
       },
 
       unmarkAsPrebuilt: (instanceId) => {
-        set((state) => {
-          const newSet = new Set(state.prebuiltInstanceIds);
-          newSet.delete(instanceId);
-          return { prebuiltInstanceIds: newSet };
-        });
+        set((state) => ({
+          prebuiltInstanceIds: state.prebuiltInstanceIds.filter(id => id !== instanceId),
+        }));
       },
     }),
     {
       name: 'prebuilt-components-storage',
-      partialize: (state) => ({
-        prebuiltComponents: state.prebuiltComponents,
-        prebuiltInstanceIds: Array.from(state.prebuiltInstanceIds),
-      }),
-      merge: (persisted: any, current) => ({
-        ...current,
-        ...persisted,
-        prebuiltInstanceIds: new Set(persisted?.prebuiltInstanceIds || []),
-      }),
     }
   )
 );
