@@ -198,7 +198,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, instance, onClos
           <span className="flex-1">Convert to</span>
           <ChevronRight className="w-3 h-3" />
         </button>
-        <div className="hidden group-hover:block absolute left-full top-0 ml-1 bg-popover border rounded-md shadow-lg py-1 min-w-[140px]">
+        <div className="hidden group-hover:block absolute left-full top-0 ml-1 bg-popover border rounded-md shadow-lg py-1 min-w-[160px]">
           {convertOptions.map((option) => (
             <button
               key={option.value}
@@ -215,6 +215,17 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, instance, onClos
               {option.label}
             </button>
           ))}
+          <div className="border-t my-1" />
+          <button
+            className="w-full px-2 py-1.5 text-left hover:bg-accent hover:text-accent-foreground flex items-center gap-2 text-green-600"
+            onClick={() => {
+              onSaveAsPrebuilt?.(instance);
+              onClose();
+            }}
+          >
+            <Package className="w-3.5 h-3.5" />
+            <span>Prebuilt component</span>
+          </button>
         </div>
       </div>
       
@@ -224,17 +235,6 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, instance, onClos
       >
         <BoxIcon className="w-3.5 h-3.5" />
         <span>Wrap in Div</span>
-      </button>
-      
-      <button
-        className="w-full px-2 py-1.5 text-left hover:bg-accent hover:text-accent-foreground flex items-center gap-2 text-green-600"
-        onClick={() => {
-          onSaveAsPrebuilt?.(instance);
-          onClose();
-        }}
-      >
-        <Package className="w-3.5 h-3.5" />
-        <span>Save as Prebuilt</span>
       </button>
       
       {isInRichText && (
