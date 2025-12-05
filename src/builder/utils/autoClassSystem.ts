@@ -1,6 +1,6 @@
 /**
- * Auto-class naming system with configurable sequential numbering
- * Supports "none" (no suffix), incremental counting up to 1M+, and custom formatting
+ * Auto-class naming system with stable sequential numbering
+ * Never re-indexes existing classes - always finds next available index by scanning
  */
 
 export interface AutoClassConfig {
@@ -13,7 +13,6 @@ export interface AutoClassConfig {
 export interface AutoClassResult {
   name: string;
   index: number | null; // null if noneFirst was used
-  persisted: boolean;
 }
 
 const DEFAULT_CONFIG: Required<AutoClassConfig> = {
@@ -106,149 +105,186 @@ function formatIndex(index: number, padding: number): string {
 }
 
 /**
- * Parse existing class name to extract numeric suffix
+ * Parse class name to extract base and numeric index
  * Returns null if no numeric suffix found
  */
-export function parseClassIndex(className: string, base: string, separator: string): number | null {
-  // Try with separator first
-  const withSepPattern = new RegExp(`^${base}${separator.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&')}(\\d+)$`);
+export function parseClassNameParts(
+  className: string, 
+  separator: string = '-'
+): { base: string; index: number } | null {
+  // Escape separator for regex
+  const escapedSep = separator.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+  
+  // Try with separator first (e.g., "heading-1")
+  const withSepPattern = new RegExp(`^([a-z][a-z0-9-_]*)${escapedSep}(\\d+)$`);
   const withSepMatch = className.match(withSepPattern);
   if (withSepMatch) {
-    return parseInt(withSepMatch[1], 10);
+    return {
+      base: withSepMatch[1],
+      index: parseInt(withSepMatch[2], 10),
+    };
   }
   
-  // Try without separator (legacy support)
-  const noSepPattern = new RegExp(`^${base}(\\d+)$`);
+  // Try without separator for legacy support (e.g., "heading1")
+  const noSepPattern = /^([a-z]+)(\d+)$/;
   const noSepMatch = className.match(noSepPattern);
   if (noSepMatch) {
-    return parseInt(noSepMatch[1], 10);
+    return {
+      base: noSepMatch[1],
+      index: parseInt(noSepMatch[2], 10),
+    };
   }
   
   return null;
 }
 
 /**
- * Initialize counters from existing class names
- * Returns map of base -> next available index
+ * Find the maximum index used for a given base name by scanning all existing class names
+ * This is the source of truth - never relies on counters
  */
-export function initializeCountersFromRegistry(
-  existingClassNames: string[],
-  config: AutoClassConfig = {}
-): Record<string, number> {
-  const cfg = { ...DEFAULT_CONFIG, ...config };
-  const counters: Record<string, number> = {};
+export function findMaxIndexForBase(
+  base: string,
+  existingNames: Set<string> | string[],
+  separator: string = '-'
+): number {
+  const names = existingNames instanceof Set ? Array.from(existingNames) : existingNames;
+  let maxIndex = 0;
   
-  // Group class names by potential base
-  const baseMap: Record<string, number[]> = {};
-  
-  existingClassNames.forEach(className => {
-    // Try to extract base and index from various patterns
-    const parts = className.split(cfg.separator);
-    if (parts.length === 2) {
-      const [base, indexStr] = parts;
-      const index = parseInt(indexStr, 10);
-      if (!isNaN(index)) {
-        if (!baseMap[base]) baseMap[base] = [];
-        baseMap[base].push(index);
-      }
+  for (const name of names) {
+    const parsed = parseClassNameParts(name, separator);
+    if (parsed && parsed.base === base) {
+      maxIndex = Math.max(maxIndex, parsed.index);
     }
-    
-    // Also check for no-separator pattern (e.g., "button1")
-    const noSepMatch = className.match(/^([a-z]+)(\d+)$/);
-    if (noSepMatch) {
-      const [, base, indexStr] = noSepMatch;
-      const index = parseInt(indexStr, 10);
-      if (!isNaN(index)) {
-        if (!baseMap[base]) baseMap[base] = [];
-        baseMap[base].push(index);
-      }
-    }
-  });
+  }
   
-  // Set counter to max + 1 for each base
-  Object.entries(baseMap).forEach(([base, indices]) => {
-    const maxIndex = Math.max(...indices);
-    counters[base] = maxIndex + 1;
-  });
-  
-  return counters;
+  return maxIndex;
 }
 
 /**
- * Generate next auto-class name with uniqueness guarantee
+ * Check if a class name exists (case-insensitive)
+ */
+export function classNameExists(
+  name: string,
+  existingNames: Set<string> | string[]
+): boolean {
+  const normalizedName = name.toLowerCase();
+  if (existingNames instanceof Set) {
+    // Check both exact and case-insensitive
+    if (existingNames.has(name)) return true;
+    for (const existing of existingNames) {
+      if (existing.toLowerCase() === normalizedName) return true;
+    }
+    return false;
+  }
+  return existingNames.some(n => n.toLowerCase() === normalizedName);
+}
+
+/**
+ * Generate next auto-class name by scanning existing classes
+ * Always finds maxIndex + 1 to guarantee uniqueness without renumbering
  */
 export function generateAutoClassName(
   componentType: string,
   existingNames: Set<string>,
-  currentCounter: number,
   config: AutoClassConfig = {}
 ): AutoClassResult {
   const cfg = { ...DEFAULT_CONFIG, ...config };
   const base = normalizeComponentBase(componentType);
   
-  // If noneFirst is true and counter is at start, try base name without suffix
-  if (cfg.noneFirst && currentCounter === cfg.startIndex) {
-    if (!existingNames.has(base)) {
-      return {
-        name: base,
-        index: null,
-        persisted: true,
-      };
-    }
+  // If noneFirst is true and base name isn't taken, use it
+  if (cfg.noneFirst && !existingNames.has(base)) {
+    return {
+      name: base,
+      index: null,
+    };
   }
   
-  // Find next available numbered name
-  let index = Math.max(currentCounter, cfg.startIndex);
-  const maxAttempts = 10000; // Safety limit
-  let attempts = 0;
+  // Find max existing index by scanning all class names
+  const maxIndex = findMaxIndexForBase(base, existingNames, cfg.separator);
   
-  while (attempts < maxAttempts) {
-    const paddedIndex = formatIndex(index, cfg.padding);
-    const name = `${base}${cfg.separator}${paddedIndex}`;
-    
-    if (!existingNames.has(name)) {
-      return {
-        name,
-        index,
-        persisted: true,
-      };
-    }
-    
-    index++;
-    attempts++;
-  }
+  // Next index is max + 1, or startIndex if no existing classes
+  const nextIndex = maxIndex > 0 ? maxIndex + 1 : (cfg.startIndex || 1);
   
-  // This should never happen in practice
-  throw new Error(
-    `Unable to generate unique class name for ${base} after ${maxAttempts} attempts. ` +
-    `Consider adjusting naming configuration.`
-  );
+  const paddedIndex = formatIndex(nextIndex, cfg.padding);
+  const name = `${base}${cfg.separator}${paddedIndex}`;
+  
+  return {
+    name,
+    index: nextIndex,
+  };
 }
 
 /**
- * Preview the next auto-class name without persisting
+ * Preview the next auto-class name without side effects
  */
 export function previewNextClassName(
   componentType: string,
   existingNames: Set<string>,
-  currentCounter: number,
   config: AutoClassConfig = {}
 ): string {
-  const result = generateAutoClassName(componentType, existingNames, currentCounter, config);
+  const result = generateAutoClassName(componentType, existingNames, config);
   return result.name;
 }
 
 /**
- * Validate and sanitize custom class name
+ * Validate a new class name for rename operation
+ * Returns error message if invalid, null if valid
+ */
+export function validateRename(
+  newName: string,
+  currentClassId: string,
+  existingNames: Map<string, string> // Map of className -> classId
+): { valid: boolean; error?: string; suggestion?: string } {
+  const safeName = newName.trim().toLowerCase().replace(/[^a-z0-9-_]/g, '-');
+  
+  if (!safeName) {
+    return { valid: false, error: 'Class name cannot be empty' };
+  }
+  
+  // Check if name collides with another class (not itself)
+  for (const [existingName, existingId] of existingNames) {
+    if (existingName === safeName && existingId !== currentClassId) {
+      // Generate a unique suggestion
+      let counter = 2;
+      let suggestion = `${safeName}-${counter}`;
+      while (existingNames.has(suggestion)) {
+        counter++;
+        suggestion = `${safeName}-${counter}`;
+      }
+      return { 
+        valid: false, 
+        error: `Class "${safeName}" already exists`,
+        suggestion 
+      };
+    }
+  }
+  
+  return { valid: true };
+}
+
+/**
+ * Sanitize and validate custom class name
  */
 export function sanitizeClassName(input: string): string {
   return input.trim().toLowerCase().replace(/[^a-z0-9-_]/g, '-');
 }
 
 /**
- * Check if class name matches auto-generated pattern
+ * Check if class name matches auto-generated pattern for any base type
  */
-export function isAutoGeneratedName(className: string, base: string, separator: string = '-'): boolean {
-  const pattern = new RegExp(`^${base}(${separator.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&')})?\\d+$`);
-  return pattern.test(className) || className === base;
+export function isAutoGeneratedName(className: string, separator: string = '-'): boolean {
+  const parsed = parseClassNameParts(className, separator);
+  return parsed !== null;
+}
+
+/**
+ * Check if a specific class name matches the pattern for a given base type
+ */
+export function matchesAutoPattern(
+  className: string, 
+  base: string, 
+  separator: string = '-'
+): boolean {
+  const parsed = parseClassNameParts(className, separator);
+  return parsed !== null && parsed.base === base;
 }

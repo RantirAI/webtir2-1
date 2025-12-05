@@ -3,6 +3,7 @@ import { X, Lock, AlertCircle, Settings } from 'lucide-react';
 import { useStyleStore } from '../store/useStyleStore';
 import { useBuilderStore } from '../store/useBuilderStore';
 import { countClassUsage } from '../utils/classUsage';
+import { validateRename } from '../utils/autoClassSystem';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -12,6 +13,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 interface ClassSelectorProps {
   selectedClasses: { id: string; name: string; isPrimary: boolean }[];
@@ -137,15 +139,41 @@ export const ClassSelector: React.FC<ClassSelectorProps> = ({
     if (!editingId) return;
     const original = editingValue.trim();
     const safeBase = original.toLowerCase().replace(/[^a-z0-9-_]/g, '-');
-    if (!safeBase) { setEditingId(null); return; }
-    // Ensure uniqueness
-    let candidate = safeBase;
-    const existingNames = Object.values(styleSources).map(s => s.name);
-    let counter = 2;
-    while (existingNames.includes(candidate) && styleSources[editingId]?.name !== candidate) {
-      candidate = `${safeBase}-${counter++}`;
+    if (!safeBase) { 
+      setEditingId(null); 
+      return; 
     }
-    renameStyleSource(editingId, candidate);
+    
+    // Build map of existing names to IDs for validation
+    const existingNamesMap = new Map<string, string>();
+    Object.values(styleSources).forEach(s => {
+      existingNamesMap.set(s.name, s.id);
+    });
+    
+    // Validate rename - check for collisions
+    const validation = validateRename(safeBase, editingId, existingNamesMap);
+    
+    if (!validation.valid) {
+      // Show error toast with suggestion if available
+      if (validation.suggestion) {
+        toast.error(validation.error, {
+          description: `Suggested name: "${validation.suggestion}"`,
+          action: {
+            label: 'Use suggestion',
+            onClick: () => {
+              renameStyleSource(editingId, validation.suggestion!);
+            }
+          }
+        });
+      } else {
+        toast.error(validation.error);
+      }
+      // Keep editing mode active so user can fix
+      return;
+    }
+    
+    // Valid rename - apply it (does NOT affect any other class names)
+    renameStyleSource(editingId, safeBase);
     setEditingId(null);
   };
 
