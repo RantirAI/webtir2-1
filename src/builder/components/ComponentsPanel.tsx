@@ -2,15 +2,17 @@ import React, { useState, useMemo } from 'react';
 import { componentRegistry } from '../primitives/registry';
 import { useBuilderStore } from '../store/useBuilderStore';
 import { useStyleStore } from '../store/useStyleStore';
+import { usePrebuiltStore } from '../store/usePrebuiltStore';
 import { ComponentInstance, ComponentType } from '../store/types';
 import { generateId } from '../utils/instance';
 import * as Icons from 'lucide-react';
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
-import { Search, ChevronDown } from 'lucide-react';
+import { Search, ChevronDown, Trash2, Package } from 'lucide-react';
 import { useDebounce } from '@/hooks/useDebounce';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { toast } from 'sonner';
 
 const DraggableComponent: React.FC<{ type: string; label: string; icon: string }> = ({ type, label, icon }) => {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
@@ -42,6 +44,7 @@ const DraggableComponent: React.FC<{ type: string; label: string; icon: string }
 export const ComponentsPanel: React.FC = () => {
   const addInstance = useBuilderStore((state) => state.addInstance);
   const selectedInstanceId = useBuilderStore((state) => state.selectedInstanceId);
+  const { prebuiltComponents, removePrebuilt, markAsPrebuilt } = usePrebuiltStore();
 
   const handleAddComponent = (type: string) => {
     const meta = componentRegistry[type];
@@ -822,6 +825,37 @@ export const ComponentsPanel: React.FC = () => {
     </div>
   );
 
+  const handleAddPrebuilt = (prebuilt: typeof prebuiltComponents[0]) => {
+    const parentId = selectedInstanceId || 'root';
+    
+    // Deep clone and regenerate IDs
+    const cloneWithNewIds = (instance: ComponentInstance): ComponentInstance => {
+      const newId = generateId();
+      return {
+        ...instance,
+        id: newId,
+        children: instance.children.map(cloneWithNewIds),
+      };
+    };
+    
+    const newInstance = cloneWithNewIds(prebuilt.instance);
+    addInstance(newInstance, parentId);
+    markAsPrebuilt(newInstance.id);
+    toast.success(`Added "${prebuilt.name}" to canvas`);
+  };
+
+  const handleDeletePrebuilt = (e: React.MouseEvent, id: string, name: string) => {
+    e.stopPropagation();
+    removePrebuilt(id);
+    toast.success(`Removed "${name}" from prebuilt components`);
+  };
+
+  const filteredPrebuiltComponents = useMemo(() => {
+    if (!debouncedSearch.trim()) return prebuiltComponents;
+    const searchLower = debouncedSearch.toLowerCase();
+    return prebuiltComponents.filter(p => p.name.toLowerCase().includes(searchLower));
+  }, [debouncedSearch, prebuiltComponents]);
+
   return (
     <div className="w-full h-full flex flex-col">
       <div className="p-2 pb-1.5 shrink-0">
@@ -840,7 +874,47 @@ export const ComponentsPanel: React.FC = () => {
         {activeSubTab === 'elements' ? (
           <>{renderCategorySection(filteredBasicCategories)}{filteredBasicCategories.length === 0 && (<div className="flex flex-col items-center justify-center py-12 text-center space-y-2"><Search className="w-8 h-8 text-muted-foreground/50" /><p className="text-sm text-muted-foreground">No elements found</p></div>)}</>
         ) : (
-          <div className="flex flex-col items-center justify-center py-16 text-center space-y-3"><Icons.Package className="w-12 h-12 text-muted-foreground/50" /><div className="space-y-1"><p className="text-sm font-medium text-foreground">Components Coming Soon</p><p className="text-xs text-muted-foreground">Pre-built component blocks will be available here</p></div></div>
+          <div className="space-y-3">
+            {filteredPrebuiltComponents.length > 0 ? (
+              <div className="grid grid-cols-2 gap-2">
+                {filteredPrebuiltComponents.map((prebuilt) => (
+                  <div 
+                    key={prebuilt.id}
+                    className="group relative p-3 rounded-lg border border-border bg-zinc-50 dark:bg-zinc-800 hover:bg-accent hover:border-green-500 transition-all cursor-pointer"
+                    onClick={() => handleAddPrebuilt(prebuilt)}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Package className="w-4 h-4 text-green-500" />
+                      <span className="text-xs font-medium text-foreground truncate">{prebuilt.name}</span>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground mt-1">
+                      {prebuilt.instance.type}
+                    </p>
+                    <button
+                      onClick={(e) => handleDeletePrebuilt(e, prebuilt.id, prebuilt.name)}
+                      className="absolute top-1 right-1 p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-destructive/10 transition-opacity"
+                      title="Delete prebuilt"
+                    >
+                      <Trash2 className="w-3 h-3 text-destructive" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : debouncedSearch.trim() ? (
+              <div className="flex flex-col items-center justify-center py-12 text-center space-y-2">
+                <Search className="w-8 h-8 text-muted-foreground/50" />
+                <p className="text-sm text-muted-foreground">No prebuilt components found</p>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-16 text-center space-y-3">
+                <Package className="w-12 h-12 text-muted-foreground/50" />
+                <div className="space-y-1">
+                  <p className="text-sm font-medium text-foreground">No Prebuilt Components</p>
+                  <p className="text-xs text-muted-foreground">Right-click any component and select "Save as Prebuilt" to save it here</p>
+                </div>
+              </div>
+            )}
+          </div>
         )}
       </div>
     </div>

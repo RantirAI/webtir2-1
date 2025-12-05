@@ -1,11 +1,18 @@
 import React, { useEffect, useState } from 'react';
+import { usePrebuiltStore } from '../store/usePrebuiltStore';
 
 interface HoverOverlayProps {
   element: HTMLElement;
+  instanceId?: string;
 }
 
-export const HoverOverlay: React.FC<HoverOverlayProps> = ({ element }) => {
+export const HoverOverlay: React.FC<HoverOverlayProps> = ({ element, instanceId }) => {
   const [rect, setRect] = useState<DOMRect | null>(null);
+  const { isPrebuiltInstance } = usePrebuiltStore();
+  
+  const isPrebuilt = instanceId ? isPrebuiltInstance(instanceId) : false;
+  const borderColor = isPrebuilt ? '#22c55e' : '#3b82f6';
+  const bgColor = isPrebuilt ? 'rgba(34, 197, 94, 0.05)' : 'rgba(59, 130, 246, 0.05)';
   
   useEffect(() => {
     const updateRect = () => {
@@ -44,8 +51,8 @@ export const HoverOverlay: React.FC<HoverOverlayProps> = ({ element }) => {
       <div 
         className="absolute inset-0 rounded pointer-events-none" 
         style={{
-          border: '2px dashed #3b82f6',
-          backgroundColor: 'rgba(59, 130, 246, 0.05)',
+          border: `2px dashed ${borderColor}`,
+          backgroundColor: bgColor,
         }}
       />
     </div>

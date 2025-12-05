@@ -16,7 +16,8 @@ import {
   Quote,
   Code,
   Image as ImageIcon,
-  MousePointer
+  MousePointer,
+  Package
 } from 'lucide-react';
 import { componentRegistry } from '../primitives/registry';
 import { generateId } from '../utils/instance';
@@ -26,9 +27,10 @@ interface ContextMenuProps {
   y: number;
   instance: ComponentInstance;
   onClose: () => void;
+  onSaveAsPrebuilt?: (instance: ComponentInstance) => void;
 }
 
-export const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, instance, onClose }) => {
+export const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, instance, onClose, onSaveAsPrebuilt }) => {
   const menuRef = useRef<HTMLDivElement>(null);
   const { deleteInstance, updateInstance, addInstance, findInstance } = useBuilderStore();
   
@@ -222,6 +224,17 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, instance, onClos
       >
         <BoxIcon className="w-3.5 h-3.5" />
         <span>Wrap in Div</span>
+      </button>
+      
+      <button
+        className="w-full px-2 py-1.5 text-left hover:bg-accent hover:text-accent-foreground flex items-center gap-2 text-green-600"
+        onClick={() => {
+          onSaveAsPrebuilt?.(instance);
+          onClose();
+        }}
+      >
+        <Package className="w-3.5 h-3.5" />
+        <span>Save as Prebuilt</span>
       </button>
       
       {isInRichText && (

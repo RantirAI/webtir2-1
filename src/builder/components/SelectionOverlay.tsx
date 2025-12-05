@@ -3,6 +3,7 @@ import { ComponentInstance } from '../store/types';
 import { ArrowUp, ArrowDown, Settings, Plus } from 'lucide-react';
 import { useBuilderStore } from '../store/useBuilderStore';
 import { useStyleStore } from '../store/useStyleStore';
+import { usePrebuiltStore } from '../store/usePrebuiltStore';
 
 interface SelectionOverlayProps {
   instance: ComponentInstance;
@@ -16,6 +17,9 @@ export const SelectionOverlay: React.FC<SelectionOverlayProps> = ({ instance, el
   const overlayRef = useRef<HTMLDivElement>(null);
   const { moveInstance, findInstance } = useBuilderStore();
   const { getComputedStyles } = useStyleStore();
+  const { isPrebuiltInstance } = usePrebuiltStore();
+  
+  const isPrebuilt = isPrebuiltInstance(instance.id);
   
   // Get computed styles to check if element has grid display
   const computedStyles = getComputedStyles(instance.styleSourceIds || []);
@@ -102,6 +106,11 @@ export const SelectionOverlay: React.FC<SelectionOverlayProps> = ({ instance, el
   const label = instance.label || instance.type;
   const isHeading = instance.type === 'Heading';
   const isRichText = instance.type === 'RichText';
+  
+  // Colors based on prebuilt status
+  const borderColor = isPrebuilt ? 'border-green-500' : 'border-blue-500';
+  const bgColor = isPrebuilt ? 'bg-green-500' : 'bg-blue-500';
+  const hoverBgColor = isPrebuilt ? 'hover:bg-green-600' : 'hover:bg-blue-600';
 
   // Parse grid template columns/rows for grid overlay
   const parseGridTemplate = (template: string | undefined): number => {
@@ -148,8 +157,8 @@ export const SelectionOverlay: React.FC<SelectionOverlayProps> = ({ instance, el
         height: `${rect.height}px`,
       }}
     >
-      {/* Blue border */}
-      <div className="absolute inset-0 border-2 border-blue-500 rounded pointer-events-none" />
+      {/* Border - green for prebuilt, blue for normal */}
+      <div className={`absolute inset-0 border-2 ${borderColor} rounded pointer-events-none`} />
       
       {/* Grid overlay for grid layouts */}
       {isGrid && gridCols > 0 && gridRows > 0 && (
@@ -197,8 +206,9 @@ export const SelectionOverlay: React.FC<SelectionOverlayProps> = ({ instance, el
       
       {/* Label badge with arrows and settings */}
       <div className="absolute -top-7 left-0 flex items-center gap-0.5 pointer-events-auto">
-        <div className="bg-blue-500 text-white px-2 py-0.5 rounded text-[10px] font-medium flex items-center gap-1">
+        <div className={`${bgColor} text-white px-2 py-0.5 rounded text-[10px] font-medium flex items-center gap-1`}>
           {label}
+          {isPrebuilt && <span className="text-[9px] opacity-80">●</span>}
           {isHeading && (
             <span className="text-[9px] opacity-80">
               {instance.props.level || 'h1'}
@@ -208,7 +218,7 @@ export const SelectionOverlay: React.FC<SelectionOverlayProps> = ({ instance, el
         {isHeading && (
           <button
             onClick={handleSettingsClick}
-            className="bg-blue-500 hover:bg-blue-600 text-white p-0.5 rounded transition-colors"
+            className={`${bgColor} ${hoverBgColor} text-white p-0.5 rounded transition-colors`}
             title="Heading settings"
           >
             <Settings className="w-3 h-3" />
@@ -217,7 +227,7 @@ export const SelectionOverlay: React.FC<SelectionOverlayProps> = ({ instance, el
         {isRichText && (
           <button
             onClick={handleAddElementClick}
-            className="bg-blue-500 hover:bg-blue-600 text-white p-0.5 rounded transition-colors"
+            className={`${bgColor} ${hoverBgColor} text-white p-0.5 rounded transition-colors`}
             title="Add element"
           >
             <Plus className="w-3 h-3" />
@@ -225,14 +235,14 @@ export const SelectionOverlay: React.FC<SelectionOverlayProps> = ({ instance, el
         )}
         <button
           onClick={handleMoveUp}
-          className="bg-blue-500 hover:bg-blue-600 text-white p-0.5 rounded transition-colors"
+          className={`${bgColor} ${hoverBgColor} text-white p-0.5 rounded transition-colors`}
           title="Move up"
         >
           <ArrowUp className="w-3 h-3" />
         </button>
         <button
           onClick={handleMoveDown}
-          className="bg-blue-500 hover:bg-blue-600 text-white p-0.5 rounded transition-colors"
+          className={`${bgColor} ${hoverBgColor} text-white p-0.5 rounded transition-colors`}
           title="Move down"
         >
           <ArrowDown className="w-3 h-3" />
