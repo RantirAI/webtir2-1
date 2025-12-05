@@ -333,11 +333,36 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
     setEditingProperty(null);
   };
 
+  // Switch all units for a spacing group (margin or padding) to a new unit
+  const switchGroupUnit = (group: 'margin' | 'padding', newUnit: string) => {
+    const sides = ['Top', 'Right', 'Bottom', 'Left'];
+    const values = group === 'margin' 
+      ? [marginTop, marginRight, marginBottom, marginLeft]
+      : [paddingTop, paddingRight, paddingBottom, paddingLeft];
+    
+    sides.forEach((side, index) => {
+      const currentValue = values[index] || '0';
+      const { num } = parseValue(currentValue);
+      const newValue = newUnit === 'auto' ? 'auto' : `${num}${newUnit}`;
+      onUpdate(`${group}${side}`, newValue);
+    });
+    
+    // Also update the editing property if open
+    if (editingProperty) {
+      setEditingProperty({ ...editingProperty, unit: newUnit });
+    }
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && editingProperty) {
       handlePopoverClose(true);
     } else if (e.key === 'Escape') {
       setEditingProperty(null);
+    } else if (e.key === '%' && editingProperty) {
+      // Intercept % key to switch all units for the group
+      e.preventDefault();
+      const group = editingProperty.property.startsWith('margin') ? 'margin' : 'padding';
+      switchGroupUnit(group, '%');
     }
   };
 
