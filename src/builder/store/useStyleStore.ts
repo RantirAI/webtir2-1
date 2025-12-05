@@ -5,6 +5,7 @@ import {
   previewNextClassName, 
   normalizeComponentBase,
   validateRename,
+  calculateGapFillRenumbering,
   AutoClassConfig
 } from '../utils/autoClassSystem';
 
@@ -113,19 +114,50 @@ export const useStyleStore = create<StyleStore>((set, get) => ({
     return id;
   },
 
-  renameStyleSource: (id, newName) => {
+  renameStyleSource: (id, newName, skipGapFill = false) => {
     // Validate and sanitize class name to be framework-safe
     const safeName = newName.trim().toLowerCase().replace(/[^a-z0-9-_]/g, '-');
     
-    set((state) => ({
-      styleSources: {
-        ...state.styleSources,
-        [id]: {
-          ...state.styleSources[id],
-          name: safeName,
-        },
-      },
-    }));
+    const { styleSources, autoClassConfig } = get();
+    const oldName = styleSources[id]?.name;
+    
+    // Calculate gap-fill renumbering if needed (only for primary rename, not recursive calls)
+    let renumberingOps: { id: string; newName: string }[] = [];
+    if (!skipGapFill && oldName) {
+      const existingClasses = Object.values(styleSources)
+        .filter(s => s.type === 'local')
+        .map(s => ({ id: s.id, name: s.name }));
+      
+      renumberingOps = calculateGapFillRenumbering(
+        id,
+        oldName,
+        safeName,
+        existingClasses,
+        autoClassConfig.separator || '-'
+      );
+    }
+    
+    set((state) => {
+      const newStyleSources = { ...state.styleSources };
+      
+      // Apply the primary rename
+      newStyleSources[id] = {
+        ...newStyleSources[id],
+        name: safeName,
+      };
+      
+      // Apply gap-fill renumbering for other classes
+      for (const op of renumberingOps) {
+        if (newStyleSources[op.id]) {
+          newStyleSources[op.id] = {
+            ...newStyleSources[op.id],
+            name: op.newName,
+          };
+        }
+      }
+      
+      return { styleSources: newStyleSources };
+    });
   },
 
   deleteStyleSource: (id) => {
