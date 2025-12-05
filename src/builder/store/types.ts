@@ -239,7 +239,7 @@ export interface StyleStore {
   
   // Actions
   createStyleSource: (type: StyleSourceType, name?: string) => string;
-  renameStyleSource: (id: string, newName: string) => void;
+  renameStyleSource: (id: string, newName: string, skipGapFill?: boolean) => void;
   deleteStyleSource: (id: string) => void;
   setStyle: (styleSourceId: string, property: string, value: string, breakpointId?: string, state?: PseudoState) => void;
   getComputedStyles: (styleSourceIds: string[], breakpointId?: string, state?: PseudoState) => StyleDeclaration;
