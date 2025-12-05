@@ -35,6 +35,7 @@ import { ContextMenu } from './ContextMenu';
 import { SelectionOverlay } from './SelectionOverlay';
 import { HoverOverlay } from './HoverOverlay';
 import { HeadingSettingsPopover } from './HeadingSettingsPopover';
+import { SavePrebuiltDialog } from './SavePrebuiltDialog';
 import { useDroppable } from '@dnd-kit/core';
 import { componentRegistry } from '../primitives/registry';
 import { generateId } from '../utils/instance';
@@ -84,6 +85,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
   const [resizeStart, setResizeStart] = useState({ x: 0, width: 0 });
   const [touchStart, setTouchStart] = useState<{ x: number; y: number; distance: number } | null>(null);
   const [initialZoom, setInitialZoom] = useState<number>(100);
+  const [prebuiltDialog, setPrebuiltDialog] = useState<{ open: boolean; instance: ComponentInstance | null }>({ open: false, instance: null });
 
   const { setNodeRef } = useDroppable({
     id: 'canvas-drop-zone',
@@ -869,7 +871,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
       
       {/* Hover/Selection Overlays and Context Menu disabled in Preview */}
       {!isPreviewMode && hoveredElement && (
-        <HoverOverlay element={hoveredElement} />
+        <HoverOverlay element={hoveredElement} instanceId={hoveredInstanceId || undefined} />
       )}
       {!isPreviewMode && selectedElement && selectedInstance && (
         <SelectionOverlay 
@@ -889,6 +891,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
           y={contextMenu.y}
           instance={contextMenu.instance}
           onClose={() => setContextMenu(null)}
+          onSaveAsPrebuilt={(instance) => setPrebuiltDialog({ open: true, instance })}
         />
       )}
       {!isPreviewMode && headingSettings?.isOpen && selectedInstance?.type === 'Heading' && (
@@ -914,6 +917,13 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
           }}
         />
       )}
+      
+      {/* Save as Prebuilt Dialog */}
+      <SavePrebuiltDialog
+        open={prebuiltDialog.open}
+        onOpenChange={(open) => setPrebuiltDialog({ ...prebuiltDialog, open })}
+        instance={prebuiltDialog.instance}
+      />
     </div>
   );
 };
