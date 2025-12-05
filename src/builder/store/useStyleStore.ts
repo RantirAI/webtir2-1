@@ -4,7 +4,7 @@ import {
   generateAutoClassName, 
   previewNextClassName, 
   normalizeComponentBase,
-  initializeCountersFromRegistry,
+  validateRename,
   AutoClassConfig
 } from '../utils/autoClassSystem';
 
@@ -14,16 +14,13 @@ const defaultBreakpoints: Breakpoint[] = [
   { id: 'mobile', label: 'Mobile', maxWidth: 767 },
 ];
 
-// Initialize counters from existing classes on first use
-let countersInitialized = false;
-
 export const useStyleStore = create<StyleStore>((set, get) => ({
   styleSources: {},
   styles: {},
   breakpoints: defaultBreakpoints,
   currentBreakpointId: 'base',
   currentPseudoState: 'default',
-  nameCounters: {},
+  nameCounters: {}, // Kept for backwards compatibility but not used for index calculation
   classDependencies: {}, // Track which classes depend on which: { classId: [dependentClassId1, dependentClassId2] }
   autoClassConfig: {
     startIndex: 1,
@@ -37,45 +34,30 @@ export const useStyleStore = create<StyleStore>((set, get) => ({
     return get().getNextAutoClassName(componentType);
   },
 
-  // Get next auto-class name and persist counter
+  // Get next auto-class name - always scans existing classes to find max+1
   getNextAutoClassName: (componentType: string) => {
-    // Ensure counters are initialized from existing classes
-    if (!countersInitialized) {
-      get().initCountersFromRegistry();
-    }
+    const { styleSources, autoClassConfig } = get();
     
-    const { nameCounters, styleSources, autoClassConfig } = get();
-    const base = normalizeComponentBase(componentType);
-    const currentCounter = nameCounters[base] || autoClassConfig.startIndex || 1;
-    
-    // Get all existing class names
+    // Get all existing class names - this is the source of truth
     const existingNames = new Set(
       Object.values(styleSources)
         .filter(s => s.type === 'local')
         .map(s => s.name)
     );
     
+    // Generate name by scanning existing classes (maxIndex + 1)
     const result = generateAutoClassName(
       componentType,
       existingNames,
-      currentCounter,
       autoClassConfig
     );
-    
-    // Update counter
-    const newCounter = result.index !== null ? result.index + 1 : currentCounter + 1;
-    set((state) => ({ 
-      nameCounters: { ...state.nameCounters, [base]: newCounter } 
-    }));
     
     return result.name;
   },
 
-  // Preview next auto-class name without persisting
+  // Preview next auto-class name without side effects - always scans existing classes
   previewNextAutoClassName: (componentType: string) => {
-    const { nameCounters, styleSources, autoClassConfig } = get();
-    const base = normalizeComponentBase(componentType);
-    const currentCounter = nameCounters[base] || autoClassConfig.startIndex || 1;
+    const { styleSources, autoClassConfig } = get();
     
     const existingNames = new Set(
       Object.values(styleSources)
@@ -83,10 +65,10 @@ export const useStyleStore = create<StyleStore>((set, get) => ({
         .map(s => s.name)
     );
     
+    // Always compute by scanning - never rely on counter
     return previewNextClassName(
       componentType,
       existingNames,
-      currentCounter,
       autoClassConfig
     );
   },
@@ -98,17 +80,9 @@ export const useStyleStore = create<StyleStore>((set, get) => ({
     }));
   },
 
-  // Initialize counters from existing class registry
+  // Initialize counters from existing class registry (kept for backwards compatibility)
   initCountersFromRegistry: () => {
-    const { styleSources, autoClassConfig } = get();
-    const existingNames = Object.values(styleSources)
-      .filter(s => s.type === 'local')
-      .map(s => s.name);
-    
-    const initializedCounters = initializeCountersFromRegistry(existingNames, autoClassConfig);
-    
-    set({ nameCounters: initializedCounters });
-    countersInitialized = true;
+    // No-op - we now always scan existing classes instead of relying on counters
   },
 
   createStyleSource: (type, name) => {
