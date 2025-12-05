@@ -231,7 +231,7 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
       const { num, unit } = parseValue(currentValue);
       setEditingProperty({
         property,
-        value: num.toString(),
+        value: '', // Clear for immediate typing
         unit,
       });
       return;
@@ -279,9 +279,11 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
       const timeDiff = endTime - startTime;
       
       if (!dragInitiated && timeDiff < 300 && !hasMoved) {
+        // Clear value to empty when it's 0, so user can type immediately
+        const initialValue = num === 0 ? '' : num.toString();
         setEditingProperty({
           property,
-          value: num.toString(),
+          value: initialValue,
           unit,
         });
       }
