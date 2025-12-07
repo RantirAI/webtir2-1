@@ -896,15 +896,18 @@ export const ComponentsPanel: React.FC = () => {
         } else {
           // Create new style source with the same name
           newStyleId = createStyleSource(styleData.source.type, styleData.source.name);
+        }
+        
+        // Always apply the saved style values (even if reusing existing source, ensure styles are present)
+        for (const [styleKey, styleValue] of Object.entries(styleData.styleValues)) {
+          // Parse the style key format: styleSourceId:breakpointId:state:property
+          const keyParts = styleKey.replace(`${oldStyleId}:`, '').split(':');
+          // Format is: breakpointId:state:property
+          const breakpoint = keyParts[0] || 'base';
+          const state = keyParts[1] || 'default';
+          const property = keyParts[2] || '';
           
-          // Apply the saved style values
-          for (const [styleKey, styleValue] of Object.entries(styleData.styleValues)) {
-            // Parse the style key: styleSourceId:property:breakpoint:state
-            const keyParts = styleKey.replace(`${oldStyleId}:`, '').split(':');
-            const property = keyParts[0];
-            const breakpoint = keyParts[1] || 'base';
-            const state = keyParts[2] || 'default';
-            
+          if (property) {
             setStyle(newStyleId, property, styleValue, breakpoint, state as any);
           }
         }
