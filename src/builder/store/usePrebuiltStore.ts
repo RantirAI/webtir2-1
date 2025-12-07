@@ -1,11 +1,14 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { ComponentInstance } from './types';
+import { ComponentInstance, StyleSource } from './types';
+import { useStyleStore } from './useStyleStore';
 
 export interface PrebuiltComponent {
   id: string;
   name: string;
   instance: ComponentInstance;
+  // Store the styles associated with this prebuilt component
+  styles: Record<string, { source: StyleSource; styleValues: Record<string, string> }>;
   createdAt: number;
 }
 
@@ -21,6 +24,15 @@ interface PrebuiltStore {
   unmarkAsPrebuilt: (instanceId: string) => void;
 }
 
+// Helper to collect all styleSourceIds from an instance and its children
+const collectStyleSourceIds = (instance: ComponentInstance): string[] => {
+  const ids: string[] = [...(instance.styleSourceIds || [])];
+  for (const child of instance.children || []) {
+    ids.push(...collectStyleSourceIds(child));
+  }
+  return ids;
+};
+
 export const usePrebuiltStore = create<PrebuiltStore>()(
   persist(
     (set, get) => ({
@@ -28,10 +40,36 @@ export const usePrebuiltStore = create<PrebuiltStore>()(
       prebuiltInstanceIds: [],
 
       addPrebuilt: (name, instance) => {
+        const styleStore = useStyleStore.getState();
+        
+        // Collect all styleSourceIds from the instance tree
+        const allStyleSourceIds = collectStyleSourceIds(instance);
+        const uniqueStyleSourceIds = [...new Set(allStyleSourceIds)];
+        
+        // Capture the styles for each styleSourceId
+        const styles: PrebuiltComponent['styles'] = {};
+        for (const styleId of uniqueStyleSourceIds) {
+          const source = styleStore.styleSources[styleId];
+          if (source) {
+            // Get all style values for this source
+            const styleValues: Record<string, string> = {};
+            Object.entries(styleStore.styles).forEach(([key, value]) => {
+              if (key.startsWith(`${styleId}:`)) {
+                styleValues[key] = value;
+              }
+            });
+            styles[styleId] = {
+              source: JSON.parse(JSON.stringify(source)),
+              styleValues,
+            };
+          }
+        }
+        
         const newPrebuilt: PrebuiltComponent = {
           id: `prebuilt-${Date.now()}`,
           name,
           instance: JSON.parse(JSON.stringify(instance)), // Deep clone
+          styles,
           createdAt: Date.now(),
         };
         
