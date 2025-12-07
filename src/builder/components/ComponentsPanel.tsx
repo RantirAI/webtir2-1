@@ -876,13 +876,53 @@ export const ComponentsPanel: React.FC = () => {
 
   const handleAddPrebuilt = (prebuilt: typeof prebuiltComponents[0]) => {
     const parentId = selectedInstanceId || 'root';
+    const { createStyleSource, setStyle, styleSources } = useStyleStore.getState();
     
-    // Deep clone and regenerate IDs
+    // Create a mapping from old styleSourceIds to new ones
+    const styleIdMapping: Record<string, string> = {};
+    
+    // Recreate the styles for this prebuilt component
+    if (prebuilt.styles) {
+      for (const [oldStyleId, styleData] of Object.entries(prebuilt.styles)) {
+        // Check if a style with the same name already exists
+        const existingSource = Object.values(styleSources).find(
+          s => s.name === styleData.source.name && s.type === styleData.source.type
+        );
+        
+        let newStyleId: string;
+        if (existingSource) {
+          // Reuse existing style source
+          newStyleId = existingSource.id;
+        } else {
+          // Create new style source with the same name
+          newStyleId = createStyleSource(styleData.source.type, styleData.source.name);
+          
+          // Apply the saved style values
+          for (const [styleKey, styleValue] of Object.entries(styleData.styleValues)) {
+            // Parse the style key: styleSourceId:property:breakpoint:state
+            const keyParts = styleKey.replace(`${oldStyleId}:`, '').split(':');
+            const property = keyParts[0];
+            const breakpoint = keyParts[1] || 'base';
+            const state = keyParts[2] || 'default';
+            
+            setStyle(newStyleId, property, styleValue, breakpoint, state as any);
+          }
+        }
+        
+        styleIdMapping[oldStyleId] = newStyleId;
+      }
+    }
+    
+    // Deep clone and regenerate IDs, remapping styleSourceIds
     const cloneWithNewIds = (instance: ComponentInstance): ComponentInstance => {
       const newId = generateId();
+      const newStyleSourceIds = (instance.styleSourceIds || []).map(
+        oldId => styleIdMapping[oldId] || oldId
+      );
       return {
         ...instance,
         id: newId,
+        styleSourceIds: newStyleSourceIds,
         children: instance.children.map(cloneWithNewIds),
       };
     };
