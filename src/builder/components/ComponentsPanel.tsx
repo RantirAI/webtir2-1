@@ -14,10 +14,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { toast } from 'sonner';
 
-const DraggableComponent: React.FC<{ type: string; label: string; icon: string }> = ({ type, label, icon }) => {
+const DraggableComponent: React.FC<{ type: string; label: string; icon: string; onAdd: () => void }> = ({ type, label, icon, onAdd }) => {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: `component-${type}`,
-    data: { type, label },
+    data: { type, label, isNewComponent: true },
   });
 
   const style = {
@@ -33,11 +33,56 @@ const DraggableComponent: React.FC<{ type: string; label: string; icon: string }
       style={style}
       {...listeners}
       {...attributes}
+      onClick={onAdd}
       className="group w-full h-20 flex flex-col items-center justify-center gap-1.5 p-2.5 rounded-lg border border-border bg-zinc-50 dark:bg-zinc-800 hover:bg-accent hover:border-primary hover:shadow-lg transition-all duration-200 text-center cursor-grab active:cursor-grabbing active:scale-95 hover:scale-[1.03]"
     >
       {IconComponent && <IconComponent className="w-5 h-5 text-zinc-600 dark:text-zinc-400 group-hover:text-primary transition-colors" />}
       <span className="text-[9px] leading-tight font-medium text-foreground line-clamp-2">{label}</span>
     </button>
+  );
+};
+
+interface PrebuiltComponentData {
+  id: string;
+  name: string;
+  instance: ComponentInstance;
+}
+
+const DraggablePrebuiltComponent: React.FC<{ prebuilt: PrebuiltComponentData; onAdd: () => void; onDelete: (e: React.MouseEvent) => void }> = ({ prebuilt, onAdd, onDelete }) => {
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+    id: `prebuilt-${prebuilt.id}`,
+    data: { type: 'Prebuilt', prebuiltId: prebuilt.id, isPrebuilt: true },
+  });
+
+  const style = {
+    transform: CSS.Translate.toString(transform),
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div 
+      ref={setNodeRef}
+      style={style}
+      {...listeners}
+      {...attributes}
+      className="group relative p-3 rounded-lg border border-border bg-zinc-50 dark:bg-zinc-800 hover:bg-accent hover:border-green-500 transition-all cursor-grab active:cursor-grabbing"
+      onClick={onAdd}
+    >
+      <div className="flex items-center gap-2">
+        <Package className="w-4 h-4 text-green-500" />
+        <span className="text-xs font-medium text-foreground truncate">{prebuilt.name}</span>
+      </div>
+      <p className="text-[10px] text-muted-foreground mt-1">
+        {prebuilt.instance.type}
+      </p>
+      <button
+        onClick={onDelete}
+        className="absolute top-1 right-1 p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-destructive/10 transition-opacity"
+        title="Delete prebuilt"
+      >
+        <Trash2 className="w-3 h-3 text-destructive" />
+      </button>
+    </div>
   );
 };
 
@@ -813,9 +858,13 @@ export const ComponentsPanel: React.FC = () => {
             <CollapsibleContent className="pb-2">
               <div className="grid grid-cols-3 gap-2">
                 {components.map((component) => (
-                  <div key={component.type} onDoubleClick={() => handleAddComponent(component.type)}>
-                    <DraggableComponent type={component.type} label={component.label} icon={component.icon} />
-                  </div>
+                  <DraggableComponent 
+                    key={component.type} 
+                    type={component.type} 
+                    label={component.label} 
+                    icon={component.icon} 
+                    onAdd={() => handleAddComponent(component.type)} 
+                  />
                 ))}
               </div>
             </CollapsibleContent>
@@ -878,26 +927,12 @@ export const ComponentsPanel: React.FC = () => {
             {filteredPrebuiltComponents.length > 0 ? (
               <div className="grid grid-cols-2 gap-2">
                 {filteredPrebuiltComponents.map((prebuilt) => (
-                  <div 
+                  <DraggablePrebuiltComponent
                     key={prebuilt.id}
-                    className="group relative p-3 rounded-lg border border-border bg-zinc-50 dark:bg-zinc-800 hover:bg-accent hover:border-green-500 transition-all cursor-pointer"
-                    onClick={() => handleAddPrebuilt(prebuilt)}
-                  >
-                    <div className="flex items-center gap-2">
-                      <Package className="w-4 h-4 text-green-500" />
-                      <span className="text-xs font-medium text-foreground truncate">{prebuilt.name}</span>
-                    </div>
-                    <p className="text-[10px] text-muted-foreground mt-1">
-                      {prebuilt.instance.type}
-                    </p>
-                    <button
-                      onClick={(e) => handleDeletePrebuilt(e, prebuilt.id, prebuilt.name)}
-                      className="absolute top-1 right-1 p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-destructive/10 transition-opacity"
-                      title="Delete prebuilt"
-                    >
-                      <Trash2 className="w-3 h-3 text-destructive" />
-                    </button>
-                  </div>
+                    prebuilt={prebuilt}
+                    onAdd={() => handleAddPrebuilt(prebuilt)}
+                    onDelete={(e) => handleDeletePrebuilt(e, prebuilt.id, prebuilt.name)}
+                  />
                 ))}
               </div>
             ) : debouncedSearch.trim() ? (

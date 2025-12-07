@@ -20,6 +20,7 @@ import { useStyleStore } from '@/builder/store/useStyleStore';
 import { useKeyboardShortcuts } from '@/builder/hooks/useKeyboardShortcuts';
 import { DropIndicator } from '@/builder/components/DropIndicator';
 import { deepestContainerCollision } from '@/builder/utils/collisionDetection';
+import { usePrebuiltStore } from '@/builder/store/usePrebuiltStore';
 import * as Icons from 'lucide-react';
 
 const Builder: React.FC = () => {
@@ -167,6 +168,50 @@ const Builder: React.FC = () => {
         moveInstance(activeId, targetParentId, targetIndex);
       }
     } else {
+      // Check if it's a prebuilt component being dragged
+      const isPrebuilt = active.data.current?.isPrebuilt;
+      const prebuiltId = active.data.current?.prebuiltId;
+      
+      if (isPrebuilt && prebuiltId) {
+        // Handle prebuilt component drop
+        const { prebuiltComponents, markAsPrebuilt } = usePrebuiltStore.getState();
+        const prebuilt = prebuiltComponents.find(p => p.id === prebuiltId);
+        if (!prebuilt) return;
+        
+        // Deep clone with new IDs
+        const cloneWithNewIds = (instance: ComponentInstance): ComponentInstance => {
+          const newId = generateId();
+          return {
+            ...instance,
+            id: newId,
+            children: instance.children.map(cloneWithNewIds),
+          };
+        };
+        
+        // Compute parent ID
+        let parentId = 'root';
+        if (over.id.toString().startsWith('droppable-')) {
+          parentId = (over as any).data.current?.instanceId || 'root';
+        } else if (over.id === 'canvas-drop-zone') {
+          const selectedType = useBuilderStore.getState().getSelectedInstance()?.type;
+          if (selectedInstanceId && (selectedType === 'Div' || selectedType === 'Container' || selectedType === 'Section')) {
+            parentId = selectedInstanceId;
+          }
+        } else {
+          const overInstance = findInstance(overId);
+          if (overInstance) {
+            if (overInstance.type === 'Div' || overInstance.type === 'Container' || overInstance.type === 'Section') {
+              parentId = overId;
+            }
+          }
+        }
+        
+        const newInstance = cloneWithNewIds(prebuilt.instance);
+        addInstance(newInstance, parentId);
+        markAsPrebuilt(newInstance.id);
+        return;
+      }
+      
       // Creating new instance from component panel
       const componentType = active.data.current?.type;
       if (!componentType) return;
