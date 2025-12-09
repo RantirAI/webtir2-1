@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ComponentInstance } from '../store/types';
-import { usePrebuiltStore } from '../store/usePrebuiltStore';
+import { useComponentInstanceStore } from '../store/useComponentInstanceStore';
 import { toast } from 'sonner';
 
 interface SavePrebuiltDialogProps {
@@ -25,7 +25,7 @@ export const SavePrebuiltDialog: React.FC<SavePrebuiltDialogProps> = ({
   instance,
 }) => {
   const [name, setName] = useState('');
-  const { addPrebuilt, markAsPrebuilt } = usePrebuiltStore();
+  const { addPrebuilt, linkInstance } = useComponentInstanceStore();
 
   const handleSave = () => {
     if (!instance) return;
@@ -34,8 +34,9 @@ export const SavePrebuiltDialog: React.FC<SavePrebuiltDialogProps> = ({
       return;
     }
 
-    addPrebuilt(name.trim(), instance);
-    markAsPrebuilt(instance.id);
+    const prebuiltId = addPrebuilt(name.trim(), instance);
+    // Link the original instance to the prebuilt
+    linkInstance(instance.id, prebuiltId, {});
     toast.success(`"${name.trim()}" saved as prebuilt component`);
     setName('');
     onOpenChange(false);

@@ -20,7 +20,7 @@ import { useStyleStore } from '@/builder/store/useStyleStore';
 import { useKeyboardShortcuts } from '@/builder/hooks/useKeyboardShortcuts';
 import { DropIndicator } from '@/builder/components/DropIndicator';
 import { deepestContainerCollision } from '@/builder/utils/collisionDetection';
-import { usePrebuiltStore } from '@/builder/store/usePrebuiltStore';
+import { useComponentInstanceStore, createLinkedInstance } from '@/builder/store/useComponentInstanceStore';
 import * as Icons from 'lucide-react';
 
 const Builder: React.FC = () => {
@@ -173,64 +173,13 @@ const Builder: React.FC = () => {
       const prebuiltId = active.data.current?.prebuiltId;
       
       if (isPrebuilt && prebuiltId) {
-        // Handle prebuilt component drop
-        const { prebuiltComponents, markAsPrebuilt } = usePrebuiltStore.getState();
-        const prebuilt = prebuiltComponents.find(p => p.id === prebuiltId);
-        if (!prebuilt) return;
+        // Handle prebuilt component drop using unified instance system
+        const { linkInstance } = useComponentInstanceStore.getState();
         
-        const { createStyleSource, setStyle, styleSources } = useStyleStore.getState();
+        const result = createLinkedInstance(prebuiltId);
+        if (!result) return;
         
-        // Create a mapping from old styleSourceIds to new ones
-        const styleIdMapping: Record<string, string> = {};
-        
-        // Recreate the styles for this prebuilt component
-        if (prebuilt.styles) {
-          for (const [oldStyleId, styleData] of Object.entries(prebuilt.styles)) {
-            // Check if a style with the same name already exists
-            const existingSource = Object.values(styleSources).find(
-              s => s.name === styleData.source.name && s.type === styleData.source.type
-            );
-            
-            let newStyleId: string;
-            if (existingSource) {
-              // Reuse existing style source
-              newStyleId = existingSource.id;
-            } else {
-              // Create new style source with the same name
-              newStyleId = createStyleSource(styleData.source.type, styleData.source.name);
-            }
-            
-            // Always apply the saved style values (even if reusing existing source, ensure styles are present)
-            for (const [styleKey, styleValue] of Object.entries(styleData.styleValues)) {
-              // Parse the style key format: styleSourceId:breakpointId:state:property
-              const keyParts = styleKey.replace(`${oldStyleId}:`, '').split(':');
-              // Format is: breakpointId:state:property
-              const breakpoint = keyParts[0] || 'base';
-              const state = keyParts[1] || 'default';
-              const property = keyParts[2] || '';
-              
-              if (property) {
-                setStyle(newStyleId, property, styleValue, breakpoint, state as any);
-              }
-            }
-            
-            styleIdMapping[oldStyleId] = newStyleId;
-          }
-        }
-        
-        // Deep clone with new IDs, remapping styleSourceIds
-        const cloneWithNewIds = (instance: ComponentInstance): ComponentInstance => {
-          const newId = generateId();
-          const newStyleSourceIds = (instance.styleSourceIds || []).map(
-            oldId => styleIdMapping[oldId] || oldId
-          );
-          return {
-            ...instance,
-            id: newId,
-            styleSourceIds: newStyleSourceIds,
-            children: instance.children.map(cloneWithNewIds),
-          };
-        };
+        const { instance: newInstance, styleIdMapping } = result;
         
         // Compute parent ID
         let parentId = 'root';
@@ -250,9 +199,10 @@ const Builder: React.FC = () => {
           }
         }
         
-        const newInstance = cloneWithNewIds(prebuilt.instance);
         addInstance(newInstance, parentId);
-        markAsPrebuilt(newInstance.id);
+        
+        // Link the instance to the prebuilt for future updates
+        linkInstance(newInstance.id, prebuiltId, styleIdMapping);
         return;
       }
       

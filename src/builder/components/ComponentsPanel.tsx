@@ -2,13 +2,13 @@ import React, { useState, useMemo } from 'react';
 import { componentRegistry } from '../primitives/registry';
 import { useBuilderStore } from '../store/useBuilderStore';
 import { useStyleStore } from '../store/useStyleStore';
-import { usePrebuiltStore } from '../store/usePrebuiltStore';
+import { useComponentInstanceStore, createLinkedInstance } from '../store/useComponentInstanceStore';
 import { ComponentInstance, ComponentType } from '../store/types';
 import { generateId } from '../utils/instance';
 import * as Icons from 'lucide-react';
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
-import { Search, ChevronDown, Trash2, Package } from 'lucide-react';
+import { Search, ChevronDown, Trash2, Package, Link2, Link2Off } from 'lucide-react';
 import { useDebounce } from '@/hooks/useDebounce';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -46,9 +46,14 @@ interface PrebuiltComponentData {
   id: string;
   name: string;
   instance: ComponentInstance;
+  linkedCount?: number;
 }
 
-const DraggablePrebuiltComponent: React.FC<{ prebuilt: PrebuiltComponentData; onAdd: () => void; onDelete: (e: React.MouseEvent) => void }> = ({ prebuilt, onAdd, onDelete }) => {
+const DraggablePrebuiltComponent: React.FC<{ 
+  prebuilt: PrebuiltComponentData; 
+  onAdd: () => void; 
+  onDelete: (e: React.MouseEvent) => void;
+}> = ({ prebuilt, onAdd, onDelete }) => {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: `prebuilt-${prebuilt.id}`,
     data: { type: 'Prebuilt', prebuiltId: prebuilt.id, isPrebuilt: true },
@@ -72,9 +77,17 @@ const DraggablePrebuiltComponent: React.FC<{ prebuilt: PrebuiltComponentData; on
         <Package className="w-4 h-4 text-green-500" />
         <span className="text-xs font-medium text-foreground truncate">{prebuilt.name}</span>
       </div>
-      <p className="text-[10px] text-muted-foreground mt-1">
-        {prebuilt.instance.type}
-      </p>
+      <div className="flex items-center gap-2 mt-1">
+        <p className="text-[10px] text-muted-foreground">
+          {prebuilt.instance.type}
+        </p>
+        {prebuilt.linkedCount !== undefined && prebuilt.linkedCount > 0 && (
+          <span className="flex items-center gap-0.5 text-[9px] text-green-600 dark:text-green-400">
+            <Link2 className="w-3 h-3" />
+            {prebuilt.linkedCount}
+          </span>
+        )}
+      </div>
       <button
         onClick={onDelete}
         className="absolute top-1 right-1 p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-destructive/10 transition-opacity"
@@ -89,7 +102,12 @@ const DraggablePrebuiltComponent: React.FC<{ prebuilt: PrebuiltComponentData; on
 export const ComponentsPanel: React.FC = () => {
   const addInstance = useBuilderStore((state) => state.addInstance);
   const selectedInstanceId = useBuilderStore((state) => state.selectedInstanceId);
-  const { prebuiltComponents, removePrebuilt, markAsPrebuilt } = usePrebuiltStore();
+  const { 
+    prebuiltComponents, 
+    removePrebuilt, 
+    linkInstance, 
+    getLinkedInstances 
+  } = useComponentInstanceStore();
 
   const handleAddComponent = (type: string) => {
     const meta = componentRegistry[type];
@@ -876,64 +894,23 @@ export const ComponentsPanel: React.FC = () => {
 
   const handleAddPrebuilt = (prebuilt: typeof prebuiltComponents[0]) => {
     const parentId = selectedInstanceId || 'root';
-    const { createStyleSource, setStyle, styleSources } = useStyleStore.getState();
     
-    // Create a mapping from old styleSourceIds to new ones
-    const styleIdMapping: Record<string, string> = {};
-    
-    // Recreate the styles for this prebuilt component
-    if (prebuilt.styles) {
-      for (const [oldStyleId, styleData] of Object.entries(prebuilt.styles)) {
-        // Check if a style with the same name already exists
-        const existingSource = Object.values(styleSources).find(
-          s => s.name === styleData.source.name && s.type === styleData.source.type
-        );
-        
-        let newStyleId: string;
-        if (existingSource) {
-          // Reuse existing style source
-          newStyleId = existingSource.id;
-        } else {
-          // Create new style source with the same name
-          newStyleId = createStyleSource(styleData.source.type, styleData.source.name);
-        }
-        
-        // Always apply the saved style values (even if reusing existing source, ensure styles are present)
-        for (const [styleKey, styleValue] of Object.entries(styleData.styleValues)) {
-          // Parse the style key format: styleSourceId:breakpointId:state:property
-          const keyParts = styleKey.replace(`${oldStyleId}:`, '').split(':');
-          // Format is: breakpointId:state:property
-          const breakpoint = keyParts[0] || 'base';
-          const state = keyParts[1] || 'default';
-          const property = keyParts[2] || '';
-          
-          if (property) {
-            setStyle(newStyleId, property, styleValue, breakpoint, state as any);
-          }
-        }
-        
-        styleIdMapping[oldStyleId] = newStyleId;
-      }
+    // Use the unified createLinkedInstance utility
+    const result = createLinkedInstance(prebuilt.id);
+    if (!result) {
+      toast.error(`Failed to create instance of "${prebuilt.name}"`);
+      return;
     }
     
-    // Deep clone and regenerate IDs, remapping styleSourceIds
-    const cloneWithNewIds = (instance: ComponentInstance): ComponentInstance => {
-      const newId = generateId();
-      const newStyleSourceIds = (instance.styleSourceIds || []).map(
-        oldId => styleIdMapping[oldId] || oldId
-      );
-      return {
-        ...instance,
-        id: newId,
-        styleSourceIds: newStyleSourceIds,
-        children: instance.children.map(cloneWithNewIds),
-      };
-    };
+    const { instance: newInstance, styleIdMapping } = result;
     
-    const newInstance = cloneWithNewIds(prebuilt.instance);
+    // Add to canvas
     addInstance(newInstance, parentId);
-    markAsPrebuilt(newInstance.id);
-    toast.success(`Added "${prebuilt.name}" to canvas`);
+    
+    // Link the instance to the prebuilt for future updates
+    linkInstance(newInstance.id, prebuilt.id, styleIdMapping);
+    
+    toast.success(`Added "${prebuilt.name}" to canvas (linked)`);
   };
 
   const handleDeletePrebuilt = (e: React.MouseEvent, id: string, name: string) => {
@@ -943,10 +920,14 @@ export const ComponentsPanel: React.FC = () => {
   };
 
   const filteredPrebuiltComponents = useMemo(() => {
-    if (!debouncedSearch.trim()) return prebuiltComponents;
+    const componentsWithCount = prebuiltComponents.map(p => ({
+      ...p,
+      linkedCount: getLinkedInstances(p.id).length,
+    }));
+    if (!debouncedSearch.trim()) return componentsWithCount;
     const searchLower = debouncedSearch.toLowerCase();
-    return prebuiltComponents.filter(p => p.name.toLowerCase().includes(searchLower));
-  }, [debouncedSearch, prebuiltComponents]);
+    return componentsWithCount.filter(p => p.name.toLowerCase().includes(searchLower));
+  }, [debouncedSearch, prebuiltComponents, getLinkedInstances]);
 
   return (
     <div className="w-full h-full flex flex-col">
