@@ -262,87 +262,9 @@ export function validateRename(
   return { valid: true };
 }
 
-/**
- * Get all auto-generated classes for a specific base type, sorted by index
- */
-export function getAutoClassesByBase(
-  base: string,
-  existingClasses: { id: string; name: string }[],
-  separator: string = '-'
-): { id: string; name: string; index: number }[] {
-  const result: { id: string; name: string; index: number }[] = [];
-  
-  for (const cls of existingClasses) {
-    const parsed = parseClassNameParts(cls.name, separator);
-    if (parsed && parsed.base === base) {
-      result.push({
-        id: cls.id,
-        name: cls.name,
-        index: parsed.index,
-      });
-    }
-  }
-  
-  // Sort by index
-  return result.sort((a, b) => a.index - b.index);
-}
-
-/**
- * Calculate renumbering operations needed when an auto-class is renamed
- * Returns array of { id, newName } for classes that need to be renamed
- */
-export function calculateGapFillRenumbering(
-  renamedClassId: string,
-  oldName: string,
-  newName: string,
-  existingClasses: { id: string; name: string }[],
-  separator: string = '-'
-): { id: string; newName: string }[] {
-  const oldParsed = parseClassNameParts(oldName, separator);
-  const newParsed = parseClassNameParts(newName, separator);
-  
-  // Only renumber if:
-  // 1. Old name was an auto-generated name (e.g., heading-1)
-  // 2. New name is NOT an auto-generated name of the same base OR is a completely different name
-  if (!oldParsed) {
-    // Old name wasn't auto-generated, no renumbering needed
-    return [];
-  }
-  
-  const oldBase = oldParsed.base;
-  const oldIndex = oldParsed.index;
-  
-  // If new name is still auto-format with same base, no gap-fill needed
-  // (user might just be changing index directly)
-  if (newParsed && newParsed.base === oldBase) {
-    return [];
-  }
-  
-  // Get all auto-classes of the same base type (excluding the one being renamed)
-  const autoClasses = getAutoClassesByBase(oldBase, existingClasses, separator)
-    .filter(cls => cls.id !== renamedClassId);
-  
-  // Find classes with indices higher than the renamed one - they need to shift down
-  const classesToRenumber = autoClasses.filter(cls => cls.index > oldIndex);
-  
-  if (classesToRenumber.length === 0) {
-    return [];
-  }
-  
-  // Calculate new names - shift each index down by 1
-  const renumberingOps: { id: string; newName: string }[] = [];
-  
-  for (const cls of classesToRenumber) {
-    const newIndex = cls.index - 1;
-    const newClassName = `${oldBase}${separator}${newIndex}`;
-    renumberingOps.push({
-      id: cls.id,
-      newName: newClassName,
-    });
-  }
-  
-  return renumberingOps;
-}
+// NOTE: Gap-filling / renumbering logic has been removed.
+// Auto-generated class names are permanent once assigned.
+// The "Next: xxx-N" counter automatically adjusts by scanning existing classes.
 
 /**
  * Sanitize and validate custom class name
