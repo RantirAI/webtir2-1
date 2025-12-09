@@ -347,7 +347,7 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange, class
               placeholder="#000000"
             />
           </div>
-          <div className="flex-shrink-0 w-16">
+          <div className="flex-shrink-0 w-20">
             <div className="text-[9px] text-muted-foreground mb-0.5">Alpha</div>
             <div className="flex items-center">
               <input
@@ -359,9 +359,9 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange, class
                 onClick={(e) => e.stopPropagation()}
                 onMouseDown={(e) => e.stopPropagation()}
                 onKeyDown={(e) => e.stopPropagation()}
-                className="w-10 h-7 px-1 text-xs border border-border rounded-l bg-background text-center focus:outline-none focus:ring-2 focus:ring-primary"
+                className="w-12 h-7 px-2 text-xs border border-border rounded-l bg-background text-center focus:outline-none focus:ring-2 focus:ring-primary"
               />
-              <span className="h-7 px-1.5 flex items-center text-xs text-muted-foreground bg-muted border border-l-0 border-border rounded-r">%</span>
+              <span className="h-7 px-2 flex items-center text-xs text-muted-foreground bg-muted border border-l-0 border-border rounded-r">%</span>
             </div>
           </div>
         </div>
