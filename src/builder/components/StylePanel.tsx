@@ -1730,14 +1730,19 @@ export const StylePanel: React.FC<StylePanelProps> = ({
             />
           </div>
           
-          <div style={{ display: 'grid', gridTemplateColumns: '26px 1fr', gap: '2px', alignItems: 'center' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '50px 1fr', gap: '4px', alignItems: 'center' }}>
             <label className={`Label ${getPropertyColorClass('color')}`}>
-              Color<PropertyIndicator property="color" />
+              Text Color<PropertyIndicator property="color" />
             </label>
-            <ColorPicker
-              value={computedStyles.color || 'hsl(var(--foreground))'}
-              onChange={(val) => updateStyle('color', val)}
-            />
+            <div className="flex items-center gap-2">
+              <ColorPicker
+                value={computedStyles.color || 'inherit'}
+                onChange={(val) => updateStyle('color', val)}
+              />
+              <span className="text-[9px] text-muted-foreground truncate">
+                {computedStyles.color || 'inherit'}
+              </span>
+            </div>
           </div>
 
           {/* Text Align with Icons */}
@@ -1871,15 +1876,20 @@ export const StylePanel: React.FC<StylePanelProps> = ({
             {componentSupportsPropertyGroup(selectedInstance.type as ComponentType, 'backgrounds') && (
             <AccordionSection title="Backgrounds" section="backgrounds" properties={['backgroundColor', 'backgroundGradient', 'backgroundImage', 'backgroundSize', 'backgroundPosition', 'backgroundRepeat', 'backgroundClip']}>
         <div className="Col" style={{ gap: '8px' }}>
-          {/* Color */}
-          <div style={{ display: 'grid', gridTemplateColumns: '40px 1fr', gap: '4px', alignItems: 'center' }}>
+          {/* Background Color */}
+          <div style={{ display: 'grid', gridTemplateColumns: '50px 1fr', gap: '4px', alignItems: 'center' }}>
             <label className={`Label ${getPropertyColorClass('backgroundColor')}`}>
-              Color<PropertyIndicator property="backgroundColor" />
+              Fill Color<PropertyIndicator property="backgroundColor" />
             </label>
-            <ColorPicker
-              value={computedStyles.backgroundColor || 'transparent'}
-              onChange={(val) => updateStyle('backgroundColor', val)}
-            />
+            <div className="flex items-center gap-2">
+              <ColorPicker
+                value={computedStyles.backgroundColor || 'transparent'}
+                onChange={(val) => updateStyle('backgroundColor', val)}
+              />
+              <span className="text-[9px] text-muted-foreground truncate">
+                {computedStyles.backgroundColor || 'transparent'}
+              </span>
+            </div>
           </div>
 
           {/* Gradient - only for layout components like Section */}
@@ -2065,14 +2075,19 @@ export const StylePanel: React.FC<StylePanelProps> = ({
               placeholder="0"
             />
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '26px 1fr', gap: '2px', alignItems: 'center' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '50px 1fr', gap: '4px', alignItems: 'center' }}>
             <label className={`Label ${getPropertyColorClass('borderColor')}`}>
-              Color<PropertyIndicator property="borderColor" />
+              Border Color<PropertyIndicator property="borderColor" />
             </label>
-            <ColorPicker
-              value={computedStyles.borderColor || 'hsl(var(--border))'}
-              onChange={(val) => updateStyle('borderColor', val)}
-            />
+            <div className="flex items-center gap-2">
+              <ColorPicker
+                value={computedStyles.borderColor || 'hsl(var(--border))'}
+                onChange={(val) => updateStyle('borderColor', val)}
+              />
+              <span className="text-[9px] text-muted-foreground truncate">
+                {computedStyles.borderColor || 'inherit'}
+              </span>
+            </div>
           </div>
         </div>
             </AccordionSection>
@@ -2100,9 +2115,9 @@ export const StylePanel: React.FC<StylePanelProps> = ({
               <option value="lighten">Lighten</option>
             </select>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '26px 1fr', gap: '2px', alignItems: 'center' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '40px 1fr 40px', gap: '4px', alignItems: 'center' }}>
             <label className={`Label ${getPropertyColorClass('opacity')}`}>
-              Opac<PropertyIndicator property="opacity" />
+              Opacity<PropertyIndicator property="opacity" />
             </label>
             <input
               className="Input"
@@ -2113,6 +2128,12 @@ export const StylePanel: React.FC<StylePanelProps> = ({
               value={computedStyles.opacity || '1'}
               onChange={(e) => updateStyle('opacity', e.target.value)}
             />
+            <span className="text-[10px] text-muted-foreground text-right">
+              {Math.round((parseFloat(computedStyles.opacity || '1') * 100))}%
+            </span>
+          </div>
+          <div className="text-[9px] text-muted-foreground px-1 -mt-1">
+            Controls element visibility. For color transparency, use alpha in color picker.
           </div>
           
           {/* Shadow Manager */}

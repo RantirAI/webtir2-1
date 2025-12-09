@@ -51,8 +51,15 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange, class
   
   const handleConfirm = () => {
     // Only update parent on confirm
+    // Output pure color (hex) when alpha is 100%, otherwise rgba
     const a = workingAlpha / 100;
-    onChange(`rgba(${workingR}, ${workingG}, ${workingB}, ${a})`);
+    if (a >= 1) {
+      // Full opacity - output pure hex color (no alpha)
+      onChange(rgbToHex(workingR, workingG, workingB));
+    } else {
+      // Partial opacity - output rgba
+      onChange(`rgba(${workingR}, ${workingG}, ${workingB}, ${a.toFixed(2)})`);
+    }
     setOpen(false);
   };
   
@@ -326,9 +333,10 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange, class
           </div>
         </div>
         
-        {/* Hex input and percentage */}
+        {/* Hex input and alpha percentage */}
         <div className="flex items-center gap-2 mb-3">
           <div className="flex-1">
+            <div className="text-[9px] text-muted-foreground mb-0.5">HEX</div>
             <input
               type="text"
               value={hex}
@@ -339,21 +347,31 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange, class
               placeholder="#000000"
             />
           </div>
-          <div className="flex-shrink-0 w-12">
-            <input
-              type="number"
-              min="0"
-              max="100"
-              value={Math.round(workingAlpha)}
-              onChange={handleAlphaInput}
-              onClick={(e) => e.stopPropagation()}
-              onMouseDown={(e) => e.stopPropagation()}
-              onKeyDown={(e) => e.stopPropagation()}
-              className="w-full h-7 px-1 text-xs border border-border rounded bg-background text-center focus:outline-none focus:ring-2 focus:ring-primary"
-            />
+          <div className="flex-shrink-0 w-14">
+            <div className="text-[9px] text-muted-foreground mb-0.5">Alpha</div>
+            <div className="flex items-center">
+              <input
+                type="number"
+                min="0"
+                max="100"
+                value={Math.round(workingAlpha)}
+                onChange={handleAlphaInput}
+                onClick={(e) => e.stopPropagation()}
+                onMouseDown={(e) => e.stopPropagation()}
+                onKeyDown={(e) => e.stopPropagation()}
+                className="w-full h-7 px-1 text-xs border border-border rounded-l bg-background text-center focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+              <span className="h-7 px-1.5 flex items-center text-xs text-muted-foreground bg-muted border border-l-0 border-border rounded-r">%</span>
+            </div>
           </div>
-          <span className="text-xs text-muted-foreground">%</span>
         </div>
+        
+        {/* Alpha info message */}
+        {workingAlpha < 100 && (
+          <div className="text-[9px] text-amber-600 dark:text-amber-400 mb-2 px-1">
+            Color will include alpha transparency. For element opacity, use the Effects → Opacity slider.
+          </div>
+        )}
         
         {/* Color tokens */}
         <div className="pt-2 border-t border-border">
