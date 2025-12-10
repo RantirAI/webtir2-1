@@ -47,12 +47,14 @@ interface PrebuiltComponentData {
   name: string;
   instance: ComponentInstance;
   linkedCount?: number;
+  isSystem?: boolean;
+  category?: string;
 }
 
 const DraggablePrebuiltComponent: React.FC<{ 
   prebuilt: PrebuiltComponentData; 
   onAdd: () => void; 
-  onDelete: (e: React.MouseEvent) => void;
+  onDelete?: (e: React.MouseEvent) => void;
 }> = ({ prebuilt, onAdd, onDelete }) => {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: `prebuilt-${prebuilt.id}`,
@@ -88,13 +90,16 @@ const DraggablePrebuiltComponent: React.FC<{
           </span>
         )}
       </div>
-      <button
-        onClick={onDelete}
-        className="absolute top-1 right-1 p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-destructive/10 transition-opacity"
-        title="Delete prebuilt"
-      >
-        <Trash2 className="w-3 h-3 text-destructive" />
-      </button>
+      {/* Only show delete button for user prebuilts, not system ones */}
+      {!prebuilt.isSystem && onDelete && (
+        <button
+          onClick={onDelete}
+          className="absolute top-1 right-1 p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-destructive/10 transition-opacity"
+          title="Delete prebuilt"
+        >
+          <Trash2 className="w-3 h-3 text-destructive" />
+        </button>
+      )}
     </div>
   );
 };
@@ -929,6 +934,34 @@ export const ComponentsPanel: React.FC = () => {
     return componentsWithCount.filter(p => p.name.toLowerCase().includes(searchLower));
   }, [debouncedSearch, prebuiltComponents, getLinkedInstances]);
 
+  // Group prebuilts by category (system) and user prebuilts
+  const groupedPrebuilts = useMemo(() => {
+    const systemPrebuilts = filteredPrebuiltComponents.filter(p => p.isSystem);
+    const userPrebuilts = filteredPrebuiltComponents.filter(p => !p.isSystem);
+    
+    // Group system prebuilts by category
+    const categorizedSystem: Record<string, typeof systemPrebuilts> = {};
+    systemPrebuilts.forEach(p => {
+      const category = p.category || 'Other';
+      if (!categorizedSystem[category]) {
+        categorizedSystem[category] = [];
+      }
+      categorizedSystem[category].push(p);
+    });
+    
+    return { categorizedSystem, userPrebuilts };
+  }, [filteredPrebuiltComponents]);
+
+  const [openPrebuiltCategories, setOpenPrebuiltCategories] = useState<Record<string, boolean>>({
+    'Sections': true,
+    'Cards': true,
+    'Custom': true,
+  });
+
+  const togglePrebuiltCategory = (category: string) => {
+    setOpenPrebuiltCategories(prev => ({ ...prev, [category]: !prev[category] }));
+  };
+
   return (
     <div className="w-full h-full flex flex-col">
       <div className="p-2 pb-1.5 shrink-0">
@@ -947,30 +980,62 @@ export const ComponentsPanel: React.FC = () => {
         {activeSubTab === 'elements' ? (
           <>{renderCategorySection(filteredBasicCategories)}{filteredBasicCategories.length === 0 && (<div className="flex flex-col items-center justify-center py-12 text-center space-y-2"><Search className="w-8 h-8 text-muted-foreground/50" /><p className="text-sm text-muted-foreground">No elements found</p></div>)}</>
         ) : (
-          <div className="space-y-3">
-            {filteredPrebuiltComponents.length > 0 ? (
-              <div className="grid grid-cols-2 gap-2">
-                {filteredPrebuiltComponents.map((prebuilt) => (
-                  <DraggablePrebuiltComponent
-                    key={prebuilt.id}
-                    prebuilt={prebuilt}
-                    onAdd={() => handleAddPrebuilt(prebuilt)}
-                    onDelete={(e) => handleDeletePrebuilt(e, prebuilt.id, prebuilt.name)}
-                  />
-                ))}
-              </div>
-            ) : debouncedSearch.trim() ? (
+          <div className="space-y-2">
+            {/* System prebuilts grouped by category */}
+            {Object.entries(groupedPrebuilts.categorizedSystem).map(([category, prebuilts]) => (
+              <Collapsible 
+                key={category} 
+                open={openPrebuiltCategories[category] !== false} 
+                onOpenChange={() => togglePrebuiltCategory(category)}
+              >
+                <CollapsibleTrigger className="w-full flex items-center justify-between py-1.5">
+                  <h3 className="text-[10px] font-bold text-foreground uppercase tracking-[0.5px]">{category}</h3>
+                  <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${openPrebuiltCategories[category] !== false ? 'rotate-180' : ''}`} />
+                </CollapsibleTrigger>
+                <CollapsibleContent className="pb-2">
+                  <div className="grid grid-cols-2 gap-2">
+                    {prebuilts.map((prebuilt) => (
+                      <DraggablePrebuiltComponent
+                        key={prebuilt.id}
+                        prebuilt={prebuilt}
+                        onAdd={() => handleAddPrebuilt(prebuilt)}
+                      />
+                    ))}
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
+            ))}
+            
+            {/* User prebuilts */}
+            {groupedPrebuilts.userPrebuilts.length > 0 && (
+              <Collapsible 
+                open={openPrebuiltCategories['Custom'] !== false} 
+                onOpenChange={() => togglePrebuiltCategory('Custom')}
+              >
+                <CollapsibleTrigger className="w-full flex items-center justify-between py-1.5">
+                  <h3 className="text-[10px] font-bold text-foreground uppercase tracking-[0.5px]">Custom</h3>
+                  <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${openPrebuiltCategories['Custom'] !== false ? 'rotate-180' : ''}`} />
+                </CollapsibleTrigger>
+                <CollapsibleContent className="pb-2">
+                  <div className="grid grid-cols-2 gap-2">
+                    {groupedPrebuilts.userPrebuilts.map((prebuilt) => (
+                      <DraggablePrebuiltComponent
+                        key={prebuilt.id}
+                        prebuilt={prebuilt}
+                        onAdd={() => handleAddPrebuilt(prebuilt)}
+                        onDelete={(e) => handleDeletePrebuilt(e, prebuilt.id, prebuilt.name)}
+                      />
+                    ))}
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
+            )}
+            
+            {/* Empty state */}
+            {filteredPrebuiltComponents.length === 0 && debouncedSearch.trim() && (
               <div className="flex flex-col items-center justify-center py-12 text-center space-y-2">
                 <Search className="w-8 h-8 text-muted-foreground/50" />
                 <p className="text-sm text-muted-foreground">No prebuilt components found</p>
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center py-16 text-center space-y-3">
-                <Package className="w-12 h-12 text-muted-foreground/50" />
-                <div className="space-y-1">
-                  <p className="text-sm font-medium text-foreground">No Prebuilt Components</p>
-                  <p className="text-xs text-muted-foreground">Right-click any component and select "Save as Prebuilt" to save it here</p>
-                </div>
               </div>
             )}
           </div>
