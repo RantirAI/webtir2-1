@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { usePrebuiltStore } from '../store/usePrebuiltStore';
+import { useComponentInstanceStore } from '../store/useComponentInstanceStore';
 
 interface HoverOverlayProps {
   element: HTMLElement;
@@ -8,9 +8,9 @@ interface HoverOverlayProps {
 
 export const HoverOverlay: React.FC<HoverOverlayProps> = ({ element, instanceId }) => {
   const [rect, setRect] = useState<DOMRect | null>(null);
-  const { isPrebuiltInstance } = usePrebuiltStore();
+  const { isLinkedInstance } = useComponentInstanceStore();
   
-  const isPrebuilt = instanceId ? isPrebuiltInstance(instanceId) : false;
+  const isPrebuilt = instanceId ? isLinkedInstance(instanceId) : false;
   const borderColor = isPrebuilt ? '#22c55e' : '#3b82f6';
   const bgColor = isPrebuilt ? 'rgba(34, 197, 94, 0.05)' : 'rgba(59, 130, 246, 0.05)';
   
