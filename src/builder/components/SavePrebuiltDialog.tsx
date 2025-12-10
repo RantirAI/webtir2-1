@@ -19,6 +19,15 @@ interface SavePrebuiltDialogProps {
   instance: ComponentInstance | null;
 }
 
+// Helper to collect all styleSourceIds from an instance and its children
+const collectStyleSourceIds = (instance: ComponentInstance): string[] => {
+  const ids: string[] = [...(instance.styleSourceIds || [])];
+  for (const child of instance.children || []) {
+    ids.push(...collectStyleSourceIds(child));
+  }
+  return ids;
+};
+
 export const SavePrebuiltDialog: React.FC<SavePrebuiltDialogProps> = ({
   open,
   onOpenChange,
@@ -34,9 +43,16 @@ export const SavePrebuiltDialog: React.FC<SavePrebuiltDialogProps> = ({
       return;
     }
 
+    // Create identity mapping for styles (same IDs since we're saving the original)
+    const allStyleSourceIds = [...new Set(collectStyleSourceIds(instance))];
+    const styleIdMapping: Record<string, string> = {};
+    allStyleSourceIds.forEach(id => {
+      styleIdMapping[id] = id;
+    });
+
     const prebuiltId = addPrebuilt(name.trim(), instance);
-    // Link the original instance to the prebuilt
-    linkInstance(instance.id, prebuiltId, {});
+    // Link the original instance to the prebuilt with proper style mapping
+    linkInstance(instance.id, prebuiltId, styleIdMapping);
     toast.success(`"${name.trim()}" saved as prebuilt component`);
     setName('');
     onOpenChange(false);

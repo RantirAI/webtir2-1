@@ -3,7 +3,7 @@ import { ComponentInstance } from '../store/types';
 import { ArrowUp, ArrowDown, Settings, Plus } from 'lucide-react';
 import { useBuilderStore } from '../store/useBuilderStore';
 import { useStyleStore } from '../store/useStyleStore';
-import { usePrebuiltStore } from '../store/usePrebuiltStore';
+import { useComponentInstanceStore } from '../store/useComponentInstanceStore';
 
 interface SelectionOverlayProps {
   instance: ComponentInstance;
@@ -17,9 +17,9 @@ export const SelectionOverlay: React.FC<SelectionOverlayProps> = ({ instance, el
   const overlayRef = useRef<HTMLDivElement>(null);
   const { moveInstance, findInstance } = useBuilderStore();
   const { getComputedStyles } = useStyleStore();
-  const { isPrebuiltInstance } = usePrebuiltStore();
+  const { isLinkedInstance } = useComponentInstanceStore();
   
-  const isPrebuilt = isPrebuiltInstance(instance.id);
+  const isPrebuilt = isLinkedInstance(instance.id);
   
   // Get computed styles to check if element has grid display
   const computedStyles = getComputedStyles(instance.styleSourceIds || []);
