@@ -4,6 +4,7 @@ import { ComponentInstance, StyleSource } from './types';
 import { useStyleStore } from './useStyleStore';
 import { useBuilderStore } from './useBuilderStore';
 import { generateId } from '../utils/instance';
+import { createSystemPrebuilts, SystemPrebuiltDefinition } from '../utils/systemPrebuilts';
 
 // ============================================================================
 // TYPES
@@ -16,6 +17,8 @@ export interface PrebuiltComponent {
   styles: Record<string, { source: StyleSource; styleValues: Record<string, string> }>;
   createdAt: number;
   updatedAt: number;
+  isSystem?: boolean;
+  category?: string;
 }
 
 export interface InstanceLink {
@@ -112,6 +115,45 @@ const captureStyles = (instance: ComponentInstance): PrebuiltComponent['styles']
   return styles;
 };
 
+// Convert system prebuilt definitions to PrebuiltComponent format
+const convertSystemPrebuiltToPrebuilt = (
+  systemPrebuilt: SystemPrebuiltDefinition
+): PrebuiltComponent => {
+  const now = Date.now();
+  const styles: PrebuiltComponent['styles'] = {};
+  
+  // Convert default styles to the PrebuiltComponent styles format
+  for (const [styleId, styleValues] of Object.entries(systemPrebuilt.defaultStyles)) {
+    styles[styleId] = {
+      source: {
+        id: styleId,
+        type: 'local',
+        name: styleId.replace('style-', ''),
+      },
+      styleValues: Object.fromEntries(
+        Object.entries(styleValues).map(([prop, value]) => [`${styleId}:base:default:${prop}`, value])
+      ),
+    };
+  }
+  
+  return {
+    id: systemPrebuilt.id,
+    name: systemPrebuilt.name,
+    instance: systemPrebuilt.instance,
+    styles,
+    createdAt: now,
+    updatedAt: now,
+    isSystem: true,
+    category: systemPrebuilt.category,
+  };
+};
+
+// Get all system prebuilts as PrebuiltComponent[]
+const getSystemPrebuilts = (): PrebuiltComponent[] => {
+  const definitions = createSystemPrebuilts();
+  return definitions.map(convertSystemPrebuiltToPrebuilt);
+};
+
 const createInstanceFromPrebuilt = (
   prebuilt: PrebuiltComponent,
   overrides?: InstanceOverrides
@@ -186,7 +228,7 @@ const createInstanceFromPrebuilt = (
 export const useComponentInstanceStore = create<ComponentInstanceStore>()(
   persist(
     (set, get) => ({
-      prebuiltComponents: [],
+      prebuiltComponents: getSystemPrebuilts(),
       instanceLinks: [],
 
       // ==================== PREBUILT CRUD ====================
@@ -418,7 +460,8 @@ export const useComponentInstanceStore = create<ComponentInstanceStore>()(
     {
       name: 'component-instance-storage',
       partialize: (state) => ({
-        prebuiltComponents: state.prebuiltComponents,
+        // Only persist user prebuilts, not system ones
+        prebuiltComponents: state.prebuiltComponents.filter(p => !p.isSystem),
         instanceLinks: state.instanceLinks.map((link) => ({
           ...link,
           overrides: {
@@ -432,9 +475,14 @@ export const useComponentInstanceStore = create<ComponentInstanceStore>()(
       merge: (persisted: any, current) => {
         // Convert styles back to Sets after rehydration
         const persistedState = persisted as typeof current;
+        const userPrebuilts = (persistedState.prebuiltComponents || []).filter((p: any) => !p.isSystem);
+        const systemPrebuilts = getSystemPrebuilts();
+        
         return {
           ...current,
           ...persistedState,
+          // Combine system prebuilts with user prebuilts
+          prebuiltComponents: [...systemPrebuilts, ...userPrebuilts],
           instanceLinks: (persistedState.instanceLinks || []).map((link: any) => ({
             ...link,
             overrides: {
