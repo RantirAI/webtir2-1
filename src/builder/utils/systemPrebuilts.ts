@@ -699,232 +699,6 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
   });
 
   // ---------------------------------------------------------------------------
-  // ALERT/BANNER (shadcn Alert style)
-  // ---------------------------------------------------------------------------
-  const alertId = generateId();
-  const alertIconId = generateId();
-  const alertContentId = generateId();
-  const alertTitleId = generateId();
-  const alertDescId = generateId();
-
-  prebuilts.push({
-    id: 'system-alert-banner',
-    name: 'Alert Banner',
-    category: 'UI Components',
-    instance: {
-      id: alertId,
-      type: 'Div' as ComponentType,
-      label: 'Div',
-      props: {},
-      styleSourceIds: ['style-alert'],
-      children: [
-        {
-          id: alertIconId,
-          type: 'Div' as ComponentType,
-          label: 'Div',
-          props: {},
-          styleSourceIds: ['style-alert-icon'],
-          children: [],
-        },
-        {
-          id: alertContentId,
-          type: 'Div' as ComponentType,
-          label: 'Div',
-          props: {},
-          styleSourceIds: ['style-alert-content'],
-          children: [
-            {
-              id: alertTitleId,
-              type: 'Text' as ComponentType,
-              label: 'Text',
-              props: { children: 'Heads up!' },
-              styleSourceIds: ['style-alert-title'],
-              children: [],
-            },
-            {
-              id: alertDescId,
-              type: 'Text' as ComponentType,
-              label: 'Text',
-              props: { children: 'You can add components to your app using the CLI.' },
-              styleSourceIds: ['style-alert-desc'],
-              children: [],
-            },
-          ],
-        },
-      ],
-    },
-    defaultStyles: {
-      'style-alert': createStyleEntry({
-        display: 'flex',
-        gap: '12px',
-        padding: '16px',
-        backgroundColor: 'hsl(var(--muted))',
-        border: '1px solid hsl(var(--border))',
-        borderRadius: '8px',
-      }),
-      'style-alert-icon': createStyleEntry({
-        width: '20px',
-        height: '20px',
-        backgroundColor: 'hsl(var(--primary))',
-        borderRadius: '50%',
-        flexShrink: '0',
-      }),
-      'style-alert-content': createStyleEntry({
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '4px',
-      }),
-      'style-alert-title': createStyleEntry({
-        fontSize: '14px',
-        fontWeight: '600',
-        color: 'hsl(var(--foreground))',
-      }),
-      'style-alert-desc': createStyleEntry({
-        fontSize: '14px',
-        color: 'hsl(var(--muted-foreground))',
-        lineHeight: '1.5',
-      }),
-    },
-  });
-
-  // ---------------------------------------------------------------------------
-  // AVATAR GROUP
-  // ---------------------------------------------------------------------------
-  const avatarGroupId = generateId();
-  const avatar1Id = generateId();
-  const avatar2Id = generateId();
-  const avatar3Id = generateId();
-  const avatarMoreId = generateId();
-
-  prebuilts.push({
-    id: 'system-avatar-group',
-    name: 'Avatar Group',
-    category: 'UI Components',
-    instance: {
-      id: avatarGroupId,
-      type: 'Div' as ComponentType,
-      label: 'Div',
-      props: {},
-      styleSourceIds: ['style-avatar-group'],
-      children: [
-        {
-          id: avatar1Id,
-          type: 'Div' as ComponentType,
-          label: 'Div',
-          props: {},
-          styleSourceIds: ['style-avatar'],
-          children: [],
-        },
-        {
-          id: avatar2Id,
-          type: 'Div' as ComponentType,
-          label: 'Div',
-          props: {},
-          styleSourceIds: ['style-avatar-2'],
-          children: [],
-        },
-        {
-          id: avatar3Id,
-          type: 'Div' as ComponentType,
-          label: 'Div',
-          props: {},
-          styleSourceIds: ['style-avatar-3'],
-          children: [],
-        },
-        {
-          id: avatarMoreId,
-          type: 'Div' as ComponentType,
-          label: 'Div',
-          props: {},
-          styleSourceIds: ['style-avatar-more'],
-          children: [],
-        },
-      ],
-    },
-    defaultStyles: {
-      'style-avatar-group': createStyleEntry({
-        display: 'flex',
-        alignItems: 'center',
-      }),
-      'style-avatar': createStyleEntry({
-        width: '40px',
-        height: '40px',
-        backgroundColor: 'hsl(var(--primary))',
-        borderRadius: '50%',
-        border: '2px solid hsl(var(--background))',
-        marginLeft: '0',
-      }),
-      'style-avatar-2': createStyleEntry({
-        width: '40px',
-        height: '40px',
-        backgroundColor: 'hsl(var(--secondary))',
-        borderRadius: '50%',
-        border: '2px solid hsl(var(--background))',
-        marginLeft: '-12px',
-      }),
-      'style-avatar-3': createStyleEntry({
-        width: '40px',
-        height: '40px',
-        backgroundColor: 'hsl(var(--accent))',
-        borderRadius: '50%',
-        border: '2px solid hsl(var(--background))',
-        marginLeft: '-12px',
-      }),
-      'style-avatar-more': createStyleEntry({
-        width: '40px',
-        height: '40px',
-        backgroundColor: 'hsl(var(--muted))',
-        borderRadius: '50%',
-        border: '2px solid hsl(var(--background))',
-        marginLeft: '-12px',
-      }),
-    },
-  });
-
-  // ---------------------------------------------------------------------------
-  // BADGE
-  // ---------------------------------------------------------------------------
-  const badgeId = generateId();
-  const badgeTextId = generateId();
-
-  prebuilts.push({
-    id: 'system-badge',
-    name: 'Badge',
-    category: 'UI Components',
-    instance: {
-      id: badgeId,
-      type: 'Div' as ComponentType,
-      label: 'Div',
-      props: {},
-      styleSourceIds: ['style-badge'],
-      children: [
-        {
-          id: badgeTextId,
-          type: 'Text' as ComponentType,
-          label: 'Text',
-          props: { children: 'New' },
-          styleSourceIds: ['style-badge-text'],
-          children: [],
-        },
-      ],
-    },
-    defaultStyles: {
-      'style-badge': createStyleEntry({
-        display: 'inline-flex',
-        alignItems: 'center',
-        padding: '4px 10px',
-        backgroundColor: 'hsl(var(--primary))',
-        borderRadius: '9999px',
-      }),
-      'style-badge-text': createStyleEntry({
-        fontSize: '12px',
-        fontWeight: '600',
-        color: 'hsl(var(--primary-foreground))',
-      }),
-    },
-  });
-
-  // ---------------------------------------------------------------------------
   // INPUT WITH LABEL (shadcn Input style)
   // ---------------------------------------------------------------------------
   const inputGroupId = generateId();
@@ -980,261 +754,6 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
         border: '1px solid hsl(var(--input))',
         borderRadius: '6px',
         color: 'hsl(var(--foreground))',
-      }),
-    },
-  });
-
-  // ---------------------------------------------------------------------------
-  // TABS NAVIGATION
-  // ---------------------------------------------------------------------------
-  const tabsId = generateId();
-  const tab1Id = generateId();
-  const tab2Id = generateId();
-  const tab3Id = generateId();
-
-  prebuilts.push({
-    id: 'system-tabs',
-    name: 'Tabs Navigation',
-    category: 'UI Components',
-    instance: {
-      id: tabsId,
-      type: 'Div' as ComponentType,
-      label: 'Div',
-      props: {},
-      styleSourceIds: ['style-tabs'],
-      children: [
-        {
-          id: tab1Id,
-          type: 'Button' as ComponentType,
-          label: 'Button',
-          props: { children: 'Account' },
-          styleSourceIds: ['style-tab-active'],
-          children: [],
-        },
-        {
-          id: tab2Id,
-          type: 'Button' as ComponentType,
-          label: 'Button',
-          props: { children: 'Password' },
-          styleSourceIds: ['style-tab'],
-          children: [],
-        },
-        {
-          id: tab3Id,
-          type: 'Button' as ComponentType,
-          label: 'Button',
-          props: { children: 'Settings' },
-          styleSourceIds: ['style-tab-2'],
-          children: [],
-        },
-      ],
-    },
-    defaultStyles: {
-      'style-tabs': createStyleEntry({
-        display: 'inline-flex',
-        backgroundColor: 'hsl(var(--muted))',
-        padding: '4px',
-        borderRadius: '8px',
-        gap: '4px',
-      }),
-      'style-tab-active': createStyleEntry({
-        padding: '8px 16px',
-        fontSize: '14px',
-        fontWeight: '500',
-        backgroundColor: 'hsl(var(--background))',
-        color: 'hsl(var(--foreground))',
-        borderRadius: '6px',
-        border: 'none',
-        boxShadow: '0 1px 2px hsl(var(--foreground) / 0.05)',
-      }),
-      'style-tab': createStyleEntry({
-        padding: '8px 16px',
-        fontSize: '14px',
-        fontWeight: '500',
-        backgroundColor: 'transparent',
-        color: 'hsl(var(--muted-foreground))',
-        borderRadius: '6px',
-        border: 'none',
-      }),
-      'style-tab-2': createStyleEntry({
-        padding: '8px 16px',
-        fontSize: '14px',
-        fontWeight: '500',
-        backgroundColor: 'transparent',
-        color: 'hsl(var(--muted-foreground))',
-        borderRadius: '6px',
-        border: 'none',
-      }),
-    },
-  });
-
-  // ---------------------------------------------------------------------------
-  // PROGRESS BAR
-  // ---------------------------------------------------------------------------
-  const progressId = generateId();
-  const progressBarId = generateId();
-  const progressFillId = generateId();
-
-  prebuilts.push({
-    id: 'system-progress',
-    name: 'Progress Bar',
-    category: 'UI Components',
-    instance: {
-      id: progressId,
-      type: 'Div' as ComponentType,
-      label: 'Div',
-      props: {},
-      styleSourceIds: ['style-progress-wrapper'],
-      children: [
-        {
-          id: progressBarId,
-          type: 'Div' as ComponentType,
-          label: 'Div',
-          props: {},
-          styleSourceIds: ['style-progress-bar'],
-          children: [
-            {
-              id: progressFillId,
-              type: 'Div' as ComponentType,
-              label: 'Div',
-              props: {},
-              styleSourceIds: ['style-progress-fill'],
-              children: [],
-            },
-          ],
-        },
-      ],
-    },
-    defaultStyles: {
-      'style-progress-wrapper': createStyleEntry({
-        width: '100%',
-      }),
-      'style-progress-bar': createStyleEntry({
-        width: '100%',
-        height: '8px',
-        backgroundColor: 'hsl(var(--secondary))',
-        borderRadius: '9999px',
-        overflow: 'hidden',
-      }),
-      'style-progress-fill': createStyleEntry({
-        width: '60%',
-        height: '100%',
-        backgroundColor: 'hsl(var(--primary))',
-        borderRadius: '9999px',
-      }),
-    },
-  });
-
-  // ---------------------------------------------------------------------------
-  // SEPARATOR
-  // ---------------------------------------------------------------------------
-  const separatorId = generateId();
-
-  prebuilts.push({
-    id: 'system-separator',
-    name: 'Separator',
-    category: 'UI Components',
-    instance: {
-      id: separatorId,
-      type: 'Div' as ComponentType,
-      label: 'Div',
-      props: {},
-      styleSourceIds: ['style-separator'],
-      children: [],
-    },
-    defaultStyles: {
-      'style-separator': createStyleEntry({
-        width: '100%',
-        height: '1px',
-        backgroundColor: 'hsl(var(--border))',
-      }),
-    },
-  });
-
-  // ---------------------------------------------------------------------------
-  // SKELETON LOADER
-  // ---------------------------------------------------------------------------
-  const skeletonId = generateId();
-  const skeletonAvatarId = generateId();
-  const skeletonContentId = generateId();
-  const skeletonLine1Id = generateId();
-  const skeletonLine2Id = generateId();
-
-  prebuilts.push({
-    id: 'system-skeleton',
-    name: 'Skeleton Loader',
-    category: 'UI Components',
-    instance: {
-      id: skeletonId,
-      type: 'Div' as ComponentType,
-      label: 'Div',
-      props: {},
-      styleSourceIds: ['style-skeleton'],
-      children: [
-        {
-          id: skeletonAvatarId,
-          type: 'Div' as ComponentType,
-          label: 'Div',
-          props: {},
-          styleSourceIds: ['style-skeleton-avatar'],
-          children: [],
-        },
-        {
-          id: skeletonContentId,
-          type: 'Div' as ComponentType,
-          label: 'Div',
-          props: {},
-          styleSourceIds: ['style-skeleton-content'],
-          children: [
-            {
-              id: skeletonLine1Id,
-              type: 'Div' as ComponentType,
-              label: 'Div',
-              props: {},
-              styleSourceIds: ['style-skeleton-line'],
-              children: [],
-            },
-            {
-              id: skeletonLine2Id,
-              type: 'Div' as ComponentType,
-              label: 'Div',
-              props: {},
-              styleSourceIds: ['style-skeleton-line-short'],
-              children: [],
-            },
-          ],
-        },
-      ],
-    },
-    defaultStyles: {
-      'style-skeleton': createStyleEntry({
-        display: 'flex',
-        gap: '16px',
-        alignItems: 'center',
-      }),
-      'style-skeleton-avatar': createStyleEntry({
-        width: '48px',
-        height: '48px',
-        backgroundColor: 'hsl(var(--muted))',
-        borderRadius: '50%',
-      }),
-      'style-skeleton-content': createStyleEntry({
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '8px',
-        flex: '1',
-      }),
-      'style-skeleton-line': createStyleEntry({
-        width: '100%',
-        height: '16px',
-        backgroundColor: 'hsl(var(--muted))',
-        borderRadius: '4px',
-      }),
-      'style-skeleton-line-short': createStyleEntry({
-        width: '60%',
-        height: '16px',
-        backgroundColor: 'hsl(var(--muted))',
-        borderRadius: '4px',
       }),
     },
   });
@@ -1589,15 +1108,3022 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
       }),
       'style-stats-trend': createStyleEntry({
         fontSize: '12px',
-        color: 'hsl(142.1 76.2% 36.3%)',
+        color: 'hsl(142 76% 36%)',
+      }),
+    },
+  });
+
+  // ---------------------------------------------------------------------------
+  // ACCORDION ITEM
+  // ---------------------------------------------------------------------------
+  const accordionId = generateId();
+  const accordionHeaderId = generateId();
+  const accordionTitleId = generateId();
+  const accordionIconId = generateId();
+  const accordionContentId = generateId();
+
+  prebuilts.push({
+    id: 'system-accordion',
+    name: 'Accordion',
+    category: 'Interactive',
+    instance: {
+      id: accordionId,
+      type: 'Div' as ComponentType,
+      label: 'Div',
+      props: {},
+      styleSourceIds: ['style-accordion'],
+      children: [
+        {
+          id: accordionHeaderId,
+          type: 'Div' as ComponentType,
+          label: 'Div',
+          props: {},
+          styleSourceIds: ['style-accordion-header'],
+          children: [
+            {
+              id: accordionTitleId,
+              type: 'Text' as ComponentType,
+              label: 'Text',
+              props: { children: 'Is it accessible?' },
+              styleSourceIds: ['style-accordion-title'],
+              children: [],
+            },
+            {
+              id: accordionIconId,
+              type: 'Text' as ComponentType,
+              label: 'Text',
+              props: { children: '▼' },
+              styleSourceIds: ['style-accordion-icon'],
+              children: [],
+            },
+          ],
+        },
+        {
+          id: accordionContentId,
+          type: 'Text' as ComponentType,
+          label: 'Text',
+          props: { children: 'Yes. It adheres to the WAI-ARIA design pattern.' },
+          styleSourceIds: ['style-accordion-content'],
+          children: [],
+        },
+      ],
+    },
+    defaultStyles: {
+      'style-accordion': createStyleEntry({
+        borderBottom: '1px solid hsl(var(--border))',
+      }),
+      'style-accordion-header': createStyleEntry({
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '16px 0',
+        cursor: 'pointer',
+      }),
+      'style-accordion-title': createStyleEntry({
+        fontSize: '15px',
+        fontWeight: '500',
+        color: 'hsl(var(--foreground))',
+      }),
+      'style-accordion-icon': createStyleEntry({
+        fontSize: '12px',
+        color: 'hsl(var(--muted-foreground))',
+      }),
+      'style-accordion-content': createStyleEntry({
+        fontSize: '14px',
+        lineHeight: '1.6',
+        color: 'hsl(var(--muted-foreground))',
+        paddingBottom: '16px',
+      }),
+    },
+  });
+
+  // ---------------------------------------------------------------------------
+  // ALERT DIALOG
+  // ---------------------------------------------------------------------------
+  const alertDialogId = generateId();
+  const alertDialogOverlayId = generateId();
+  const alertDialogContentId = generateId();
+  const alertDialogTitleId = generateId();
+  const alertDialogDescId = generateId();
+  const alertDialogActionsId = generateId();
+  const alertDialogCancelId = generateId();
+  const alertDialogConfirmId = generateId();
+
+  prebuilts.push({
+    id: 'system-alert-dialog',
+    name: 'Alert Dialog',
+    category: 'Interactive',
+    instance: {
+      id: alertDialogId,
+      type: 'Div' as ComponentType,
+      label: 'Div',
+      props: {},
+      styleSourceIds: ['style-alert-dialog'],
+      children: [
+        {
+          id: alertDialogOverlayId,
+          type: 'Div' as ComponentType,
+          label: 'Div',
+          props: {},
+          styleSourceIds: ['style-dialog-overlay'],
+          children: [],
+        },
+        {
+          id: alertDialogContentId,
+          type: 'Div' as ComponentType,
+          label: 'Div',
+          props: {},
+          styleSourceIds: ['style-dialog-content'],
+          children: [
+            {
+              id: alertDialogTitleId,
+              type: 'Heading' as ComponentType,
+              label: 'Heading',
+              props: { level: 'h3', children: 'Are you sure?' },
+              styleSourceIds: ['style-dialog-title'],
+              children: [],
+            },
+            {
+              id: alertDialogDescId,
+              type: 'Text' as ComponentType,
+              label: 'Text',
+              props: { children: 'This action cannot be undone. This will permanently delete your account.' },
+              styleSourceIds: ['style-dialog-desc'],
+              children: [],
+            },
+            {
+              id: alertDialogActionsId,
+              type: 'Div' as ComponentType,
+              label: 'Div',
+              props: {},
+              styleSourceIds: ['style-dialog-actions'],
+              children: [
+                {
+                  id: alertDialogCancelId,
+                  type: 'Button' as ComponentType,
+                  label: 'Button',
+                  props: { children: 'Cancel' },
+                  styleSourceIds: ['style-dialog-cancel'],
+                  children: [],
+                },
+                {
+                  id: alertDialogConfirmId,
+                  type: 'Button' as ComponentType,
+                  label: 'Button',
+                  props: { children: 'Continue' },
+                  styleSourceIds: ['style-dialog-confirm'],
+                  children: [],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+    defaultStyles: {
+      'style-alert-dialog': createStyleEntry({
+        position: 'relative',
+        width: '100%',
+        maxWidth: '500px',
+      }),
+      'style-dialog-overlay': createStyleEntry({
+        position: 'absolute',
+        inset: '0',
+        backgroundColor: 'hsl(var(--foreground) / 0.8)',
+        borderRadius: '12px',
+      }),
+      'style-dialog-content': createStyleEntry({
+        position: 'relative',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '16px',
+        padding: '24px',
+        backgroundColor: 'hsl(var(--background))',
+        border: '1px solid hsl(var(--border))',
+        borderRadius: '12px',
+        boxShadow: '0 25px 50px -12px hsl(var(--foreground) / 0.25)',
+      }),
+      'style-dialog-title': createStyleEntry({
+        fontSize: '18px',
+        fontWeight: '600',
+        color: 'hsl(var(--foreground))',
+      }),
+      'style-dialog-desc': createStyleEntry({
+        fontSize: '14px',
+        lineHeight: '1.6',
+        color: 'hsl(var(--muted-foreground))',
+      }),
+      'style-dialog-actions': createStyleEntry({
+        display: 'flex',
+        justifyContent: 'flex-end',
+        gap: '8px',
+        marginTop: '8px',
+      }),
+      'style-dialog-cancel': createStyleEntry({
+        padding: '10px 16px',
+        backgroundColor: 'transparent',
+        color: 'hsl(var(--foreground))',
+        border: '1px solid hsl(var(--border))',
+        borderRadius: '6px',
+        fontSize: '14px',
+        fontWeight: '500',
+      }),
+      'style-dialog-confirm': createStyleEntry({
+        padding: '10px 16px',
+        backgroundColor: 'hsl(var(--destructive))',
+        color: 'hsl(var(--destructive-foreground))',
+        borderRadius: '6px',
+        fontSize: '14px',
+        fontWeight: '500',
+      }),
+    },
+  });
+
+  // ---------------------------------------------------------------------------
+  // AVATAR
+  // ---------------------------------------------------------------------------
+  const avatarId = generateId();
+  const avatarImageId = generateId();
+
+  prebuilts.push({
+    id: 'system-avatar',
+    name: 'Avatar',
+    category: 'Data Display',
+    instance: {
+      id: avatarId,
+      type: 'Div' as ComponentType,
+      label: 'Div',
+      props: {},
+      styleSourceIds: ['style-avatar-single'],
+      children: [
+        {
+          id: avatarImageId,
+          type: 'Text' as ComponentType,
+          label: 'Text',
+          props: { children: 'JD' },
+          styleSourceIds: ['style-avatar-fallback'],
+          children: [],
+        },
+      ],
+    },
+    defaultStyles: {
+      'style-avatar-single': createStyleEntry({
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '40px',
+        height: '40px',
+        backgroundColor: 'hsl(var(--muted))',
+        borderRadius: '50%',
+        overflow: 'hidden',
+      }),
+      'style-avatar-fallback': createStyleEntry({
+        fontSize: '14px',
+        fontWeight: '500',
+        color: 'hsl(var(--muted-foreground))',
+      }),
+    },
+  });
+
+  // ---------------------------------------------------------------------------
+  // BADGE
+  // ---------------------------------------------------------------------------
+  const badgeId = generateId();
+  const badgeTextId = generateId();
+
+  prebuilts.push({
+    id: 'system-badge',
+    name: 'Badge',
+    category: 'Data Display',
+    instance: {
+      id: badgeId,
+      type: 'Div' as ComponentType,
+      label: 'Div',
+      props: {},
+      styleSourceIds: ['style-badge'],
+      children: [
+        {
+          id: badgeTextId,
+          type: 'Text' as ComponentType,
+          label: 'Text',
+          props: { children: 'New' },
+          styleSourceIds: ['style-badge-text'],
+          children: [],
+        },
+      ],
+    },
+    defaultStyles: {
+      'style-badge': createStyleEntry({
+        display: 'inline-flex',
+        alignItems: 'center',
+        padding: '4px 10px',
+        backgroundColor: 'hsl(var(--primary))',
+        borderRadius: '9999px',
+      }),
+      'style-badge-text': createStyleEntry({
+        fontSize: '12px',
+        fontWeight: '600',
+        color: 'hsl(var(--primary-foreground))',
+      }),
+    },
+  });
+
+  // ---------------------------------------------------------------------------
+  // BREADCRUMB
+  // ---------------------------------------------------------------------------
+  const breadcrumbId = generateId();
+  const breadcrumb1Id = generateId();
+  const breadcrumbSep1Id = generateId();
+  const breadcrumb2Id = generateId();
+  const breadcrumbSep2Id = generateId();
+  const breadcrumb3Id = generateId();
+
+  prebuilts.push({
+    id: 'system-breadcrumb',
+    name: 'Breadcrumb',
+    category: 'Navigation',
+    instance: {
+      id: breadcrumbId,
+      type: 'Div' as ComponentType,
+      label: 'Div',
+      props: {},
+      styleSourceIds: ['style-breadcrumb'],
+      children: [
+        {
+          id: breadcrumb1Id,
+          type: 'Link' as ComponentType,
+          label: 'Link',
+          props: { href: '#', children: 'Home' },
+          styleSourceIds: ['style-breadcrumb-link'],
+          children: [],
+        },
+        {
+          id: breadcrumbSep1Id,
+          type: 'Text' as ComponentType,
+          label: 'Text',
+          props: { children: '/' },
+          styleSourceIds: ['style-breadcrumb-sep'],
+          children: [],
+        },
+        {
+          id: breadcrumb2Id,
+          type: 'Link' as ComponentType,
+          label: 'Link',
+          props: { href: '#', children: 'Products' },
+          styleSourceIds: ['style-breadcrumb-link-2'],
+          children: [],
+        },
+        {
+          id: breadcrumbSep2Id,
+          type: 'Text' as ComponentType,
+          label: 'Text',
+          props: { children: '/' },
+          styleSourceIds: ['style-breadcrumb-sep-2'],
+          children: [],
+        },
+        {
+          id: breadcrumb3Id,
+          type: 'Text' as ComponentType,
+          label: 'Text',
+          props: { children: 'Current Page' },
+          styleSourceIds: ['style-breadcrumb-current'],
+          children: [],
+        },
+      ],
+    },
+    defaultStyles: {
+      'style-breadcrumb': createStyleEntry({
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+      }),
+      'style-breadcrumb-link': createStyleEntry({
+        fontSize: '14px',
+        color: 'hsl(var(--muted-foreground))',
+        textDecoration: 'none',
+      }),
+      'style-breadcrumb-link-2': createStyleEntry({
+        fontSize: '14px',
+        color: 'hsl(var(--muted-foreground))',
+        textDecoration: 'none',
+      }),
+      'style-breadcrumb-sep': createStyleEntry({
+        fontSize: '14px',
+        color: 'hsl(var(--muted-foreground))',
+      }),
+      'style-breadcrumb-sep-2': createStyleEntry({
+        fontSize: '14px',
+        color: 'hsl(var(--muted-foreground))',
+      }),
+      'style-breadcrumb-current': createStyleEntry({
+        fontSize: '14px',
+        fontWeight: '500',
+        color: 'hsl(var(--foreground))',
+      }),
+    },
+  });
+
+  // ---------------------------------------------------------------------------
+  // CALENDAR
+  // ---------------------------------------------------------------------------
+  const calendarId = generateId();
+  const calendarHeaderId = generateId();
+  const calendarNavId = generateId();
+  const calendarPrevId = generateId();
+  const calendarMonthId = generateId();
+  const calendarNextId = generateId();
+  const calendarGridId = generateId();
+
+  prebuilts.push({
+    id: 'system-calendar',
+    name: 'Calendar',
+    category: 'Form Elements',
+    instance: {
+      id: calendarId,
+      type: 'Div' as ComponentType,
+      label: 'Div',
+      props: {},
+      styleSourceIds: ['style-calendar'],
+      children: [
+        {
+          id: calendarHeaderId,
+          type: 'Div' as ComponentType,
+          label: 'Div',
+          props: {},
+          styleSourceIds: ['style-calendar-header'],
+          children: [
+            {
+              id: calendarNavId,
+              type: 'Div' as ComponentType,
+              label: 'Div',
+              props: {},
+              styleSourceIds: ['style-calendar-nav'],
+              children: [
+                {
+                  id: calendarPrevId,
+                  type: 'Button' as ComponentType,
+                  label: 'Button',
+                  props: { children: '‹' },
+                  styleSourceIds: ['style-calendar-nav-btn'],
+                  children: [],
+                },
+                {
+                  id: calendarMonthId,
+                  type: 'Text' as ComponentType,
+                  label: 'Text',
+                  props: { children: 'December 2024' },
+                  styleSourceIds: ['style-calendar-month'],
+                  children: [],
+                },
+                {
+                  id: calendarNextId,
+                  type: 'Button' as ComponentType,
+                  label: 'Button',
+                  props: { children: '›' },
+                  styleSourceIds: ['style-calendar-nav-btn-2'],
+                  children: [],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          id: calendarGridId,
+          type: 'Div' as ComponentType,
+          label: 'Div',
+          props: {},
+          styleSourceIds: ['style-calendar-grid'],
+          children: [],
+        },
+      ],
+    },
+    defaultStyles: {
+      'style-calendar': createStyleEntry({
+        padding: '16px',
+        backgroundColor: 'hsl(var(--card))',
+        border: '1px solid hsl(var(--border))',
+        borderRadius: '12px',
+        width: '280px',
+      }),
+      'style-calendar-header': createStyleEntry({
+        marginBottom: '16px',
+      }),
+      'style-calendar-nav': createStyleEntry({
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+      }),
+      'style-calendar-nav-btn': createStyleEntry({
+        width: '32px',
+        height: '32px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'transparent',
+        border: 'none',
+        borderRadius: '6px',
+        fontSize: '18px',
+        color: 'hsl(var(--muted-foreground))',
+        cursor: 'pointer',
+      }),
+      'style-calendar-nav-btn-2': createStyleEntry({
+        width: '32px',
+        height: '32px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'transparent',
+        border: 'none',
+        borderRadius: '6px',
+        fontSize: '18px',
+        color: 'hsl(var(--muted-foreground))',
+        cursor: 'pointer',
+      }),
+      'style-calendar-month': createStyleEntry({
+        fontSize: '14px',
+        fontWeight: '500',
+        color: 'hsl(var(--foreground))',
+      }),
+      'style-calendar-grid': createStyleEntry({
+        display: 'grid',
+        gridTemplateColumns: 'repeat(7, 1fr)',
+        gap: '4px',
+      }),
+    },
+  });
+
+  // ---------------------------------------------------------------------------
+  // CAROUSEL
+  // ---------------------------------------------------------------------------
+  const carouselId = generateId();
+  const carouselTrackId = generateId();
+  const carouselSlide1Id = generateId();
+  const carouselSlide2Id = generateId();
+  const carouselSlide3Id = generateId();
+  const carouselDotsId = generateId();
+
+  prebuilts.push({
+    id: 'system-carousel',
+    name: 'Carousel',
+    category: 'Interactive',
+    instance: {
+      id: carouselId,
+      type: 'Div' as ComponentType,
+      label: 'Div',
+      props: {},
+      styleSourceIds: ['style-carousel'],
+      children: [
+        {
+          id: carouselTrackId,
+          type: 'Div' as ComponentType,
+          label: 'Div',
+          props: {},
+          styleSourceIds: ['style-carousel-track'],
+          children: [
+            {
+              id: carouselSlide1Id,
+              type: 'Div' as ComponentType,
+              label: 'Div',
+              props: {},
+              styleSourceIds: ['style-carousel-slide'],
+              children: [],
+            },
+            {
+              id: carouselSlide2Id,
+              type: 'Div' as ComponentType,
+              label: 'Div',
+              props: {},
+              styleSourceIds: ['style-carousel-slide-2'],
+              children: [],
+            },
+            {
+              id: carouselSlide3Id,
+              type: 'Div' as ComponentType,
+              label: 'Div',
+              props: {},
+              styleSourceIds: ['style-carousel-slide-3'],
+              children: [],
+            },
+          ],
+        },
+        {
+          id: carouselDotsId,
+          type: 'Div' as ComponentType,
+          label: 'Div',
+          props: {},
+          styleSourceIds: ['style-carousel-dots'],
+          children: [],
+        },
+      ],
+    },
+    defaultStyles: {
+      'style-carousel': createStyleEntry({
+        position: 'relative',
+        width: '100%',
+        overflow: 'hidden',
+        borderRadius: '12px',
+      }),
+      'style-carousel-track': createStyleEntry({
+        display: 'flex',
+        gap: '16px',
+      }),
+      'style-carousel-slide': createStyleEntry({
+        flexShrink: '0',
+        width: '100%',
+        height: '200px',
+        backgroundColor: 'hsl(var(--muted))',
+        borderRadius: '8px',
+      }),
+      'style-carousel-slide-2': createStyleEntry({
+        flexShrink: '0',
+        width: '100%',
+        height: '200px',
+        backgroundColor: 'hsl(var(--muted))',
+        borderRadius: '8px',
+      }),
+      'style-carousel-slide-3': createStyleEntry({
+        flexShrink: '0',
+        width: '100%',
+        height: '200px',
+        backgroundColor: 'hsl(var(--muted))',
+        borderRadius: '8px',
+      }),
+      'style-carousel-dots': createStyleEntry({
+        display: 'flex',
+        justifyContent: 'center',
+        gap: '8px',
+        marginTop: '16px',
+      }),
+    },
+  });
+
+  // ---------------------------------------------------------------------------
+  // COMMAND PALETTE
+  // ---------------------------------------------------------------------------
+  const commandId = generateId();
+  const commandInputId = generateId();
+  const commandListId = generateId();
+  const commandItem1Id = generateId();
+  const commandItem2Id = generateId();
+  const commandItem3Id = generateId();
+
+  prebuilts.push({
+    id: 'system-command',
+    name: 'Command Palette',
+    category: 'Interactive',
+    instance: {
+      id: commandId,
+      type: 'Div' as ComponentType,
+      label: 'Div',
+      props: {},
+      styleSourceIds: ['style-command'],
+      children: [
+        {
+          id: commandInputId,
+          type: 'TextInput' as ComponentType,
+          label: 'TextInput',
+          props: { placeholder: 'Type a command or search...' },
+          styleSourceIds: ['style-command-input'],
+          children: [],
+        },
+        {
+          id: commandListId,
+          type: 'Div' as ComponentType,
+          label: 'Div',
+          props: {},
+          styleSourceIds: ['style-command-list'],
+          children: [
+            {
+              id: commandItem1Id,
+              type: 'Div' as ComponentType,
+              label: 'Div',
+              props: {},
+              styleSourceIds: ['style-command-item'],
+              children: [],
+            },
+            {
+              id: commandItem2Id,
+              type: 'Div' as ComponentType,
+              label: 'Div',
+              props: {},
+              styleSourceIds: ['style-command-item-2'],
+              children: [],
+            },
+            {
+              id: commandItem3Id,
+              type: 'Div' as ComponentType,
+              label: 'Div',
+              props: {},
+              styleSourceIds: ['style-command-item-3'],
+              children: [],
+            },
+          ],
+        },
+      ],
+    },
+    defaultStyles: {
+      'style-command': createStyleEntry({
+        display: 'flex',
+        flexDirection: 'column',
+        backgroundColor: 'hsl(var(--popover))',
+        border: '1px solid hsl(var(--border))',
+        borderRadius: '12px',
+        overflow: 'hidden',
+        boxShadow: '0 10px 40px hsl(var(--foreground) / 0.1)',
+        maxWidth: '400px',
+      }),
+      'style-command-input': createStyleEntry({
+        width: '100%',
+        padding: '12px 16px',
+        fontSize: '14px',
+        backgroundColor: 'transparent',
+        border: 'none',
+        borderBottom: '1px solid hsl(var(--border))',
+        color: 'hsl(var(--foreground))',
+        outline: 'none',
+      }),
+      'style-command-list': createStyleEntry({
+        display: 'flex',
+        flexDirection: 'column',
+        padding: '8px',
+        maxHeight: '300px',
+        overflowY: 'auto',
+      }),
+      'style-command-item': createStyleEntry({
+        padding: '10px 12px',
+        borderRadius: '6px',
+        fontSize: '14px',
+        backgroundColor: 'hsl(var(--accent))',
+        color: 'hsl(var(--accent-foreground))',
+        cursor: 'pointer',
+      }),
+      'style-command-item-2': createStyleEntry({
+        padding: '10px 12px',
+        borderRadius: '6px',
+        fontSize: '14px',
+        color: 'hsl(var(--foreground))',
+        cursor: 'pointer',
+      }),
+      'style-command-item-3': createStyleEntry({
+        padding: '10px 12px',
+        borderRadius: '6px',
+        fontSize: '14px',
+        color: 'hsl(var(--foreground))',
+        cursor: 'pointer',
+      }),
+    },
+  });
+
+  // ---------------------------------------------------------------------------
+  // CONTEXT MENU (Visual representation)
+  // ---------------------------------------------------------------------------
+  const contextMenuId = generateId();
+  const contextMenuItem1Id = generateId();
+  const contextMenuItem2Id = generateId();
+  const contextMenuSepId = generateId();
+  const contextMenuItem3Id = generateId();
+
+  prebuilts.push({
+    id: 'system-context-menu',
+    name: 'Context Menu',
+    category: 'Interactive',
+    instance: {
+      id: contextMenuId,
+      type: 'Div' as ComponentType,
+      label: 'Div',
+      props: {},
+      styleSourceIds: ['style-context-menu'],
+      children: [
+        {
+          id: contextMenuItem1Id,
+          type: 'Text' as ComponentType,
+          label: 'Text',
+          props: { children: 'Edit' },
+          styleSourceIds: ['style-context-item'],
+          children: [],
+        },
+        {
+          id: contextMenuItem2Id,
+          type: 'Text' as ComponentType,
+          label: 'Text',
+          props: { children: 'Duplicate' },
+          styleSourceIds: ['style-context-item-2'],
+          children: [],
+        },
+        {
+          id: contextMenuSepId,
+          type: 'Div' as ComponentType,
+          label: 'Div',
+          props: {},
+          styleSourceIds: ['style-context-sep'],
+          children: [],
+        },
+        {
+          id: contextMenuItem3Id,
+          type: 'Text' as ComponentType,
+          label: 'Text',
+          props: { children: 'Delete' },
+          styleSourceIds: ['style-context-item-delete'],
+          children: [],
+        },
+      ],
+    },
+    defaultStyles: {
+      'style-context-menu': createStyleEntry({
+        display: 'flex',
+        flexDirection: 'column',
+        padding: '4px',
+        backgroundColor: 'hsl(var(--popover))',
+        border: '1px solid hsl(var(--border))',
+        borderRadius: '8px',
+        boxShadow: '0 4px 16px hsl(var(--foreground) / 0.1)',
+        minWidth: '160px',
+      }),
+      'style-context-item': createStyleEntry({
+        padding: '8px 12px',
+        fontSize: '14px',
+        color: 'hsl(var(--foreground))',
+        borderRadius: '4px',
+        cursor: 'pointer',
+      }),
+      'style-context-item-2': createStyleEntry({
+        padding: '8px 12px',
+        fontSize: '14px',
+        color: 'hsl(var(--foreground))',
+        borderRadius: '4px',
+        cursor: 'pointer',
+      }),
+      'style-context-sep': createStyleEntry({
+        height: '1px',
+        backgroundColor: 'hsl(var(--border))',
+        margin: '4px 0',
+      }),
+      'style-context-item-delete': createStyleEntry({
+        padding: '8px 12px',
+        fontSize: '14px',
+        color: 'hsl(var(--destructive))',
+        borderRadius: '4px',
+        cursor: 'pointer',
+      }),
+    },
+  });
+
+  // ---------------------------------------------------------------------------
+  // DRAWER
+  // ---------------------------------------------------------------------------
+  const drawerId = generateId();
+  const drawerHandleId = generateId();
+  const drawerContentId = generateId();
+  const drawerTitleId = generateId();
+  const drawerDescId = generateId();
+
+  prebuilts.push({
+    id: 'system-drawer',
+    name: 'Drawer',
+    category: 'Interactive',
+    instance: {
+      id: drawerId,
+      type: 'Div' as ComponentType,
+      label: 'Div',
+      props: {},
+      styleSourceIds: ['style-drawer'],
+      children: [
+        {
+          id: drawerHandleId,
+          type: 'Div' as ComponentType,
+          label: 'Div',
+          props: {},
+          styleSourceIds: ['style-drawer-handle'],
+          children: [],
+        },
+        {
+          id: drawerContentId,
+          type: 'Div' as ComponentType,
+          label: 'Div',
+          props: {},
+          styleSourceIds: ['style-drawer-content'],
+          children: [
+            {
+              id: drawerTitleId,
+              type: 'Heading' as ComponentType,
+              label: 'Heading',
+              props: { level: 'h3', children: 'Drawer Title' },
+              styleSourceIds: ['style-drawer-title'],
+              children: [],
+            },
+            {
+              id: drawerDescId,
+              type: 'Text' as ComponentType,
+              label: 'Text',
+              props: { children: 'This is a bottom drawer component.' },
+              styleSourceIds: ['style-drawer-desc'],
+              children: [],
+            },
+          ],
+        },
+      ],
+    },
+    defaultStyles: {
+      'style-drawer': createStyleEntry({
+        backgroundColor: 'hsl(var(--background))',
+        border: '1px solid hsl(var(--border))',
+        borderRadius: '16px 16px 0 0',
+        padding: '16px',
+        boxShadow: '0 -4px 24px hsl(var(--foreground) / 0.1)',
+      }),
+      'style-drawer-handle': createStyleEntry({
+        width: '48px',
+        height: '4px',
+        backgroundColor: 'hsl(var(--muted-foreground))',
+        borderRadius: '2px',
+        margin: '0 auto 16px',
+      }),
+      'style-drawer-content': createStyleEntry({
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '8px',
+        padding: '16px',
+      }),
+      'style-drawer-title': createStyleEntry({
+        fontSize: '18px',
+        fontWeight: '600',
+        color: 'hsl(var(--foreground))',
+      }),
+      'style-drawer-desc': createStyleEntry({
+        fontSize: '14px',
+        color: 'hsl(var(--muted-foreground))',
+      }),
+    },
+  });
+
+  // ---------------------------------------------------------------------------
+  // DROPDOWN MENU
+  // ---------------------------------------------------------------------------
+  const dropdownMenuId = generateId();
+  const dropdownTriggerId = generateId();
+  const dropdownContentId = generateId();
+  const dropdownItem1Id = generateId();
+  const dropdownItem2Id = generateId();
+  const dropdownItem3Id = generateId();
+
+  prebuilts.push({
+    id: 'system-dropdown-menu',
+    name: 'Dropdown Menu',
+    category: 'Interactive',
+    instance: {
+      id: dropdownMenuId,
+      type: 'Div' as ComponentType,
+      label: 'Div',
+      props: {},
+      styleSourceIds: ['style-dropdown-menu'],
+      children: [
+        {
+          id: dropdownTriggerId,
+          type: 'Button' as ComponentType,
+          label: 'Button',
+          props: { children: 'Open Menu' },
+          styleSourceIds: ['style-dropdown-trigger'],
+          children: [],
+        },
+        {
+          id: dropdownContentId,
+          type: 'Div' as ComponentType,
+          label: 'Div',
+          props: {},
+          styleSourceIds: ['style-dropdown-content'],
+          children: [
+            {
+              id: dropdownItem1Id,
+              type: 'Text' as ComponentType,
+              label: 'Text',
+              props: { children: 'Profile' },
+              styleSourceIds: ['style-dropdown-item'],
+              children: [],
+            },
+            {
+              id: dropdownItem2Id,
+              type: 'Text' as ComponentType,
+              label: 'Text',
+              props: { children: 'Settings' },
+              styleSourceIds: ['style-dropdown-item-2'],
+              children: [],
+            },
+            {
+              id: dropdownItem3Id,
+              type: 'Text' as ComponentType,
+              label: 'Text',
+              props: { children: 'Log out' },
+              styleSourceIds: ['style-dropdown-item-3'],
+              children: [],
+            },
+          ],
+        },
+      ],
+    },
+    defaultStyles: {
+      'style-dropdown-menu': createStyleEntry({
+        position: 'relative',
+        display: 'inline-block',
+      }),
+      'style-dropdown-trigger': createStyleEntry({
+        padding: '10px 16px',
+        backgroundColor: 'hsl(var(--secondary))',
+        color: 'hsl(var(--secondary-foreground))',
+        borderRadius: '6px',
+        fontSize: '14px',
+        fontWeight: '500',
+        border: 'none',
+        cursor: 'pointer',
+      }),
+      'style-dropdown-content': createStyleEntry({
+        position: 'absolute',
+        top: '100%',
+        left: '0',
+        marginTop: '4px',
+        display: 'flex',
+        flexDirection: 'column',
+        padding: '4px',
+        backgroundColor: 'hsl(var(--popover))',
+        border: '1px solid hsl(var(--border))',
+        borderRadius: '8px',
+        boxShadow: '0 4px 16px hsl(var(--foreground) / 0.1)',
+        minWidth: '160px',
+      }),
+      'style-dropdown-item': createStyleEntry({
+        padding: '8px 12px',
+        fontSize: '14px',
+        color: 'hsl(var(--foreground))',
+        borderRadius: '4px',
+        cursor: 'pointer',
+      }),
+      'style-dropdown-item-2': createStyleEntry({
+        padding: '8px 12px',
+        fontSize: '14px',
+        color: 'hsl(var(--foreground))',
+        borderRadius: '4px',
+        cursor: 'pointer',
+      }),
+      'style-dropdown-item-3': createStyleEntry({
+        padding: '8px 12px',
+        fontSize: '14px',
+        color: 'hsl(var(--foreground))',
+        borderRadius: '4px',
+        cursor: 'pointer',
+      }),
+    },
+  });
+
+  // ---------------------------------------------------------------------------
+  // HOVER CARD
+  // ---------------------------------------------------------------------------
+  const hoverCardId = generateId();
+  const hoverTrigId = generateId();
+  const hoverContentId = generateId();
+  const hoverAvatarId = generateId();
+  const hoverInfoId = generateId();
+  const hoverNameId = generateId();
+  const hoverDescId = generateId();
+
+  prebuilts.push({
+    id: 'system-hover-card',
+    name: 'Hover Card',
+    category: 'Interactive',
+    instance: {
+      id: hoverCardId,
+      type: 'Div' as ComponentType,
+      label: 'Div',
+      props: {},
+      styleSourceIds: ['style-hover-card'],
+      children: [
+        {
+          id: hoverTrigId,
+          type: 'Link' as ComponentType,
+          label: 'Link',
+          props: { href: '#', children: '@username' },
+          styleSourceIds: ['style-hover-trigger'],
+          children: [],
+        },
+        {
+          id: hoverContentId,
+          type: 'Div' as ComponentType,
+          label: 'Div',
+          props: {},
+          styleSourceIds: ['style-hover-content'],
+          children: [
+            {
+              id: hoverAvatarId,
+              type: 'Div' as ComponentType,
+              label: 'Div',
+              props: {},
+              styleSourceIds: ['style-hover-avatar'],
+              children: [],
+            },
+            {
+              id: hoverInfoId,
+              type: 'Div' as ComponentType,
+              label: 'Div',
+              props: {},
+              styleSourceIds: ['style-hover-info'],
+              children: [
+                {
+                  id: hoverNameId,
+                  type: 'Text' as ComponentType,
+                  label: 'Text',
+                  props: { children: 'John Doe' },
+                  styleSourceIds: ['style-hover-name'],
+                  children: [],
+                },
+                {
+                  id: hoverDescId,
+                  type: 'Text' as ComponentType,
+                  label: 'Text',
+                  props: { children: 'Software developer and open source contributor.' },
+                  styleSourceIds: ['style-hover-desc'],
+                  children: [],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+    defaultStyles: {
+      'style-hover-card': createStyleEntry({
+        position: 'relative',
+        display: 'inline-block',
+      }),
+      'style-hover-trigger': createStyleEntry({
+        fontSize: '14px',
+        color: 'hsl(var(--primary))',
+        textDecoration: 'underline',
+      }),
+      'style-hover-content': createStyleEntry({
+        position: 'absolute',
+        top: '100%',
+        left: '0',
+        marginTop: '8px',
+        display: 'flex',
+        gap: '16px',
+        padding: '16px',
+        backgroundColor: 'hsl(var(--popover))',
+        border: '1px solid hsl(var(--border))',
+        borderRadius: '8px',
+        boxShadow: '0 4px 16px hsl(var(--foreground) / 0.1)',
+        width: '280px',
+      }),
+      'style-hover-avatar': createStyleEntry({
+        width: '48px',
+        height: '48px',
+        backgroundColor: 'hsl(var(--muted))',
+        borderRadius: '50%',
+        flexShrink: '0',
+      }),
+      'style-hover-info': createStyleEntry({
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '4px',
+      }),
+      'style-hover-name': createStyleEntry({
+        fontSize: '14px',
+        fontWeight: '600',
+        color: 'hsl(var(--foreground))',
+      }),
+      'style-hover-desc': createStyleEntry({
+        fontSize: '13px',
+        lineHeight: '1.5',
+        color: 'hsl(var(--muted-foreground))',
+      }),
+    },
+  });
+
+  // ---------------------------------------------------------------------------
+  // INPUT OTP
+  // ---------------------------------------------------------------------------
+  const otpId = generateId();
+  const otp1Id = generateId();
+  const otp2Id = generateId();
+  const otp3Id = generateId();
+  const otpSepId = generateId();
+  const otp4Id = generateId();
+  const otp5Id = generateId();
+  const otp6Id = generateId();
+
+  prebuilts.push({
+    id: 'system-input-otp',
+    name: 'OTP Input',
+    category: 'Form Elements',
+    instance: {
+      id: otpId,
+      type: 'Div' as ComponentType,
+      label: 'Div',
+      props: {},
+      styleSourceIds: ['style-otp'],
+      children: [
+        {
+          id: otp1Id,
+          type: 'Div' as ComponentType,
+          label: 'Div',
+          props: {},
+          styleSourceIds: ['style-otp-slot'],
+          children: [],
+        },
+        {
+          id: otp2Id,
+          type: 'Div' as ComponentType,
+          label: 'Div',
+          props: {},
+          styleSourceIds: ['style-otp-slot-2'],
+          children: [],
+        },
+        {
+          id: otp3Id,
+          type: 'Div' as ComponentType,
+          label: 'Div',
+          props: {},
+          styleSourceIds: ['style-otp-slot-3'],
+          children: [],
+        },
+        {
+          id: otpSepId,
+          type: 'Text' as ComponentType,
+          label: 'Text',
+          props: { children: '−' },
+          styleSourceIds: ['style-otp-sep'],
+          children: [],
+        },
+        {
+          id: otp4Id,
+          type: 'Div' as ComponentType,
+          label: 'Div',
+          props: {},
+          styleSourceIds: ['style-otp-slot-4'],
+          children: [],
+        },
+        {
+          id: otp5Id,
+          type: 'Div' as ComponentType,
+          label: 'Div',
+          props: {},
+          styleSourceIds: ['style-otp-slot-5'],
+          children: [],
+        },
+        {
+          id: otp6Id,
+          type: 'Div' as ComponentType,
+          label: 'Div',
+          props: {},
+          styleSourceIds: ['style-otp-slot-6'],
+          children: [],
+        },
+      ],
+    },
+    defaultStyles: {
+      'style-otp': createStyleEntry({
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+      }),
+      'style-otp-slot': createStyleEntry({
+        width: '40px',
+        height: '48px',
+        backgroundColor: 'hsl(var(--background))',
+        border: '1px solid hsl(var(--input))',
+        borderRadius: '6px',
+      }),
+      'style-otp-slot-2': createStyleEntry({
+        width: '40px',
+        height: '48px',
+        backgroundColor: 'hsl(var(--background))',
+        border: '1px solid hsl(var(--input))',
+        borderRadius: '6px',
+      }),
+      'style-otp-slot-3': createStyleEntry({
+        width: '40px',
+        height: '48px',
+        backgroundColor: 'hsl(var(--background))',
+        border: '1px solid hsl(var(--input))',
+        borderRadius: '6px',
+      }),
+      'style-otp-sep': createStyleEntry({
+        fontSize: '20px',
+        color: 'hsl(var(--muted-foreground))',
+      }),
+      'style-otp-slot-4': createStyleEntry({
+        width: '40px',
+        height: '48px',
+        backgroundColor: 'hsl(var(--background))',
+        border: '1px solid hsl(var(--input))',
+        borderRadius: '6px',
+      }),
+      'style-otp-slot-5': createStyleEntry({
+        width: '40px',
+        height: '48px',
+        backgroundColor: 'hsl(var(--background))',
+        border: '1px solid hsl(var(--input))',
+        borderRadius: '6px',
+      }),
+      'style-otp-slot-6': createStyleEntry({
+        width: '40px',
+        height: '48px',
+        backgroundColor: 'hsl(var(--background))',
+        border: '1px solid hsl(var(--input))',
+        borderRadius: '6px',
+      }),
+    },
+  });
+
+  // ---------------------------------------------------------------------------
+  // PAGINATION
+  // ---------------------------------------------------------------------------
+  const paginationId = generateId();
+  const pagePrevId = generateId();
+  const page1Id = generateId();
+  const page2Id = generateId();
+  const page3Id = generateId();
+  const pageNextId = generateId();
+
+  prebuilts.push({
+    id: 'system-pagination',
+    name: 'Pagination',
+    category: 'Navigation',
+    instance: {
+      id: paginationId,
+      type: 'Div' as ComponentType,
+      label: 'Div',
+      props: {},
+      styleSourceIds: ['style-pagination'],
+      children: [
+        {
+          id: pagePrevId,
+          type: 'Button' as ComponentType,
+          label: 'Button',
+          props: { children: '‹' },
+          styleSourceIds: ['style-page-btn'],
+          children: [],
+        },
+        {
+          id: page1Id,
+          type: 'Button' as ComponentType,
+          label: 'Button',
+          props: { children: '1' },
+          styleSourceIds: ['style-page-btn-active'],
+          children: [],
+        },
+        {
+          id: page2Id,
+          type: 'Button' as ComponentType,
+          label: 'Button',
+          props: { children: '2' },
+          styleSourceIds: ['style-page-btn-2'],
+          children: [],
+        },
+        {
+          id: page3Id,
+          type: 'Button' as ComponentType,
+          label: 'Button',
+          props: { children: '3' },
+          styleSourceIds: ['style-page-btn-3'],
+          children: [],
+        },
+        {
+          id: pageNextId,
+          type: 'Button' as ComponentType,
+          label: 'Button',
+          props: { children: '›' },
+          styleSourceIds: ['style-page-btn-4'],
+          children: [],
+        },
+      ],
+    },
+    defaultStyles: {
+      'style-pagination': createStyleEntry({
+        display: 'flex',
+        alignItems: 'center',
+        gap: '4px',
+      }),
+      'style-page-btn': createStyleEntry({
+        width: '36px',
+        height: '36px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'transparent',
+        border: '1px solid hsl(var(--border))',
+        borderRadius: '6px',
+        fontSize: '14px',
+        color: 'hsl(var(--foreground))',
+        cursor: 'pointer',
+      }),
+      'style-page-btn-active': createStyleEntry({
+        width: '36px',
+        height: '36px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'hsl(var(--primary))',
+        border: 'none',
+        borderRadius: '6px',
+        fontSize: '14px',
+        color: 'hsl(var(--primary-foreground))',
+        cursor: 'pointer',
+      }),
+      'style-page-btn-2': createStyleEntry({
+        width: '36px',
+        height: '36px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'transparent',
+        border: '1px solid hsl(var(--border))',
+        borderRadius: '6px',
+        fontSize: '14px',
+        color: 'hsl(var(--foreground))',
+        cursor: 'pointer',
+      }),
+      'style-page-btn-3': createStyleEntry({
+        width: '36px',
+        height: '36px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'transparent',
+        border: '1px solid hsl(var(--border))',
+        borderRadius: '6px',
+        fontSize: '14px',
+        color: 'hsl(var(--foreground))',
+        cursor: 'pointer',
+      }),
+      'style-page-btn-4': createStyleEntry({
+        width: '36px',
+        height: '36px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'transparent',
+        border: '1px solid hsl(var(--border))',
+        borderRadius: '6px',
+        fontSize: '14px',
+        color: 'hsl(var(--foreground))',
+        cursor: 'pointer',
+      }),
+    },
+  });
+
+  // ---------------------------------------------------------------------------
+  // POPOVER
+  // ---------------------------------------------------------------------------
+  const popoverId = generateId();
+  const popoverTriggerId = generateId();
+  const popoverContentId = generateId();
+  const popoverTitleId = generateId();
+  const popoverDescId = generateId();
+
+  prebuilts.push({
+    id: 'system-popover',
+    name: 'Popover',
+    category: 'Interactive',
+    instance: {
+      id: popoverId,
+      type: 'Div' as ComponentType,
+      label: 'Div',
+      props: {},
+      styleSourceIds: ['style-popover'],
+      children: [
+        {
+          id: popoverTriggerId,
+          type: 'Button' as ComponentType,
+          label: 'Button',
+          props: { children: 'Open' },
+          styleSourceIds: ['style-popover-trigger'],
+          children: [],
+        },
+        {
+          id: popoverContentId,
+          type: 'Div' as ComponentType,
+          label: 'Div',
+          props: {},
+          styleSourceIds: ['style-popover-content'],
+          children: [
+            {
+              id: popoverTitleId,
+              type: 'Text' as ComponentType,
+              label: 'Text',
+              props: { children: 'Dimensions' },
+              styleSourceIds: ['style-popover-title'],
+              children: [],
+            },
+            {
+              id: popoverDescId,
+              type: 'Text' as ComponentType,
+              label: 'Text',
+              props: { children: 'Set the dimensions for the layer.' },
+              styleSourceIds: ['style-popover-desc'],
+              children: [],
+            },
+          ],
+        },
+      ],
+    },
+    defaultStyles: {
+      'style-popover': createStyleEntry({
+        position: 'relative',
+        display: 'inline-block',
+      }),
+      'style-popover-trigger': createStyleEntry({
+        padding: '10px 16px',
+        backgroundColor: 'hsl(var(--secondary))',
+        color: 'hsl(var(--secondary-foreground))',
+        borderRadius: '6px',
+        fontSize: '14px',
+        fontWeight: '500',
+        border: 'none',
+        cursor: 'pointer',
+      }),
+      'style-popover-content': createStyleEntry({
+        position: 'absolute',
+        top: '100%',
+        left: '0',
+        marginTop: '8px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '8px',
+        padding: '16px',
+        backgroundColor: 'hsl(var(--popover))',
+        border: '1px solid hsl(var(--border))',
+        borderRadius: '8px',
+        boxShadow: '0 4px 16px hsl(var(--foreground) / 0.1)',
+        width: '200px',
+      }),
+      'style-popover-title': createStyleEntry({
+        fontSize: '14px',
+        fontWeight: '600',
+        color: 'hsl(var(--foreground))',
+      }),
+      'style-popover-desc': createStyleEntry({
+        fontSize: '13px',
+        color: 'hsl(var(--muted-foreground))',
+      }),
+    },
+  });
+
+  // ---------------------------------------------------------------------------
+  // PROGRESS BAR
+  // ---------------------------------------------------------------------------
+  const progressId = generateId();
+  const progressBarId = generateId();
+  const progressFillId = generateId();
+
+  prebuilts.push({
+    id: 'system-progress',
+    name: 'Progress Bar',
+    category: 'Data Display',
+    instance: {
+      id: progressId,
+      type: 'Div' as ComponentType,
+      label: 'Div',
+      props: {},
+      styleSourceIds: ['style-progress-wrapper'],
+      children: [
+        {
+          id: progressBarId,
+          type: 'Div' as ComponentType,
+          label: 'Div',
+          props: {},
+          styleSourceIds: ['style-progress-bar'],
+          children: [
+            {
+              id: progressFillId,
+              type: 'Div' as ComponentType,
+              label: 'Div',
+              props: {},
+              styleSourceIds: ['style-progress-fill'],
+              children: [],
+            },
+          ],
+        },
+      ],
+    },
+    defaultStyles: {
+      'style-progress-wrapper': createStyleEntry({
+        width: '100%',
+      }),
+      'style-progress-bar': createStyleEntry({
+        width: '100%',
+        height: '8px',
+        backgroundColor: 'hsl(var(--secondary))',
+        borderRadius: '9999px',
+        overflow: 'hidden',
+      }),
+      'style-progress-fill': createStyleEntry({
+        width: '60%',
+        height: '100%',
+        backgroundColor: 'hsl(var(--primary))',
+        borderRadius: '9999px',
+      }),
+    },
+  });
+
+  // ---------------------------------------------------------------------------
+  // RADIO GROUP
+  // ---------------------------------------------------------------------------
+  const radioGroupId = generateId();
+  const radioOption1Id = generateId();
+  const radioCircle1Id = generateId();
+  const radioLabel1Id = generateId();
+  const radioOption2Id = generateId();
+  const radioCircle2Id = generateId();
+  const radioLabel2Id = generateId();
+
+  prebuilts.push({
+    id: 'system-radio-group',
+    name: 'Radio Group',
+    category: 'Form Elements',
+    instance: {
+      id: radioGroupId,
+      type: 'Div' as ComponentType,
+      label: 'Div',
+      props: {},
+      styleSourceIds: ['style-radio-group'],
+      children: [
+        {
+          id: radioOption1Id,
+          type: 'Div' as ComponentType,
+          label: 'Div',
+          props: {},
+          styleSourceIds: ['style-radio-option'],
+          children: [
+            {
+              id: radioCircle1Id,
+              type: 'Div' as ComponentType,
+              label: 'Div',
+              props: {},
+              styleSourceIds: ['style-radio-circle-selected'],
+              children: [],
+            },
+            {
+              id: radioLabel1Id,
+              type: 'Text' as ComponentType,
+              label: 'Text',
+              props: { children: 'Option A' },
+              styleSourceIds: ['style-radio-label'],
+              children: [],
+            },
+          ],
+        },
+        {
+          id: radioOption2Id,
+          type: 'Div' as ComponentType,
+          label: 'Div',
+          props: {},
+          styleSourceIds: ['style-radio-option-2'],
+          children: [
+            {
+              id: radioCircle2Id,
+              type: 'Div' as ComponentType,
+              label: 'Div',
+              props: {},
+              styleSourceIds: ['style-radio-circle'],
+              children: [],
+            },
+            {
+              id: radioLabel2Id,
+              type: 'Text' as ComponentType,
+              label: 'Text',
+              props: { children: 'Option B' },
+              styleSourceIds: ['style-radio-label-2'],
+              children: [],
+            },
+          ],
+        },
+      ],
+    },
+    defaultStyles: {
+      'style-radio-group': createStyleEntry({
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '12px',
+      }),
+      'style-radio-option': createStyleEntry({
+        display: 'flex',
+        alignItems: 'center',
+        gap: '10px',
+        cursor: 'pointer',
+      }),
+      'style-radio-option-2': createStyleEntry({
+        display: 'flex',
+        alignItems: 'center',
+        gap: '10px',
+        cursor: 'pointer',
+      }),
+      'style-radio-circle-selected': createStyleEntry({
+        width: '16px',
+        height: '16px',
+        borderRadius: '50%',
+        border: '4px solid hsl(var(--primary))',
+        backgroundColor: 'hsl(var(--background))',
+      }),
+      'style-radio-circle': createStyleEntry({
+        width: '16px',
+        height: '16px',
+        borderRadius: '50%',
+        border: '1px solid hsl(var(--input))',
+        backgroundColor: 'hsl(var(--background))',
+      }),
+      'style-radio-label': createStyleEntry({
+        fontSize: '14px',
+        color: 'hsl(var(--foreground))',
+      }),
+      'style-radio-label-2': createStyleEntry({
+        fontSize: '14px',
+        color: 'hsl(var(--foreground))',
+      }),
+    },
+  });
+
+  // ---------------------------------------------------------------------------
+  // SCROLL AREA (Visual)
+  // ---------------------------------------------------------------------------
+  const scrollAreaId = generateId();
+  const scrollContentId = generateId();
+  const scrollbarId = generateId();
+
+  prebuilts.push({
+    id: 'system-scroll-area',
+    name: 'Scroll Area',
+    category: 'Layout',
+    instance: {
+      id: scrollAreaId,
+      type: 'Div' as ComponentType,
+      label: 'Div',
+      props: {},
+      styleSourceIds: ['style-scroll-area'],
+      children: [
+        {
+          id: scrollContentId,
+          type: 'Div' as ComponentType,
+          label: 'Div',
+          props: {},
+          styleSourceIds: ['style-scroll-content'],
+          children: [],
+        },
+        {
+          id: scrollbarId,
+          type: 'Div' as ComponentType,
+          label: 'Div',
+          props: {},
+          styleSourceIds: ['style-scrollbar'],
+          children: [],
+        },
+      ],
+    },
+    defaultStyles: {
+      'style-scroll-area': createStyleEntry({
+        position: 'relative',
+        height: '200px',
+        width: '100%',
+        overflow: 'hidden',
+        borderRadius: '8px',
+        border: '1px solid hsl(var(--border))',
+      }),
+      'style-scroll-content': createStyleEntry({
+        height: '100%',
+        overflowY: 'auto',
+        padding: '16px',
+      }),
+      'style-scrollbar': createStyleEntry({
+        position: 'absolute',
+        right: '2px',
+        top: '2px',
+        bottom: '2px',
+        width: '6px',
+        backgroundColor: 'hsl(var(--muted))',
+        borderRadius: '3px',
+      }),
+    },
+  });
+
+  // ---------------------------------------------------------------------------
+  // SELECT
+  // ---------------------------------------------------------------------------
+  const selectId = generateId();
+  const selectTriggerId = generateId();
+  const selectContentId = generateId();
+  const selectItem1Id = generateId();
+  const selectItem2Id = generateId();
+  const selectItem3Id = generateId();
+
+  prebuilts.push({
+    id: 'system-select',
+    name: 'Select',
+    category: 'Form Elements',
+    instance: {
+      id: selectId,
+      type: 'Div' as ComponentType,
+      label: 'Div',
+      props: {},
+      styleSourceIds: ['style-select'],
+      children: [
+        {
+          id: selectTriggerId,
+          type: 'Div' as ComponentType,
+          label: 'Div',
+          props: {},
+          styleSourceIds: ['style-select-trigger'],
+          children: [],
+        },
+        {
+          id: selectContentId,
+          type: 'Div' as ComponentType,
+          label: 'Div',
+          props: {},
+          styleSourceIds: ['style-select-content'],
+          children: [
+            {
+              id: selectItem1Id,
+              type: 'Text' as ComponentType,
+              label: 'Text',
+              props: { children: 'Option 1' },
+              styleSourceIds: ['style-select-item'],
+              children: [],
+            },
+            {
+              id: selectItem2Id,
+              type: 'Text' as ComponentType,
+              label: 'Text',
+              props: { children: 'Option 2' },
+              styleSourceIds: ['style-select-item-2'],
+              children: [],
+            },
+            {
+              id: selectItem3Id,
+              type: 'Text' as ComponentType,
+              label: 'Text',
+              props: { children: 'Option 3' },
+              styleSourceIds: ['style-select-item-3'],
+              children: [],
+            },
+          ],
+        },
+      ],
+    },
+    defaultStyles: {
+      'style-select': createStyleEntry({
+        position: 'relative',
+        width: '200px',
+      }),
+      'style-select-trigger': createStyleEntry({
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '10px 12px',
+        backgroundColor: 'hsl(var(--background))',
+        border: '1px solid hsl(var(--input))',
+        borderRadius: '6px',
+        cursor: 'pointer',
+      }),
+      'style-select-content': createStyleEntry({
+        position: 'absolute',
+        top: '100%',
+        left: '0',
+        right: '0',
+        marginTop: '4px',
+        display: 'flex',
+        flexDirection: 'column',
+        padding: '4px',
+        backgroundColor: 'hsl(var(--popover))',
+        border: '1px solid hsl(var(--border))',
+        borderRadius: '6px',
+        boxShadow: '0 4px 16px hsl(var(--foreground) / 0.1)',
+      }),
+      'style-select-item': createStyleEntry({
+        padding: '8px 12px',
+        fontSize: '14px',
+        color: 'hsl(var(--foreground))',
+        borderRadius: '4px',
+        cursor: 'pointer',
+      }),
+      'style-select-item-2': createStyleEntry({
+        padding: '8px 12px',
+        fontSize: '14px',
+        color: 'hsl(var(--foreground))',
+        borderRadius: '4px',
+        cursor: 'pointer',
+      }),
+      'style-select-item-3': createStyleEntry({
+        padding: '8px 12px',
+        fontSize: '14px',
+        color: 'hsl(var(--foreground))',
+        borderRadius: '4px',
+        cursor: 'pointer',
+      }),
+    },
+  });
+
+  // ---------------------------------------------------------------------------
+  // SEPARATOR
+  // ---------------------------------------------------------------------------
+  const separatorId = generateId();
+
+  prebuilts.push({
+    id: 'system-separator',
+    name: 'Separator',
+    category: 'Layout',
+    instance: {
+      id: separatorId,
+      type: 'Div' as ComponentType,
+      label: 'Div',
+      props: {},
+      styleSourceIds: ['style-separator'],
+      children: [],
+    },
+    defaultStyles: {
+      'style-separator': createStyleEntry({
+        width: '100%',
+        height: '1px',
+        backgroundColor: 'hsl(var(--border))',
+      }),
+    },
+  });
+
+  // ---------------------------------------------------------------------------
+  // SHEET
+  // ---------------------------------------------------------------------------
+  const sheetId = generateId();
+  const sheetOverlayId = generateId();
+  const sheetContentId = generateId();
+  const sheetTitleId = generateId();
+  const sheetDescId = generateId();
+
+  prebuilts.push({
+    id: 'system-sheet',
+    name: 'Sheet',
+    category: 'Interactive',
+    instance: {
+      id: sheetId,
+      type: 'Div' as ComponentType,
+      label: 'Div',
+      props: {},
+      styleSourceIds: ['style-sheet'],
+      children: [
+        {
+          id: sheetOverlayId,
+          type: 'Div' as ComponentType,
+          label: 'Div',
+          props: {},
+          styleSourceIds: ['style-sheet-overlay'],
+          children: [],
+        },
+        {
+          id: sheetContentId,
+          type: 'Div' as ComponentType,
+          label: 'Div',
+          props: {},
+          styleSourceIds: ['style-sheet-content'],
+          children: [
+            {
+              id: sheetTitleId,
+              type: 'Heading' as ComponentType,
+              label: 'Heading',
+              props: { level: 'h3', children: 'Sheet Title' },
+              styleSourceIds: ['style-sheet-title'],
+              children: [],
+            },
+            {
+              id: sheetDescId,
+              type: 'Text' as ComponentType,
+              label: 'Text',
+              props: { children: 'Make changes to your settings here.' },
+              styleSourceIds: ['style-sheet-desc'],
+              children: [],
+            },
+          ],
+        },
+      ],
+    },
+    defaultStyles: {
+      'style-sheet': createStyleEntry({
+        position: 'relative',
+        width: '100%',
+        maxWidth: '400px',
+        height: '300px',
+      }),
+      'style-sheet-overlay': createStyleEntry({
+        position: 'absolute',
+        inset: '0',
+        backgroundColor: 'hsl(var(--foreground) / 0.3)',
+      }),
+      'style-sheet-content': createStyleEntry({
+        position: 'absolute',
+        right: '0',
+        top: '0',
+        bottom: '0',
+        width: '320px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '16px',
+        padding: '24px',
+        backgroundColor: 'hsl(var(--background))',
+        borderLeft: '1px solid hsl(var(--border))',
+      }),
+      'style-sheet-title': createStyleEntry({
+        fontSize: '18px',
+        fontWeight: '600',
+        color: 'hsl(var(--foreground))',
+      }),
+      'style-sheet-desc': createStyleEntry({
+        fontSize: '14px',
+        color: 'hsl(var(--muted-foreground))',
+      }),
+    },
+  });
+
+  // ---------------------------------------------------------------------------
+  // SKELETON LOADER
+  // ---------------------------------------------------------------------------
+  const skeletonId = generateId();
+  const skeletonAvatarId = generateId();
+  const skeletonContentId = generateId();
+  const skeletonLine1Id = generateId();
+  const skeletonLine2Id = generateId();
+
+  prebuilts.push({
+    id: 'system-skeleton',
+    name: 'Skeleton Loader',
+    category: 'Data Display',
+    instance: {
+      id: skeletonId,
+      type: 'Div' as ComponentType,
+      label: 'Div',
+      props: {},
+      styleSourceIds: ['style-skeleton'],
+      children: [
+        {
+          id: skeletonAvatarId,
+          type: 'Div' as ComponentType,
+          label: 'Div',
+          props: {},
+          styleSourceIds: ['style-skeleton-avatar'],
+          children: [],
+        },
+        {
+          id: skeletonContentId,
+          type: 'Div' as ComponentType,
+          label: 'Div',
+          props: {},
+          styleSourceIds: ['style-skeleton-content'],
+          children: [
+            {
+              id: skeletonLine1Id,
+              type: 'Div' as ComponentType,
+              label: 'Div',
+              props: {},
+              styleSourceIds: ['style-skeleton-line'],
+              children: [],
+            },
+            {
+              id: skeletonLine2Id,
+              type: 'Div' as ComponentType,
+              label: 'Div',
+              props: {},
+              styleSourceIds: ['style-skeleton-line-short'],
+              children: [],
+            },
+          ],
+        },
+      ],
+    },
+    defaultStyles: {
+      'style-skeleton': createStyleEntry({
+        display: 'flex',
+        gap: '16px',
+        alignItems: 'center',
+      }),
+      'style-skeleton-avatar': createStyleEntry({
+        width: '48px',
+        height: '48px',
+        backgroundColor: 'hsl(var(--muted))',
+        borderRadius: '50%',
+      }),
+      'style-skeleton-content': createStyleEntry({
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '8px',
+        flex: '1',
+      }),
+      'style-skeleton-line': createStyleEntry({
+        width: '100%',
+        height: '16px',
+        backgroundColor: 'hsl(var(--muted))',
+        borderRadius: '4px',
+      }),
+      'style-skeleton-line-short': createStyleEntry({
+        width: '60%',
+        height: '16px',
+        backgroundColor: 'hsl(var(--muted))',
+        borderRadius: '4px',
+      }),
+    },
+  });
+
+  // ---------------------------------------------------------------------------
+  // SLIDER
+  // ---------------------------------------------------------------------------
+  const sliderId = generateId();
+  const sliderTrackId = generateId();
+  const sliderFillId = generateId();
+  const sliderThumbId = generateId();
+
+  prebuilts.push({
+    id: 'system-slider',
+    name: 'Slider',
+    category: 'Form Elements',
+    instance: {
+      id: sliderId,
+      type: 'Div' as ComponentType,
+      label: 'Div',
+      props: {},
+      styleSourceIds: ['style-slider'],
+      children: [
+        {
+          id: sliderTrackId,
+          type: 'Div' as ComponentType,
+          label: 'Div',
+          props: {},
+          styleSourceIds: ['style-slider-track'],
+          children: [
+            {
+              id: sliderFillId,
+              type: 'Div' as ComponentType,
+              label: 'Div',
+              props: {},
+              styleSourceIds: ['style-slider-fill'],
+              children: [],
+            },
+          ],
+        },
+        {
+          id: sliderThumbId,
+          type: 'Div' as ComponentType,
+          label: 'Div',
+          props: {},
+          styleSourceIds: ['style-slider-thumb'],
+          children: [],
+        },
+      ],
+    },
+    defaultStyles: {
+      'style-slider': createStyleEntry({
+        position: 'relative',
+        display: 'flex',
+        alignItems: 'center',
+        width: '200px',
+        height: '20px',
+      }),
+      'style-slider-track': createStyleEntry({
+        position: 'relative',
+        width: '100%',
+        height: '4px',
+        backgroundColor: 'hsl(var(--secondary))',
+        borderRadius: '9999px',
+      }),
+      'style-slider-fill': createStyleEntry({
+        position: 'absolute',
+        left: '0',
+        top: '0',
+        height: '100%',
+        width: '50%',
+        backgroundColor: 'hsl(var(--primary))',
+        borderRadius: '9999px',
+      }),
+      'style-slider-thumb': createStyleEntry({
+        position: 'absolute',
+        left: '50%',
+        top: '50%',
+        transform: 'translate(-50%, -50%)',
+        width: '16px',
+        height: '16px',
+        backgroundColor: 'hsl(var(--background))',
+        border: '2px solid hsl(var(--primary))',
+        borderRadius: '50%',
+        cursor: 'pointer',
+      }),
+    },
+  });
+
+  // ---------------------------------------------------------------------------
+  // TABLE
+  // ---------------------------------------------------------------------------
+  const tableId = generateId();
+  const tableHeaderId = generateId();
+  const tableHeaderRow = generateId();
+  const tableH1Id = generateId();
+  const tableH2Id = generateId();
+  const tableH3Id = generateId();
+  const tableBodyId = generateId();
+  const tableRow1Id = generateId();
+  const tableD1Id = generateId();
+  const tableD2Id = generateId();
+  const tableD3Id = generateId();
+
+  prebuilts.push({
+    id: 'system-table',
+    name: 'Table',
+    category: 'Data Display',
+    instance: {
+      id: tableId,
+      type: 'Div' as ComponentType,
+      label: 'Div',
+      props: {},
+      styleSourceIds: ['style-table-wrapper'],
+      children: [
+        {
+          id: tableHeaderId,
+          type: 'Div' as ComponentType,
+          label: 'Div',
+          props: {},
+          styleSourceIds: ['style-table-header'],
+          children: [
+            {
+              id: tableHeaderRow,
+              type: 'Div' as ComponentType,
+              label: 'Div',
+              props: {},
+              styleSourceIds: ['style-table-row'],
+              children: [
+                {
+                  id: tableH1Id,
+                  type: 'Text' as ComponentType,
+                  label: 'Text',
+                  props: { children: 'Name' },
+                  styleSourceIds: ['style-table-th'],
+                  children: [],
+                },
+                {
+                  id: tableH2Id,
+                  type: 'Text' as ComponentType,
+                  label: 'Text',
+                  props: { children: 'Status' },
+                  styleSourceIds: ['style-table-th-2'],
+                  children: [],
+                },
+                {
+                  id: tableH3Id,
+                  type: 'Text' as ComponentType,
+                  label: 'Text',
+                  props: { children: 'Amount' },
+                  styleSourceIds: ['style-table-th-3'],
+                  children: [],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          id: tableBodyId,
+          type: 'Div' as ComponentType,
+          label: 'Div',
+          props: {},
+          styleSourceIds: ['style-table-body'],
+          children: [
+            {
+              id: tableRow1Id,
+              type: 'Div' as ComponentType,
+              label: 'Div',
+              props: {},
+              styleSourceIds: ['style-table-row-2'],
+              children: [
+                {
+                  id: tableD1Id,
+                  type: 'Text' as ComponentType,
+                  label: 'Text',
+                  props: { children: 'John Doe' },
+                  styleSourceIds: ['style-table-td'],
+                  children: [],
+                },
+                {
+                  id: tableD2Id,
+                  type: 'Text' as ComponentType,
+                  label: 'Text',
+                  props: { children: 'Active' },
+                  styleSourceIds: ['style-table-td-2'],
+                  children: [],
+                },
+                {
+                  id: tableD3Id,
+                  type: 'Text' as ComponentType,
+                  label: 'Text',
+                  props: { children: '$250.00' },
+                  styleSourceIds: ['style-table-td-3'],
+                  children: [],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+    defaultStyles: {
+      'style-table-wrapper': createStyleEntry({
+        width: '100%',
+        border: '1px solid hsl(var(--border))',
+        borderRadius: '8px',
+        overflow: 'hidden',
+      }),
+      'style-table-header': createStyleEntry({
+        backgroundColor: 'hsl(var(--muted))',
+      }),
+      'style-table-row': createStyleEntry({
+        display: 'grid',
+        gridTemplateColumns: '1fr 1fr 1fr',
+      }),
+      'style-table-row-2': createStyleEntry({
+        display: 'grid',
+        gridTemplateColumns: '1fr 1fr 1fr',
+        borderTop: '1px solid hsl(var(--border))',
+      }),
+      'style-table-th': createStyleEntry({
+        padding: '12px 16px',
+        fontSize: '12px',
+        fontWeight: '600',
+        textTransform: 'uppercase',
+        letterSpacing: '0.05em',
+        color: 'hsl(var(--muted-foreground))',
+      }),
+      'style-table-th-2': createStyleEntry({
+        padding: '12px 16px',
+        fontSize: '12px',
+        fontWeight: '600',
+        textTransform: 'uppercase',
+        letterSpacing: '0.05em',
+        color: 'hsl(var(--muted-foreground))',
+      }),
+      'style-table-th-3': createStyleEntry({
+        padding: '12px 16px',
+        fontSize: '12px',
+        fontWeight: '600',
+        textTransform: 'uppercase',
+        letterSpacing: '0.05em',
+        color: 'hsl(var(--muted-foreground))',
+        textAlign: 'right',
+      }),
+      'style-table-body': createStyleEntry({
+        backgroundColor: 'hsl(var(--background))',
+      }),
+      'style-table-td': createStyleEntry({
+        padding: '12px 16px',
+        fontSize: '14px',
+        color: 'hsl(var(--foreground))',
+      }),
+      'style-table-td-2': createStyleEntry({
+        padding: '12px 16px',
+        fontSize: '14px',
+        color: 'hsl(var(--foreground))',
+      }),
+      'style-table-td-3': createStyleEntry({
+        padding: '12px 16px',
+        fontSize: '14px',
+        color: 'hsl(var(--foreground))',
+        textAlign: 'right',
+      }),
+    },
+  });
+
+  // ---------------------------------------------------------------------------
+  // TABS
+  // ---------------------------------------------------------------------------
+  const tabsId = generateId();
+  const tabsListId = generateId();
+  const tab1Id = generateId();
+  const tab2Id = generateId();
+  const tab3Id = generateId();
+  const tabsContentId = generateId();
+
+  prebuilts.push({
+    id: 'system-tabs',
+    name: 'Tabs',
+    category: 'Navigation',
+    instance: {
+      id: tabsId,
+      type: 'Div' as ComponentType,
+      label: 'Div',
+      props: {},
+      styleSourceIds: ['style-tabs'],
+      children: [
+        {
+          id: tabsListId,
+          type: 'Div' as ComponentType,
+          label: 'Div',
+          props: {},
+          styleSourceIds: ['style-tabs-list'],
+          children: [
+            {
+              id: tab1Id,
+              type: 'Button' as ComponentType,
+              label: 'Button',
+              props: { children: 'Account' },
+              styleSourceIds: ['style-tab-active'],
+              children: [],
+            },
+            {
+              id: tab2Id,
+              type: 'Button' as ComponentType,
+              label: 'Button',
+              props: { children: 'Password' },
+              styleSourceIds: ['style-tab'],
+              children: [],
+            },
+            {
+              id: tab3Id,
+              type: 'Button' as ComponentType,
+              label: 'Button',
+              props: { children: 'Settings' },
+              styleSourceIds: ['style-tab-2'],
+              children: [],
+            },
+          ],
+        },
+        {
+          id: tabsContentId,
+          type: 'Div' as ComponentType,
+          label: 'Div',
+          props: {},
+          styleSourceIds: ['style-tabs-content'],
+          children: [],
+        },
+      ],
+    },
+    defaultStyles: {
+      'style-tabs': createStyleEntry({
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '16px',
+      }),
+      'style-tabs-list': createStyleEntry({
+        display: 'inline-flex',
+        backgroundColor: 'hsl(var(--muted))',
+        padding: '4px',
+        borderRadius: '8px',
+        gap: '4px',
+      }),
+      'style-tab-active': createStyleEntry({
+        padding: '8px 16px',
+        fontSize: '14px',
+        fontWeight: '500',
+        backgroundColor: 'hsl(var(--background))',
+        color: 'hsl(var(--foreground))',
+        borderRadius: '6px',
+        border: 'none',
+        boxShadow: '0 1px 2px hsl(var(--foreground) / 0.05)',
+        cursor: 'pointer',
+      }),
+      'style-tab': createStyleEntry({
+        padding: '8px 16px',
+        fontSize: '14px',
+        fontWeight: '500',
+        backgroundColor: 'transparent',
+        color: 'hsl(var(--muted-foreground))',
+        borderRadius: '6px',
+        border: 'none',
+        cursor: 'pointer',
+      }),
+      'style-tab-2': createStyleEntry({
+        padding: '8px 16px',
+        fontSize: '14px',
+        fontWeight: '500',
+        backgroundColor: 'transparent',
+        color: 'hsl(var(--muted-foreground))',
+        borderRadius: '6px',
+        border: 'none',
+        cursor: 'pointer',
+      }),
+      'style-tabs-content': createStyleEntry({
+        padding: '16px',
+        backgroundColor: 'hsl(var(--card))',
+        border: '1px solid hsl(var(--border))',
+        borderRadius: '8px',
+        minHeight: '100px',
+      }),
+    },
+  });
+
+  // ---------------------------------------------------------------------------
+  // TEXTAREA
+  // ---------------------------------------------------------------------------
+  const textareaId = generateId();
+  const textareaLabelId = generateId();
+  const textareaFieldId = generateId();
+
+  prebuilts.push({
+    id: 'system-textarea',
+    name: 'Textarea',
+    category: 'Form Elements',
+    instance: {
+      id: textareaId,
+      type: 'Div' as ComponentType,
+      label: 'Div',
+      props: {},
+      styleSourceIds: ['style-textarea-group'],
+      children: [
+        {
+          id: textareaLabelId,
+          type: 'InputLabel' as ComponentType,
+          label: 'InputLabel',
+          props: { children: 'Message' },
+          styleSourceIds: ['style-textarea-label'],
+          children: [],
+        },
+        {
+          id: textareaFieldId,
+          type: 'TextArea' as ComponentType,
+          label: 'TextArea',
+          props: { placeholder: 'Type your message here...' },
+          styleSourceIds: ['style-textarea-field'],
+          children: [],
+        },
+      ],
+    },
+    defaultStyles: {
+      'style-textarea-group': createStyleEntry({
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '8px',
+        width: '100%',
+      }),
+      'style-textarea-label': createStyleEntry({
+        fontSize: '14px',
+        fontWeight: '500',
+        color: 'hsl(var(--foreground))',
+      }),
+      'style-textarea-field': createStyleEntry({
+        width: '100%',
+        minHeight: '100px',
+        padding: '10px 12px',
+        fontSize: '14px',
+        backgroundColor: 'hsl(var(--background))',
+        border: '1px solid hsl(var(--input))',
+        borderRadius: '6px',
+        color: 'hsl(var(--foreground))',
+        resize: 'vertical',
+      }),
+    },
+  });
+
+  // ---------------------------------------------------------------------------
+  // TOAST
+  // ---------------------------------------------------------------------------
+  const toastId = generateId();
+  const toastContentId = generateId();
+  const toastTitleId = generateId();
+  const toastDescId = generateId();
+  const toastCloseId = generateId();
+
+  prebuilts.push({
+    id: 'system-toast',
+    name: 'Toast',
+    category: 'Feedback',
+    instance: {
+      id: toastId,
+      type: 'Div' as ComponentType,
+      label: 'Div',
+      props: {},
+      styleSourceIds: ['style-toast'],
+      children: [
+        {
+          id: toastContentId,
+          type: 'Div' as ComponentType,
+          label: 'Div',
+          props: {},
+          styleSourceIds: ['style-toast-content'],
+          children: [
+            {
+              id: toastTitleId,
+              type: 'Text' as ComponentType,
+              label: 'Text',
+              props: { children: 'Success!' },
+              styleSourceIds: ['style-toast-title'],
+              children: [],
+            },
+            {
+              id: toastDescId,
+              type: 'Text' as ComponentType,
+              label: 'Text',
+              props: { children: 'Your changes have been saved.' },
+              styleSourceIds: ['style-toast-desc'],
+              children: [],
+            },
+          ],
+        },
+        {
+          id: toastCloseId,
+          type: 'Button' as ComponentType,
+          label: 'Button',
+          props: { children: '×' },
+          styleSourceIds: ['style-toast-close'],
+          children: [],
+        },
+      ],
+    },
+    defaultStyles: {
+      'style-toast': createStyleEntry({
+        display: 'flex',
+        alignItems: 'flex-start',
+        gap: '16px',
+        padding: '16px',
+        backgroundColor: 'hsl(var(--background))',
+        border: '1px solid hsl(var(--border))',
+        borderRadius: '8px',
+        boxShadow: '0 4px 16px hsl(var(--foreground) / 0.1)',
+        maxWidth: '360px',
+      }),
+      'style-toast-content': createStyleEntry({
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '4px',
+        flex: '1',
+      }),
+      'style-toast-title': createStyleEntry({
+        fontSize: '14px',
+        fontWeight: '600',
+        color: 'hsl(var(--foreground))',
+      }),
+      'style-toast-desc': createStyleEntry({
+        fontSize: '13px',
+        color: 'hsl(var(--muted-foreground))',
+      }),
+      'style-toast-close': createStyleEntry({
+        width: '24px',
+        height: '24px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'transparent',
+        border: 'none',
+        borderRadius: '4px',
+        fontSize: '18px',
+        color: 'hsl(var(--muted-foreground))',
+        cursor: 'pointer',
+      }),
+    },
+  });
+
+  // ---------------------------------------------------------------------------
+  // TOGGLE
+  // ---------------------------------------------------------------------------
+  const toggleId = generateId();
+  const toggleTextId = generateId();
+
+  prebuilts.push({
+    id: 'system-toggle',
+    name: 'Toggle',
+    category: 'Form Elements',
+    instance: {
+      id: toggleId,
+      type: 'Div' as ComponentType,
+      label: 'Div',
+      props: {},
+      styleSourceIds: ['style-toggle'],
+      children: [
+        {
+          id: toggleTextId,
+          type: 'Text' as ComponentType,
+          label: 'Text',
+          props: { children: 'B' },
+          styleSourceIds: ['style-toggle-text'],
+          children: [],
+        },
+      ],
+    },
+    defaultStyles: {
+      'style-toggle': createStyleEntry({
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '36px',
+        height: '36px',
+        backgroundColor: 'hsl(var(--accent))',
+        borderRadius: '6px',
+        cursor: 'pointer',
+      }),
+      'style-toggle-text': createStyleEntry({
+        fontSize: '14px',
+        fontWeight: '600',
+        color: 'hsl(var(--accent-foreground))',
+      }),
+    },
+  });
+
+  // ---------------------------------------------------------------------------
+  // TOGGLE GROUP
+  // ---------------------------------------------------------------------------
+  const toggleGroupId = generateId();
+  const toggle1Id = generateId();
+  const toggle2Id = generateId();
+  const toggle3Id = generateId();
+
+  prebuilts.push({
+    id: 'system-toggle-group',
+    name: 'Toggle Group',
+    category: 'Form Elements',
+    instance: {
+      id: toggleGroupId,
+      type: 'Div' as ComponentType,
+      label: 'Div',
+      props: {},
+      styleSourceIds: ['style-toggle-group'],
+      children: [
+        {
+          id: toggle1Id,
+          type: 'Div' as ComponentType,
+          label: 'Div',
+          props: {},
+          styleSourceIds: ['style-toggle-item-active'],
+          children: [],
+        },
+        {
+          id: toggle2Id,
+          type: 'Div' as ComponentType,
+          label: 'Div',
+          props: {},
+          styleSourceIds: ['style-toggle-item'],
+          children: [],
+        },
+        {
+          id: toggle3Id,
+          type: 'Div' as ComponentType,
+          label: 'Div',
+          props: {},
+          styleSourceIds: ['style-toggle-item-2'],
+          children: [],
+        },
+      ],
+    },
+    defaultStyles: {
+      'style-toggle-group': createStyleEntry({
+        display: 'inline-flex',
+        backgroundColor: 'hsl(var(--muted))',
+        borderRadius: '6px',
+        padding: '2px',
+        gap: '2px',
+      }),
+      'style-toggle-item-active': createStyleEntry({
+        width: '36px',
+        height: '36px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'hsl(var(--background))',
+        borderRadius: '4px',
+        cursor: 'pointer',
+      }),
+      'style-toggle-item': createStyleEntry({
+        width: '36px',
+        height: '36px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'transparent',
+        borderRadius: '4px',
+        cursor: 'pointer',
+      }),
+      'style-toggle-item-2': createStyleEntry({
+        width: '36px',
+        height: '36px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'transparent',
+        borderRadius: '4px',
+        cursor: 'pointer',
+      }),
+    },
+  });
+
+  // ---------------------------------------------------------------------------
+  // TOOLTIP
+  // ---------------------------------------------------------------------------
+  const tooltipId = generateId();
+  const tooltipTriggerId = generateId();
+  const tooltipContentId = generateId();
+
+  prebuilts.push({
+    id: 'system-tooltip',
+    name: 'Tooltip',
+    category: 'Interactive',
+    instance: {
+      id: tooltipId,
+      type: 'Div' as ComponentType,
+      label: 'Div',
+      props: {},
+      styleSourceIds: ['style-tooltip'],
+      children: [
+        {
+          id: tooltipTriggerId,
+          type: 'Button' as ComponentType,
+          label: 'Button',
+          props: { children: 'Hover me' },
+          styleSourceIds: ['style-tooltip-trigger'],
+          children: [],
+        },
+        {
+          id: tooltipContentId,
+          type: 'Div' as ComponentType,
+          label: 'Div',
+          props: {},
+          styleSourceIds: ['style-tooltip-content'],
+          children: [],
+        },
+      ],
+    },
+    defaultStyles: {
+      'style-tooltip': createStyleEntry({
+        position: 'relative',
+        display: 'inline-block',
+      }),
+      'style-tooltip-trigger': createStyleEntry({
+        padding: '8px 16px',
+        backgroundColor: 'hsl(var(--secondary))',
+        color: 'hsl(var(--secondary-foreground))',
+        borderRadius: '6px',
+        fontSize: '14px',
+        border: 'none',
+        cursor: 'pointer',
+      }),
+      'style-tooltip-content': createStyleEntry({
+        position: 'absolute',
+        bottom: '100%',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        marginBottom: '8px',
+        padding: '6px 12px',
+        backgroundColor: 'hsl(var(--foreground))',
+        color: 'hsl(var(--background))',
+        borderRadius: '4px',
+        fontSize: '12px',
+        whiteSpace: 'nowrap',
+      }),
+    },
+  });
+
+  // ---------------------------------------------------------------------------
+  // RESIZABLE PANELS (Visual representation)
+  // ---------------------------------------------------------------------------
+  const resizableId = generateId();
+  const resizePanel1Id = generateId();
+  const resizeHandleId = generateId();
+  const resizePanel2Id = generateId();
+
+  prebuilts.push({
+    id: 'system-resizable',
+    name: 'Resizable Panels',
+    category: 'Layout',
+    instance: {
+      id: resizableId,
+      type: 'Div' as ComponentType,
+      label: 'Div',
+      props: {},
+      styleSourceIds: ['style-resizable'],
+      children: [
+        {
+          id: resizePanel1Id,
+          type: 'Div' as ComponentType,
+          label: 'Div',
+          props: {},
+          styleSourceIds: ['style-resize-panel'],
+          children: [],
+        },
+        {
+          id: resizeHandleId,
+          type: 'Div' as ComponentType,
+          label: 'Div',
+          props: {},
+          styleSourceIds: ['style-resize-handle'],
+          children: [],
+        },
+        {
+          id: resizePanel2Id,
+          type: 'Div' as ComponentType,
+          label: 'Div',
+          props: {},
+          styleSourceIds: ['style-resize-panel-2'],
+          children: [],
+        },
+      ],
+    },
+    defaultStyles: {
+      'style-resizable': createStyleEntry({
+        display: 'flex',
+        width: '100%',
+        height: '200px',
+        border: '1px solid hsl(var(--border))',
+        borderRadius: '8px',
+        overflow: 'hidden',
+      }),
+      'style-resize-panel': createStyleEntry({
+        flex: '1',
+        backgroundColor: 'hsl(var(--muted))',
+        padding: '16px',
+      }),
+      'style-resize-handle': createStyleEntry({
+        width: '4px',
+        backgroundColor: 'hsl(var(--border))',
+        cursor: 'col-resize',
+      }),
+      'style-resize-panel-2': createStyleEntry({
+        flex: '1',
+        backgroundColor: 'hsl(var(--background))',
+        padding: '16px',
+      }),
+    },
+  });
+
+  // ---------------------------------------------------------------------------
+  // ALERT (Simple notification style)
+  // ---------------------------------------------------------------------------
+  const alertId = generateId();
+  const alertIconId = generateId();
+  const alertContentId = generateId();
+  const alertTitleId = generateId();
+  const alertDescId = generateId();
+
+  prebuilts.push({
+    id: 'system-alert',
+    name: 'Alert',
+    category: 'Feedback',
+    instance: {
+      id: alertId,
+      type: 'Div' as ComponentType,
+      label: 'Div',
+      props: {},
+      styleSourceIds: ['style-alert'],
+      children: [
+        {
+          id: alertIconId,
+          type: 'Div' as ComponentType,
+          label: 'Div',
+          props: {},
+          styleSourceIds: ['style-alert-icon'],
+          children: [],
+        },
+        {
+          id: alertContentId,
+          type: 'Div' as ComponentType,
+          label: 'Div',
+          props: {},
+          styleSourceIds: ['style-alert-content'],
+          children: [
+            {
+              id: alertTitleId,
+              type: 'Text' as ComponentType,
+              label: 'Text',
+              props: { children: 'Heads up!' },
+              styleSourceIds: ['style-alert-title'],
+              children: [],
+            },
+            {
+              id: alertDescId,
+              type: 'Text' as ComponentType,
+              label: 'Text',
+              props: { children: 'You can add components to your app using the CLI.' },
+              styleSourceIds: ['style-alert-desc'],
+              children: [],
+            },
+          ],
+        },
+      ],
+    },
+    defaultStyles: {
+      'style-alert': createStyleEntry({
+        display: 'flex',
+        gap: '12px',
+        padding: '16px',
+        backgroundColor: 'hsl(var(--muted))',
+        border: '1px solid hsl(var(--border))',
+        borderRadius: '8px',
+      }),
+      'style-alert-icon': createStyleEntry({
+        width: '20px',
+        height: '20px',
+        backgroundColor: 'hsl(var(--primary))',
+        borderRadius: '50%',
+        flexShrink: '0',
+      }),
+      'style-alert-content': createStyleEntry({
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '4px',
+      }),
+      'style-alert-title': createStyleEntry({
+        fontSize: '14px',
+        fontWeight: '600',
+        color: 'hsl(var(--foreground))',
+      }),
+      'style-alert-desc': createStyleEntry({
+        fontSize: '14px',
+        color: 'hsl(var(--muted-foreground))',
+        lineHeight: '1.5',
       }),
     },
   });
 
   return prebuilts;
-};
-
-// Get unique categories from system prebuilts
-export const getSystemPrebuiltCategories = (prebuilts: SystemPrebuiltDefinition[]): string[] => {
-  return [...new Set(prebuilts.map(p => p.category))];
 };
