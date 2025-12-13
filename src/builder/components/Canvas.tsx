@@ -632,6 +632,442 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
         );
       }
 
+      // Handle shadcn-based component types that need custom rendering
+      case 'Accordion': {
+        const items = instance.props?.items || [];
+        const content = (
+          <div
+            data-instance-id={instance.id}
+            className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
+            style={getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties}
+            onClick={isPreviewMode ? undefined : () => setSelectedInstanceId(instance.id)}
+            onMouseEnter={isPreviewMode ? undefined : () => setHoveredInstanceId(instance.id)}
+            onMouseLeave={isPreviewMode ? undefined : () => setHoveredInstanceId(null)}
+            onContextMenu={isPreviewMode ? undefined : (e) => handleContextMenu(e, instance)}
+          >
+            {items.map((item: any, index: number) => (
+              <div key={item.id || index} className="border-b border-border">
+                <button className="flex w-full items-center justify-between py-4 text-sm font-medium transition-all hover:underline [&[data-state=open]>svg]:rotate-180">
+                  {item.title}
+                  <svg className="h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {item.defaultOpen && (
+                  <div className="pb-4 pt-0 text-sm text-muted-foreground">
+                    {item.content}
+                  </div>
+                )}
+              </div>
+            ))}
+            {items.length === 0 && (
+              <div className="py-4 text-sm text-muted-foreground italic">
+                No accordion items. Add items in the Data tab.
+              </div>
+            )}
+          </div>
+        );
+        return wrapWithDraggable(content);
+      }
+
+      case 'Carousel': {
+        const slides = instance.props?.slides || [];
+        const content = (
+          <div
+            data-instance-id={instance.id}
+            className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
+            style={getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties}
+            onClick={isPreviewMode ? undefined : () => setSelectedInstanceId(instance.id)}
+            onMouseEnter={isPreviewMode ? undefined : () => setHoveredInstanceId(instance.id)}
+            onMouseLeave={isPreviewMode ? undefined : () => setHoveredInstanceId(null)}
+            onContextMenu={isPreviewMode ? undefined : (e) => handleContextMenu(e, instance)}
+          >
+            <div className="flex gap-4 overflow-hidden">
+              {slides.map((slide: any, index: number) => (
+                <div key={slide.id || index} className="flex-shrink-0 w-full min-h-[200px] bg-muted rounded-lg flex items-center justify-center">
+                  {slide.imageUrl ? (
+                    <img src={slide.imageUrl} alt={slide.title} className="w-full h-full object-cover rounded-lg" />
+                  ) : (
+                    <div className="text-muted-foreground text-center p-4">
+                      <div className="font-medium">{slide.title}</div>
+                      <div className="text-sm">{slide.description}</div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+            {slides.length === 0 && (
+              <div className="py-8 text-sm text-muted-foreground italic text-center">
+                No slides. Add slides in the Data tab.
+              </div>
+            )}
+          </div>
+        );
+        return wrapWithDraggable(content);
+      }
+
+      case 'Tabs': {
+        const tabs = instance.props?.tabs || [];
+        const defaultTab = instance.props?.defaultTab || tabs[0]?.id;
+        const content = (
+          <div
+            data-instance-id={instance.id}
+            className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
+            style={getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties}
+            onClick={isPreviewMode ? undefined : () => setSelectedInstanceId(instance.id)}
+            onMouseEnter={isPreviewMode ? undefined : () => setHoveredInstanceId(instance.id)}
+            onMouseLeave={isPreviewMode ? undefined : () => setHoveredInstanceId(null)}
+            onContextMenu={isPreviewMode ? undefined : (e) => handleContextMenu(e, instance)}
+          >
+            <div className="flex gap-1 border-b border-border mb-4">
+              {tabs.map((tab: any) => (
+                <button
+                  key={tab.id}
+                  className={`px-4 py-2 text-sm font-medium ${tab.id === defaultTab ? 'border-b-2 border-primary text-foreground' : 'text-muted-foreground'}`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+            <div className="text-sm text-muted-foreground">
+              {tabs.find((t: any) => t.id === defaultTab)?.content || 'Tab content'}
+            </div>
+            {tabs.length === 0 && (
+              <div className="py-4 text-sm text-muted-foreground italic">
+                No tabs. Add tabs in the Data tab.
+              </div>
+            )}
+          </div>
+        );
+        return wrapWithDraggable(content);
+      }
+
+      case 'AlertDialog': {
+        const content = (
+          <div
+            data-instance-id={instance.id}
+            className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
+            style={getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties}
+            onClick={isPreviewMode ? undefined : () => setSelectedInstanceId(instance.id)}
+            onMouseEnter={isPreviewMode ? undefined : () => setHoveredInstanceId(instance.id)}
+            onMouseLeave={isPreviewMode ? undefined : () => setHoveredInstanceId(null)}
+            onContextMenu={isPreviewMode ? undefined : (e) => handleContextMenu(e, instance)}
+          >
+            <button className="px-4 py-2 bg-secondary text-secondary-foreground rounded-md text-sm">
+              {instance.props?.triggerText || 'Open Dialog'}
+            </button>
+            <div className="mt-4 p-6 bg-background border border-border rounded-lg max-w-md">
+              <h3 className="text-lg font-semibold mb-2">{instance.props?.title || 'Dialog Title'}</h3>
+              <p className="text-sm text-muted-foreground mb-4">{instance.props?.description || 'Dialog description'}</p>
+              <div className="flex justify-end gap-2">
+                <button className="px-4 py-2 border border-border rounded-md text-sm">{instance.props?.cancelText || 'Cancel'}</button>
+                <button className="px-4 py-2 bg-destructive text-destructive-foreground rounded-md text-sm">{instance.props?.actionText || 'Continue'}</button>
+              </div>
+            </div>
+          </div>
+        );
+        return wrapWithDraggable(content);
+      }
+
+      case 'Avatar': {
+        const size = instance.props?.size || 'md';
+        const sizeMap: Record<string, string> = { sm: '32px', md: '40px', lg: '48px', xl: '64px' };
+        const content = (
+          <div
+            data-instance-id={instance.id}
+            className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
+            style={{
+              ...getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties,
+              width: sizeMap[size],
+              height: sizeMap[size],
+              borderRadius: '50%',
+              overflow: 'hidden',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: 'hsl(var(--muted))',
+            }}
+            onClick={isPreviewMode ? undefined : () => setSelectedInstanceId(instance.id)}
+            onMouseEnter={isPreviewMode ? undefined : () => setHoveredInstanceId(instance.id)}
+            onMouseLeave={isPreviewMode ? undefined : () => setHoveredInstanceId(null)}
+            onContextMenu={isPreviewMode ? undefined : (e) => handleContextMenu(e, instance)}
+          >
+            {instance.props?.src ? (
+              <img src={instance.props.src} alt={instance.props?.alt || 'Avatar'} className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-sm font-medium text-muted-foreground">{instance.props?.fallback || 'CN'}</span>
+            )}
+          </div>
+        );
+        return wrapWithDraggable(content);
+      }
+
+      case 'Badge': {
+        const content = (
+          <span
+            data-instance-id={instance.id}
+            className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
+            style={{
+              ...getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties,
+              display: 'inline-flex',
+              alignItems: 'center',
+              padding: '4px 10px',
+              borderRadius: '9999px',
+              backgroundColor: 'hsl(var(--primary))',
+              color: 'hsl(var(--primary-foreground))',
+              fontSize: '12px',
+              fontWeight: '600',
+            }}
+            onClick={isPreviewMode ? undefined : () => setSelectedInstanceId(instance.id)}
+            onMouseEnter={isPreviewMode ? undefined : () => setHoveredInstanceId(instance.id)}
+            onMouseLeave={isPreviewMode ? undefined : () => setHoveredInstanceId(null)}
+            onContextMenu={isPreviewMode ? undefined : (e: any) => handleContextMenu(e, instance)}
+          >
+            {instance.props?.text || 'Badge'}
+          </span>
+        );
+        return wrapWithDraggable(content);
+      }
+
+      case 'Progress': {
+        const value = instance.props?.value || 60;
+        const max = instance.props?.max || 100;
+        const percentage = (value / max) * 100;
+        const content = (
+          <div
+            data-instance-id={instance.id}
+            className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
+            style={getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties}
+            onClick={isPreviewMode ? undefined : () => setSelectedInstanceId(instance.id)}
+            onMouseEnter={isPreviewMode ? undefined : () => setHoveredInstanceId(instance.id)}
+            onMouseLeave={isPreviewMode ? undefined : () => setHoveredInstanceId(null)}
+            onContextMenu={isPreviewMode ? undefined : (e) => handleContextMenu(e, instance)}
+          >
+            <div className="w-full h-2 bg-secondary rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-primary rounded-full transition-all" 
+                style={{ width: `${percentage}%` }}
+              />
+            </div>
+            {instance.props?.showLabel && (
+              <span className="text-xs text-muted-foreground mt-1">{value}%</span>
+            )}
+          </div>
+        );
+        return wrapWithDraggable(content);
+      }
+
+      case 'Slider': {
+        const value = instance.props?.defaultValue || 50;
+        const max = instance.props?.max || 100;
+        const percentage = (value / max) * 100;
+        const content = (
+          <div
+            data-instance-id={instance.id}
+            className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
+            style={{
+              ...getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties,
+              position: 'relative',
+              display: 'flex',
+              alignItems: 'center',
+              width: '200px',
+              height: '20px',
+            }}
+            onClick={isPreviewMode ? undefined : () => setSelectedInstanceId(instance.id)}
+            onMouseEnter={isPreviewMode ? undefined : () => setHoveredInstanceId(instance.id)}
+            onMouseLeave={isPreviewMode ? undefined : () => setHoveredInstanceId(null)}
+            onContextMenu={isPreviewMode ? undefined : (e) => handleContextMenu(e, instance)}
+          >
+            <div className="relative w-full h-1 bg-secondary rounded-full">
+              <div className="absolute left-0 top-0 h-full bg-primary rounded-full" style={{ width: `${percentage}%` }} />
+            </div>
+            <div 
+              className="absolute w-4 h-4 bg-background border-2 border-primary rounded-full cursor-pointer" 
+              style={{ left: `${percentage}%`, transform: 'translateX(-50%)' }}
+            />
+          </div>
+        );
+        return wrapWithDraggable(content);
+      }
+
+      case 'Switch': {
+        const checked = instance.props?.checked || false;
+        const content = (
+          <div
+            data-instance-id={instance.id}
+            className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
+            style={{
+              ...getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '16px',
+              backgroundColor: 'hsl(var(--card))',
+              border: '1px solid hsl(var(--border))',
+              borderRadius: '8px',
+            }}
+            onClick={isPreviewMode ? undefined : () => setSelectedInstanceId(instance.id)}
+            onMouseEnter={isPreviewMode ? undefined : () => setHoveredInstanceId(instance.id)}
+            onMouseLeave={isPreviewMode ? undefined : () => setHoveredInstanceId(null)}
+            onContextMenu={isPreviewMode ? undefined : (e) => handleContextMenu(e, instance)}
+          >
+            <span className="text-sm font-medium">{instance.props?.label || 'Toggle'}</span>
+            <div 
+              className={`w-11 h-6 rounded-full p-0.5 flex items-center ${checked ? 'bg-primary justify-end' : 'bg-input justify-start'}`}
+            >
+              <div className="w-5 h-5 bg-background rounded-full shadow" />
+            </div>
+          </div>
+        );
+        return wrapWithDraggable(content);
+      }
+
+      case 'Tooltip': {
+        const content = (
+          <div
+            data-instance-id={instance.id}
+            className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
+            style={{
+              ...getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties,
+              position: 'relative',
+              display: 'inline-block',
+            }}
+            onClick={isPreviewMode ? undefined : () => setSelectedInstanceId(instance.id)}
+            onMouseEnter={isPreviewMode ? undefined : () => setHoveredInstanceId(instance.id)}
+            onMouseLeave={isPreviewMode ? undefined : () => setHoveredInstanceId(null)}
+            onContextMenu={isPreviewMode ? undefined : (e) => handleContextMenu(e, instance)}
+          >
+            <button className="px-4 py-2 bg-secondary text-secondary-foreground rounded-md text-sm">
+              {instance.props?.triggerText || 'Hover me'}
+            </button>
+            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-foreground text-background rounded text-xs whitespace-nowrap">
+              {instance.props?.content || 'Tooltip'}
+            </div>
+          </div>
+        );
+        return wrapWithDraggable(content);
+      }
+
+      case 'Popover': {
+        const content = (
+          <div
+            data-instance-id={instance.id}
+            className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
+            style={{
+              ...getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties,
+              position: 'relative',
+              display: 'inline-block',
+            }}
+            onClick={isPreviewMode ? undefined : () => setSelectedInstanceId(instance.id)}
+            onMouseEnter={isPreviewMode ? undefined : () => setHoveredInstanceId(instance.id)}
+            onMouseLeave={isPreviewMode ? undefined : () => setHoveredInstanceId(null)}
+            onContextMenu={isPreviewMode ? undefined : (e) => handleContextMenu(e, instance)}
+          >
+            <button className="px-4 py-2 bg-secondary text-secondary-foreground rounded-md text-sm">
+              {instance.props?.triggerText || 'Open'}
+            </button>
+            <div className="absolute top-full left-0 mt-2 p-4 bg-popover border border-border rounded-lg shadow-lg min-w-[200px]">
+              <div className="font-semibold text-sm">{instance.props?.title || 'Title'}</div>
+              <div className="text-sm text-muted-foreground mt-1">{instance.props?.content || 'Content'}</div>
+            </div>
+          </div>
+        );
+        return wrapWithDraggable(content);
+      }
+
+      case 'Alert': {
+        const content = (
+          <div
+            data-instance-id={instance.id}
+            className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
+            style={{
+              ...getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties,
+              display: 'flex',
+              gap: '12px',
+              padding: '16px',
+              backgroundColor: 'hsl(var(--muted))',
+              border: '1px solid hsl(var(--border))',
+              borderRadius: '8px',
+            }}
+            onClick={isPreviewMode ? undefined : () => setSelectedInstanceId(instance.id)}
+            onMouseEnter={isPreviewMode ? undefined : () => setHoveredInstanceId(instance.id)}
+            onMouseLeave={isPreviewMode ? undefined : () => setHoveredInstanceId(null)}
+            onContextMenu={isPreviewMode ? undefined : (e) => handleContextMenu(e, instance)}
+          >
+            <div className="w-5 h-5 bg-primary rounded-full flex-shrink-0" />
+            <div>
+              <div className="font-semibold text-sm">{instance.props?.title || 'Alert'}</div>
+              <div className="text-sm text-muted-foreground">{instance.props?.description || 'Alert description'}</div>
+            </div>
+          </div>
+        );
+        return wrapWithDraggable(content);
+      }
+
+      case 'Breadcrumb': {
+        const items = instance.props?.items || [];
+        const separator = instance.props?.separator || '/';
+        const content = (
+          <div
+            data-instance-id={instance.id}
+            className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
+            style={{
+              ...getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+            }}
+            onClick={isPreviewMode ? undefined : () => setSelectedInstanceId(instance.id)}
+            onMouseEnter={isPreviewMode ? undefined : () => setHoveredInstanceId(instance.id)}
+            onMouseLeave={isPreviewMode ? undefined : () => setHoveredInstanceId(null)}
+            onContextMenu={isPreviewMode ? undefined : (e) => handleContextMenu(e, instance)}
+          >
+            {items.map((item: any, index: number) => (
+              <React.Fragment key={item.id || index}>
+                {index > 0 && <span className="text-muted-foreground">{separator}</span>}
+                <span className={index === items.length - 1 ? 'font-medium' : 'text-muted-foreground'}>
+                  {item.label}
+                </span>
+              </React.Fragment>
+            ))}
+            {items.length === 0 && (
+              <span className="text-muted-foreground italic text-sm">No breadcrumb items</span>
+            )}
+          </div>
+        );
+        return wrapWithDraggable(content);
+      }
+
+      case 'Drawer': 
+      case 'Sheet':
+      case 'Toggle':
+      case 'ToggleGroup':
+      case 'Pagination':
+      case 'OTPInput': {
+        // Simple placeholder rendering for these components
+        const content = (
+          <div
+            data-instance-id={instance.id}
+            className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
+            style={{
+              ...getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties,
+              padding: '16px',
+              border: '1px dashed hsl(var(--border))',
+              borderRadius: '8px',
+              backgroundColor: 'hsl(var(--muted) / 0.5)',
+            }}
+            onClick={isPreviewMode ? undefined : () => setSelectedInstanceId(instance.id)}
+            onMouseEnter={isPreviewMode ? undefined : () => setHoveredInstanceId(instance.id)}
+            onMouseLeave={isPreviewMode ? undefined : () => setHoveredInstanceId(null)}
+            onContextMenu={isPreviewMode ? undefined : (e) => handleContextMenu(e, instance)}
+          >
+            <div className="text-sm font-medium text-muted-foreground">{instance.type}</div>
+            <div className="text-xs text-muted-foreground">Configure in Data tab</div>
+          </div>
+        );
+        return wrapWithDraggable(content);
+      }
+
       default:
         return null;
     }
