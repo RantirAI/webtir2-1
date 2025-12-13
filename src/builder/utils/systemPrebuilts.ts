@@ -1128,71 +1128,21 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
     category: 'Interactive',
     instance: {
       id: accordionId,
-      type: 'Div' as ComponentType,
-      label: 'Div',
-      props: {},
+      type: 'Accordion' as ComponentType,
+      label: 'Accordion',
+      props: {
+        items: [
+          { id: '1', title: 'Is it accessible?', content: 'Yes. It adheres to the WAI-ARIA design pattern.', defaultOpen: true },
+          { id: '2', title: 'Is it styled?', content: 'Yes. It comes with default styles that match your design system.' },
+          { id: '3', title: 'Is it animated?', content: 'Yes. It supports smooth animations for expanding and collapsing.' },
+        ]
+      },
       styleSourceIds: ['style-accordion'],
-      children: [
-        {
-          id: accordionHeaderId,
-          type: 'Div' as ComponentType,
-          label: 'Div',
-          props: {},
-          styleSourceIds: ['style-accordion-header'],
-          children: [
-            {
-              id: accordionTitleId,
-              type: 'Text' as ComponentType,
-              label: 'Text',
-              props: { children: 'Is it accessible?' },
-              styleSourceIds: ['style-accordion-title'],
-              children: [],
-            },
-            {
-              id: accordionIconId,
-              type: 'Text' as ComponentType,
-              label: 'Text',
-              props: { children: '▼' },
-              styleSourceIds: ['style-accordion-icon'],
-              children: [],
-            },
-          ],
-        },
-        {
-          id: accordionContentId,
-          type: 'Text' as ComponentType,
-          label: 'Text',
-          props: { children: 'Yes. It adheres to the WAI-ARIA design pattern.' },
-          styleSourceIds: ['style-accordion-content'],
-          children: [],
-        },
-      ],
+      children: [],
     },
     defaultStyles: {
       'style-accordion': createStyleEntry({
-        borderBottom: '1px solid hsl(var(--border))',
-      }),
-      'style-accordion-header': createStyleEntry({
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '16px 0',
-        cursor: 'pointer',
-      }),
-      'style-accordion-title': createStyleEntry({
-        fontSize: '15px',
-        fontWeight: '500',
-        color: 'hsl(var(--foreground))',
-      }),
-      'style-accordion-icon': createStyleEntry({
-        fontSize: '12px',
-        color: 'hsl(var(--muted-foreground))',
-      }),
-      'style-accordion-content': createStyleEntry({
-        fontSize: '14px',
-        lineHeight: '1.6',
-        color: 'hsl(var(--muted-foreground))',
-        paddingBottom: '16px',
+        width: '100%',
       }),
     },
   });
@@ -1215,70 +1165,18 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
     category: 'Interactive',
     instance: {
       id: alertDialogId,
-      type: 'Div' as ComponentType,
-      label: 'Div',
-      props: {},
+      type: 'AlertDialog' as ComponentType,
+      label: 'AlertDialog',
+      props: {
+        triggerText: 'Open Dialog',
+        title: 'Are you sure?',
+        description: 'This action cannot be undone. This will permanently delete your account.',
+        cancelText: 'Cancel',
+        actionText: 'Continue',
+        actionVariant: 'destructive'
+      },
       styleSourceIds: ['style-alert-dialog'],
-      children: [
-        {
-          id: alertDialogOverlayId,
-          type: 'Div' as ComponentType,
-          label: 'Div',
-          props: {},
-          styleSourceIds: ['style-dialog-overlay'],
-          children: [],
-        },
-        {
-          id: alertDialogContentId,
-          type: 'Div' as ComponentType,
-          label: 'Div',
-          props: {},
-          styleSourceIds: ['style-dialog-content'],
-          children: [
-            {
-              id: alertDialogTitleId,
-              type: 'Heading' as ComponentType,
-              label: 'Heading',
-              props: { level: 'h3', children: 'Are you sure?' },
-              styleSourceIds: ['style-dialog-title'],
-              children: [],
-            },
-            {
-              id: alertDialogDescId,
-              type: 'Text' as ComponentType,
-              label: 'Text',
-              props: { children: 'This action cannot be undone. This will permanently delete your account.' },
-              styleSourceIds: ['style-dialog-desc'],
-              children: [],
-            },
-            {
-              id: alertDialogActionsId,
-              type: 'Div' as ComponentType,
-              label: 'Div',
-              props: {},
-              styleSourceIds: ['style-dialog-actions'],
-              children: [
-                {
-                  id: alertDialogCancelId,
-                  type: 'Button' as ComponentType,
-                  label: 'Button',
-                  props: { children: 'Cancel' },
-                  styleSourceIds: ['style-dialog-cancel'],
-                  children: [],
-                },
-                {
-                  id: alertDialogConfirmId,
-                  type: 'Button' as ComponentType,
-                  label: 'Button',
-                  props: { children: 'Continue' },
-                  styleSourceIds: ['style-dialog-confirm'],
-                  children: [],
-                },
-              ],
-            },
-          ],
-        },
-      ],
+      children: [],
     },
     defaultStyles: {
       'style-alert-dialog': createStyleEntry({
@@ -1668,53 +1566,21 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
     category: 'Interactive',
     instance: {
       id: carouselId,
-      type: 'Div' as ComponentType,
-      label: 'Div',
-      props: {},
+      type: 'Carousel' as ComponentType,
+      label: 'Carousel',
+      props: {
+        slides: [
+          { id: '1', imageUrl: '', title: 'Slide 1', description: 'First slide content' },
+          { id: '2', imageUrl: '', title: 'Slide 2', description: 'Second slide content' },
+          { id: '3', imageUrl: '', title: 'Slide 3', description: 'Third slide content' },
+        ],
+        autoPlay: false,
+        loop: true,
+        showArrows: true,
+        showDots: true,
+      },
       styleSourceIds: ['style-carousel'],
-      children: [
-        {
-          id: carouselTrackId,
-          type: 'Div' as ComponentType,
-          label: 'Div',
-          props: {},
-          styleSourceIds: ['style-carousel-track'],
-          children: [
-            {
-              id: carouselSlide1Id,
-              type: 'Div' as ComponentType,
-              label: 'Div',
-              props: {},
-              styleSourceIds: ['style-carousel-slide'],
-              children: [],
-            },
-            {
-              id: carouselSlide2Id,
-              type: 'Div' as ComponentType,
-              label: 'Div',
-              props: {},
-              styleSourceIds: ['style-carousel-slide-2'],
-              children: [],
-            },
-            {
-              id: carouselSlide3Id,
-              type: 'Div' as ComponentType,
-              label: 'Div',
-              props: {},
-              styleSourceIds: ['style-carousel-slide-3'],
-              children: [],
-            },
-          ],
-        },
-        {
-          id: carouselDotsId,
-          type: 'Div' as ComponentType,
-          label: 'Div',
-          props: {},
-          styleSourceIds: ['style-carousel-dots'],
-          children: [],
-        },
-      ],
+      children: [],
     },
     defaultStyles: {
       'style-carousel': createStyleEntry({

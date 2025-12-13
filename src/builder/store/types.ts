@@ -18,8 +18,10 @@ export type ComponentType =
   | 'Form' | 'FormButton' | 'InputLabel' | 'Select' | 'RadioGroup' | 'CheckboxField'
   // Localization
   | 'Time'
-  // Radix
-  | 'Sheet' | 'NavigationMenu' | 'Tabs' | 'Accordion' | 'Dialog' | 'Collapsible' | 'Popover' | 'Tooltip' | 'Switch' | 'Label';
+  // Radix/Shadcn UI Components
+  | 'Sheet' | 'NavigationMenu' | 'Tabs' | 'Accordion' | 'Dialog' | 'Collapsible' | 'Popover' | 'Tooltip' | 'Switch' | 'Label'
+  | 'Carousel' | 'Slider' | 'AlertDialog' | 'Breadcrumb' | 'Badge' | 'Drawer' | 'Toggle' | 'ToggleGroup' | 'Pagination' | 'OTPInput'
+  | 'HoverCard' | 'ContextMenu' | 'CommandPalette' | 'ScrollArea' | 'Separator' | 'Skeleton' | 'ResizablePanels';
 
 export type StyleSourceType = 'local' | 'token' | 'preset';
 
