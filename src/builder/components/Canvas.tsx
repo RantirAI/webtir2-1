@@ -41,6 +41,7 @@ import { componentRegistry } from '../primitives/registry';
 import { generateId } from '../utils/instance';
 import { DroppableContainer } from './DroppableContainer';
 import { DraggableInstance } from './DraggableInstance';
+import { Accordion as ShadcnAccordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
 
 interface CanvasProps {
   zoom: number;
@@ -632,26 +633,70 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
         );
       }
 
-      // Handle shadcn-based component types that need custom rendering
       case 'Accordion': {
         const items = instance.props?.items || [];
+
+        // In preview mode, render a fully interactive accordion using the shadcn/Radix component
+        if (isPreviewMode) {
+          const defaultOpenValues = items
+            .filter((item: any) => item.defaultOpen)
+            .map((item: any, index: number) => String(item.id ?? `item-${index}`));
+
+          const content = (
+            <div
+              data-instance-id={instance.id}
+              className={(instance.styleSourceIds || [])
+                .map((id) => useStyleStore.getState().styleSources[id]?.name)
+                .filter(Boolean)
+                .join(' ')}
+              style={getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties}
+            >
+              <ShadcnAccordion
+                type="multiple"
+                defaultValue={defaultOpenValues}
+                className="w-full"
+              >
+                {items.map((item: any, index: number) => {
+                  const value = String(item.id ?? `item-${index}`);
+                  return (
+                    <AccordionItem key={value} value={value}>
+                      <AccordionTrigger>{item.title || `Item ${index + 1}`}</AccordionTrigger>
+                      <AccordionContent>
+                        {item.content || 'Accordion content'}
+                      </AccordionContent>
+                    </AccordionItem>
+                  );
+                })}
+              </ShadcnAccordion>
+              {items.length === 0 && (
+                <div className="py-4 text-sm text-muted-foreground italic">
+                  No accordion items. Add items in the Data tab.
+                </div>
+              )}
+            </div>
+          );
+
+          return wrapWithDraggable(content);
+        }
+
+        // In edit mode, keep a simple static representation (no toggle) for easier selection
         const content = (
           <div
             data-instance-id={instance.id}
-            className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
+            className={(instance.styleSourceIds || [])
+              .map((id) => useStyleStore.getState().styleSources[id]?.name)
+              .filter(Boolean)
+              .join(' ')}
             style={getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties}
-            onClick={isPreviewMode ? undefined : () => setSelectedInstanceId(instance.id)}
-            onMouseEnter={isPreviewMode ? undefined : () => setHoveredInstanceId(instance.id)}
-            onMouseLeave={isPreviewMode ? undefined : () => setHoveredInstanceId(null)}
-            onContextMenu={isPreviewMode ? undefined : (e) => handleContextMenu(e, instance)}
+            onClick={() => setSelectedInstanceId(instance.id)}
+            onMouseEnter={() => setHoveredInstanceId(instance.id)}
+            onMouseLeave={() => setHoveredInstanceId(null)}
+            onContextMenu={(e) => handleContextMenu(e, instance)}
           >
             {items.map((item: any, index: number) => (
               <div key={item.id || index} className="border-b border-border">
-                <button className="flex w-full items-center justify-between py-4 text-sm font-medium transition-all hover:underline [&[data-state=open]>svg]:rotate-180">
+                <button className="flex w-full items-center justify-between py-4 text-sm font-medium transition-all hover:underline">
                   {item.title}
-                  <svg className="h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
                 </button>
                 {item.defaultOpen && (
                   <div className="pb-4 pt-0 text-sm text-muted-foreground">
@@ -667,6 +712,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
             )}
           </div>
         );
+
         return wrapWithDraggable(content);
       }
 
