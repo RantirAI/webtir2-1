@@ -21,7 +21,7 @@ export type ComponentType =
   // Radix/Shadcn UI Components
   | 'Sheet' | 'NavigationMenu' | 'Tabs' | 'Accordion' | 'Dialog' | 'Collapsible' | 'Popover' | 'Tooltip' | 'Switch' | 'Label'
   | 'Carousel' | 'Slider' | 'AlertDialog' | 'Breadcrumb' | 'Badge' | 'Drawer' | 'Toggle' | 'ToggleGroup' | 'Pagination' | 'OTPInput'
-  | 'HoverCard' | 'ContextMenu' | 'CommandPalette' | 'ScrollArea' | 'Separator' | 'Skeleton' | 'ResizablePanels';
+  | 'HoverCard' | 'ContextMenu' | 'CommandPalette' | 'ScrollArea' | 'Separator' | 'Skeleton' | 'ResizablePanels' | 'Progress';
 
 export type StyleSourceType = 'local' | 'token' | 'preset';
 

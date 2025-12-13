@@ -774,55 +774,15 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
     category: 'Form Elements',
     instance: {
       id: switchRowId,
-      type: 'Div' as ComponentType,
-      label: 'Div',
-      props: {},
+      type: 'Switch' as ComponentType,
+      label: 'Switch',
+      props: {
+        label: 'Airplane Mode',
+        checked: true,
+        disabled: false,
+      },
       styleSourceIds: ['style-switch-row'],
-      children: [
-        {
-          id: switchLabelId,
-          type: 'Div' as ComponentType,
-          label: 'Div',
-          props: {},
-          styleSourceIds: ['style-switch-label-wrapper'],
-          children: [
-            {
-              id: switchDescId,
-              type: 'Text' as ComponentType,
-              label: 'Text',
-              props: { children: 'Airplane Mode' },
-              styleSourceIds: ['style-switch-label'],
-              children: [],
-            },
-          ],
-        },
-        {
-          id: switchToggleId,
-          type: 'Div' as ComponentType,
-          label: 'Div',
-          props: {},
-          styleSourceIds: ['style-switch-toggle'],
-          children: [
-            {
-              id: switchTrackId,
-              type: 'Div' as ComponentType,
-              label: 'Div',
-              props: {},
-              styleSourceIds: ['style-switch-track'],
-              children: [
-                {
-                  id: switchThumbId,
-                  type: 'Div' as ComponentType,
-                  label: 'Div',
-                  props: {},
-                  styleSourceIds: ['style-switch-thumb'],
-                  children: [],
-                },
-              ],
-            },
-          ],
-        },
-      ],
+      children: [],
     },
     defaultStyles: {
       'style-switch-row': createStyleEntry({
@@ -1249,20 +1209,16 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
     category: 'Data Display',
     instance: {
       id: avatarId,
-      type: 'Div' as ComponentType,
-      label: 'Div',
-      props: {},
+      type: 'Avatar' as ComponentType,
+      label: 'Avatar',
+      props: {
+        src: '',
+        fallback: 'JD',
+        alt: 'User avatar',
+        size: 'md',
+      },
       styleSourceIds: ['style-avatar-single'],
-      children: [
-        {
-          id: avatarImageId,
-          type: 'Text' as ComponentType,
-          label: 'Text',
-          props: { children: 'JD' },
-          styleSourceIds: ['style-avatar-fallback'],
-          children: [],
-        },
-      ],
+      children: [],
     },
     defaultStyles: {
       'style-avatar-single': createStyleEntry({
@@ -1295,20 +1251,14 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
     category: 'Data Display',
     instance: {
       id: badgeId,
-      type: 'Div' as ComponentType,
-      label: 'Div',
-      props: {},
+      type: 'Badge' as ComponentType,
+      label: 'Badge',
+      props: {
+        text: 'New',
+        variant: 'default',
+      },
       styleSourceIds: ['style-badge'],
-      children: [
-        {
-          id: badgeTextId,
-          type: 'Text' as ComponentType,
-          label: 'Text',
-          props: { children: 'New' },
-          styleSourceIds: ['style-badge-text'],
-          children: [],
-        },
-      ],
+      children: [],
     },
     defaultStyles: {
       'style-badge': createStyleEntry({
@@ -1342,52 +1292,18 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
     category: 'Navigation',
     instance: {
       id: breadcrumbId,
-      type: 'Div' as ComponentType,
-      label: 'Div',
-      props: {},
+      type: 'Breadcrumb' as ComponentType,
+      label: 'Breadcrumb',
+      props: {
+        items: [
+          { id: '1', label: 'Home', href: '/' },
+          { id: '2', label: 'Products', href: '/products' },
+          { id: '3', label: 'Current Page', href: '' },
+        ],
+        separator: '/',
+      },
       styleSourceIds: ['style-breadcrumb'],
-      children: [
-        {
-          id: breadcrumb1Id,
-          type: 'Link' as ComponentType,
-          label: 'Link',
-          props: { href: '#', children: 'Home' },
-          styleSourceIds: ['style-breadcrumb-link'],
-          children: [],
-        },
-        {
-          id: breadcrumbSep1Id,
-          type: 'Text' as ComponentType,
-          label: 'Text',
-          props: { children: '/' },
-          styleSourceIds: ['style-breadcrumb-sep'],
-          children: [],
-        },
-        {
-          id: breadcrumb2Id,
-          type: 'Link' as ComponentType,
-          label: 'Link',
-          props: { href: '#', children: 'Products' },
-          styleSourceIds: ['style-breadcrumb-link-2'],
-          children: [],
-        },
-        {
-          id: breadcrumbSep2Id,
-          type: 'Text' as ComponentType,
-          label: 'Text',
-          props: { children: '/' },
-          styleSourceIds: ['style-breadcrumb-sep-2'],
-          children: [],
-        },
-        {
-          id: breadcrumb3Id,
-          type: 'Text' as ComponentType,
-          label: 'Text',
-          props: { children: 'Current Page' },
-          styleSourceIds: ['style-breadcrumb-current'],
-          children: [],
-        },
-      ],
+      children: [],
     },
     defaultStyles: {
       'style-breadcrumb': createStyleEntry({
@@ -1849,45 +1765,16 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
     category: 'Interactive',
     instance: {
       id: drawerId,
-      type: 'Div' as ComponentType,
-      label: 'Div',
-      props: {},
+      type: 'Drawer' as ComponentType,
+      label: 'Drawer',
+      props: {
+        triggerText: 'Open Drawer',
+        title: 'Drawer Title',
+        description: 'This is a bottom drawer component.',
+        position: 'bottom',
+      },
       styleSourceIds: ['style-drawer'],
-      children: [
-        {
-          id: drawerHandleId,
-          type: 'Div' as ComponentType,
-          label: 'Div',
-          props: {},
-          styleSourceIds: ['style-drawer-handle'],
-          children: [],
-        },
-        {
-          id: drawerContentId,
-          type: 'Div' as ComponentType,
-          label: 'Div',
-          props: {},
-          styleSourceIds: ['style-drawer-content'],
-          children: [
-            {
-              id: drawerTitleId,
-              type: 'Heading' as ComponentType,
-              label: 'Heading',
-              props: { level: 'h3', children: 'Drawer Title' },
-              styleSourceIds: ['style-drawer-title'],
-              children: [],
-            },
-            {
-              id: drawerDescId,
-              type: 'Text' as ComponentType,
-              label: 'Text',
-              props: { children: 'This is a bottom drawer component.' },
-              styleSourceIds: ['style-drawer-desc'],
-              children: [],
-            },
-          ],
-        },
-      ],
+      children: [],
     },
     defaultStyles: {
       'style-drawer': createStyleEntry({
@@ -2180,68 +2067,15 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
     category: 'Form Elements',
     instance: {
       id: otpId,
-      type: 'Div' as ComponentType,
-      label: 'Div',
-      props: {},
+      type: 'OTPInput' as ComponentType,
+      label: 'OTPInput',
+      props: {
+        length: 6,
+        separator: true,
+        separatorPosition: 3,
+      },
       styleSourceIds: ['style-otp'],
-      children: [
-        {
-          id: otp1Id,
-          type: 'Div' as ComponentType,
-          label: 'Div',
-          props: {},
-          styleSourceIds: ['style-otp-slot'],
-          children: [],
-        },
-        {
-          id: otp2Id,
-          type: 'Div' as ComponentType,
-          label: 'Div',
-          props: {},
-          styleSourceIds: ['style-otp-slot-2'],
-          children: [],
-        },
-        {
-          id: otp3Id,
-          type: 'Div' as ComponentType,
-          label: 'Div',
-          props: {},
-          styleSourceIds: ['style-otp-slot-3'],
-          children: [],
-        },
-        {
-          id: otpSepId,
-          type: 'Text' as ComponentType,
-          label: 'Text',
-          props: { children: '−' },
-          styleSourceIds: ['style-otp-sep'],
-          children: [],
-        },
-        {
-          id: otp4Id,
-          type: 'Div' as ComponentType,
-          label: 'Div',
-          props: {},
-          styleSourceIds: ['style-otp-slot-4'],
-          children: [],
-        },
-        {
-          id: otp5Id,
-          type: 'Div' as ComponentType,
-          label: 'Div',
-          props: {},
-          styleSourceIds: ['style-otp-slot-5'],
-          children: [],
-        },
-        {
-          id: otp6Id,
-          type: 'Div' as ComponentType,
-          label: 'Div',
-          props: {},
-          styleSourceIds: ['style-otp-slot-6'],
-          children: [],
-        },
-      ],
+      children: [],
     },
     defaultStyles: {
       'style-otp': createStyleEntry({
@@ -2314,52 +2148,16 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
     category: 'Navigation',
     instance: {
       id: paginationId,
-      type: 'Div' as ComponentType,
-      label: 'Div',
-      props: {},
+      type: 'Pagination' as ComponentType,
+      label: 'Pagination',
+      props: {
+        totalPages: 10,
+        currentPage: 1,
+        showPrevNext: true,
+        maxVisible: 5,
+      },
       styleSourceIds: ['style-pagination'],
-      children: [
-        {
-          id: pagePrevId,
-          type: 'Button' as ComponentType,
-          label: 'Button',
-          props: { children: '‹' },
-          styleSourceIds: ['style-page-btn'],
-          children: [],
-        },
-        {
-          id: page1Id,
-          type: 'Button' as ComponentType,
-          label: 'Button',
-          props: { children: '1' },
-          styleSourceIds: ['style-page-btn-active'],
-          children: [],
-        },
-        {
-          id: page2Id,
-          type: 'Button' as ComponentType,
-          label: 'Button',
-          props: { children: '2' },
-          styleSourceIds: ['style-page-btn-2'],
-          children: [],
-        },
-        {
-          id: page3Id,
-          type: 'Button' as ComponentType,
-          label: 'Button',
-          props: { children: '3' },
-          styleSourceIds: ['style-page-btn-3'],
-          children: [],
-        },
-        {
-          id: pageNextId,
-          type: 'Button' as ComponentType,
-          label: 'Button',
-          props: { children: '›' },
-          styleSourceIds: ['style-page-btn-4'],
-          children: [],
-        },
-      ],
+      children: [],
     },
     defaultStyles: {
       'style-pagination': createStyleEntry({
@@ -2450,45 +2248,15 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
     category: 'Interactive',
     instance: {
       id: popoverId,
-      type: 'Div' as ComponentType,
-      label: 'Div',
-      props: {},
+      type: 'Popover' as ComponentType,
+      label: 'Popover',
+      props: {
+        triggerText: 'Open',
+        title: 'Dimensions',
+        content: 'Set the dimensions for the layer.',
+      },
       styleSourceIds: ['style-popover'],
-      children: [
-        {
-          id: popoverTriggerId,
-          type: 'Button' as ComponentType,
-          label: 'Button',
-          props: { children: 'Open' },
-          styleSourceIds: ['style-popover-trigger'],
-          children: [],
-        },
-        {
-          id: popoverContentId,
-          type: 'Div' as ComponentType,
-          label: 'Div',
-          props: {},
-          styleSourceIds: ['style-popover-content'],
-          children: [
-            {
-              id: popoverTitleId,
-              type: 'Text' as ComponentType,
-              label: 'Text',
-              props: { children: 'Dimensions' },
-              styleSourceIds: ['style-popover-title'],
-              children: [],
-            },
-            {
-              id: popoverDescId,
-              type: 'Text' as ComponentType,
-              label: 'Text',
-              props: { children: 'Set the dimensions for the layer.' },
-              styleSourceIds: ['style-popover-desc'],
-              children: [],
-            },
-          ],
-        },
-      ],
+      children: [],
     },
     defaultStyles: {
       'style-popover': createStyleEntry({
@@ -2545,29 +2313,15 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
     category: 'Data Display',
     instance: {
       id: progressId,
-      type: 'Div' as ComponentType,
-      label: 'Div',
-      props: {},
+      type: 'Progress' as ComponentType,
+      label: 'Progress',
+      props: {
+        value: 60,
+        max: 100,
+        showLabel: false,
+      },
       styleSourceIds: ['style-progress-wrapper'],
-      children: [
-        {
-          id: progressBarId,
-          type: 'Div' as ComponentType,
-          label: 'Div',
-          props: {},
-          styleSourceIds: ['style-progress-bar'],
-          children: [
-            {
-              id: progressFillId,
-              type: 'Div' as ComponentType,
-              label: 'Div',
-              props: {},
-              styleSourceIds: ['style-progress-fill'],
-              children: [],
-            },
-          ],
-        },
-      ],
+      children: [],
     },
     defaultStyles: {
       'style-progress-wrapper': createStyleEntry({
@@ -2926,45 +2680,16 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
     category: 'Interactive',
     instance: {
       id: sheetId,
-      type: 'Div' as ComponentType,
-      label: 'Div',
-      props: {},
+      type: 'Sheet' as ComponentType,
+      label: 'Sheet',
+      props: {
+        triggerText: 'Open Sheet',
+        title: 'Sheet Title',
+        description: 'Make changes to your settings here.',
+        side: 'right',
+      },
       styleSourceIds: ['style-sheet'],
-      children: [
-        {
-          id: sheetOverlayId,
-          type: 'Div' as ComponentType,
-          label: 'Div',
-          props: {},
-          styleSourceIds: ['style-sheet-overlay'],
-          children: [],
-        },
-        {
-          id: sheetContentId,
-          type: 'Div' as ComponentType,
-          label: 'Div',
-          props: {},
-          styleSourceIds: ['style-sheet-content'],
-          children: [
-            {
-              id: sheetTitleId,
-              type: 'Heading' as ComponentType,
-              label: 'Heading',
-              props: { level: 'h3', children: 'Sheet Title' },
-              styleSourceIds: ['style-sheet-title'],
-              children: [],
-            },
-            {
-              id: sheetDescId,
-              type: 'Text' as ComponentType,
-              label: 'Text',
-              props: { children: 'Make changes to your settings here.' },
-              styleSourceIds: ['style-sheet-desc'],
-              children: [],
-            },
-          ],
-        },
-      ],
+      children: [],
     },
     defaultStyles: {
       'style-sheet': createStyleEntry({
@@ -3105,37 +2830,17 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
     category: 'Form Elements',
     instance: {
       id: sliderId,
-      type: 'Div' as ComponentType,
-      label: 'Div',
-      props: {},
+      type: 'Slider' as ComponentType,
+      label: 'Slider',
+      props: {
+        min: 0,
+        max: 100,
+        step: 1,
+        defaultValue: 50,
+        showValue: false,
+      },
       styleSourceIds: ['style-slider'],
-      children: [
-        {
-          id: sliderTrackId,
-          type: 'Div' as ComponentType,
-          label: 'Div',
-          props: {},
-          styleSourceIds: ['style-slider-track'],
-          children: [
-            {
-              id: sliderFillId,
-              type: 'Div' as ComponentType,
-              label: 'Div',
-              props: {},
-              styleSourceIds: ['style-slider-fill'],
-              children: [],
-            },
-          ],
-        },
-        {
-          id: sliderThumbId,
-          type: 'Div' as ComponentType,
-          label: 'Div',
-          props: {},
-          styleSourceIds: ['style-slider-thumb'],
-          children: [],
-        },
-      ],
+      children: [],
     },
     defaultStyles: {
       'style-slider': createStyleEntry({
@@ -3197,96 +2902,23 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
     category: 'Data Display',
     instance: {
       id: tableId,
-      type: 'Div' as ComponentType,
-      label: 'Div',
-      props: {},
+      type: 'Table' as ComponentType,
+      label: 'Table',
+      props: {
+        columns: [
+          { id: 'name', header: 'Name', accessor: 'name' },
+          { id: 'status', header: 'Status', accessor: 'status' },
+          { id: 'amount', header: 'Amount', accessor: 'amount' },
+        ],
+        rows: [
+          { id: '1', name: 'John Doe', status: 'Active', amount: '$250.00' },
+          { id: '2', name: 'Jane Smith', status: 'Pending', amount: '$150.00' },
+        ],
+        showHeader: true,
+        striped: false,
+      },
       styleSourceIds: ['style-table-wrapper'],
-      children: [
-        {
-          id: tableHeaderId,
-          type: 'Div' as ComponentType,
-          label: 'Div',
-          props: {},
-          styleSourceIds: ['style-table-header'],
-          children: [
-            {
-              id: tableHeaderRow,
-              type: 'Div' as ComponentType,
-              label: 'Div',
-              props: {},
-              styleSourceIds: ['style-table-row'],
-              children: [
-                {
-                  id: tableH1Id,
-                  type: 'Text' as ComponentType,
-                  label: 'Text',
-                  props: { children: 'Name' },
-                  styleSourceIds: ['style-table-th'],
-                  children: [],
-                },
-                {
-                  id: tableH2Id,
-                  type: 'Text' as ComponentType,
-                  label: 'Text',
-                  props: { children: 'Status' },
-                  styleSourceIds: ['style-table-th-2'],
-                  children: [],
-                },
-                {
-                  id: tableH3Id,
-                  type: 'Text' as ComponentType,
-                  label: 'Text',
-                  props: { children: 'Amount' },
-                  styleSourceIds: ['style-table-th-3'],
-                  children: [],
-                },
-              ],
-            },
-          ],
-        },
-        {
-          id: tableBodyId,
-          type: 'Div' as ComponentType,
-          label: 'Div',
-          props: {},
-          styleSourceIds: ['style-table-body'],
-          children: [
-            {
-              id: tableRow1Id,
-              type: 'Div' as ComponentType,
-              label: 'Div',
-              props: {},
-              styleSourceIds: ['style-table-row-2'],
-              children: [
-                {
-                  id: tableD1Id,
-                  type: 'Text' as ComponentType,
-                  label: 'Text',
-                  props: { children: 'John Doe' },
-                  styleSourceIds: ['style-table-td'],
-                  children: [],
-                },
-                {
-                  id: tableD2Id,
-                  type: 'Text' as ComponentType,
-                  label: 'Text',
-                  props: { children: 'Active' },
-                  styleSourceIds: ['style-table-td-2'],
-                  children: [],
-                },
-                {
-                  id: tableD3Id,
-                  type: 'Text' as ComponentType,
-                  label: 'Text',
-                  props: { children: '$250.00' },
-                  styleSourceIds: ['style-table-td-3'],
-                  children: [],
-                },
-              ],
-            },
-          ],
-        },
-      ],
+      children: [],
     },
     defaultStyles: {
       'style-table-wrapper': createStyleEntry({
@@ -3294,62 +2926,6 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
         border: '1px solid hsl(var(--border))',
         borderRadius: '8px',
         overflow: 'hidden',
-      }),
-      'style-table-header': createStyleEntry({
-        backgroundColor: 'hsl(var(--muted))',
-      }),
-      'style-table-row': createStyleEntry({
-        display: 'grid',
-        gridTemplateColumns: '1fr 1fr 1fr',
-      }),
-      'style-table-row-2': createStyleEntry({
-        display: 'grid',
-        gridTemplateColumns: '1fr 1fr 1fr',
-        borderTop: '1px solid hsl(var(--border))',
-      }),
-      'style-table-th': createStyleEntry({
-        padding: '12px 16px',
-        fontSize: '12px',
-        fontWeight: '600',
-        textTransform: 'uppercase',
-        letterSpacing: '0.05em',
-        color: 'hsl(var(--muted-foreground))',
-      }),
-      'style-table-th-2': createStyleEntry({
-        padding: '12px 16px',
-        fontSize: '12px',
-        fontWeight: '600',
-        textTransform: 'uppercase',
-        letterSpacing: '0.05em',
-        color: 'hsl(var(--muted-foreground))',
-      }),
-      'style-table-th-3': createStyleEntry({
-        padding: '12px 16px',
-        fontSize: '12px',
-        fontWeight: '600',
-        textTransform: 'uppercase',
-        letterSpacing: '0.05em',
-        color: 'hsl(var(--muted-foreground))',
-        textAlign: 'right',
-      }),
-      'style-table-body': createStyleEntry({
-        backgroundColor: 'hsl(var(--background))',
-      }),
-      'style-table-td': createStyleEntry({
-        padding: '12px 16px',
-        fontSize: '14px',
-        color: 'hsl(var(--foreground))',
-      }),
-      'style-table-td-2': createStyleEntry({
-        padding: '12px 16px',
-        fontSize: '14px',
-        color: 'hsl(var(--foreground))',
-      }),
-      'style-table-td-3': createStyleEntry({
-        padding: '12px 16px',
-        fontSize: '14px',
-        color: 'hsl(var(--foreground))',
-        textAlign: 'right',
       }),
     },
   });
@@ -3370,104 +2946,54 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
     category: 'Navigation',
     instance: {
       id: tabsId,
-      type: 'Div' as ComponentType,
-      label: 'Div',
-      props: {},
+      type: 'Tabs' as ComponentType,
+      label: 'Tabs',
+      props: {
+        tabs: [
+          { id: 'account', label: 'Account', content: 'Account settings and preferences.' },
+          { id: 'password', label: 'Password', content: 'Change your password here.' },
+          { id: 'settings', label: 'Settings', content: 'Other settings.' },
+        ],
+        defaultTab: 'account',
+      },
       styleSourceIds: ['style-tabs'],
-      children: [
-        {
-          id: tabsListId,
-          type: 'Div' as ComponentType,
-          label: 'Div',
-          props: {},
-          styleSourceIds: ['style-tabs-list'],
-          children: [
-            {
-              id: tab1Id,
-              type: 'Button' as ComponentType,
-              label: 'Button',
-              props: { children: 'Account' },
-              styleSourceIds: ['style-tab-active'],
-              children: [],
-            },
-            {
-              id: tab2Id,
-              type: 'Button' as ComponentType,
-              label: 'Button',
-              props: { children: 'Password' },
-              styleSourceIds: ['style-tab'],
-              children: [],
-            },
-            {
-              id: tab3Id,
-              type: 'Button' as ComponentType,
-              label: 'Button',
-              props: { children: 'Settings' },
-              styleSourceIds: ['style-tab-2'],
-              children: [],
-            },
-          ],
-        },
-        {
-          id: tabsContentId,
-          type: 'Div' as ComponentType,
-          label: 'Div',
-          props: {},
-          styleSourceIds: ['style-tabs-content'],
-          children: [],
-        },
-      ],
+      children: [],
     },
     defaultStyles: {
       'style-tabs': createStyleEntry({
         display: 'flex',
         flexDirection: 'column',
-        gap: '16px',
+        width: '100%',
       }),
       'style-tabs-list': createStyleEntry({
-        display: 'inline-flex',
-        backgroundColor: 'hsl(var(--muted))',
-        padding: '4px',
-        borderRadius: '8px',
+        display: 'flex',
         gap: '4px',
-      }),
-      'style-tab-active': createStyleEntry({
-        padding: '8px 16px',
-        fontSize: '14px',
-        fontWeight: '500',
-        backgroundColor: 'hsl(var(--background))',
-        color: 'hsl(var(--foreground))',
-        borderRadius: '6px',
-        border: 'none',
-        boxShadow: '0 1px 2px hsl(var(--foreground) / 0.05)',
-        cursor: 'pointer',
+        borderBottom: '1px solid hsl(var(--border))',
+        marginBottom: '16px',
       }),
       'style-tab': createStyleEntry({
         padding: '8px 16px',
         fontSize: '14px',
         fontWeight: '500',
-        backgroundColor: 'transparent',
         color: 'hsl(var(--muted-foreground))',
-        borderRadius: '6px',
+        backgroundColor: 'transparent',
         border: 'none',
         cursor: 'pointer',
       }),
-      'style-tab-2': createStyleEntry({
+      'style-tab-active': createStyleEntry({
         padding: '8px 16px',
         fontSize: '14px',
         fontWeight: '500',
+        color: 'hsl(var(--foreground))',
         backgroundColor: 'transparent',
-        color: 'hsl(var(--muted-foreground))',
-        borderRadius: '6px',
         border: 'none',
+        borderBottom: '2px solid hsl(var(--primary))',
         cursor: 'pointer',
       }),
-      'style-tabs-content': createStyleEntry({
-        padding: '16px',
-        backgroundColor: 'hsl(var(--card))',
-        border: '1px solid hsl(var(--border))',
-        borderRadius: '8px',
-        minHeight: '100px',
+      'style-tab-content': createStyleEntry({
+        padding: '16px 0',
+        fontSize: '14px',
+        color: 'hsl(var(--muted-foreground))',
       }),
     },
   });
@@ -3475,7 +3001,7 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
   // ---------------------------------------------------------------------------
   // TEXTAREA
   // ---------------------------------------------------------------------------
-  const textareaId = generateId();
+  const textareaGroupId = generateId();
   const textareaLabelId = generateId();
   const textareaFieldId = generateId();
 
@@ -3484,7 +3010,7 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
     name: 'Textarea',
     category: 'Form Elements',
     instance: {
-      id: textareaId,
+      id: textareaGroupId,
       type: 'Div' as ComponentType,
       label: 'Div',
       props: {},
@@ -3644,20 +3170,15 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
     category: 'Form Elements',
     instance: {
       id: toggleId,
-      type: 'Div' as ComponentType,
-      label: 'Div',
-      props: {},
+      type: 'Toggle' as ComponentType,
+      label: 'Toggle',
+      props: {
+        label: 'B',
+        pressed: false,
+        variant: 'default',
+      },
       styleSourceIds: ['style-toggle'],
-      children: [
-        {
-          id: toggleTextId,
-          type: 'Text' as ComponentType,
-          label: 'Text',
-          props: { children: 'B' },
-          styleSourceIds: ['style-toggle-text'],
-          children: [],
-        },
-      ],
+      children: [],
     },
     defaultStyles: {
       'style-toggle': createStyleEntry({
@@ -3692,36 +3213,19 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
     category: 'Form Elements',
     instance: {
       id: toggleGroupId,
-      type: 'Div' as ComponentType,
-      label: 'Div',
-      props: {},
+      type: 'ToggleGroup' as ComponentType,
+      label: 'ToggleGroup',
+      props: {
+        items: [
+          { id: '1', label: 'B', value: 'bold' },
+          { id: '2', label: 'I', value: 'italic' },
+          { id: '3', label: 'U', value: 'underline' },
+        ],
+        type: 'multiple',
+        defaultValue: ['bold'],
+      },
       styleSourceIds: ['style-toggle-group'],
-      children: [
-        {
-          id: toggle1Id,
-          type: 'Div' as ComponentType,
-          label: 'Div',
-          props: {},
-          styleSourceIds: ['style-toggle-item-active'],
-          children: [],
-        },
-        {
-          id: toggle2Id,
-          type: 'Div' as ComponentType,
-          label: 'Div',
-          props: {},
-          styleSourceIds: ['style-toggle-item'],
-          children: [],
-        },
-        {
-          id: toggle3Id,
-          type: 'Div' as ComponentType,
-          label: 'Div',
-          props: {},
-          styleSourceIds: ['style-toggle-item-2'],
-          children: [],
-        },
-      ],
+      children: [],
     },
     defaultStyles: {
       'style-toggle-group': createStyleEntry({
@@ -3777,28 +3281,15 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
     category: 'Interactive',
     instance: {
       id: tooltipId,
-      type: 'Div' as ComponentType,
-      label: 'Div',
-      props: {},
+      type: 'Tooltip' as ComponentType,
+      label: 'Tooltip',
+      props: {
+        triggerText: 'Hover me',
+        content: 'This is a tooltip',
+        side: 'top',
+      },
       styleSourceIds: ['style-tooltip'],
-      children: [
-        {
-          id: tooltipTriggerId,
-          type: 'Button' as ComponentType,
-          label: 'Button',
-          props: { children: 'Hover me' },
-          styleSourceIds: ['style-tooltip-trigger'],
-          children: [],
-        },
-        {
-          id: tooltipContentId,
-          type: 'Div' as ComponentType,
-          label: 'Div',
-          props: {},
-          styleSourceIds: ['style-tooltip-content'],
-          children: [],
-        },
-      ],
+      children: [],
     },
     defaultStyles: {
       'style-tooltip': createStyleEntry({
@@ -3917,45 +3408,15 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
     category: 'Feedback',
     instance: {
       id: alertId,
-      type: 'Div' as ComponentType,
-      label: 'Div',
-      props: {},
+      type: 'Alert' as ComponentType,
+      label: 'Alert',
+      props: {
+        title: 'Heads up!',
+        description: 'You can add components to your app using the CLI.',
+        variant: 'default',
+      },
       styleSourceIds: ['style-alert'],
-      children: [
-        {
-          id: alertIconId,
-          type: 'Div' as ComponentType,
-          label: 'Div',
-          props: {},
-          styleSourceIds: ['style-alert-icon'],
-          children: [],
-        },
-        {
-          id: alertContentId,
-          type: 'Div' as ComponentType,
-          label: 'Div',
-          props: {},
-          styleSourceIds: ['style-alert-content'],
-          children: [
-            {
-              id: alertTitleId,
-              type: 'Text' as ComponentType,
-              label: 'Text',
-              props: { children: 'Heads up!' },
-              styleSourceIds: ['style-alert-title'],
-              children: [],
-            },
-            {
-              id: alertDescId,
-              type: 'Text' as ComponentType,
-              label: 'Text',
-              props: { children: 'You can add components to your app using the CLI.' },
-              styleSourceIds: ['style-alert-desc'],
-              children: [],
-            },
-          ],
-        },
-      ],
+      children: [],
     },
     defaultStyles: {
       'style-alert': createStyleEntry({
