@@ -31,6 +31,26 @@ import { compileMetadataToCSS } from '../utils/cssCompiler';
 import { applyHeadingTypography } from '../utils/headingTypography';
 import { AttributeRow } from './AttributeRow';
 import { ComponentInstance } from '../store/types';
+import { AccordionDataEditor } from './data-editors/AccordionDataEditor';
+import { CarouselDataEditor } from './data-editors/CarouselDataEditor';
+import { TabsDataEditor } from './data-editors/TabsDataEditor';
+import { TableDataEditor } from './data-editors/TableDataEditor';
+import { SliderDataEditor } from './data-editors/SliderDataEditor';
+import { AlertDialogDataEditor } from './data-editors/AlertDialogDataEditor';
+import { AvatarDataEditor } from './data-editors/AvatarDataEditor';
+import { BadgeDataEditor } from './data-editors/BadgeDataEditor';
+import { BreadcrumbDataEditor } from './data-editors/BreadcrumbDataEditor';
+import { ProgressDataEditor } from './data-editors/ProgressDataEditor';
+import { TooltipDataEditor } from './data-editors/TooltipDataEditor';
+import { PopoverDataEditor } from './data-editors/PopoverDataEditor';
+import { DrawerDataEditor } from './data-editors/DrawerDataEditor';
+import { SheetDataEditor } from './data-editors/SheetDataEditor';
+import { SwitchDataEditor } from './data-editors/SwitchDataEditor';
+import { ToggleDataEditor } from './data-editors/ToggleDataEditor';
+import { ToggleGroupDataEditor } from './data-editors/ToggleGroupDataEditor';
+import { AlertDataEditor } from './data-editors/AlertDataEditor';
+import { PaginationDataEditor } from './data-editors/PaginationDataEditor';
+import { OTPInputDataEditor } from './data-editors/OTPInputDataEditor';
 import '../styles/style-panel.css';
 import '../styles/tokens.css';
 
@@ -2577,7 +2597,14 @@ export const StylePanel: React.FC<StylePanelProps> = ({
               selectedInstance.type === 'Link' || selectedInstance.type === 'Button' || selectedInstance.type === 'Form' ||
               selectedInstance.type === 'FormButton' || selectedInstance.type === 'InputLabel' || selectedInstance.type === 'TextInput' ||
               selectedInstance.type === 'TextArea' || selectedInstance.type === 'Select' || selectedInstance.type === 'RadioGroup' ||
-              selectedInstance.type === 'CheckboxField' || selectedInstance.type === 'Table') && (
+              selectedInstance.type === 'CheckboxField' || selectedInstance.type === 'Table' ||
+              selectedInstance.type === 'Accordion' || selectedInstance.type === 'Carousel' || selectedInstance.type === 'Tabs' ||
+              selectedInstance.type === 'Slider' || selectedInstance.type === 'AlertDialog' || selectedInstance.type === 'Avatar' ||
+              selectedInstance.type === 'Badge' || selectedInstance.type === 'Breadcrumb' || selectedInstance.type === 'ProgressBar' ||
+              selectedInstance.type === 'Tooltip' || selectedInstance.type === 'Popover' || selectedInstance.type === 'Drawer' ||
+              selectedInstance.type === 'Sheet' || selectedInstance.type === 'Switch' || selectedInstance.type === 'Toggle' ||
+              selectedInstance.type === 'ToggleGroup' || selectedInstance.type === 'Alert' || selectedInstance.type === 'Pagination' ||
+              selectedInstance.type === 'OTPInput') && (
               <>
                 <Separator className="my-1" />
                 <div className="space-y-2">
@@ -3818,6 +3845,101 @@ export const StylePanel: React.FC<StylePanelProps> = ({
                         </div>
                       </div>
                     </div>
+                  )}
+
+                  {/* Accordion Settings */}
+                  {selectedInstance.type === 'Accordion' && (
+                    <AccordionDataEditor instance={selectedInstance} />
+                  )}
+
+                  {/* Carousel Settings */}
+                  {selectedInstance.type === 'Carousel' && (
+                    <CarouselDataEditor instance={selectedInstance} />
+                  )}
+
+                  {/* Tabs Settings */}
+                  {selectedInstance.type === 'Tabs' && (
+                    <TabsDataEditor instance={selectedInstance} />
+                  )}
+
+                  {/* Slider Settings */}
+                  {selectedInstance.type === 'Slider' && (
+                    <SliderDataEditor instance={selectedInstance} />
+                  )}
+
+                  {/* Alert Dialog Settings */}
+                  {selectedInstance.type === 'AlertDialog' && (
+                    <AlertDialogDataEditor instance={selectedInstance} />
+                  )}
+
+                  {/* Avatar Settings */}
+                  {selectedInstance.type === 'Avatar' && (
+                    <AvatarDataEditor instance={selectedInstance} />
+                  )}
+
+                  {/* Badge Settings */}
+                  {selectedInstance.type === 'Badge' && (
+                    <BadgeDataEditor instance={selectedInstance} />
+                  )}
+
+                  {/* Breadcrumb Settings */}
+                  {selectedInstance.type === 'Breadcrumb' && (
+                    <BreadcrumbDataEditor instance={selectedInstance} />
+                  )}
+
+                  {/* Progress Settings */}
+                  {selectedInstance.type === 'ProgressBar' && (
+                    <ProgressDataEditor instance={selectedInstance} />
+                  )}
+
+                  {/* Tooltip Settings */}
+                  {selectedInstance.type === 'Tooltip' && (
+                    <TooltipDataEditor instance={selectedInstance} />
+                  )}
+
+                  {/* Popover Settings */}
+                  {selectedInstance.type === 'Popover' && (
+                    <PopoverDataEditor instance={selectedInstance} />
+                  )}
+
+                  {/* Drawer Settings */}
+                  {selectedInstance.type === 'Drawer' && (
+                    <DrawerDataEditor instance={selectedInstance} />
+                  )}
+
+                  {/* Sheet Settings */}
+                  {selectedInstance.type === 'Sheet' && (
+                    <SheetDataEditor instance={selectedInstance} />
+                  )}
+
+                  {/* Switch Settings */}
+                  {selectedInstance.type === 'Switch' && (
+                    <SwitchDataEditor instance={selectedInstance} />
+                  )}
+
+                  {/* Toggle Settings */}
+                  {selectedInstance.type === 'Toggle' && (
+                    <ToggleDataEditor instance={selectedInstance} />
+                  )}
+
+                  {/* Toggle Group Settings */}
+                  {selectedInstance.type === 'ToggleGroup' && (
+                    <ToggleGroupDataEditor instance={selectedInstance} />
+                  )}
+
+                  {/* Alert Settings */}
+                  {selectedInstance.type === 'Alert' && (
+                    <AlertDataEditor instance={selectedInstance} />
+                  )}
+
+                  {/* Pagination Settings */}
+                  {selectedInstance.type === 'Pagination' && (
+                    <PaginationDataEditor instance={selectedInstance} />
+                  )}
+
+                  {/* OTP Input Settings */}
+                  {selectedInstance.type === 'OTPInput' && (
+                    <OTPInputDataEditor instance={selectedInstance} />
                   )}
                 </div>
               </>
