@@ -1147,6 +1147,14 @@ export const StylePanel: React.FC<StylePanelProps> = ({
             </AccordionSection>
             )}
 
+            {/* Accordion-specific Style Controls */}
+            {selectedInstance.type === 'Accordion' && (
+              <div className="px-2 py-3 border-t border-border">
+                <div className="text-[10px] font-semibold text-foreground mb-2 tracking-wide">Accordion styles</div>
+                <AccordionStyleEditor instance={selectedInstance} />
+              </div>
+            )}
+
             {/* Space */}
             {componentSupportsPropertyGroup(selectedInstance.type as ComponentType, 'space') && (
             <AccordionSection title="Space" section="space" properties={['marginTop', 'marginRight', 'marginBottom', 'marginLeft', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft']}>
@@ -2222,13 +2230,6 @@ export const StylePanel: React.FC<StylePanelProps> = ({
             </AccordionSection>
             )}
 
-            {/* Accordion-specific Style Controls */}
-            {selectedInstance.type === 'Accordion' && (
-              <div className="px-2 py-3 border-t border-border">
-                <div className="text-[10px] font-semibold text-foreground mb-2 uppercase tracking-wide">Accordion Styles</div>
-                <AccordionStyleEditor instance={selectedInstance} />
-              </div>
-            )}
           </div>
         </TabsContent>
 
