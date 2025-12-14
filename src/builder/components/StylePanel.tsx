@@ -189,6 +189,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({
 
   const [openSections, setOpenSections] = useState({
     layout: true,
+    accordionStyles: true,
     space: true,
     size: true,
     position: false,
@@ -1149,10 +1150,9 @@ export const StylePanel: React.FC<StylePanelProps> = ({
 
             {/* Accordion-specific Style Controls */}
             {selectedInstance.type === 'Accordion' && (
-              <div className="px-2 py-3 border-t border-border">
-                <div className="text-[10px] font-semibold text-foreground mb-2 tracking-wide">Accordion styles</div>
-                <AccordionStyleEditor instance={selectedInstance} />
-              </div>
+            <AccordionSection title="Accordion styles" section="accordionStyles" properties={[]}>
+              <AccordionStyleEditor instance={selectedInstance} />
+            </AccordionSection>
             )}
 
             {/* Space */}
