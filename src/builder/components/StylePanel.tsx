@@ -93,6 +93,7 @@ import { AlertDataEditor } from "./data-editors/AlertDataEditor";
 import { PaginationDataEditor } from "./data-editors/PaginationDataEditor";
 import { OTPInputDataEditor } from "./data-editors/OTPInputDataEditor";
 import { AccordionStyleEditor } from "./style-editors/AccordionStyleEditor";
+import { BadgeStyleEditor } from "./style-editors/BadgeStyleEditor";
 import "../styles/style-panel.css";
 import "../styles/tokens.css";
 // Helper to find path from root to an instance
@@ -250,6 +251,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({
   const [openSections, setOpenSections] = useState({
     layout: true,
     accordionStyles: true,
+    badgeStyles: true,
     space: true,
     size: true,
     position: false,
@@ -1332,6 +1334,13 @@ export const StylePanel: React.FC<StylePanelProps> = ({
             {selectedInstance.type === "Accordion" && (
               <AccordionSection title="Accordion Styles" section="accordionStyles" properties={[]}>
                 <AccordionStyleEditor instance={selectedInstance} />
+              </AccordionSection>
+            )}
+
+            {/* Badge-specific Style Controls */}
+            {selectedInstance.type === "Badge" && (
+              <AccordionSection title="Badge Styles" section="badgeStyles" properties={[]}>
+                <BadgeStyleEditor instance={selectedInstance} />
               </AccordionSection>
             )}
 
