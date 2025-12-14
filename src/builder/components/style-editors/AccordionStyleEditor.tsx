@@ -201,7 +201,7 @@ export const AccordionStyleEditor: React.FC<AccordionStyleEditorProps> = ({ inst
               type="number"
               value={accordionStyles.contentPadding}
               onChange={(e) => updateAccordionStyles({ contentPadding: e.target.value })}
-              className="h-7 text-[10px]"
+              className="h-7 text-[10px] bg-muted text-foreground"
               min="0"
               max="64"
             />
@@ -214,7 +214,7 @@ export const AccordionStyleEditor: React.FC<AccordionStyleEditorProps> = ({ inst
             type="number"
             value={accordionStyles.animationDuration}
             onChange={(e) => updateAccordionStyles({ animationDuration: e.target.value })}
-            className="h-7 text-[10px]"
+            className="h-7 text-[10px] bg-muted text-foreground"
             min="0"
             max="1000"
             step="50"
@@ -261,7 +261,7 @@ export const AccordionStyleEditor: React.FC<AccordionStyleEditorProps> = ({ inst
             type="number"
             value={accordionStyles.outerBorderRadius}
             onChange={(e) => updateAccordionStyles({ outerBorderRadius: e.target.value })}
-            className="h-7 text-[10px]"
+            className="h-7 text-[10px] bg-muted text-foreground"
             min="0"
             max="32"
           />
