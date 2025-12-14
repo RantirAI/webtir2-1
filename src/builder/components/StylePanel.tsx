@@ -51,9 +51,9 @@ import { ToggleGroupDataEditor } from './data-editors/ToggleGroupDataEditor';
 import { AlertDataEditor } from './data-editors/AlertDataEditor';
 import { PaginationDataEditor } from './data-editors/PaginationDataEditor';
 import { OTPInputDataEditor } from './data-editors/OTPInputDataEditor';
+import { AccordionStyleEditor } from './style-editors/AccordionStyleEditor';
 import '../styles/style-panel.css';
 import '../styles/tokens.css';
-
 // Helper to find path from root to an instance
 const findPathToInstance = (
   root: ComponentInstance | null,
@@ -2220,6 +2220,14 @@ export const StylePanel: React.FC<StylePanelProps> = ({
           </div>
         </div>
             </AccordionSection>
+            )}
+
+            {/* Accordion-specific Style Controls */}
+            {selectedInstance.type === 'Accordion' && (
+              <div className="px-2 py-3 border-t border-border">
+                <div className="text-[10px] font-semibold text-foreground mb-2 uppercase tracking-wide">Accordion Styles</div>
+                <AccordionStyleEditor instance={selectedInstance} />
+              </div>
             )}
           </div>
         </TabsContent>

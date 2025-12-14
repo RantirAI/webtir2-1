@@ -635,6 +635,55 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
 
       case 'Accordion': {
         const items = instance.props?.items || [];
+        const accordionStyles = instance.props?.accordionStyles || {};
+        const collapseMode = accordionStyles.collapseMode || 'single';
+        const orientation = accordionStyles.orientation || 'vertical';
+        const iconPosition = accordionStyles.iconPosition || 'right';
+        const iconStyle = accordionStyles.iconStyle || 'chevron';
+        const triggerBackground = accordionStyles.triggerBackground || 'transparent';
+        const triggerHoverBackground = accordionStyles.triggerHoverBackground || 'hsl(var(--muted))';
+        const triggerActiveBackground = accordionStyles.triggerActiveBackground || 'hsl(var(--muted))';
+        const triggerTextColor = accordionStyles.triggerTextColor || 'hsl(var(--foreground))';
+        const contentBackground = accordionStyles.contentBackground || 'transparent';
+        const contentPadding = accordionStyles.contentPadding || '16';
+        const animationDuration = accordionStyles.animationDuration || '200';
+        const dividerStyle = accordionStyles.dividerStyle || 'solid';
+        const dividerColor = accordionStyles.dividerColor || 'hsl(var(--border))';
+        const outerBorderRadius = accordionStyles.outerBorderRadius || '8';
+
+        // Generate CSS for accordion styling
+        const accordionCss = `
+          .accordion-${instance.id} {
+            border-radius: ${outerBorderRadius}px;
+            overflow: hidden;
+          }
+          .accordion-${instance.id} [data-orientation="${orientation}"] {
+            display: flex;
+            flex-direction: ${orientation === 'horizontal' ? 'row' : 'column'};
+          }
+          .accordion-${instance.id} [data-state] > button {
+            background: ${triggerBackground};
+            color: ${triggerTextColor};
+            transition: background ${animationDuration}ms ease;
+            flex-direction: ${iconPosition === 'left' ? 'row-reverse' : 'row'};
+          }
+          .accordion-${instance.id} [data-state] > button:hover {
+            background: ${triggerHoverBackground};
+          }
+          .accordion-${instance.id} [data-state="open"] > button {
+            background: ${triggerActiveBackground};
+          }
+          .accordion-${instance.id} [data-radix-collection-item] {
+            border-bottom: ${dividerStyle === 'none' ? 'none' : `1px ${dividerStyle} ${dividerColor}`};
+          }
+          .accordion-${instance.id} [data-radix-collection-item]:last-child {
+            border-bottom: none;
+          }
+          .accordion-${instance.id} [data-state="open"] > div {
+            background: ${contentBackground};
+            padding: ${contentPadding}px;
+          }
+        `;
 
         // In preview mode, render a fully interactive accordion using the shadcn/Radix component
         if (isPreviewMode) {
@@ -642,25 +691,45 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
             .filter((item: any) => item.defaultOpen)
             .map((item: any, index: number) => String(item.id ?? `item-${index}`));
 
+          // Render the appropriate icon based on settings
+          const renderIcon = (isOpen: boolean) => {
+            if (iconPosition === 'none') return null;
+            switch (iconStyle) {
+              case 'plus-minus':
+                return isOpen 
+                  ? <span className="h-4 w-4 shrink-0 flex items-center justify-center">−</span>
+                  : <span className="h-4 w-4 shrink-0 flex items-center justify-center">+</span>;
+              case 'arrow':
+                return <svg className={`h-4 w-4 shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-90' : ''}`} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18l6-6-6-6"/></svg>;
+              default:
+                return <svg className={`h-4 w-4 shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9l6 6 6-6"/></svg>;
+            }
+          };
+
           const content = (
             <div
               data-instance-id={instance.id}
-              className={(instance.styleSourceIds || [])
+              className={`accordion-${instance.id} ${(instance.styleSourceIds || [])
                 .map((id) => useStyleStore.getState().styleSources[id]?.name)
                 .filter(Boolean)
-                .join(' ')}
+                .join(' ')}`}
               style={getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties}
             >
+              <style>{accordionCss}</style>
               <ShadcnAccordion
-                type="multiple"
-                defaultValue={defaultOpenValues}
+                type={collapseMode === 'multiple' ? 'multiple' : 'single'}
+                defaultValue={collapseMode === 'multiple' ? defaultOpenValues : defaultOpenValues[0]}
+                orientation={orientation === 'horizontal' ? 'horizontal' : 'vertical'}
                 className="w-full"
+                collapsible={collapseMode === 'single'}
               >
                 {items.map((item: any, index: number) => {
                   const value = String(item.id ?? `item-${index}`);
                   return (
                     <AccordionItem key={value} value={value}>
-                      <AccordionTrigger>{item.title || `Item ${index + 1}`}</AccordionTrigger>
+                      <AccordionTrigger className={iconPosition === 'left' ? 'flex-row-reverse justify-end gap-2' : ''}>
+                        {item.title || `Item ${index + 1}`}
+                      </AccordionTrigger>
                       <AccordionContent>
                         {item.content || 'Accordion content'}
                       </AccordionContent>
@@ -683,23 +752,54 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
         const content = (
           <div
             data-instance-id={instance.id}
-            className={(instance.styleSourceIds || [])
+            className={`accordion-${instance.id} ${(instance.styleSourceIds || [])
               .map((id) => useStyleStore.getState().styleSources[id]?.name)
               .filter(Boolean)
-              .join(' ')}
-            style={getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties}
+              .join(' ')}`}
+            style={{
+              ...getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties,
+              borderRadius: `${outerBorderRadius}px`,
+              overflow: 'hidden',
+            }}
             onClick={() => setSelectedInstanceId(instance.id)}
             onMouseEnter={() => setHoveredInstanceId(instance.id)}
             onMouseLeave={() => setHoveredInstanceId(null)}
             onContextMenu={(e) => handleContextMenu(e, instance)}
           >
+            <style>{accordionCss}</style>
             {items.map((item: any, index: number) => (
-              <div key={item.id || index} className="border-b border-border">
-                <button className="flex w-full items-center justify-between py-4 text-sm font-medium transition-all hover:underline">
+              <div 
+                key={item.id || index} 
+                className="border-b"
+                style={{ 
+                  borderBottomStyle: dividerStyle === 'none' ? 'none' : dividerStyle,
+                  borderBottomColor: dividerColor,
+                }}
+              >
+                <button 
+                  className={`flex w-full items-center justify-between py-4 text-sm font-medium transition-all hover:underline ${iconPosition === 'left' ? 'flex-row-reverse justify-end gap-2' : ''}`}
+                  style={{ 
+                    background: item.defaultOpen ? triggerActiveBackground : triggerBackground,
+                    color: triggerTextColor,
+                  }}
+                >
                   {item.title}
+                  {iconPosition !== 'none' && (
+                    iconStyle === 'plus-minus' 
+                      ? <span className="h-4 w-4 shrink-0">{item.defaultOpen ? '−' : '+'}</span>
+                      : iconStyle === 'arrow'
+                        ? <svg className={`h-4 w-4 shrink-0 ${item.defaultOpen ? 'rotate-90' : ''}`} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18l6-6-6-6"/></svg>
+                        : <svg className={`h-4 w-4 shrink-0 ${item.defaultOpen ? 'rotate-180' : ''}`} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9l6 6 6-6"/></svg>
+                  )}
                 </button>
                 {item.defaultOpen && (
-                  <div className="pb-4 pt-0 text-sm text-muted-foreground">
+                  <div 
+                    className="pb-4 pt-0 text-sm text-muted-foreground"
+                    style={{ 
+                      background: contentBackground,
+                      padding: `${contentPadding}px`,
+                    }}
+                  >
                     {item.content}
                   </div>
                 )}
