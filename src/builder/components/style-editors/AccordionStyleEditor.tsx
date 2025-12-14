@@ -44,50 +44,46 @@ export const AccordionStyleEditor: React.FC<AccordionStyleEditorProps> = ({ inst
 
   return (
     <div className="space-y-4">
-      {/* Layout & Orientation */}
-      <div className="space-y-2">
-        <Label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Layout</Label>
+      {/* Orientation & Collapse */}
+      <div className="grid grid-cols-2 gap-2">
+        <div className="space-y-1">
+          <Label className="text-[9px] text-muted-foreground">Orientation</Label>
+          <Select 
+            value={accordionStyles.orientation} 
+            onValueChange={(val) => updateAccordionStyles({ orientation: val })}
+          >
+            <SelectTrigger className="h-7 text-[10px] bg-[hsl(var(--muted))] text-foreground">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="vertical">
+                <span className="flex items-center gap-1.5">
+                  <ArrowDown className="w-3 h-3" /> Vertical
+                </span>
+              </SelectItem>
+              <SelectItem value="horizontal">
+                <span className="flex items-center gap-1.5">
+                  <ArrowRight className="w-3 h-3" /> Horizontal
+                </span>
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
         
-        <div className="grid grid-cols-2 gap-2">
-          <div className="space-y-1">
-            <Label className="text-[9px] text-muted-foreground">Orientation</Label>
-            <Select 
-              value={accordionStyles.orientation} 
-              onValueChange={(val) => updateAccordionStyles({ orientation: val })}
-            >
-              <SelectTrigger className="h-7 text-[10px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="vertical">
-                  <span className="flex items-center gap-1.5">
-                    <ArrowDown className="w-3 h-3" /> Vertical
-                  </span>
-                </SelectItem>
-                <SelectItem value="horizontal">
-                  <span className="flex items-center gap-1.5">
-                    <ArrowRight className="w-3 h-3" /> Horizontal
-                  </span>
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div className="space-y-1">
-            <Label className="text-[9px] text-muted-foreground">Collapse Mode</Label>
-            <Select 
-              value={accordionStyles.collapseMode} 
-              onValueChange={(val) => updateAccordionStyles({ collapseMode: val })}
-            >
-              <SelectTrigger className="h-7 text-[10px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="single">Single</SelectItem>
-                <SelectItem value="multiple">Multiple</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+        <div className="space-y-1">
+          <Label className="text-[9px] text-muted-foreground">Collapse Mode</Label>
+          <Select 
+            value={accordionStyles.collapseMode} 
+            onValueChange={(val) => updateAccordionStyles({ collapseMode: val })}
+          >
+            <SelectTrigger className="h-7 text-[10px] bg-[hsl(var(--muted))] text-foreground">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="single">Single</SelectItem>
+              <SelectItem value="multiple">Multiple</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
@@ -139,7 +135,7 @@ export const AccordionStyleEditor: React.FC<AccordionStyleEditorProps> = ({ inst
                 value={accordionStyles.iconPosition} 
                 onValueChange={(val) => updateAccordionStyles({ iconPosition: val })}
               >
-                <SelectTrigger className="h-7 text-[10px]">
+                <SelectTrigger className="h-7 text-[10px] bg-[hsl(var(--muted))] text-foreground">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -155,7 +151,7 @@ export const AccordionStyleEditor: React.FC<AccordionStyleEditorProps> = ({ inst
                 value={accordionStyles.iconStyle} 
                 onValueChange={(val) => updateAccordionStyles({ iconStyle: val })}
               >
-                <SelectTrigger className="h-7 text-[10px]">
+                <SelectTrigger className="h-7 text-[10px] bg-[hsl(var(--muted))] text-foreground">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -235,7 +231,7 @@ export const AccordionStyleEditor: React.FC<AccordionStyleEditorProps> = ({ inst
               value={accordionStyles.dividerStyle} 
               onValueChange={(val) => updateAccordionStyles({ dividerStyle: val })}
             >
-              <SelectTrigger className="h-7 text-[10px]">
+              <SelectTrigger className="h-7 text-[10px] bg-[hsl(var(--muted))] text-foreground">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
