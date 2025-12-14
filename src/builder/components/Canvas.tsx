@@ -932,7 +932,31 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
       }
 
       case 'Badge': {
-        const content = (
+        const badgeStyles = instance.props?.badgeStyles || {};
+        const badgeData = instance.props || {};
+        
+        // Map size to font size
+        const sizeMap: Record<string, string> = { small: '10px', medium: '12px', large: '14px' };
+        const fontSize = sizeMap[badgeStyles.size] || '12px';
+        
+        // Map border radius
+        const radiusMap: Record<string, string> = { pill: '9999px', rounded: '6px', square: '2px' };
+        const borderRadius = radiusMap[badgeStyles.borderRadius] || '9999px';
+        
+        // Get icon component
+        const iconMap: Record<string, any> = {
+          Tag: () => <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"/></svg>,
+          Star: () => <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>,
+          Heart: () => <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>,
+          Check: () => <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>,
+          X: () => <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>,
+          Info: () => <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>,
+          AlertTriangle: () => <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>,
+          Zap: () => <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg>,
+        };
+        const IconComponent = badgeData.icon && iconMap[badgeData.icon] ? iconMap[badgeData.icon] : null;
+        
+        const badgeContent = (
           <span
             data-instance-id={instance.id}
             className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
@@ -940,22 +964,29 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
               ...getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties,
               display: 'inline-flex',
               alignItems: 'center',
-              padding: '4px 10px',
-              borderRadius: '9999px',
-              backgroundColor: 'hsl(var(--primary))',
-              color: 'hsl(var(--primary-foreground))',
-              fontSize: '12px',
-              fontWeight: '600',
+              gap: IconComponent ? '4px' : '0',
+              padding: `${badgeStyles.paddingY || '2'}px ${badgeStyles.paddingX || '10'}px`,
+              borderRadius,
+              backgroundColor: badgeStyles.backgroundColor || 'hsl(var(--primary))',
+              color: badgeStyles.textColor || 'hsl(var(--primary-foreground))',
+              fontSize,
+              fontWeight: badgeStyles.fontWeight || '500',
+              letterSpacing: badgeStyles.letterSpacing ? `${badgeStyles.letterSpacing}px` : '0',
+              borderStyle: badgeStyles.borderStyle || 'solid',
+              borderWidth: badgeStyles.borderWidth ? `${badgeStyles.borderWidth}px` : '0',
+              borderColor: badgeStyles.borderColor || 'transparent',
             }}
             onClick={isPreviewMode ? undefined : () => setSelectedInstanceId(instance.id)}
             onMouseEnter={isPreviewMode ? undefined : () => setHoveredInstanceId(instance.id)}
             onMouseLeave={isPreviewMode ? undefined : () => setHoveredInstanceId(null)}
             onContextMenu={isPreviewMode ? undefined : (e: any) => handleContextMenu(e, instance)}
           >
-            {instance.props?.text || 'Badge'}
+            {IconComponent && badgeData.iconPosition !== 'right' && <IconComponent />}
+            {badgeData.text || 'Badge'}
+            {IconComponent && badgeData.iconPosition === 'right' && <IconComponent />}
           </span>
         );
-        return wrapWithDraggable(content);
+        return wrapWithDraggable(badgeContent);
       }
 
       case 'Progress': {
