@@ -90,20 +90,20 @@ export const AccordionStyleEditor: React.FC<AccordionStyleEditorProps> = ({ inst
       <Separator />
 
       {/* Trigger Styling */}
-      <div className="space-y-2">
+      <div className="space-y-3">
         <Label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Trigger</Label>
         
-        <div className="space-y-2">
-          <div className="grid grid-cols-2 gap-2">
-            <div className="space-y-1">
+        <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex items-center justify-between">
               <Label className="text-[9px] text-muted-foreground">Background</Label>
               <ColorPicker
                 value={accordionStyles.triggerBackground}
                 onChange={(val) => updateAccordionStyles({ triggerBackground: val })}
               />
             </div>
-            <div className="space-y-1">
-              <Label className="text-[9px] text-muted-foreground">Hover Background</Label>
+            <div className="flex items-center justify-between">
+              <Label className="text-[9px] text-muted-foreground">Hover Bg</Label>
               <ColorPicker
                 value={accordionStyles.triggerHoverBackground}
                 onChange={(val) => updateAccordionStyles({ triggerHoverBackground: val })}
@@ -111,15 +111,15 @@ export const AccordionStyleEditor: React.FC<AccordionStyleEditorProps> = ({ inst
             </div>
           </div>
           
-          <div className="grid grid-cols-2 gap-2">
-            <div className="space-y-1">
-              <Label className="text-[9px] text-muted-foreground">Active Background</Label>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex items-center justify-between">
+              <Label className="text-[9px] text-muted-foreground">Active Bg</Label>
               <ColorPicker
                 value={accordionStyles.triggerActiveBackground}
                 onChange={(val) => updateAccordionStyles({ triggerActiveBackground: val })}
               />
             </div>
-            <div className="space-y-1">
+            <div className="flex items-center justify-between">
               <Label className="text-[9px] text-muted-foreground">Text Color</Label>
               <ColorPicker
                 value={accordionStyles.triggerTextColor}
@@ -180,11 +180,11 @@ export const AccordionStyleEditor: React.FC<AccordionStyleEditorProps> = ({ inst
       <Separator />
 
       {/* Content Styling */}
-      <div className="space-y-2">
+      <div className="space-y-3">
         <Label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Content</Label>
         
-        <div className="grid grid-cols-2 gap-2">
-          <div className="space-y-1">
+        <div className="grid grid-cols-2 gap-3">
+          <div className="flex items-center justify-between">
             <Label className="text-[9px] text-muted-foreground">Background</Label>
             <ColorPicker
               value={accordionStyles.contentBackground}
@@ -197,7 +197,7 @@ export const AccordionStyleEditor: React.FC<AccordionStyleEditorProps> = ({ inst
               type="number"
               value={accordionStyles.contentPadding}
               onChange={(e) => updateAccordionStyles({ contentPadding: e.target.value })}
-              className="h-7 text-[10px] bg-muted text-foreground"
+              className="h-8 text-[11px] bg-muted text-foreground w-full px-2"
               min="0"
               max="64"
             />
@@ -210,7 +210,7 @@ export const AccordionStyleEditor: React.FC<AccordionStyleEditorProps> = ({ inst
             type="number"
             value={accordionStyles.animationDuration}
             onChange={(e) => updateAccordionStyles({ animationDuration: e.target.value })}
-            className="h-7 text-[10px] bg-muted text-foreground"
+            className="h-8 text-[11px] bg-muted text-foreground w-full px-2"
             min="0"
             max="1000"
             step="50"
@@ -221,17 +221,17 @@ export const AccordionStyleEditor: React.FC<AccordionStyleEditorProps> = ({ inst
       <Separator />
 
       {/* Borders & Dividers */}
-      <div className="space-y-2">
+      <div className="space-y-3">
         <Label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Dividers</Label>
         
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-3 items-end">
           <div className="space-y-1">
             <Label className="text-[9px] text-muted-foreground">Divider Style</Label>
             <Select 
               value={accordionStyles.dividerStyle} 
               onValueChange={(val) => updateAccordionStyles({ dividerStyle: val })}
             >
-              <SelectTrigger className="h-7 text-[10px] bg-[hsl(var(--muted))] text-foreground">
+              <SelectTrigger className="h-8 text-[10px] bg-[hsl(var(--muted))] text-foreground">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -244,10 +244,12 @@ export const AccordionStyleEditor: React.FC<AccordionStyleEditorProps> = ({ inst
           </div>
           <div className="space-y-1">
             <Label className="text-[9px] text-muted-foreground">Divider Color</Label>
-            <ColorPicker
-              value={accordionStyles.dividerColor}
-              onChange={(val) => updateAccordionStyles({ dividerColor: val })}
-            />
+            <div className="h-8 flex items-center">
+              <ColorPicker
+                value={accordionStyles.dividerColor}
+                onChange={(val) => updateAccordionStyles({ dividerColor: val })}
+              />
+            </div>
           </div>
         </div>
         
@@ -257,7 +259,7 @@ export const AccordionStyleEditor: React.FC<AccordionStyleEditorProps> = ({ inst
             type="number"
             value={accordionStyles.outerBorderRadius}
             onChange={(e) => updateAccordionStyles({ outerBorderRadius: e.target.value })}
-            className="h-7 text-[10px] bg-muted text-foreground"
+            className="h-8 text-[11px] bg-muted text-foreground w-full px-2"
             min="0"
             max="32"
           />
