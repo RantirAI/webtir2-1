@@ -94,6 +94,7 @@ import { PaginationDataEditor } from "./data-editors/PaginationDataEditor";
 import { OTPInputDataEditor } from "./data-editors/OTPInputDataEditor";
 import { AccordionStyleEditor } from "./style-editors/AccordionStyleEditor";
 import { BadgeStyleEditor } from "./style-editors/BadgeStyleEditor";
+import { BreadcrumbStyleEditor } from "./style-editors/BreadcrumbStyleEditor";
 import "../styles/style-panel.css";
 import "../styles/tokens.css";
 // Helper to find path from root to an instance
@@ -252,6 +253,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({
     layout: true,
     accordionStyles: true,
     badgeStyles: true,
+    breadcrumbStyles: true,
     space: true,
     size: true,
     position: false,
@@ -1341,6 +1343,13 @@ export const StylePanel: React.FC<StylePanelProps> = ({
             {selectedInstance.type === "Badge" && (
               <AccordionSection title="Badge Styles" section="badgeStyles" properties={[]}>
                 <BadgeStyleEditor instance={selectedInstance} />
+              </AccordionSection>
+            )}
+
+            {/* Breadcrumb-specific Style Controls */}
+            {selectedInstance.type === "Breadcrumb" && (
+              <AccordionSection title="Breadcrumb Styles" section="breadcrumbStyles" properties={[]}>
+                <BreadcrumbStyleEditor instance={selectedInstance} />
               </AccordionSection>
             )}
 

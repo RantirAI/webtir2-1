@@ -1166,7 +1166,37 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
 
       case 'Breadcrumb': {
         const items = instance.props?.items || [];
-        const separator = instance.props?.separator || '/';
+        const styles = instance.props?.breadcrumbStyles || {};
+        const settings = instance.props?.breadcrumbSettings || {};
+        
+        // Get separator icon
+        const separatorType = styles.separatorType || 'chevron';
+        const separatorSize = parseInt(styles.separatorSize || '14');
+        const separatorColor = styles.separatorColor || 'hsl(var(--muted-foreground))';
+        
+        const getSeparator = () => {
+          switch (separatorType) {
+            case 'slash': return <span style={{ color: separatorColor, fontSize: separatorSize }}>/</span>;
+            case 'arrow': return <span style={{ color: separatorColor, fontSize: separatorSize }}>→</span>;
+            case 'dot': return <span style={{ color: separatorColor, fontSize: separatorSize, lineHeight: 1 }}>•</span>;
+            case 'dash': return <span style={{ color: separatorColor, fontSize: separatorSize }}>—</span>;
+            case 'chevron':
+            default: return <span style={{ color: separatorColor, fontSize: separatorSize }}>›</span>;
+          }
+        };
+
+        // Parse padding
+        const padding = styles.padding || '0';
+        const paddingValue = padding.includes(' ') 
+          ? padding.split(' ').map((p: string) => `${p}px`).join(' ')
+          : `${padding}px`;
+
+        // Item padding for pill style
+        const itemPadding = styles.itemPadding || '';
+        const itemPaddingValue = itemPadding 
+          ? itemPadding.split(' ').map((p: string) => `${p}px`).join(' ')
+          : undefined;
+
         const content = (
           <div
             data-instance-id={instance.id}
@@ -1174,22 +1204,57 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
             style={{
               ...getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties,
               display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
+              flexDirection: styles.orientation === 'vertical' ? 'column' : 'row',
+              alignItems: styles.orientation === 'vertical' ? 'flex-start' : 'center',
+              gap: `${styles.gap || 8}px`,
+              backgroundColor: styles.backgroundColor || 'transparent',
+              padding: paddingValue,
+              borderRadius: styles.borderRadius ? `${styles.borderRadius}px` : undefined,
             }}
             onClick={isPreviewMode ? undefined : () => setSelectedInstanceId(instance.id)}
             onMouseEnter={isPreviewMode ? undefined : () => setHoveredInstanceId(instance.id)}
             onMouseLeave={isPreviewMode ? undefined : () => setHoveredInstanceId(null)}
             onContextMenu={isPreviewMode ? undefined : (e) => handleContextMenu(e, instance)}
           >
-            {items.map((item: any, index: number) => (
-              <React.Fragment key={item.id || index}>
-                {index > 0 && <span className="text-muted-foreground">{separator}</span>}
-                <span className={index === items.length - 1 ? 'font-medium' : 'text-muted-foreground'}>
-                  {item.label}
-                </span>
-              </React.Fragment>
-            ))}
+            {items.map((item: any, index: number) => {
+              const isActive = item.isCurrentPage;
+              const isFirst = index === 0;
+              
+              return (
+                <React.Fragment key={item.id || index}>
+                  {index > 0 && <span className="flex items-center">{getSeparator()}</span>}
+                  <span
+                    style={{
+                      color: isActive 
+                        ? (styles.activeTextColor || 'hsl(var(--foreground))') 
+                        : (styles.textColor || 'hsl(var(--muted-foreground))'),
+                      fontSize: `${styles.fontSize || 14}px`,
+                      fontWeight: isActive ? (styles.fontWeight || '500') : (styles.fontWeight || '400'),
+                      backgroundColor: isActive && styles.activeBackgroundColor
+                        ? styles.activeBackgroundColor
+                        : (styles.itemBackgroundColor || 'transparent'),
+                      padding: itemPaddingValue,
+                      borderRadius: styles.borderRadius ? `${styles.borderRadius}px` : undefined,
+                      textDecoration: isActive && styles.activeUnderline ? 'underline' : 'none',
+                      textUnderlineOffset: '4px',
+                      cursor: isPreviewMode && item.href ? 'pointer' : 'default',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                    }}
+                    onClick={isPreviewMode && item.href ? () => window.location.href = item.href : undefined}
+                  >
+                    {isFirst && settings.showHomeIcon && (
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                        <polyline points="9 22 9 12 15 12 15 22"/>
+                      </svg>
+                    )}
+                    {item.label}
+                  </span>
+                </React.Fragment>
+              );
+            })}
             {items.length === 0 && (
               <span className="text-muted-foreground italic text-sm">No breadcrumb items</span>
             )}
