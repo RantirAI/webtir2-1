@@ -383,15 +383,21 @@ export const TableDataEditor: React.FC<TableDataEditorProps> = ({ instance }) =>
               </div>
               <span className="text-[9px] text-muted-foreground w-4">{rowIndex + 1}</span>
               <div className="flex-1 flex flex-wrap gap-1">
-                {row.map((cell, colIndex) => (
-                  <Input
-                    key={colIndex}
-                    value={cell}
-                    onChange={(e) => updateCell(rowIndex, colIndex, e.target.value)}
-                    className="h-5 text-[9px] w-20"
-                    placeholder={headers[colIndex] || `Cell`}
-                  />
-                ))}
+                {row.map((cell, colIndex) => {
+                  // Ensure cell is always a string for rendering
+                  const cellValue = typeof cell === 'object' && cell !== null 
+                    ? JSON.stringify(cell) 
+                    : String(cell ?? '');
+                  return (
+                    <Input
+                      key={colIndex}
+                      value={cellValue}
+                      onChange={(e) => updateCell(rowIndex, colIndex, e.target.value)}
+                      className="h-5 text-[9px] w-20"
+                      placeholder={headers[colIndex] || `Cell`}
+                    />
+                  );
+                })}
               </div>
               <Button
                 size="sm"
