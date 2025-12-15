@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ComponentInstance } from '../../store/types';
 import { useBuilderStore } from '../../store/useBuilderStore';
 
@@ -18,6 +19,95 @@ interface BreadcrumbDataEditorProps {
   instance: ComponentInstance;
 }
 
+const prebuiltTemplates = [
+  { value: 'simple-chevron', label: 'Simple Chevron' },
+  { value: 'slash-dividers', label: 'Slash Dividers' },
+  { value: 'arrow-trail', label: 'Arrow Trail' },
+  { value: 'dotted-path', label: 'Dotted Path' },
+  { value: 'pill-style', label: 'Pill Style' },
+  { value: 'underline-active', label: 'Underline Active' },
+];
+
+const templateStyles: Record<string, any> = {
+  'simple-chevron': {
+    separatorType: 'chevron',
+    gap: '8',
+    textColor: 'hsl(var(--muted-foreground))',
+    activeTextColor: 'hsl(var(--foreground))',
+    hoverColor: 'hsl(var(--primary))',
+    fontSize: '14',
+    fontWeight: '400',
+    backgroundColor: 'transparent',
+    padding: '0',
+    borderRadius: '0',
+  },
+  'slash-dividers': {
+    separatorType: 'slash',
+    gap: '12',
+    textColor: 'hsl(var(--muted-foreground))',
+    activeTextColor: 'hsl(var(--foreground))',
+    hoverColor: 'hsl(var(--primary))',
+    fontSize: '14',
+    fontWeight: '500',
+    backgroundColor: 'transparent',
+    padding: '0',
+    borderRadius: '0',
+  },
+  'arrow-trail': {
+    separatorType: 'arrow',
+    gap: '10',
+    textColor: 'hsl(var(--muted-foreground))',
+    activeTextColor: 'hsl(var(--foreground))',
+    hoverColor: 'hsl(var(--primary))',
+    fontSize: '14',
+    fontWeight: '400',
+    backgroundColor: 'transparent',
+    padding: '0',
+    borderRadius: '0',
+  },
+  'dotted-path': {
+    separatorType: 'dot',
+    gap: '8',
+    textColor: 'hsl(var(--muted-foreground))',
+    activeTextColor: 'hsl(var(--foreground))',
+    hoverColor: 'hsl(var(--primary))',
+    fontSize: '13',
+    fontWeight: '400',
+    backgroundColor: 'transparent',
+    padding: '0',
+    borderRadius: '0',
+    separatorSize: '4',
+  },
+  'pill-style': {
+    separatorType: 'chevron',
+    gap: '4',
+    textColor: 'hsl(var(--foreground))',
+    activeTextColor: 'hsl(var(--primary-foreground))',
+    hoverColor: 'hsl(var(--primary))',
+    fontSize: '12',
+    fontWeight: '500',
+    backgroundColor: 'hsl(var(--muted))',
+    activeBackgroundColor: 'hsl(var(--primary))',
+    itemBackgroundColor: 'hsl(var(--muted))',
+    padding: '4',
+    itemPadding: '6 12',
+    borderRadius: '9999',
+  },
+  'underline-active': {
+    separatorType: 'slash',
+    gap: '16',
+    textColor: 'hsl(var(--muted-foreground))',
+    activeTextColor: 'hsl(var(--primary))',
+    hoverColor: 'hsl(var(--primary))',
+    fontSize: '14',
+    fontWeight: '500',
+    backgroundColor: 'transparent',
+    padding: '0',
+    borderRadius: '0',
+    activeUnderline: true,
+  },
+};
+
 export const BreadcrumbDataEditor: React.FC<BreadcrumbDataEditorProps> = ({ instance }) => {
   const { updateInstance } = useBuilderStore();
   const items: BreadcrumbItem[] = instance.props?.items || [
@@ -27,6 +117,7 @@ export const BreadcrumbDataEditor: React.FC<BreadcrumbDataEditorProps> = ({ inst
   ];
 
   const settings = instance.props?.breadcrumbSettings || {};
+  const currentTemplate = instance.props?.breadcrumbStyles?.template || '';
 
   const updateItems = (newItems: BreadcrumbItem[]) => {
     updateInstance(instance.id, {
@@ -41,6 +132,18 @@ export const BreadcrumbDataEditor: React.FC<BreadcrumbDataEditorProps> = ({ inst
         breadcrumbSettings: { ...settings, [key]: value }
       }
     });
+  };
+
+  const applyTemplate = (templateId: string) => {
+    const templateStyle = templateStyles[templateId];
+    if (templateStyle) {
+      updateInstance(instance.id, {
+        props: {
+          ...instance.props,
+          breadcrumbStyles: { ...instance.props?.breadcrumbStyles, ...templateStyle, template: templateId }
+        }
+      });
+    }
   };
 
   const addItem = () => {
@@ -66,6 +169,23 @@ export const BreadcrumbDataEditor: React.FC<BreadcrumbDataEditorProps> = ({ inst
 
   return (
     <div className="space-y-4">
+      {/* Template Selection */}
+      <div className="space-y-1.5">
+        <Label className="text-[10px] font-medium text-foreground">Template</Label>
+        <Select value={currentTemplate} onValueChange={applyTemplate}>
+          <SelectTrigger className="h-7 text-[11px] bg-background border-border">
+            <SelectValue placeholder="Choose a template..." />
+          </SelectTrigger>
+          <SelectContent className="bg-popover border-border z-50">
+            {prebuiltTemplates.map(template => (
+              <SelectItem key={template.value} value={template.value} className="text-[11px]">
+                {template.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
       {/* Settings */}
       <div className="space-y-2">
         <Label className="text-[10px] font-medium text-foreground">Settings</Label>

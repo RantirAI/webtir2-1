@@ -23,6 +23,148 @@ interface CarouselDataEditorProps {
   instance: ComponentInstance;
 }
 
+const prebuiltTemplates = [
+  { value: 'hero-slider', label: 'Hero Slider' },
+  { value: 'product-carousel', label: 'Product Carousel' },
+  { value: 'testimonial-slider', label: 'Testimonial Slider' },
+  { value: 'image-gallery', label: 'Image Gallery' },
+  { value: 'feature-showcase', label: 'Feature Showcase' },
+];
+
+const templateStyles: Record<string, any> = {
+  'hero-slider': {
+    effect: 'fade',
+    transitionDuration: '500',
+    transitionTiming: 'ease-in-out',
+    height: '500',
+    heightUnit: 'px',
+    borderRadius: '0',
+    arrowStyle: 'circle',
+    arrowSize: 'large',
+    arrowColor: 'hsl(var(--background))',
+    arrowBackground: 'hsl(var(--foreground) / 0.5)',
+    arrowPosition: 'inside',
+    dotStyle: 'circle',
+    dotSize: 'medium',
+    dotColor: 'hsl(var(--muted-foreground))',
+    dotActiveColor: 'hsl(var(--background))',
+    dotPosition: 'bottom',
+    contentAlignment: 'center',
+    contentPosition: 'center',
+    overlayColor: 'hsl(0 0% 0% / 0.4)',
+    titleColor: 'hsl(var(--background))',
+    titleSize: '48',
+    titleWeight: '700',
+    subtitleColor: 'hsl(var(--background) / 0.9)',
+    subtitleSize: '18',
+  },
+  'product-carousel': {
+    effect: 'slide',
+    transitionDuration: '300',
+    transitionTiming: 'ease-out',
+    height: '300',
+    heightUnit: 'px',
+    borderRadius: '8',
+    arrowStyle: 'minimal',
+    arrowSize: 'medium',
+    arrowColor: 'hsl(var(--foreground))',
+    arrowBackground: 'transparent',
+    arrowPosition: 'outside',
+    dotStyle: 'line',
+    dotSize: 'small',
+    dotColor: 'hsl(var(--muted))',
+    dotActiveColor: 'hsl(var(--primary))',
+    dotPosition: 'bottom',
+    contentAlignment: 'left',
+    contentPosition: 'bottom',
+    overlayColor: 'transparent',
+    titleColor: 'hsl(var(--foreground))',
+    titleSize: '16',
+    titleWeight: '600',
+    subtitleColor: 'hsl(var(--muted-foreground))',
+    subtitleSize: '14',
+  },
+  'testimonial-slider': {
+    effect: 'fade',
+    transitionDuration: '400',
+    transitionTiming: 'ease',
+    height: '250',
+    heightUnit: 'px',
+    borderRadius: '12',
+    arrowStyle: 'circle',
+    arrowSize: 'small',
+    arrowColor: 'hsl(var(--primary))',
+    arrowBackground: 'hsl(var(--primary) / 0.1)',
+    arrowPosition: 'inside',
+    dotStyle: 'circle',
+    dotSize: 'small',
+    dotColor: 'hsl(var(--muted))',
+    dotActiveColor: 'hsl(var(--primary))',
+    dotPosition: 'bottom',
+    contentAlignment: 'center',
+    contentPosition: 'center',
+    overlayColor: 'transparent',
+    titleColor: 'hsl(var(--foreground))',
+    titleSize: '20',
+    titleWeight: '500',
+    subtitleColor: 'hsl(var(--muted-foreground))',
+    subtitleSize: '14',
+    backgroundColor: 'hsl(var(--muted))',
+  },
+  'image-gallery': {
+    effect: 'slide',
+    transitionDuration: '250',
+    transitionTiming: 'ease-out',
+    height: '400',
+    heightUnit: 'px',
+    borderRadius: '4',
+    arrowStyle: 'square',
+    arrowSize: 'medium',
+    arrowColor: 'hsl(var(--background))',
+    arrowBackground: 'hsl(var(--foreground) / 0.7)',
+    arrowPosition: 'overlay',
+    dotStyle: 'square',
+    dotSize: 'small',
+    dotColor: 'hsl(var(--muted))',
+    dotActiveColor: 'hsl(var(--foreground))',
+    dotPosition: 'outside',
+    contentAlignment: 'left',
+    contentPosition: 'bottom',
+    overlayColor: 'transparent',
+    titleColor: 'hsl(var(--foreground))',
+    titleSize: '14',
+    titleWeight: '500',
+    subtitleColor: 'hsl(var(--muted-foreground))',
+    subtitleSize: '12',
+  },
+  'feature-showcase': {
+    effect: 'zoom',
+    transitionDuration: '600',
+    transitionTiming: 'ease-in-out',
+    height: '450',
+    heightUnit: 'px',
+    borderRadius: '16',
+    arrowStyle: 'circle',
+    arrowSize: 'large',
+    arrowColor: 'hsl(var(--primary-foreground))',
+    arrowBackground: 'hsl(var(--primary))',
+    arrowPosition: 'inside',
+    dotStyle: 'dash',
+    dotSize: 'medium',
+    dotColor: 'hsl(var(--muted))',
+    dotActiveColor: 'hsl(var(--primary))',
+    dotPosition: 'bottom',
+    contentAlignment: 'left',
+    contentPosition: 'bottom',
+    overlayColor: 'linear-gradient(to top, hsl(0 0% 0% / 0.6), transparent)',
+    titleColor: 'hsl(var(--background))',
+    titleSize: '32',
+    titleWeight: '700',
+    subtitleColor: 'hsl(var(--background) / 0.8)',
+    subtitleSize: '16',
+  },
+};
+
 export const CarouselDataEditor: React.FC<CarouselDataEditorProps> = ({ instance }) => {
   const { updateInstance } = useBuilderStore();
   const slides: CarouselSlide[] = instance.props?.slides || [
@@ -30,6 +172,8 @@ export const CarouselDataEditor: React.FC<CarouselDataEditorProps> = ({ instance
     { id: '2', imageUrl: '', title: 'Slide 2', description: 'Description for slide 2' },
     { id: '3', imageUrl: '', title: 'Slide 3', description: 'Description for slide 3' },
   ];
+
+  const currentTemplate = instance.props?.carouselStyles?.template || '';
 
   const updateSlides = (newSlides: CarouselSlide[]) => {
     updateInstance(instance.id, {
@@ -41,6 +185,18 @@ export const CarouselDataEditor: React.FC<CarouselDataEditorProps> = ({ instance
     updateInstance(instance.id, {
       props: { ...instance.props, ...updates }
     });
+  };
+
+  const applyTemplate = (templateId: string) => {
+    const templateStyle = templateStyles[templateId];
+    if (templateStyle) {
+      updateInstance(instance.id, {
+        props: {
+          ...instance.props,
+          carouselStyles: { ...instance.props?.carouselStyles, ...templateStyle, template: templateId }
+        }
+      });
+    }
   };
 
   const addSlide = () => {
@@ -67,6 +223,23 @@ export const CarouselDataEditor: React.FC<CarouselDataEditorProps> = ({ instance
 
   return (
     <div className="space-y-4">
+      {/* Template Selection */}
+      <div className="space-y-1.5">
+        <Label className="text-[10px] font-medium text-foreground">Template</Label>
+        <Select value={currentTemplate} onValueChange={applyTemplate}>
+          <SelectTrigger className="h-7 text-[11px] bg-background border-border">
+            <SelectValue placeholder="Choose a template..." />
+          </SelectTrigger>
+          <SelectContent className="bg-popover border-border z-50">
+            {prebuiltTemplates.map(template => (
+              <SelectItem key={template.value} value={template.value} className="text-[11px]">
+                {template.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
       {/* Autoplay Settings */}
       <div className="space-y-2">
         <Label className="text-[10px] font-medium text-foreground">Autoplay Settings</Label>
