@@ -2,12 +2,131 @@ import React from 'react';
 import { Plus, X, ArrowUp, ArrowDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ComponentInstance } from '../../store/types';
 import { useBuilderStore } from '../../store/useBuilderStore';
 
 interface TableDataEditorProps {
   instance: ComponentInstance;
 }
+
+const prebuiltTemplates = [
+  { value: 'simple', label: 'Simple' },
+  { value: 'striped', label: 'Striped' },
+  { value: 'bordered', label: 'Bordered' },
+  { value: 'modern', label: 'Modern' },
+  { value: 'compact', label: 'Compact' },
+  { value: 'card', label: 'Card Style' },
+];
+
+const templateStyles: Record<string, any> = {
+  'simple': {
+    headerBackground: 'transparent',
+    headerTextColor: 'hsl(var(--foreground))',
+    headerFontWeight: '600',
+    headerFontSize: '14',
+    cellBackground: 'transparent',
+    cellTextColor: 'hsl(var(--foreground))',
+    cellFontSize: '14',
+    cellPadding: '12',
+    borderStyle: 'horizontal',
+    borderColor: 'hsl(var(--border))',
+    borderWidth: '1',
+    outerBorderRadius: '0',
+    tableBackground: 'transparent',
+    tableShadow: 'none',
+  },
+  'striped': {
+    headerBackground: 'hsl(var(--muted))',
+    headerTextColor: 'hsl(var(--foreground))',
+    headerFontWeight: '600',
+    headerFontSize: '14',
+    cellBackground: 'transparent',
+    cellTextColor: 'hsl(var(--foreground))',
+    cellFontSize: '14',
+    cellPadding: '12',
+    stripedColor: 'hsl(var(--muted) / 0.5)',
+    borderStyle: 'horizontal',
+    borderColor: 'hsl(var(--border))',
+    borderWidth: '1',
+    outerBorderRadius: '8',
+    tableBackground: 'transparent',
+    tableShadow: 'none',
+    striped: true,
+  },
+  'bordered': {
+    headerBackground: 'hsl(var(--muted))',
+    headerTextColor: 'hsl(var(--foreground))',
+    headerFontWeight: '600',
+    headerFontSize: '14',
+    cellBackground: 'transparent',
+    cellTextColor: 'hsl(var(--foreground))',
+    cellFontSize: '14',
+    cellPadding: '12',
+    borderStyle: 'full',
+    borderColor: 'hsl(var(--border))',
+    borderWidth: '1',
+    outerBorderRadius: '0',
+    tableBackground: 'transparent',
+    tableShadow: 'none',
+    bordered: true,
+  },
+  'modern': {
+    headerBackground: 'hsl(var(--primary))',
+    headerTextColor: 'hsl(var(--primary-foreground))',
+    headerFontWeight: '600',
+    headerFontSize: '14',
+    cellBackground: 'hsl(var(--background))',
+    cellTextColor: 'hsl(var(--foreground))',
+    cellFontSize: '14',
+    cellPadding: '16',
+    hoverColor: 'hsl(var(--muted))',
+    borderStyle: 'none',
+    borderColor: 'transparent',
+    borderWidth: '0',
+    outerBorderRadius: '12',
+    tableBackground: 'hsl(var(--background))',
+    tableShadow: 'lg',
+    hoverable: true,
+  },
+  'compact': {
+    headerBackground: 'hsl(var(--muted))',
+    headerTextColor: 'hsl(var(--foreground))',
+    headerFontWeight: '500',
+    headerFontSize: '12',
+    cellBackground: 'transparent',
+    cellTextColor: 'hsl(var(--foreground))',
+    cellFontSize: '12',
+    cellPadding: '8',
+    borderStyle: 'horizontal',
+    borderColor: 'hsl(var(--border))',
+    borderWidth: '1',
+    outerBorderRadius: '4',
+    tableBackground: 'transparent',
+    tableShadow: 'none',
+    compact: true,
+  },
+  'card': {
+    headerBackground: 'hsl(var(--card))',
+    headerTextColor: 'hsl(var(--card-foreground))',
+    headerFontWeight: '600',
+    headerFontSize: '14',
+    cellBackground: 'hsl(var(--card))',
+    cellTextColor: 'hsl(var(--card-foreground))',
+    cellFontSize: '14',
+    cellPadding: '16',
+    hoverColor: 'hsl(var(--accent))',
+    borderStyle: 'horizontal',
+    borderColor: 'hsl(var(--border))',
+    borderWidth: '1',
+    outerBorderRadius: '12',
+    tableBackground: 'hsl(var(--card))',
+    tableShadow: 'md',
+    hoverable: true,
+  },
+};
 
 export const TableDataEditor: React.FC<TableDataEditorProps> = ({ instance }) => {
   const { updateInstance } = useBuilderStore();
@@ -16,11 +135,24 @@ export const TableDataEditor: React.FC<TableDataEditorProps> = ({ instance }) =>
   const columns = instance.props?.columns || 3;
   const headers: string[] = instance.props?.headers || Array(columns).fill('').map((_, i) => `Column ${i + 1}`);
   const data: string[][] = instance.props?.data || Array(rows).fill(null).map(() => Array(columns).fill(''));
+  const currentTemplate = instance.props?.tableStyles?.template || '';
 
   const updateProps = (updates: Record<string, any>) => {
     updateInstance(instance.id, {
       props: { ...instance.props, ...updates }
     });
+  };
+
+  const applyTemplate = (templateId: string) => {
+    const templateStyle = templateStyles[templateId];
+    if (templateStyle) {
+      updateInstance(instance.id, {
+        props: {
+          ...instance.props,
+          tableStyles: { ...instance.props?.tableStyles, ...templateStyle, template: templateId }
+        }
+      });
+    }
   };
 
   const addColumn = () => {
@@ -69,30 +201,107 @@ export const TableDataEditor: React.FC<TableDataEditorProps> = ({ instance }) =>
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
+      {/* Template Selection */}
+      <div className="space-y-1.5">
+        <Label className="text-[10px] font-medium text-foreground">Template</Label>
+        <Select value={currentTemplate} onValueChange={applyTemplate}>
+          <SelectTrigger className="h-7 text-[11px] bg-background border-border">
+            <SelectValue placeholder="Choose a template..." />
+          </SelectTrigger>
+          <SelectContent className="bg-popover border-border z-50">
+            {prebuiltTemplates.map(template => (
+              <SelectItem key={template.value} value={template.value} className="text-[11px]">
+                {template.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Settings */}
+      <div className="space-y-2">
+        <Label className="text-[10px] font-medium text-foreground">Settings</Label>
+        <div className="grid grid-cols-2 gap-2">
+          <label className="flex items-center gap-2 text-[10px]">
+            <Checkbox
+              checked={instance.props?.tableStyles?.striped ?? false}
+              onCheckedChange={(checked) => updateInstance(instance.id, {
+                props: { ...instance.props, tableStyles: { ...instance.props?.tableStyles, striped: !!checked } }
+              })}
+              className="h-3.5 w-3.5"
+            />
+            Striped rows
+          </label>
+          <label className="flex items-center gap-2 text-[10px]">
+            <Checkbox
+              checked={instance.props?.tableStyles?.hoverable ?? false}
+              onCheckedChange={(checked) => updateInstance(instance.id, {
+                props: { ...instance.props, tableStyles: { ...instance.props?.tableStyles, hoverable: !!checked } }
+              })}
+              className="h-3.5 w-3.5"
+            />
+            Hoverable rows
+          </label>
+          <label className="flex items-center gap-2 text-[10px]">
+            <Checkbox
+              checked={instance.props?.tableStyles?.bordered ?? false}
+              onCheckedChange={(checked) => updateInstance(instance.id, {
+                props: { ...instance.props, tableStyles: { ...instance.props?.tableStyles, bordered: !!checked } }
+              })}
+              className="h-3.5 w-3.5"
+            />
+            Full borders
+          </label>
+          <label className="flex items-center gap-2 text-[10px]">
+            <Checkbox
+              checked={instance.props?.tableStyles?.compact ?? false}
+              onCheckedChange={(checked) => updateInstance(instance.id, {
+                props: { ...instance.props, tableStyles: { ...instance.props?.tableStyles, compact: !!checked } }
+              })}
+              className="h-3.5 w-3.5"
+            />
+            Compact
+          </label>
+          <label className="flex items-center gap-2 text-[10px]">
+            <Checkbox
+              checked={instance.props?.tableStyles?.stickyHeader ?? false}
+              onCheckedChange={(checked) => updateInstance(instance.id, {
+                props: { ...instance.props, tableStyles: { ...instance.props?.tableStyles, stickyHeader: !!checked } }
+              })}
+              className="h-3.5 w-3.5"
+            />
+            Sticky header
+          </label>
+        </div>
+      </div>
+
       {/* Controls */}
-      <div className="flex items-center gap-2">
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={addColumn}
-          className="h-6 text-[9px] px-2"
-        >
-          <Plus className="w-3 h-3 mr-0.5" /> Column
-        </Button>
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={addRow}
-          className="h-6 text-[9px] px-2"
-        >
-          <Plus className="w-3 h-3 mr-0.5" /> Row
-        </Button>
+      <div className="space-y-2">
+        <Label className="text-[10px] font-medium text-foreground">Structure</Label>
+        <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={addColumn}
+            className="h-6 text-[9px] px-2"
+          >
+            <Plus className="w-3 h-3 mr-0.5" /> Column
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={addRow}
+            className="h-6 text-[9px] px-2"
+          >
+            <Plus className="w-3 h-3 mr-0.5" /> Row
+          </Button>
+        </div>
       </div>
 
       {/* Headers */}
       <div className="space-y-1">
-        <label className="text-[10px] font-medium text-foreground">Headers</label>
+        <Label className="text-[10px] font-medium text-foreground">Headers</Label>
         <div className="flex flex-wrap gap-1">
           {headers.map((header, colIndex) => (
             <div key={colIndex} className="flex items-center gap-0.5">
@@ -118,7 +327,7 @@ export const TableDataEditor: React.FC<TableDataEditorProps> = ({ instance }) =>
 
       {/* Data Rows */}
       <div className="space-y-1">
-        <label className="text-[10px] font-medium text-foreground">Data ({rows} rows)</label>
+        <Label className="text-[10px] font-medium text-foreground">Data ({rows} rows)</Label>
         <div className="space-y-1 max-h-[200px] overflow-y-auto">
           {data.map((row, rowIndex) => (
             <div key={rowIndex} className="flex items-center gap-1 p-1.5 rounded border border-border bg-muted/30">

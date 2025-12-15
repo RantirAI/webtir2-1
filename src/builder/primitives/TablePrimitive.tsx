@@ -1,6 +1,5 @@
 import React from 'react';
 import { ComponentInstance } from '../store/types';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { EditableText } from '../components/EditableText';
 
 interface TablePrimitiveProps {
@@ -18,6 +17,7 @@ export const TablePrimitive: React.FC<TablePrimitiveProps> = ({
   const columns = instance.props?.columns || 3;
   const headers = instance.props?.headers || Array(columns).fill('').map((_, i) => `Column ${i + 1}`);
   const data = instance.props?.data || Array(rows).fill(null).map(() => Array(columns).fill(''));
+  const styles = instance.props?.tableStyles || {};
 
   const handleHeaderChange = (colIndex: number, value: string) => {
     const newHeaders = [...headers];
@@ -31,13 +31,75 @@ export const TablePrimitive: React.FC<TablePrimitiveProps> = ({
     onUpdateProp('data', newData);
   };
 
+  // Style calculations
+  const shadowMap: Record<string, string> = {
+    none: 'none',
+    sm: '0 1px 2px 0 rgb(0 0 0 / 0.05)',
+    md: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+    lg: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
+  };
+
+  const getBorderStyle = () => {
+    const borderStyle = styles.borderStyle || 'horizontal';
+    const borderColor = styles.borderColor || 'hsl(var(--border))';
+    const borderWidth = styles.borderWidth || '1';
+
+    switch (borderStyle) {
+      case 'none':
+        return { border: 'none' };
+      case 'horizontal':
+        return { borderBottom: `${borderWidth}px solid ${borderColor}` };
+      case 'vertical':
+        return { borderRight: `${borderWidth}px solid ${borderColor}` };
+      case 'full':
+        return { border: `${borderWidth}px solid ${borderColor}` };
+      default:
+        return { borderBottom: `${borderWidth}px solid ${borderColor}` };
+    }
+  };
+
+  const cellPadding = styles.compact ? '8px' : (styles.cellPadding ? `${styles.cellPadding}px` : '12px');
+
   return (
-    <div className="w-full overflow-auto">
-      <Table>
-        <TableHeader>
-          <TableRow>
+    <div
+      style={{
+        width: '100%',
+        overflow: 'auto',
+        backgroundColor: styles.tableBackground || 'transparent',
+        borderRadius: styles.outerBorderRadius ? `${styles.outerBorderRadius}px` : '0',
+        boxShadow: shadowMap[styles.tableShadow || 'none'],
+        maxHeight: styles.maxHeight ? `${styles.maxHeight}px` : undefined,
+      }}
+    >
+      <table
+        style={{
+          width: '100%',
+          borderCollapse: styles.borderStyle === 'full' ? 'collapse' : 'separate',
+          borderSpacing: 0,
+        }}
+      >
+        <thead
+          style={{
+            position: styles.stickyHeader ? 'sticky' : undefined,
+            top: styles.stickyHeader ? 0 : undefined,
+            zIndex: styles.stickyHeader ? 10 : undefined,
+          }}
+        >
+          <tr>
             {headers.map((header: string, colIndex: number) => (
-              <TableHead key={colIndex}>
+              <th
+                key={colIndex}
+                style={{
+                  padding: cellPadding,
+                  backgroundColor: styles.headerBackground || 'hsl(var(--muted))',
+                  color: styles.headerTextColor || 'hsl(var(--foreground))',
+                  fontWeight: styles.headerFontWeight || '600',
+                  fontSize: styles.headerFontSize ? `${styles.headerFontSize}px` : '14px',
+                  textAlign: 'left',
+                  ...getBorderStyle(),
+                  ...(styles.borderStyle === 'full' ? { borderRight: colIndex < headers.length - 1 ? `${styles.borderWidth || 1}px solid ${styles.borderColor || 'hsl(var(--border))'}` : undefined } : {}),
+                }}
+              >
                 <EditableText
                   value={header}
                   onChange={(value) => handleHeaderChange(colIndex, value)}
@@ -45,27 +107,58 @@ export const TablePrimitive: React.FC<TablePrimitiveProps> = ({
                   className="font-medium"
                   isSelected={isSelected}
                 />
-              </TableHead>
+              </th>
             ))}
-          </TableRow>
-        </TableHeader>
-        <TableBody>
+          </tr>
+        </thead>
+        <tbody>
           {data.map((row: string[], rowIndex: number) => (
-            <TableRow key={rowIndex}>
+            <tr
+              key={rowIndex}
+              style={{
+                backgroundColor: styles.striped && rowIndex % 2 === 1
+                  ? (styles.stripedColor || 'hsl(var(--muted) / 0.5)')
+                  : (styles.cellBackground || 'transparent'),
+                minHeight: styles.rowHeight ? `${styles.rowHeight}px` : undefined,
+                transition: styles.hoverable ? 'background-color 0.15s' : undefined,
+              }}
+              onMouseEnter={(e) => {
+                if (styles.hoverable && styles.hoverColor) {
+                  (e.currentTarget as HTMLElement).style.backgroundColor = styles.hoverColor;
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (styles.hoverable) {
+                  (e.currentTarget as HTMLElement).style.backgroundColor = 
+                    styles.striped && rowIndex % 2 === 1
+                      ? (styles.stripedColor || 'hsl(var(--muted) / 0.5)')
+                      : (styles.cellBackground || 'transparent');
+                }
+              }}
+            >
               {row.map((cell: string, colIndex: number) => (
-                <TableCell key={colIndex}>
+                <td
+                  key={colIndex}
+                  style={{
+                    padding: cellPadding,
+                    color: styles.cellTextColor || 'hsl(var(--foreground))',
+                    fontSize: styles.cellFontSize ? `${styles.cellFontSize}px` : '14px',
+                    ...getBorderStyle(),
+                    ...(styles.borderStyle === 'full' ? { borderRight: colIndex < row.length - 1 ? `${styles.borderWidth || 1}px solid ${styles.borderColor || 'hsl(var(--border))'}` : undefined } : {}),
+                  }}
+                >
                   <EditableText
                     value={cell}
                     onChange={(value) => handleCellChange(rowIndex, colIndex, value)}
                     as="span"
                     isSelected={isSelected}
                   />
-                </TableCell>
+                </td>
               ))}
-            </TableRow>
+            </tr>
           ))}
-        </TableBody>
-      </Table>
+        </tbody>
+      </table>
     </div>
   );
 };

@@ -96,6 +96,7 @@ import { AccordionStyleEditor } from "./style-editors/AccordionStyleEditor";
 import { BadgeStyleEditor } from "./style-editors/BadgeStyleEditor";
 import { BreadcrumbStyleEditor } from "./style-editors/BreadcrumbStyleEditor";
 import { CarouselStyleEditor } from "./style-editors/CarouselStyleEditor";
+import { TableStyleEditor } from "./style-editors/TableStyleEditor";
 import "../styles/style-panel.css";
 import "../styles/tokens.css";
 // Helper to find path from root to an instance
@@ -256,6 +257,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({
     badgeStyles: true,
     breadcrumbStyles: true,
     carouselStyles: true,
+    tableStyles: true,
     space: true,
     size: true,
     position: false,
@@ -1359,6 +1361,13 @@ export const StylePanel: React.FC<StylePanelProps> = ({
             {selectedInstance.type === "Carousel" && (
               <AccordionSection title="Carousel Styles" section="carouselStyles" properties={[]}>
                 <CarouselStyleEditor instance={selectedInstance} />
+              </AccordionSection>
+            )}
+
+            {/* Table-specific Style Controls */}
+            {selectedInstance.type === "Table" && (
+              <AccordionSection title="Table Styles" section="tableStyles" properties={[]}>
+                <TableStyleEditor instance={selectedInstance} />
               </AccordionSection>
             )}
 
