@@ -4755,6 +4755,9 @@ export const StylePanel: React.FC<StylePanelProps> = ({
                   {/* Tabs Settings */}
                   {selectedInstance.type === "Tabs" && <TabsDataEditor instance={selectedInstance} />}
 
+                  {/* Table Settings */}
+                  {selectedInstance.type === "Table" && <TableDataEditor instance={selectedInstance} />}
+
                   {/* Slider Settings */}
                   {selectedInstance.type === "Slider" && <SliderDataEditor instance={selectedInstance} />}
 

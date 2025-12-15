@@ -60,12 +60,7 @@ export const TablePrimitive: React.FC<TablePrimitiveProps> = ({
         }
         break;
       case 'full':
-        if (!isLastRow) {
-          result.borderBottom = `${borderWidth}px solid ${borderColor}`;
-        }
-        if (!isLastCol) {
-          result.borderRight = `${borderWidth}px solid ${borderColor}`;
-        }
+        result.border = `${borderWidth}px solid ${borderColor}`;
         break;
     }
     
