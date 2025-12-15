@@ -30,14 +30,14 @@ export const TableStyleEditor: React.FC<TableStyleEditorProps> = ({ instance }) 
         <Label className="text-[10px] font-medium text-foreground">Header Styling</Label>
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1.5">
-            <Label className="text-[9px] text-muted-foreground mb-1">Background</Label>
+            <Label className="block text-[9px] text-muted-foreground">Background</Label>
             <ColorPicker
               value={styles.headerBackground || ''}
               onChange={(v) => updateStyles('headerBackground', v)}
             />
           </div>
           <div className="space-y-1.5">
-            <Label className="text-[9px] text-muted-foreground mb-1">Text Color</Label>
+            <Label className="block text-[9px] text-muted-foreground">Text Color</Label>
             <ColorPicker
               value={styles.headerTextColor || ''}
               onChange={(v) => updateStyles('headerTextColor', v)}
@@ -74,14 +74,14 @@ export const TableStyleEditor: React.FC<TableStyleEditorProps> = ({ instance }) 
         <Label className="text-[10px] font-medium text-foreground">Body Styling</Label>
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1.5">
-            <Label className="text-[9px] text-muted-foreground mb-1">Cell Background</Label>
+            <Label className="block text-[9px] text-muted-foreground">Cell Background</Label>
             <ColorPicker
               value={styles.cellBackground || ''}
               onChange={(v) => updateStyles('cellBackground', v)}
             />
           </div>
           <div className="space-y-1.5">
-            <Label className="text-[9px] text-muted-foreground mb-1">Text Color</Label>
+            <Label className="block text-[9px] text-muted-foreground">Text Color</Label>
             <ColorPicker
               value={styles.cellTextColor || ''}
               onChange={(v) => updateStyles('cellTextColor', v)}
@@ -123,14 +123,14 @@ export const TableStyleEditor: React.FC<TableStyleEditorProps> = ({ instance }) 
         <Label className="text-[10px] font-medium text-foreground">Alternating & Hover</Label>
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1.5">
-            <Label className="text-[9px] text-muted-foreground mb-1">Striped Color</Label>
+            <Label className="block text-[9px] text-muted-foreground">Striped Color</Label>
             <ColorPicker
               value={styles.stripedColor || ''}
               onChange={(v) => updateStyles('stripedColor', v)}
             />
           </div>
           <div className="space-y-1.5">
-            <Label className="text-[9px] text-muted-foreground mb-1">Hover Color</Label>
+            <Label className="block text-[9px] text-muted-foreground">Hover Color</Label>
             <ColorPicker
               value={styles.hoverColor || ''}
               onChange={(v) => updateStyles('hoverColor', v)}
@@ -167,7 +167,7 @@ export const TableStyleEditor: React.FC<TableStyleEditorProps> = ({ instance }) 
             />
           </div>
           <div className="space-y-1.5">
-            <Label className="text-[9px] text-muted-foreground mb-1">Border Color</Label>
+            <Label className="block text-[9px] text-muted-foreground">Border Color</Label>
             <ColorPicker
               value={styles.borderColor || ''}
               onChange={(v) => updateStyles('borderColor', v)}
@@ -190,7 +190,7 @@ export const TableStyleEditor: React.FC<TableStyleEditorProps> = ({ instance }) 
         <Label className="text-[10px] font-medium text-foreground">Container</Label>
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1.5">
-            <Label className="text-[9px] text-muted-foreground mb-1">Background</Label>
+            <Label className="block text-[9px] text-muted-foreground">Background</Label>
             <ColorPicker
               value={styles.tableBackground || ''}
               onChange={(v) => updateStyles('tableBackground', v)}
