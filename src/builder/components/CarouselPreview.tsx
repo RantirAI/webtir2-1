@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 
 interface CarouselSlide {
   id: string;
@@ -35,6 +35,7 @@ export const CarouselPreview: React.FC<CarouselPreviewProps> = ({
 }) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const slideCount = slides.length;
 
@@ -62,16 +63,33 @@ export const CarouselPreview: React.FC<CarouselPreviewProps> = ({
     setActiveIndex(index);
   }, []);
 
-  // Autoplay functionality
+  // Autoplay functionality with stable ref
   useEffect(() => {
-    if (!autoPlay || isPaused || slideCount <= 1) return;
+    // Clear any existing interval
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
 
-    const interval = setInterval(() => {
-      goToNext();
-    }, autoPlayInterval);
+    // Only set up autoplay if conditions are met
+    if (autoPlay && !isPaused && slideCount > 1) {
+      intervalRef.current = setInterval(() => {
+        setActiveIndex((prev) => {
+          if (prev >= slideCount - 1) {
+            return loop ? 0 : prev;
+          }
+          return prev + 1;
+        });
+      }, autoPlayInterval);
+    }
 
-    return () => clearInterval(interval);
-  }, [autoPlay, autoPlayInterval, isPaused, goToNext, slideCount]);
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, [autoPlay, autoPlayInterval, isPaused, slideCount, loop]);
 
   // Style calculations
   const height = styles.height ? `${styles.height}${styles.heightUnit || 'px'}` : '300px';
