@@ -26,30 +26,30 @@ export const TableStyleEditor: React.FC<TableStyleEditorProps> = ({ instance }) 
   return (
     <div className="space-y-4">
       {/* Header Styling */}
-      <div className="space-y-2">
+      <div className="space-y-3">
         <Label className="text-[10px] font-medium text-foreground">Header Styling</Label>
-        <div className="grid grid-cols-2 gap-2">
-          <div className="space-y-1">
-            <Label className="text-[9px] text-muted-foreground">Background</Label>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1.5">
+            <Label className="text-[9px] text-muted-foreground mb-1">Background</Label>
             <ColorPicker
               value={styles.headerBackground || ''}
               onChange={(v) => updateStyles('headerBackground', v)}
             />
           </div>
-          <div className="space-y-1">
-            <Label className="text-[9px] text-muted-foreground">Text Color</Label>
+          <div className="space-y-1.5">
+            <Label className="text-[9px] text-muted-foreground mb-1">Text Color</Label>
             <ColorPicker
               value={styles.headerTextColor || ''}
               onChange={(v) => updateStyles('headerTextColor', v)}
             />
           </div>
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             <Label className="text-[9px] text-muted-foreground">Font Weight</Label>
             <Select value={styles.headerFontWeight || '600'} onValueChange={(v) => updateStyles('headerFontWeight', v)}>
               <SelectTrigger className="h-6 text-[10px] bg-muted">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-popover z-50">
                 <SelectItem value="400" className="text-[10px]">Normal</SelectItem>
                 <SelectItem value="500" className="text-[10px]">Medium</SelectItem>
                 <SelectItem value="600" className="text-[10px]">Semibold</SelectItem>
@@ -57,7 +57,7 @@ export const TableStyleEditor: React.FC<TableStyleEditorProps> = ({ instance }) 
               </SelectContent>
             </Select>
           </div>
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             <Label className="text-[9px] text-muted-foreground">Font Size (px)</Label>
             <Input
               type="number"
@@ -70,24 +70,24 @@ export const TableStyleEditor: React.FC<TableStyleEditorProps> = ({ instance }) 
       </div>
 
       {/* Body Styling */}
-      <div className="space-y-2">
+      <div className="space-y-3">
         <Label className="text-[10px] font-medium text-foreground">Body Styling</Label>
-        <div className="grid grid-cols-2 gap-2">
-          <div className="space-y-1">
-            <Label className="text-[9px] text-muted-foreground">Cell Background</Label>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1.5">
+            <Label className="text-[9px] text-muted-foreground mb-1">Cell Background</Label>
             <ColorPicker
               value={styles.cellBackground || ''}
               onChange={(v) => updateStyles('cellBackground', v)}
             />
           </div>
-          <div className="space-y-1">
-            <Label className="text-[9px] text-muted-foreground">Text Color</Label>
+          <div className="space-y-1.5">
+            <Label className="text-[9px] text-muted-foreground mb-1">Text Color</Label>
             <ColorPicker
               value={styles.cellTextColor || ''}
               onChange={(v) => updateStyles('cellTextColor', v)}
             />
           </div>
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             <Label className="text-[9px] text-muted-foreground">Font Size (px)</Label>
             <Input
               type="number"
@@ -96,7 +96,7 @@ export const TableStyleEditor: React.FC<TableStyleEditorProps> = ({ instance }) 
               className="h-6 text-[10px] bg-muted"
             />
           </div>
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             <Label className="text-[9px] text-muted-foreground">Cell Padding (px)</Label>
             <Input
               type="number"
@@ -105,7 +105,7 @@ export const TableStyleEditor: React.FC<TableStyleEditorProps> = ({ instance }) 
               className="h-6 text-[10px] bg-muted"
             />
           </div>
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             <Label className="text-[9px] text-muted-foreground">Row Height (px)</Label>
             <Input
               type="number"
@@ -119,18 +119,18 @@ export const TableStyleEditor: React.FC<TableStyleEditorProps> = ({ instance }) 
       </div>
 
       {/* Alternating & Hover */}
-      <div className="space-y-2">
+      <div className="space-y-3">
         <Label className="text-[10px] font-medium text-foreground">Alternating & Hover</Label>
-        <div className="grid grid-cols-2 gap-2">
-          <div className="space-y-1">
-            <Label className="text-[9px] text-muted-foreground">Striped Color</Label>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1.5">
+            <Label className="text-[9px] text-muted-foreground mb-1">Striped Color</Label>
             <ColorPicker
               value={styles.stripedColor || ''}
               onChange={(v) => updateStyles('stripedColor', v)}
             />
           </div>
-          <div className="space-y-1">
-            <Label className="text-[9px] text-muted-foreground">Hover Color</Label>
+          <div className="space-y-1.5">
+            <Label className="text-[9px] text-muted-foreground mb-1">Hover Color</Label>
             <ColorPicker
               value={styles.hoverColor || ''}
               onChange={(v) => updateStyles('hoverColor', v)}
@@ -140,16 +140,16 @@ export const TableStyleEditor: React.FC<TableStyleEditorProps> = ({ instance }) 
       </div>
 
       {/* Borders */}
-      <div className="space-y-2">
+      <div className="space-y-3">
         <Label className="text-[10px] font-medium text-foreground">Borders</Label>
-        <div className="grid grid-cols-2 gap-2">
-          <div className="space-y-1">
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1.5">
             <Label className="text-[9px] text-muted-foreground">Border Style</Label>
             <Select value={styles.borderStyle || 'horizontal'} onValueChange={(v) => updateStyles('borderStyle', v)}>
               <SelectTrigger className="h-6 text-[10px] bg-muted">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-popover z-50">
                 <SelectItem value="none" className="text-[10px]">None</SelectItem>
                 <SelectItem value="horizontal" className="text-[10px]">Horizontal</SelectItem>
                 <SelectItem value="vertical" className="text-[10px]">Vertical</SelectItem>
@@ -157,7 +157,7 @@ export const TableStyleEditor: React.FC<TableStyleEditorProps> = ({ instance }) 
               </SelectContent>
             </Select>
           </div>
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             <Label className="text-[9px] text-muted-foreground">Border Width (px)</Label>
             <Input
               type="number"
@@ -166,14 +166,14 @@ export const TableStyleEditor: React.FC<TableStyleEditorProps> = ({ instance }) 
               className="h-6 text-[10px] bg-muted"
             />
           </div>
-          <div className="space-y-1">
-            <Label className="text-[9px] text-muted-foreground">Border Color</Label>
+          <div className="space-y-1.5">
+            <Label className="text-[9px] text-muted-foreground mb-1">Border Color</Label>
             <ColorPicker
               value={styles.borderColor || ''}
               onChange={(v) => updateStyles('borderColor', v)}
             />
           </div>
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             <Label className="text-[9px] text-muted-foreground">Border Radius (px)</Label>
             <Input
               type="number"
@@ -186,17 +186,17 @@ export const TableStyleEditor: React.FC<TableStyleEditorProps> = ({ instance }) 
       </div>
 
       {/* Container */}
-      <div className="space-y-2">
+      <div className="space-y-3">
         <Label className="text-[10px] font-medium text-foreground">Container</Label>
-        <div className="grid grid-cols-2 gap-2">
-          <div className="space-y-1">
-            <Label className="text-[9px] text-muted-foreground">Background</Label>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1.5">
+            <Label className="text-[9px] text-muted-foreground mb-1">Background</Label>
             <ColorPicker
               value={styles.tableBackground || ''}
               onChange={(v) => updateStyles('tableBackground', v)}
             />
           </div>
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             <Label className="text-[9px] text-muted-foreground">Max Height (px)</Label>
             <Input
               type="number"
@@ -206,13 +206,13 @@ export const TableStyleEditor: React.FC<TableStyleEditorProps> = ({ instance }) 
               placeholder="None"
             />
           </div>
-          <div className="col-span-2 space-y-1">
+          <div className="col-span-2 space-y-1.5">
             <Label className="text-[9px] text-muted-foreground">Shadow</Label>
             <Select value={styles.tableShadow || 'none'} onValueChange={(v) => updateStyles('tableShadow', v)}>
               <SelectTrigger className="h-6 text-[10px] bg-muted">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-popover z-50">
                 <SelectItem value="none" className="text-[10px]">None</SelectItem>
                 <SelectItem value="sm" className="text-[10px]">Small</SelectItem>
                 <SelectItem value="md" className="text-[10px]">Medium</SelectItem>
