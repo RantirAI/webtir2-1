@@ -42,6 +42,7 @@ import { generateId } from '../utils/instance';
 import { DroppableContainer } from './DroppableContainer';
 import { DraggableInstance } from './DraggableInstance';
 import { Accordion as ShadcnAccordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
+import { CarouselPreview } from './CarouselPreview';
 
 interface CanvasProps {
   zoom: number;
@@ -804,220 +805,32 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
         const styles = instance.props?.carouselStyles || {};
         const showArrows = instance.props?.showArrows ?? true;
         const showDots = instance.props?.showDots ?? true;
-        
-        // Style calculations
-        const height = styles.height ? `${styles.height}${styles.heightUnit || 'px'}` : '300px';
-        const borderRadius = styles.borderRadius ? `${styles.borderRadius}px` : '0';
-        
-        // Arrow styling
-        const arrowSizeMap: Record<string, number> = { small: 28, medium: 36, large: 44 };
-        const arrowSize = arrowSizeMap[styles.arrowSize || 'medium'];
-        const arrowStyle = styles.arrowStyle || 'circle';
-        const arrowBorderRadius = arrowStyle === 'circle' ? '50%' : arrowStyle === 'square' ? '4px' : '0';
-        
-        // Dot styling
-        const dotSizeMap: Record<string, { w: number; h: number }> = {
-          small: { w: 6, h: 6 },
-          medium: { w: 8, h: 8 },
-          large: { w: 10, h: 10 },
-        };
-        const dotSize = dotSizeMap[styles.dotSize || 'medium'];
-        const dotStyle = styles.dotStyle || 'circle';
-        
-        // Content positioning
-        const alignmentMap: Record<string, string> = { left: 'flex-start', center: 'center', right: 'flex-end' };
-        const positionMap: Record<string, string> = { top: 'flex-start', center: 'center', bottom: 'flex-end' };
+        const autoPlay = instance.props?.autoPlay ?? false;
+        const autoPlayInterval = instance.props?.autoPlayInterval ?? 3000;
+        const pauseOnHover = instance.props?.pauseOnHover ?? true;
+        const loop = instance.props?.loop ?? true;
         
         const content = (
           <div
             data-instance-id={instance.id}
             className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
-            style={{
-              ...getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties,
-              position: 'relative',
-              width: '100%',
-              height,
-              borderRadius,
-              overflow: 'hidden',
-              backgroundColor: styles.backgroundColor || 'hsl(var(--muted))',
-            }}
+            style={getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties}
             onClick={isPreviewMode ? undefined : () => setSelectedInstanceId(instance.id)}
             onMouseEnter={isPreviewMode ? undefined : () => setHoveredInstanceId(instance.id)}
             onMouseLeave={isPreviewMode ? undefined : () => setHoveredInstanceId(null)}
             onContextMenu={isPreviewMode ? undefined : (e) => handleContextMenu(e, instance)}
           >
-            {/* Slides */}
-            <div style={{ display: 'flex', height: '100%', overflow: 'hidden' }}>
-              {slides.map((slide: any, index: number) => (
-                <div 
-                  key={slide.id || index} 
-                  style={{
-                    flexShrink: 0,
-                    width: '100%',
-                    height: '100%',
-                    position: 'relative',
-                    display: index === 0 ? 'flex' : 'none',
-                    flexDirection: 'column',
-                    justifyContent: positionMap[styles.contentPosition || 'center'],
-                    alignItems: alignmentMap[styles.contentAlignment || 'center'],
-                  }}
-                >
-                  {slide.imageUrl && (
-                    <img 
-                      src={slide.imageUrl} 
-                      alt={slide.altText || slide.title} 
-                      style={{ 
-                        position: 'absolute',
-                        inset: 0,
-                        width: '100%', 
-                        height: '100%', 
-                        objectFit: 'cover',
-                      }} 
-                    />
-                  )}
-                  {/* Overlay */}
-                  {styles.overlayColor && (
-                    <div style={{
-                      position: 'absolute',
-                      inset: 0,
-                      background: styles.overlayColor,
-                    }} />
-                  )}
-                  {/* Content */}
-                  <div style={{
-                    position: 'relative',
-                    zIndex: 1,
-                    padding: '24px',
-                    textAlign: styles.contentAlignment || 'center',
-                  }}>
-                    {slide.title && (
-                      <h3 style={{
-                        fontSize: `${styles.titleSize || 24}px`,
-                        fontWeight: styles.titleWeight || '600',
-                        color: styles.titleColor || 'hsl(var(--foreground))',
-                        marginBottom: '8px',
-                      }}>
-                        {slide.title}
-                      </h3>
-                    )}
-                    {slide.description && (
-                      <p style={{
-                        fontSize: `${styles.subtitleSize || 14}px`,
-                        color: styles.subtitleColor || 'hsl(var(--muted-foreground))',
-                        marginBottom: slide.buttonText ? '16px' : '0',
-                      }}>
-                        {slide.description}
-                      </p>
-                    )}
-                    {slide.buttonText && (
-                      <button style={{
-                        padding: '8px 20px',
-                        backgroundColor: 'hsl(var(--primary))',
-                        color: 'hsl(var(--primary-foreground))',
-                        borderRadius: '6px',
-                        fontSize: '14px',
-                        fontWeight: '500',
-                        border: 'none',
-                        cursor: 'pointer',
-                      }}>
-                        {slide.buttonText}
-                      </button>
-                    )}
-                  </div>
-                  {!slide.imageUrl && !slide.title && (
-                    <div style={{ color: 'hsl(var(--muted-foreground))', textAlign: 'center' }}>
-                      Slide {index + 1}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-            
-            {/* Arrow Controls */}
-            {showArrows && arrowStyle !== 'none' && slides.length > 1 && (
-              <>
-                <button style={{
-                  position: 'absolute',
-                  left: styles.arrowPosition === 'outside' ? '-48px' : '12px',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  width: arrowSize,
-                  height: arrowSize,
-                  borderRadius: arrowBorderRadius,
-                  backgroundColor: styles.arrowBackground || 'hsl(var(--background) / 0.8)',
-                  color: styles.arrowColor || 'hsl(var(--foreground))',
-                  border: 'none',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <polyline points="15 18 9 12 15 6" />
-                  </svg>
-                </button>
-                <button style={{
-                  position: 'absolute',
-                  right: styles.arrowPosition === 'outside' ? '-48px' : '12px',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  width: arrowSize,
-                  height: arrowSize,
-                  borderRadius: arrowBorderRadius,
-                  backgroundColor: styles.arrowBackground || 'hsl(var(--background) / 0.8)',
-                  color: styles.arrowColor || 'hsl(var(--foreground))',
-                  border: 'none',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <polyline points="9 18 15 12 9 6" />
-                  </svg>
-                </button>
-              </>
-            )}
-            
-            {/* Dot Indicators */}
-            {showDots && dotStyle !== 'none' && slides.length > 1 && (
-              <div style={{
-                position: styles.dotPosition === 'outside' ? 'relative' : 'absolute',
-                bottom: styles.dotPosition === 'top' ? 'auto' : (styles.dotPosition === 'outside' ? '-24px' : '12px'),
-                top: styles.dotPosition === 'top' ? '12px' : 'auto',
-                left: '50%',
-                transform: 'translateX(-50%)',
-                display: 'flex',
-                gap: '6px',
-                marginTop: styles.dotPosition === 'outside' ? '8px' : '0',
-              }}>
-                {slides.map((_: any, i: number) => (
-                  <span key={i} style={{
-                    width: dotStyle === 'line' || dotStyle === 'dash' ? (dotStyle === 'line' ? '20px' : '12px') : dotSize.w,
-                    height: dotStyle === 'line' || dotStyle === 'dash' ? '3px' : dotSize.h,
-                    borderRadius: dotStyle === 'circle' ? '50%' : dotStyle === 'square' ? '2px' : '1px',
-                    backgroundColor: i === 0 
-                      ? (styles.dotActiveColor || 'hsl(var(--primary))') 
-                      : (styles.dotColor || 'hsl(var(--muted-foreground) / 0.5)'),
-                    transition: 'background-color 0.2s',
-                  }} />
-                ))}
-              </div>
-            )}
-            
-            {slides.length === 0 && (
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                height: '100%',
-                color: 'hsl(var(--muted-foreground))',
-                fontStyle: 'italic',
-                fontSize: '14px',
-              }}>
-                No slides. Add slides in the Data tab.
-              </div>
-            )}
+            <CarouselPreview
+              slides={slides}
+              styles={styles}
+              autoPlay={autoPlay}
+              autoPlayInterval={autoPlayInterval}
+              pauseOnHover={pauseOnHover}
+              showArrows={showArrows}
+              showDots={showDots}
+              loop={loop}
+              isPreviewMode={isPreviewMode}
+            />
           </div>
         );
         return wrapWithDraggable(content);
