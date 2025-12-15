@@ -95,6 +95,7 @@ import { OTPInputDataEditor } from "./data-editors/OTPInputDataEditor";
 import { AccordionStyleEditor } from "./style-editors/AccordionStyleEditor";
 import { BadgeStyleEditor } from "./style-editors/BadgeStyleEditor";
 import { BreadcrumbStyleEditor } from "./style-editors/BreadcrumbStyleEditor";
+import { CarouselStyleEditor } from "./style-editors/CarouselStyleEditor";
 import "../styles/style-panel.css";
 import "../styles/tokens.css";
 // Helper to find path from root to an instance
@@ -254,6 +255,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({
     accordionStyles: true,
     badgeStyles: true,
     breadcrumbStyles: true,
+    carouselStyles: true,
     space: true,
     size: true,
     position: false,
@@ -1350,6 +1352,13 @@ export const StylePanel: React.FC<StylePanelProps> = ({
             {selectedInstance.type === "Breadcrumb" && (
               <AccordionSection title="Breadcrumb Styles" section="breadcrumbStyles" properties={[]}>
                 <BreadcrumbStyleEditor instance={selectedInstance} />
+              </AccordionSection>
+            )}
+
+            {/* Carousel-specific Style Controls */}
+            {selectedInstance.type === "Carousel" && (
+              <AccordionSection title="Carousel Styles" section="carouselStyles" properties={[]}>
+                <CarouselStyleEditor instance={selectedInstance} />
               </AccordionSection>
             )}
 
