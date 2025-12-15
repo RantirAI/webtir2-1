@@ -16,8 +16,40 @@ export const TablePrimitive: React.FC<TablePrimitiveProps> = ({
   const rows = instance.props?.rows || 3;
   const columns = instance.props?.columns || 3;
   const headers = instance.props?.headers || Array(columns).fill('').map((_, i) => `Column ${i + 1}`);
-  const data = instance.props?.data || Array(rows).fill(null).map(() => Array(columns).fill(''));
   const styles = instance.props?.tableStyles || {};
+
+  // Normalize data: handle both 2D string arrays and arrays of objects
+  const rawData = instance.props?.data;
+  const normalizeData = (): string[][] => {
+    if (!rawData) {
+      return Array(rows).fill(null).map(() => Array(columns).fill(''));
+    }
+    
+    // If it's already a 2D string array, use it
+    if (Array.isArray(rawData) && rawData.length > 0) {
+      const firstRow = rawData[0];
+      
+      // Check if first row is an object (not an array)
+      if (firstRow && typeof firstRow === 'object' && !Array.isArray(firstRow)) {
+        // Convert array of objects to 2D string array
+        const keys = Object.keys(firstRow);
+        return rawData.map((obj: any) => 
+          keys.map(key => String(obj[key] ?? ''))
+        );
+      }
+      
+      // Check if first row is an array
+      if (Array.isArray(firstRow)) {
+        return rawData.map((row: any[]) => 
+          row.map(cell => typeof cell === 'object' ? JSON.stringify(cell) : String(cell ?? ''))
+        );
+      }
+    }
+    
+    return Array(rows).fill(null).map(() => Array(columns).fill(''));
+  };
+
+  const data = normalizeData();
 
   const handleHeaderChange = (colIndex: number, value: string) => {
     const newHeaders = [...headers];
