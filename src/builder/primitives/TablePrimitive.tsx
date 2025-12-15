@@ -39,23 +39,37 @@ export const TablePrimitive: React.FC<TablePrimitiveProps> = ({
     lg: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
   };
 
-  const getBorderStyle = () => {
-    const borderStyle = styles.borderStyle || 'horizontal';
-    const borderColor = styles.borderColor || 'hsl(var(--border))';
-    const borderWidth = styles.borderWidth || '1';
+  const borderStyle = styles.borderStyle || 'horizontal';
+  const borderColor = styles.borderColor || 'hsl(var(--border))';
+  const borderWidth = styles.borderWidth || '1';
 
+  const getCellBorderStyle = (isLastCol: boolean, isLastRow: boolean) => {
+    const result: React.CSSProperties = {};
+    
     switch (borderStyle) {
       case 'none':
-        return { border: 'none' };
+        break;
       case 'horizontal':
-        return { borderBottom: `${borderWidth}px solid ${borderColor}` };
+        if (!isLastRow) {
+          result.borderBottom = `${borderWidth}px solid ${borderColor}`;
+        }
+        break;
       case 'vertical':
-        return { borderRight: `${borderWidth}px solid ${borderColor}` };
+        if (!isLastCol) {
+          result.borderRight = `${borderWidth}px solid ${borderColor}`;
+        }
+        break;
       case 'full':
-        return { border: `${borderWidth}px solid ${borderColor}` };
-      default:
-        return { borderBottom: `${borderWidth}px solid ${borderColor}` };
+        if (!isLastRow) {
+          result.borderBottom = `${borderWidth}px solid ${borderColor}`;
+        }
+        if (!isLastCol) {
+          result.borderRight = `${borderWidth}px solid ${borderColor}`;
+        }
+        break;
     }
+    
+    return result;
   };
 
   const cellPadding = styles.compact ? '8px' : (styles.cellPadding ? `${styles.cellPadding}px` : '12px');
@@ -96,8 +110,7 @@ export const TablePrimitive: React.FC<TablePrimitiveProps> = ({
                   fontWeight: styles.headerFontWeight || '600',
                   fontSize: styles.headerFontSize ? `${styles.headerFontSize}px` : '14px',
                   textAlign: 'left',
-                  ...getBorderStyle(),
-                  ...(styles.borderStyle === 'full' ? { borderRight: colIndex < headers.length - 1 ? `${styles.borderWidth || 1}px solid ${styles.borderColor || 'hsl(var(--border))'}` : undefined } : {}),
+                  ...getCellBorderStyle(colIndex === headers.length - 1, false),
                 }}
               >
                 <EditableText
@@ -143,8 +156,7 @@ export const TablePrimitive: React.FC<TablePrimitiveProps> = ({
                     padding: cellPadding,
                     color: styles.cellTextColor || 'hsl(var(--foreground))',
                     fontSize: styles.cellFontSize ? `${styles.cellFontSize}px` : '14px',
-                    ...getBorderStyle(),
-                    ...(styles.borderStyle === 'full' ? { borderRight: colIndex < row.length - 1 ? `${styles.borderWidth || 1}px solid ${styles.borderColor || 'hsl(var(--border))'}` : undefined } : {}),
+                    ...getCellBorderStyle(colIndex === row.length - 1, rowIndex === data.length - 1),
                   }}
                 >
                   <EditableText
