@@ -131,41 +131,87 @@ const templateStyles: Record<string, any> = {
 export const TableDataEditor: React.FC<TableDataEditorProps> = ({ instance }) => {
   const { updateInstance } = useBuilderStore();
   
-  const rows = instance.props?.rows || 3;
-  const columns = instance.props?.columns || 3;
-  const headers: string[] = instance.props?.headers || Array(columns).fill('').map((_, i) => `Column ${i + 1}`);
   const currentTemplate = instance.props?.tableStyles?.template || '';
 
-  // Normalize data: handle both 2D string arrays and arrays of objects
-  const normalizeData = (): string[][] => {
-    const rawData = instance.props?.data;
-    if (!rawData) {
-      return Array(rows).fill(null).map(() => Array(columns).fill(''));
+  // Normalize data: handle both 2D string arrays and arrays of objects from various prop sources
+  const normalizeData = (): { headers: string[], data: string[][] } => {
+    // Check for data in props.data first, then props.rows (used by system prebuilts)
+    const rawData = instance.props?.data || instance.props?.rows;
+    const rawColumns = instance.props?.columns;
+    const rawHeaders = instance.props?.headers;
+    
+    // Determine headers from various sources
+    let headers: string[] = [];
+    if (Array.isArray(rawHeaders) && rawHeaders.length > 0) {
+      headers = rawHeaders.map((h: any) => typeof h === 'string' ? h : String(h ?? ''));
+    } else if (Array.isArray(rawColumns) && rawColumns.length > 0) {
+      // System prebuilt format: columns is array of {id, header, accessor}
+      headers = rawColumns.map((col: any) => 
+        typeof col === 'object' && col !== null ? String(col.header ?? col.id ?? '') : String(col ?? '')
+      );
     }
     
-    if (Array.isArray(rawData) && rawData.length > 0) {
-      const firstRow = rawData[0];
-      
-      // Check if first row is an object (not an array)
-      if (firstRow && typeof firstRow === 'object' && !Array.isArray(firstRow)) {
-        const keys = Object.keys(firstRow);
-        return rawData.map((obj: any) => 
-          keys.map(key => String(obj[key] ?? ''))
-        );
+    // Handle no data case
+    if (!rawData || !Array.isArray(rawData) || rawData.length === 0) {
+      const colCount = headers.length || 3;
+      if (headers.length === 0) {
+        headers = Array(colCount).fill('').map((_, i) => `Column ${i + 1}`);
       }
-      
-      // Check if first row is an array
-      if (Array.isArray(firstRow)) {
-        return rawData.map((row: any[]) => 
-          row.map(cell => typeof cell === 'object' ? JSON.stringify(cell) : String(cell ?? ''))
-        );
-      }
+      return { headers, data: Array(3).fill(null).map(() => Array(colCount).fill('')) };
     }
     
-    return Array(rows).fill(null).map(() => Array(columns).fill(''));
+    const firstRow = rawData[0];
+    
+    // Handle array of objects (system prebuilt format)
+    if (firstRow && typeof firstRow === 'object' && !Array.isArray(firstRow)) {
+      // Get keys from columns definition or from first row
+      let keys: string[] = [];
+      if (Array.isArray(rawColumns) && rawColumns.length > 0) {
+        keys = rawColumns.map((col: any) => 
+          typeof col === 'object' && col !== null ? String(col.accessor ?? col.id ?? '') : String(col ?? '')
+        );
+      } else {
+        keys = Object.keys(firstRow).filter(k => k !== 'id'); // Exclude 'id' from display
+      }
+      
+      if (headers.length === 0) {
+        headers = keys.map(k => k.charAt(0).toUpperCase() + k.slice(1));
+      }
+      
+      const data = rawData.map((obj: any) => 
+        keys.map(key => {
+          const val = obj[key];
+          return typeof val === 'object' && val !== null ? JSON.stringify(val) : String(val ?? '');
+        })
+      );
+      return { headers, data };
+    }
+    
+    // Handle 2D array format
+    if (Array.isArray(firstRow)) {
+      const colCount = firstRow.length;
+      if (headers.length === 0) {
+        headers = Array(colCount).fill('').map((_, i) => `Column ${i + 1}`);
+      }
+      const data = rawData.map((row: any[]) => 
+        row.map(cell => typeof cell === 'object' && cell !== null ? JSON.stringify(cell) : String(cell ?? ''))
+      );
+      return { headers, data };
+    }
+    
+    // Fallback
+    const colCount = headers.length || 3;
+    if (headers.length === 0) {
+      headers = Array(colCount).fill('').map((_, i) => `Column ${i + 1}`);
+    }
+    return { headers, data: Array(3).fill(null).map(() => Array(colCount).fill('')) };
   };
 
-  const data: string[][] = normalizeData();
+  const normalized = normalizeData();
+  const headers: string[] = normalized.headers;
+  const data: string[][] = normalized.data;
+  const rows = data.length;
+  const columns = headers.length;
 
   const updateProps = (updates: Record<string, any>) => {
     updateInstance(instance.id, {
