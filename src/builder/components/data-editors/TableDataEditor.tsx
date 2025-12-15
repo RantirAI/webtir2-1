@@ -134,8 +134,38 @@ export const TableDataEditor: React.FC<TableDataEditorProps> = ({ instance }) =>
   const rows = instance.props?.rows || 3;
   const columns = instance.props?.columns || 3;
   const headers: string[] = instance.props?.headers || Array(columns).fill('').map((_, i) => `Column ${i + 1}`);
-  const data: string[][] = instance.props?.data || Array(rows).fill(null).map(() => Array(columns).fill(''));
   const currentTemplate = instance.props?.tableStyles?.template || '';
+
+  // Normalize data: handle both 2D string arrays and arrays of objects
+  const normalizeData = (): string[][] => {
+    const rawData = instance.props?.data;
+    if (!rawData) {
+      return Array(rows).fill(null).map(() => Array(columns).fill(''));
+    }
+    
+    if (Array.isArray(rawData) && rawData.length > 0) {
+      const firstRow = rawData[0];
+      
+      // Check if first row is an object (not an array)
+      if (firstRow && typeof firstRow === 'object' && !Array.isArray(firstRow)) {
+        const keys = Object.keys(firstRow);
+        return rawData.map((obj: any) => 
+          keys.map(key => String(obj[key] ?? ''))
+        );
+      }
+      
+      // Check if first row is an array
+      if (Array.isArray(firstRow)) {
+        return rawData.map((row: any[]) => 
+          row.map(cell => typeof cell === 'object' ? JSON.stringify(cell) : String(cell ?? ''))
+        );
+      }
+    }
+    
+    return Array(rows).fill(null).map(() => Array(columns).fill(''));
+  };
+
+  const data: string[][] = normalizeData();
 
   const updateProps = (updates: Record<string, any>) => {
     updateInstance(instance.id, {
