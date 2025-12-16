@@ -9,6 +9,7 @@ export { BadgeDataEditor } from './BadgeDataEditor';
 export { BreadcrumbDataEditor } from './BreadcrumbDataEditor';
 export { CarouselDataEditor } from './CarouselDataEditor';
 export { DrawerDataEditor } from './DrawerDataEditor';
+export { NavigationDataEditor } from './NavigationDataEditor';
 export { OTPInputDataEditor } from './OTPInputDataEditor';
 export { PaginationDataEditor } from './PaginationDataEditor';
 export { PopoverDataEditor } from './PopoverDataEditor';

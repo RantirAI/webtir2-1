@@ -92,6 +92,7 @@ import { ToggleGroupDataEditor } from "./data-editors/ToggleGroupDataEditor";
 import { AlertDataEditor } from "./data-editors/AlertDataEditor";
 import { PaginationDataEditor } from "./data-editors/PaginationDataEditor";
 import { OTPInputDataEditor } from "./data-editors/OTPInputDataEditor";
+import { NavigationDataEditor } from "./data-editors/NavigationDataEditor";
 import { AccordionStyleEditor } from "./style-editors/AccordionStyleEditor";
 import { BadgeStyleEditor } from "./style-editors/BadgeStyleEditor";
 import { BreadcrumbStyleEditor } from "./style-editors/BreadcrumbStyleEditor";
@@ -4805,6 +4806,9 @@ export const StylePanel: React.FC<StylePanelProps> = ({
 
                   {/* OTP Input Settings */}
                   {selectedInstance.type === "OTPInput" && <OTPInputDataEditor instance={selectedInstance} />}
+
+                  {/* Navigation Settings */}
+                  {selectedInstance.type === "Navigation" && <NavigationDataEditor instance={selectedInstance} />}
                 </div>
               </>
             )}
