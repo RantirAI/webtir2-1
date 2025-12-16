@@ -1,12 +1,14 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { ComponentInstance } from '../../store/types';
 import { useBuilderStore } from '../../store/useBuilderStore';
+import { useMediaStore } from '../../store/useMediaStore';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Plus, Trash2, GripVertical } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Plus, Trash2, GripVertical, Upload, X, ChevronDown } from 'lucide-react';
 import { NavigationTemplate } from '../../utils/navigationTemplates';
 
 interface NavigationDataEditorProps {
@@ -24,8 +26,28 @@ const NAVIGATION_TEMPLATES: { id: NavigationTemplate; label: string; description
   { id: 'mega-menu', label: 'Mega Menu Layout', description: 'Full-width dropdown support' },
 ];
 
+const HOVER_PRESETS = [
+  { id: 'none', label: 'None' },
+  { id: 'underline-slide', label: 'Underline Slide' },
+  { id: 'background', label: 'Background Highlight' },
+  { id: 'color-change', label: 'Color Change' },
+  { id: 'scale', label: 'Scale Up' },
+  { id: 'glow', label: 'Glow Effect' },
+];
+
+const ACTIVE_PRESETS = [
+  { id: 'none', label: 'None' },
+  { id: 'bold', label: 'Bold Text' },
+  { id: 'underline', label: 'Underline' },
+  { id: 'background', label: 'Background' },
+  { id: 'dot', label: 'Dot Indicator' },
+  { id: 'border-bottom', label: 'Border Bottom' },
+];
+
 export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ instance }) => {
   const { updateInstance } = useBuilderStore();
+  const { addAsset } = useMediaStore();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const menuItems = instance.props?.menuItems || [
     { text: 'Home', url: '#', id: '1' },
@@ -35,10 +57,20 @@ export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ inst
 
   const template = instance.props?.template || 'logo-left-menu-right';
   const logoText = instance.props?.logo || 'Logo';
+  const logoImage = instance.props?.logoImage || '';
   const showCTA = instance.props?.showCTA !== false;
   const ctaText = instance.props?.ctaText || 'Get Started';
   const ctaUrl = instance.props?.ctaUrl || '#';
   const mobileBreakpoint = instance.props?.mobileBreakpoint || 768;
+  
+  // Hover & Active styles
+  const hoverPreset = instance.props?.hoverPreset || 'underline-slide';
+  const activePreset = instance.props?.activePreset || 'underline';
+  const hoverColor = instance.props?.hoverColor || '';
+  const hoverBgColor = instance.props?.hoverBgColor || '';
+  const activeColor = instance.props?.activeColor || '';
+  const activeBgColor = instance.props?.activeBgColor || '';
+  const animationDuration = instance.props?.animationDuration || 200;
 
   const handleTemplateChange = (value: NavigationTemplate) => {
     updateInstance(instance.id, {
@@ -49,6 +81,34 @@ export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ inst
   const handleLogoChange = (value: string) => {
     updateInstance(instance.id, {
       props: { ...instance.props, logo: value }
+    });
+  };
+
+  const handleLogoImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const dataUrl = event.target?.result as string;
+        // Add to media store
+        addAsset({
+          name: file.name,
+          type: 'image',
+          url: dataUrl,
+          size: file.size,
+        });
+        // Update instance
+        updateInstance(instance.id, {
+          props: { ...instance.props, logoImage: dataUrl }
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveLogoImage = () => {
+    updateInstance(instance.id, {
+      props: { ...instance.props, logoImage: '' }
     });
   };
 
@@ -98,6 +158,24 @@ export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ inst
     });
   };
 
+  const handleHoverPresetChange = (value: string) => {
+    updateInstance(instance.id, {
+      props: { ...instance.props, hoverPreset: value }
+    });
+  };
+
+  const handleActivePresetChange = (value: string) => {
+    updateInstance(instance.id, {
+      props: { ...instance.props, activePreset: value }
+    });
+  };
+
+  const handleStyleChange = (key: string, value: string | number) => {
+    updateInstance(instance.id, {
+      props: { ...instance.props, [key]: value }
+    });
+  };
+
   return (
     <div className="space-y-4">
       {/* Template Selection */}
@@ -120,13 +198,51 @@ export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ inst
         </Select>
       </div>
 
-      {/* Logo Text */}
+      {/* Logo Section */}
       <div className="space-y-2">
-        <Label className="text-xs text-muted-foreground">Logo Text</Label>
+        <Label className="text-xs text-muted-foreground">Logo</Label>
+        
+        {/* Logo Image Upload */}
+        <div className="space-y-2">
+          {logoImage ? (
+            <div className="relative inline-block">
+              <img 
+                src={logoImage} 
+                alt="Logo preview" 
+                className="h-10 w-auto max-w-[160px] object-contain rounded border border-border"
+              />
+              <button
+                onClick={handleRemoveLogoImage}
+                className="absolute -top-2 -right-2 p-1 bg-destructive text-destructive-foreground rounded-full hover:opacity-90"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </div>
+          ) : (
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <Upload className="w-4 h-4 mr-2" /> Upload Logo Image
+            </Button>
+          )}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleLogoImageUpload}
+            className="hidden"
+          />
+          <p className="text-[10px] text-muted-foreground">Max height: 40px. Image will be auto-fitted.</p>
+        </div>
+
+        {/* Logo Text (fallback) */}
         <Input
           value={logoText}
           onChange={(e) => handleLogoChange(e.target.value)}
-          placeholder="Your Brand"
+          placeholder="Logo text (if no image)"
           className="bg-muted text-foreground"
         />
       </div>
@@ -173,6 +289,107 @@ export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ inst
             </Button>
           </div>
         </div>
+      )}
+
+      {/* Hover & Active Styles */}
+      {template !== 'minimal-logo' && (
+        <Collapsible defaultOpen>
+          <CollapsibleTrigger className="flex items-center justify-between w-full py-2 text-sm font-medium">
+            <span>Link Hover & Active Styles</span>
+            <ChevronDown className="w-4 h-4" />
+          </CollapsibleTrigger>
+          <CollapsibleContent className="space-y-3 pt-2">
+            {/* Hover Preset */}
+            <div className="space-y-1">
+              <Label className="text-xs text-muted-foreground">Hover Effect</Label>
+              <Select value={hoverPreset} onValueChange={handleHoverPresetChange}>
+                <SelectTrigger className="bg-muted text-foreground h-8">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-popover border border-border z-50">
+                  {HOVER_PRESETS.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>{p.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Active Preset */}
+            <div className="space-y-1">
+              <Label className="text-xs text-muted-foreground">Active Page Style</Label>
+              <Select value={activePreset} onValueChange={handleActivePresetChange}>
+                <SelectTrigger className="bg-muted text-foreground h-8">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-popover border border-border z-50">
+                  {ACTIVE_PRESETS.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>{p.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Custom Colors */}
+            <Collapsible>
+              <CollapsibleTrigger className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground">
+                <ChevronDown className="w-3 h-3" />
+                Custom Colors
+              </CollapsibleTrigger>
+              <CollapsibleContent className="space-y-2 pt-2 pl-2">
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-1">
+                    <Label className="text-[10px] text-muted-foreground">Hover Color</Label>
+                    <Input
+                      type="color"
+                      value={hoverColor || '#3b82f6'}
+                      onChange={(e) => handleStyleChange('hoverColor', e.target.value)}
+                      className="h-8 p-1 bg-muted"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-[10px] text-muted-foreground">Hover BG</Label>
+                    <Input
+                      type="color"
+                      value={hoverBgColor || '#f3f4f6'}
+                      onChange={(e) => handleStyleChange('hoverBgColor', e.target.value)}
+                      className="h-8 p-1 bg-muted"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-[10px] text-muted-foreground">Active Color</Label>
+                    <Input
+                      type="color"
+                      value={activeColor || '#3b82f6'}
+                      onChange={(e) => handleStyleChange('activeColor', e.target.value)}
+                      className="h-8 p-1 bg-muted"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-[10px] text-muted-foreground">Active BG</Label>
+                    <Input
+                      type="color"
+                      value={activeBgColor || '#eff6ff'}
+                      onChange={(e) => handleStyleChange('activeBgColor', e.target.value)}
+                      className="h-8 p-1 bg-muted"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-[10px] text-muted-foreground">Animation Duration (ms)</Label>
+                  <Input
+                    type="number"
+                    value={animationDuration}
+                    onChange={(e) => handleStyleChange('animationDuration', parseInt(e.target.value) || 200)}
+                    className="h-8 bg-muted text-foreground"
+                    min={0}
+                    max={1000}
+                    step={50}
+                  />
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
+          </CollapsibleContent>
+        </Collapsible>
       )}
 
       {/* CTA Button */}

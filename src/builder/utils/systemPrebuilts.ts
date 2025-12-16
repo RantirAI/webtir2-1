@@ -3482,6 +3482,8 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
         animationDuration: 300,
         hamburgerStyle: 'classic',
         animateIcon: true,
+        hoverPreset: 'underline-slide',
+        activePreset: 'underline',
       },
       styleSourceIds: ['style-navigation'],
       children: [],
