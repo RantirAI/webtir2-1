@@ -3452,5 +3452,52 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
     },
   });
 
+  // ---------------------------------------------------------------------------
+  // NAVIGATION COMPONENT
+  // ---------------------------------------------------------------------------
+  const navId = generateId();
+
+  prebuilts.push({
+    id: 'system-navigation',
+    name: 'Navigation',
+    category: 'Layout',
+    instance: {
+      id: navId,
+      type: 'Navigation' as ComponentType,
+      label: 'Navigation',
+      props: {
+        logo: 'Brand',
+        template: 'logo-left-menu-right',
+        menuItems: [
+          { text: 'Home', url: '#', id: '1' },
+          { text: 'About', url: '#', id: '2' },
+          { text: 'Services', url: '#', id: '3' },
+          { text: 'Contact', url: '#', id: '4' },
+        ],
+        showCTA: true,
+        ctaText: 'Get Started',
+        ctaUrl: '#',
+        mobileBreakpoint: 768,
+        mobileAnimation: 'slide',
+        animationDuration: 300,
+        hamburgerStyle: 'classic',
+        animateIcon: true,
+      },
+      styleSourceIds: ['style-navigation'],
+      children: [],
+    },
+    defaultStyles: {
+      'style-navigation': createStyleEntry({
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        width: '100%',
+        padding: '16px 24px',
+        backgroundColor: 'hsl(var(--background))',
+        borderBottom: '1px solid hsl(var(--border))',
+      }),
+    },
+  });
+
   return prebuilts;
 };
