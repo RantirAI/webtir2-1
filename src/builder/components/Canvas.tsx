@@ -1466,8 +1466,8 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
           const pageRootInstance = pageData?.rootInstance;
           const pageStyles = rootStyles as React.CSSProperties;
           const isCurrentPage = pageId === currentPage;
-          // All pages should consistently be 1440px width
-          const frameWidth = isPreviewMode ? '100%' : 1440;
+          // Current page respects breakpoint, other pages stay at 1440px
+          const frameWidth = isPreviewMode ? '100%' : (isCurrentPage ? displayWidth : 1440);
           
           return (
           <div 
