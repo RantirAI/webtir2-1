@@ -55,7 +55,12 @@ export const Navigator: React.FC = () => {
     });
   };
 
-  const TreeNode: React.FC<{ instance: ComponentInstance; level: number }> = ({ instance, level }) => {
+  const TreeNode: React.FC<{ instance: ComponentInstance; level: number; isInsidePrebuilt?: boolean; prebuiltName?: string }> = ({ 
+    instance, 
+    level, 
+    isInsidePrebuilt = false,
+    prebuiltName 
+  }) => {
     const isExpanded = expandedIds.has(instance.id);
     const isSelected = instance.id === selectedInstanceId;
     const hasChildren = instance.children.length > 0;
@@ -66,9 +71,13 @@ export const Navigator: React.FC = () => {
     const getInstanceLink = useComponentInstanceStore((state) => state.getInstanceLink);
     const getPrebuilt = useComponentInstanceStore((state) => state.getPrebuilt);
     
-    const isPrebuilt = isLinkedInstance(instance.id);
-    const instanceLink = isPrebuilt ? getInstanceLink(instance.id) : null;
+    const isPrebuiltRoot = isLinkedInstance(instance.id);
+    const instanceLink = isPrebuiltRoot ? getInstanceLink(instance.id) : null;
     const prebuiltComponent = instanceLink ? getPrebuilt(instanceLink.prebuiltId) : null;
+    
+    // Determine if this node should be styled as prebuilt (either root or nested)
+    const isPrebuiltStyled = isPrebuiltRoot || isInsidePrebuilt;
+    const currentPrebuiltName = isPrebuiltRoot && prebuiltComponent ? prebuiltComponent.name : prebuiltName;
     
     const meta = componentRegistry[instance.type];
     const IconComponent = meta ? Icons[meta.icon as keyof typeof Icons] as any : null;
@@ -83,8 +92,8 @@ export const Navigator: React.FC = () => {
     const primaryStyleId = instance.styleSourceIds?.[0];
     const primaryClassName = primaryStyleId ? styleSources[primaryStyleId]?.name : null;
     
-    // For prebuilt components, show the prebuilt name instead
-    const displayLabel = isPrebuilt && prebuiltComponent 
+    // For prebuilt root, show the prebuilt name; otherwise show class name or type
+    const displayLabel = isPrebuiltRoot && prebuiltComponent 
       ? prebuiltComponent.name 
       : (primaryClassName || instance.label || instance.type);
 
@@ -167,111 +176,67 @@ export const Navigator: React.FC = () => {
           />
         )}
 
-        {/* Prebuilt component row */}
-        {isPrebuilt ? (
-          <div
-            className={`flex items-center gap-1.5 px-2 py-1.5 text-sm cursor-pointer rounded-md group relative ${
-              isSelected ? 'ring-2 ring-emerald-500' : ''
-            } ${isDragging ? 'opacity-40' : ''}`}
-            style={{ 
-              paddingLeft: `${level * 16 + 8}px`,
-              backgroundColor: 'hsl(142, 76%, 20%)',
-              color: 'hsl(142, 76%, 90%)',
+        {/* Component row - styled green for prebuilt components and their children */}
+        <div
+          className={`flex items-center gap-1 px-2 py-1 text-sm cursor-pointer hover:bg-accent rounded-md group relative ${
+            isSelected ? 'bg-accent text-accent-foreground' : ''
+          } ${isDragging ? 'opacity-40' : ''}`}
+          style={{ paddingLeft: `${level * 16 + 8}px` }}
+        >
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              if (hasChildren) toggleExpand(instance.id);
             }}
+            className="p-0.5 hover:bg-background rounded"
           >
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                if (hasChildren) toggleExpand(instance.id);
-              }}
-              className="p-0.5 hover:bg-emerald-700/50 rounded"
-            >
-              {hasChildren ? (
-                isExpanded ? (
-                  <ChevronDown className="w-3 h-3" />
-                ) : (
-                  <ChevronRight className="w-3 h-3" />
-                )
+            {hasChildren ? (
+              isExpanded ? (
+                <ChevronDown className={`w-3 h-3 ${isPrebuiltStyled ? 'text-emerald-500' : ''}`} />
               ) : (
-                <div className="w-3 h-3" />
-              )}
-            </button>
-            
-            <div
-              onClick={() => setSelectedInstanceId(instance.id)}
-              className="flex-1 flex items-center gap-2 min-w-0"
-            >
-              <Component className="w-3.5 h-3.5 flex-shrink-0" />
-              <span className="truncate font-medium">{displayLabel}</span>
-            </div>
-
-            {!isRoot && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  deleteInstance(instance.id);
-                }}
-                className="p-1 opacity-0 group-hover:opacity-100 hover:bg-red-600 hover:text-white rounded"
-              >
-                <Trash2 className="w-3 h-3" />
-              </button>
+                <ChevronRight className={`w-3 h-3 ${isPrebuiltStyled ? 'text-emerald-500' : ''}`} />
+              )
+            ) : (
+              <div className="w-3 h-3" />
             )}
-          </div>
-        ) : (
-          /* Regular component row */
+          </button>
+          
           <div
-            className={`flex items-center gap-1 px-2 py-1 text-sm cursor-pointer hover:bg-accent rounded-md group relative ${
-              isSelected ? 'bg-accent text-accent-foreground' : ''
-            } ${isDragging ? 'opacity-40' : ''}`}
-            style={{ paddingLeft: `${level * 16 + 8}px` }}
+            onClick={() => setSelectedInstanceId(instance.id)}
+            className="flex-1 flex items-center justify-between gap-2 min-w-0"
           >
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                if (hasChildren) toggleExpand(instance.id);
-              }}
-              className="p-0.5 hover:bg-background rounded"
-            >
-              {hasChildren ? (
-                isExpanded ? (
-                  <ChevronDown className="w-3 h-3" />
-                ) : (
-                  <ChevronRight className="w-3 h-3" />
-                )
+            <div className="flex items-center gap-2 min-w-0">
+              {isPrebuiltRoot ? (
+                <Component className="w-3.5 h-3.5 flex-shrink-0 text-emerald-500" />
               ) : (
-                <div className="w-3 h-3" />
+                IconComponent && <IconComponent className={`w-3 h-3 flex-shrink-0 ${isPrebuiltStyled ? 'text-emerald-500' : ''}`} />
               )}
-            </button>
-            
-            <div
-              onClick={() => setSelectedInstanceId(instance.id)}
-              className="flex-1 flex items-center justify-between gap-2 min-w-0"
-            >
-              <div className="flex items-center gap-2 min-w-0">
-                {IconComponent && <IconComponent className="w-3 h-3 flex-shrink-0" />}
-                <span className="truncate">{displayLabel}</span>
-                {canDropInside(instance.type) && (
-                  <span className="text-[10px] text-muted-foreground">●</span>
-                )}
-              </div>
+              <span className={`truncate ${isPrebuiltStyled ? 'text-emerald-500 font-medium' : ''}`}>
+                {displayLabel}
+              </span>
+              {canDropInside(instance.type) && !isPrebuiltStyled && (
+                <span className="text-[10px] text-muted-foreground">●</span>
+              )}
+            </div>
+            {!isPrebuiltStyled && (
               <span className="text-[10px] text-muted-foreground whitespace-nowrap">
                 {width} × {height}
               </span>
-            </div>
-
-            {!isRoot && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  deleteInstance(instance.id);
-                }}
-                className="p-1 opacity-0 group-hover:opacity-100 hover:bg-destructive hover:text-destructive-foreground rounded"
-              >
-                <Trash2 className="w-3 h-3" />
-              </button>
             )}
           </div>
-        )}
+
+          {!isRoot && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                deleteInstance(instance.id);
+              }}
+              className="p-1 opacity-0 group-hover:opacity-100 hover:bg-destructive hover:text-destructive-foreground rounded"
+            >
+              <Trash2 className="w-3 h-3" />
+            </button>
+          )}
+        </div>
 
         {/* Insertion line indicator between siblings */}
         {isOver && !canAcceptDrop && (
@@ -304,7 +269,13 @@ export const Navigator: React.FC = () => {
         {hasChildren && isExpanded && (
           <div>
             {instance.children.map((child) => (
-              <TreeNode key={child.id} instance={child} level={level + 1} />
+              <TreeNode 
+                key={child.id} 
+                instance={child} 
+                level={level + 1} 
+                isInsidePrebuilt={isPrebuiltStyled}
+                prebuiltName={currentPrebuiltName}
+              />
             ))}
           </div>
         )}
