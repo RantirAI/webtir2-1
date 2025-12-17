@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useBuilderStore } from '../store/useBuilderStore';
 import { useStyleStore } from '../store/useStyleStore';
+import { useComponentInstanceStore } from '../store/useComponentInstanceStore';
 import { ComponentInstance } from '../store/types';
-import { ChevronRight, ChevronDown, Trash2 } from 'lucide-react';
+import { ChevronRight, ChevronDown, Trash2, Component } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import * as Icons from 'lucide-react';
 import { componentRegistry } from '../primitives/registry';
@@ -60,6 +61,15 @@ export const Navigator: React.FC = () => {
     const hasChildren = instance.children.length > 0;
     const isRoot = instance.id === 'root';
     
+    // Check if this is a linked prebuilt instance
+    const isLinkedInstance = useComponentInstanceStore((state) => state.isLinkedInstance);
+    const getInstanceLink = useComponentInstanceStore((state) => state.getInstanceLink);
+    const getPrebuilt = useComponentInstanceStore((state) => state.getPrebuilt);
+    
+    const isPrebuilt = isLinkedInstance(instance.id);
+    const instanceLink = isPrebuilt ? getInstanceLink(instance.id) : null;
+    const prebuiltComponent = instanceLink ? getPrebuilt(instanceLink.prebuiltId) : null;
+    
     const meta = componentRegistry[instance.type];
     const IconComponent = meta ? Icons[meta.icon as keyof typeof Icons] as any : null;
 
@@ -72,7 +82,11 @@ export const Navigator: React.FC = () => {
     const styleSources = useStyleStore((state) => state.styleSources);
     const primaryStyleId = instance.styleSourceIds?.[0];
     const primaryClassName = primaryStyleId ? styleSources[primaryStyleId]?.name : null;
-    const displayLabel = primaryClassName || instance.label || instance.type;
+    
+    // For prebuilt components, show the prebuilt name instead
+    const displayLabel = isPrebuilt && prebuiltComponent 
+      ? prebuiltComponent.name 
+      : (primaryClassName || instance.label || instance.type);
 
     // Setup drag-and-drop for non-root elements
     const {
@@ -153,58 +167,111 @@ export const Navigator: React.FC = () => {
           />
         )}
 
-        <div
-          className={`flex items-center gap-1 px-2 py-1 text-sm cursor-pointer hover:bg-accent rounded-md group relative ${
-            isSelected ? 'bg-accent text-accent-foreground' : ''
-          } ${isDragging ? 'opacity-40' : ''}`}
-          style={{ paddingLeft: `${level * 16 + 8}px` }}
-        >
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              if (hasChildren) toggleExpand(instance.id);
-            }}
-            className="p-0.5 hover:bg-background rounded"
-          >
-            {hasChildren ? (
-              isExpanded ? (
-                <ChevronDown className="w-3 h-3" />
-              ) : (
-                <ChevronRight className="w-3 h-3" />
-              )
-            ) : (
-              <div className="w-3 h-3" />
-            )}
-          </button>
-          
+        {/* Prebuilt component row */}
+        {isPrebuilt ? (
           <div
-            onClick={() => setSelectedInstanceId(instance.id)}
-            className="flex-1 flex items-center justify-between gap-2 min-w-0"
+            className={`flex items-center gap-1.5 px-2 py-1.5 text-sm cursor-pointer rounded-md group relative ${
+              isSelected ? 'ring-2 ring-emerald-500' : ''
+            } ${isDragging ? 'opacity-40' : ''}`}
+            style={{ 
+              paddingLeft: `${level * 16 + 8}px`,
+              backgroundColor: 'hsl(142, 76%, 20%)',
+              color: 'hsl(142, 76%, 90%)',
+            }}
           >
-            <div className="flex items-center gap-2 min-w-0">
-              {IconComponent && <IconComponent className="w-3 h-3 flex-shrink-0" />}
-              <span className="truncate">{displayLabel}</span>
-              {canDropInside(instance.type) && (
-                <span className="text-[10px] text-muted-foreground">●</span>
-              )}
-            </div>
-            <span className="text-[10px] text-muted-foreground whitespace-nowrap">
-              {width} × {height}
-            </span>
-          </div>
-
-          {!isRoot && (
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                deleteInstance(instance.id);
+                if (hasChildren) toggleExpand(instance.id);
               }}
-              className="p-1 opacity-0 group-hover:opacity-100 hover:bg-destructive hover:text-destructive-foreground rounded"
+              className="p-0.5 hover:bg-emerald-700/50 rounded"
             >
-              <Trash2 className="w-3 h-3" />
+              {hasChildren ? (
+                isExpanded ? (
+                  <ChevronDown className="w-3 h-3" />
+                ) : (
+                  <ChevronRight className="w-3 h-3" />
+                )
+              ) : (
+                <div className="w-3 h-3" />
+              )}
             </button>
-          )}
-        </div>
+            
+            <div
+              onClick={() => setSelectedInstanceId(instance.id)}
+              className="flex-1 flex items-center gap-2 min-w-0"
+            >
+              <Component className="w-3.5 h-3.5 flex-shrink-0" />
+              <span className="truncate font-medium">{displayLabel}</span>
+            </div>
+
+            {!isRoot && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  deleteInstance(instance.id);
+                }}
+                className="p-1 opacity-0 group-hover:opacity-100 hover:bg-red-600 hover:text-white rounded"
+              >
+                <Trash2 className="w-3 h-3" />
+              </button>
+            )}
+          </div>
+        ) : (
+          /* Regular component row */
+          <div
+            className={`flex items-center gap-1 px-2 py-1 text-sm cursor-pointer hover:bg-accent rounded-md group relative ${
+              isSelected ? 'bg-accent text-accent-foreground' : ''
+            } ${isDragging ? 'opacity-40' : ''}`}
+            style={{ paddingLeft: `${level * 16 + 8}px` }}
+          >
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                if (hasChildren) toggleExpand(instance.id);
+              }}
+              className="p-0.5 hover:bg-background rounded"
+            >
+              {hasChildren ? (
+                isExpanded ? (
+                  <ChevronDown className="w-3 h-3" />
+                ) : (
+                  <ChevronRight className="w-3 h-3" />
+                )
+              ) : (
+                <div className="w-3 h-3" />
+              )}
+            </button>
+            
+            <div
+              onClick={() => setSelectedInstanceId(instance.id)}
+              className="flex-1 flex items-center justify-between gap-2 min-w-0"
+            >
+              <div className="flex items-center gap-2 min-w-0">
+                {IconComponent && <IconComponent className="w-3 h-3 flex-shrink-0" />}
+                <span className="truncate">{displayLabel}</span>
+                {canDropInside(instance.type) && (
+                  <span className="text-[10px] text-muted-foreground">●</span>
+                )}
+              </div>
+              <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                {width} × {height}
+              </span>
+            </div>
+
+            {!isRoot && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  deleteInstance(instance.id);
+                }}
+                className="p-1 opacity-0 group-hover:opacity-100 hover:bg-destructive hover:text-destructive-foreground rounded"
+              >
+                <Trash2 className="w-3 h-3" />
+              </button>
+            )}
+          </div>
+        )}
 
         {/* Insertion line indicator between siblings */}
         {isOver && !canAcceptDrop && (
