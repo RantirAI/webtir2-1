@@ -1,27 +1,59 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useBuilderStore } from '../store/useBuilderStore';
 import { useStyleStore } from '../store/useStyleStore';
-import { useComponentInstanceStore } from '../store/useComponentInstanceStore';
+import { useComponentInstanceStore, createLinkedInstance } from '../store/useComponentInstanceStore';
 import { ComponentInstance } from '../store/types';
-import { ChevronRight, ChevronDown, Trash2, Component } from 'lucide-react';
+import { ChevronRight, ChevronDown, Trash2, Component, Copy } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import * as Icons from 'lucide-react';
 import { componentRegistry } from '../primitives/registry';
 import { useSortable } from '@dnd-kit/sortable';
 import { useDroppable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
-import { canDropInside } from '../utils/instance';
+import { canDropInside, generateId } from '../utils/instance';
+
+interface ContextMenuState {
+  x: number;
+  y: number;
+  instance: ComponentInstance;
+}
 
 export const Navigator: React.FC = () => {
   const rootInstance = useBuilderStore((state) => state.rootInstance);
   const selectedInstanceId = useBuilderStore((state) => state.selectedInstanceId);
   const setSelectedInstanceId = useBuilderStore((state) => state.setSelectedInstanceId);
   const deleteInstance = useBuilderStore((state) => state.deleteInstance);
+  const addInstance = useBuilderStore((state) => state.addInstance);
   const { getComputedStyles } = useStyleStore();
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set(['root']));
+  const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Close context menu on click outside or escape
+  useEffect(() => {
+    if (!contextMenu) return;
+    
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setContextMenu(null);
+      }
+    };
+    
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setContextMenu(null);
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleEscape);
+    
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [contextMenu]);
 
   // Auto-expand newly added instances with children
-  React.useEffect(() => {
+  useEffect(() => {
     if (rootInstance) {
       const findInstancesWithChildren = (instance: ComponentInstance): string[] => {
         const ids: string[] = [];
@@ -53,6 +85,64 @@ export const Navigator: React.FC = () => {
       }
       return next;
     });
+  };
+
+  const handleContextMenuDuplicate = () => {
+    if (!contextMenu) return;
+    const instance = contextMenu.instance;
+    const parent = useBuilderStore.getState().rootInstance;
+    if (!parent) return;
+    
+    const findParent = (root: ComponentInstance): ComponentInstance | null => {
+      for (const child of root.children) {
+        if (child.id === instance.id) return root;
+        const found = findParent(child);
+        if (found) return found;
+      }
+      return null;
+    };
+    
+    const parentInstance = findParent(parent);
+    if (parentInstance) {
+      const index = parentInstance.children.findIndex(c => c.id === instance.id);
+      
+      // Check if this is a linked component instance
+      const { getInstanceLink, linkInstance } = useComponentInstanceStore.getState();
+      const existingLink = getInstanceLink(instance.id);
+      
+      if (existingLink) {
+        // Create a new linked instance from the same prebuilt
+        const result = createLinkedInstance(existingLink.prebuiltId);
+        if (result) {
+          const { instance: newInstance, styleIdMapping } = result;
+          addInstance(newInstance, parentInstance.id, index + 1);
+          // Link the new instance to the same prebuilt
+          linkInstance(newInstance.id, existingLink.prebuiltId, styleIdMapping);
+        }
+      } else {
+        // Regular duplication for non-linked instances
+        const duplicateInstance = (inst: ComponentInstance): ComponentInstance => {
+          const newId = generateId();
+          return {
+            ...inst,
+            id: newId,
+            children: inst.children.map(child => duplicateInstance(child)),
+          };
+        };
+        
+        const duplicate = duplicateInstance(instance);
+        addInstance(duplicate, parentInstance.id, index + 1);
+      }
+    }
+    setContextMenu(null);
+  };
+
+  const handleContextMenuDelete = () => {
+    if (!contextMenu) return;
+    if (contextMenu.instance.id !== 'root') {
+      deleteInstance(contextMenu.instance.id);
+    }
+    setContextMenu(null);
   };
 
   const TreeNode: React.FC<{ instance: ComponentInstance; level: number; isInsidePrebuilt?: boolean; prebuiltName?: string }> = ({ 
@@ -149,6 +239,12 @@ export const Navigator: React.FC = () => {
       position: 'relative',
     };
 
+    const handleRightClick = (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setContextMenu({ x: e.clientX, y: e.clientY, instance });
+    };
+
     return (
       <div ref={setNodeRef} style={style} {...(!isRoot ? attributes : {})} {...(!isRoot ? listeners : {})}>
         {/* Valid drop zone indicator */}
@@ -182,6 +278,7 @@ export const Navigator: React.FC = () => {
             isSelected ? 'bg-accent text-accent-foreground' : ''
           } ${isDragging ? 'opacity-40' : ''}`}
           style={{ paddingLeft: `${level * 16 + 8}px` }}
+          onContextMenu={handleRightClick}
         >
           <button
             onClick={(e) => {
@@ -284,10 +381,47 @@ export const Navigator: React.FC = () => {
   };
 
   return (
-    <ScrollArea className="flex-1">
-      <div className="p-2 space-y-0.5">
-        {rootInstance && <TreeNode instance={rootInstance} level={0} />}
-      </div>
-    </ScrollArea>
+    <>
+      <ScrollArea className="flex-1">
+        <div className="p-2 space-y-0.5">
+          {rootInstance && <TreeNode instance={rootInstance} level={0} />}
+        </div>
+      </ScrollArea>
+
+      {/* Context Menu */}
+      {contextMenu && (
+        <div
+          ref={menuRef}
+          className="fixed bg-popover text-popover-foreground rounded-md shadow-lg border py-1 z-[10000] min-w-[160px] text-sm"
+          style={{
+            left: `${contextMenu.x}px`,
+            top: `${contextMenu.y}px`,
+          }}
+        >
+          <div className="px-2 py-1.5 text-xs text-muted-foreground border-b font-medium">
+            {contextMenu.instance.label || contextMenu.instance.type}
+          </div>
+          
+          <button
+            className="w-full px-2 py-1.5 text-left hover:bg-accent hover:text-accent-foreground flex items-center gap-2"
+            onClick={handleContextMenuDuplicate}
+          >
+            <Copy className="w-3.5 h-3.5" />
+            <span className="flex-1">Duplicate</span>
+            <span className="text-xs text-muted-foreground">⌘D</span>
+          </button>
+          
+          <button
+            className="w-full px-2 py-1.5 text-left hover:bg-accent hover:text-accent-foreground flex items-center gap-2 text-destructive disabled:opacity-50"
+            onClick={handleContextMenuDelete}
+            disabled={contextMenu.instance.id === 'root'}
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+            <span className="flex-1">Delete</span>
+            <span className="text-xs text-muted-foreground">⌫</span>
+          </button>
+        </div>
+      )}
+    </>
   );
 };
