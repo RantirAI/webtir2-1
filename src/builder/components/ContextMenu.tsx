@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { componentRegistry } from '../primitives/registry';
 import { generateId } from '../utils/instance';
+import { useComponentInstanceStore, createLinkedInstance } from '../store/useComponentInstanceStore';
 
 interface ContextMenuProps {
   x: number;
@@ -70,9 +71,34 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, instance, onClos
     const parentInstance = findParent(parent);
     if (parentInstance) {
       const index = parentInstance.children.findIndex(c => c.id === instance.id);
-      const duplicate = JSON.parse(JSON.stringify(instance));
-      duplicate.id = `${instance.type.toLowerCase()}-${Date.now()}`;
-      addInstance(duplicate, parentInstance.id, index + 1);
+      
+      // Check if this is a linked component instance
+      const { getInstanceLink, linkInstance } = useComponentInstanceStore.getState();
+      const existingLink = getInstanceLink(instance.id);
+      
+      if (existingLink) {
+        // Create a new linked instance from the same prebuilt
+        const result = createLinkedInstance(existingLink.prebuiltId);
+        if (result) {
+          const { instance: newInstance, styleIdMapping } = result;
+          addInstance(newInstance, parentInstance.id, index + 1);
+          // Link the new instance to the same prebuilt
+          linkInstance(newInstance.id, existingLink.prebuiltId, styleIdMapping);
+        }
+      } else {
+        // Regular duplication for non-linked instances
+        const duplicateInstance = (inst: ComponentInstance): ComponentInstance => {
+          const newId = generateId();
+          return {
+            ...inst,
+            id: newId,
+            children: inst.children.map(child => duplicateInstance(child)),
+          };
+        };
+        
+        const duplicate = duplicateInstance(instance);
+        addInstance(duplicate, parentInstance.id, index + 1);
+      }
     }
     onClose();
   };
