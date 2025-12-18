@@ -274,8 +274,12 @@ export interface BuilderState {
   history: ComponentInstance[];
   historyIndex: number;
   
-  // Clipboard
-  clipboard: ComponentInstance | null;
+  // Clipboard - stores both instance and optional prebuilt link info
+  clipboard: {
+    instance: ComponentInstance;
+    prebuiltId?: string;
+    styleIdMapping?: Record<string, string>;
+  } | null;
   
   // Actions
   addInstance: (instance: ComponentInstance, parentId?: string, index?: number) => void;

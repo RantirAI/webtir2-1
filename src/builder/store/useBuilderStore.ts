@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { BuilderState, ComponentInstance } from './types';
 import { generateId } from '../utils/instance';
+import { useComponentInstanceStore, createLinkedInstance } from './useComponentInstanceStore';
 
 // Initialize root style source
 const initRootStyle = () => {
@@ -192,7 +193,17 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
     const state = get();
     const selected = state.getSelectedInstance();
     if (selected && selected.id !== 'root') {
-      set({ clipboard: JSON.parse(JSON.stringify(selected)) });
+      // Check if this is a linked component instance
+      const { getInstanceLink } = useComponentInstanceStore.getState();
+      const existingLink = getInstanceLink(selected.id);
+      
+      set({ 
+        clipboard: {
+          instance: JSON.parse(JSON.stringify(selected)),
+          prebuiltId: existingLink?.prebuiltId,
+          styleIdMapping: existingLink?.styleIdMapping,
+        }
+      });
     }
   },
   
@@ -200,7 +211,17 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
     const state = get();
     const selected = state.getSelectedInstance();
     if (selected && selected.id !== 'root') {
-      set({ clipboard: JSON.parse(JSON.stringify(selected)) });
+      // Check if this is a linked component instance
+      const { getInstanceLink } = useComponentInstanceStore.getState();
+      const existingLink = getInstanceLink(selected.id);
+      
+      set({ 
+        clipboard: {
+          instance: JSON.parse(JSON.stringify(selected)),
+          prebuiltId: existingLink?.prebuiltId,
+          styleIdMapping: existingLink?.styleIdMapping,
+        }
+      });
       state.deleteInstance(selected.id);
     }
   },
@@ -209,16 +230,7 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
     const state = get();
     if (!state.clipboard) return;
     
-    // Recursively assign new IDs to avoid duplicates
-    const assignNewIds = (instance: ComponentInstance): ComponentInstance => {
-      return {
-        ...instance,
-        id: generateId(),
-        children: instance.children.map(assignNewIds),
-      };
-    };
-    
-    const newInstance = assignNewIds(state.clipboard);
+    const { prebuiltId } = state.clipboard;
     
     // Paste into selected container or root
     const selectedInstance = state.getSelectedInstance();
@@ -229,7 +241,28 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
       ? selectedInstance.id
       : 'root';
     
-    state.addInstance(newInstance, parentId);
+    if (prebuiltId) {
+      // Create a new linked instance from the prebuilt
+      const { linkInstance } = useComponentInstanceStore.getState();
+      const result = createLinkedInstance(prebuiltId);
+      if (result) {
+        const { instance: newInstance, styleIdMapping } = result;
+        state.addInstance(newInstance, parentId);
+        linkInstance(newInstance.id, prebuiltId, styleIdMapping);
+      }
+    } else {
+      // Regular paste for non-linked instances
+      const assignNewIds = (instance: ComponentInstance): ComponentInstance => {
+        return {
+          ...instance,
+          id: generateId(),
+          children: instance.children.map(assignNewIds),
+        };
+      };
+      
+      const newInstance = assignNewIds(state.clipboard.instance);
+      state.addInstance(newInstance, parentId);
+    }
   },
   
   findInstance: (id) => {
