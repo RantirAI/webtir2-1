@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useBuilderStore } from '../store/useBuilderStore';
 import { useStyleStore } from '../store/useStyleStore';
-import { useComponentInstanceStore, createLinkedInstance } from '../store/useComponentInstanceStore';
+import { useComponentInstanceStore } from '../store/useComponentInstanceStore';
 import { ComponentInstance } from '../store/types';
 import { ChevronRight, ChevronDown, Trash2, Component, Copy } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -10,7 +10,8 @@ import { componentRegistry } from '../primitives/registry';
 import { useSortable } from '@dnd-kit/sortable';
 import { useDroppable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
-import { canDropInside, generateId } from '../utils/instance';
+import { canDropInside } from '../utils/instance';
+import { duplicateInstanceWithLinkage, applyDuplicationLinks } from '../utils/duplication';
 
 interface ContextMenuState {
   x: number;
@@ -106,33 +107,11 @@ export const Navigator: React.FC = () => {
     if (parentInstance) {
       const index = parentInstance.children.findIndex(c => c.id === instance.id);
       
-      // Check if this is a linked component instance
-      const { getInstanceLink, linkInstance } = useComponentInstanceStore.getState();
-      const existingLink = getInstanceLink(instance.id);
-      
-      if (existingLink) {
-        // Create a new linked instance from the same prebuilt
-        const result = createLinkedInstance(existingLink.prebuiltId);
-        if (result) {
-          const { instance: newInstance, styleIdMapping } = result;
-          addInstance(newInstance, parentInstance.id, index + 1);
-          // Link the new instance to the same prebuilt
-          linkInstance(newInstance.id, existingLink.prebuiltId, styleIdMapping);
-        }
-      } else {
-        // Regular duplication for non-linked instances
-        const duplicateInstance = (inst: ComponentInstance): ComponentInstance => {
-          const newId = generateId();
-          return {
-            ...inst,
-            id: newId,
-            children: inst.children.map(child => duplicateInstance(child)),
-          };
-        };
-        
-        const duplicate = duplicateInstance(instance);
-        addInstance(duplicate, parentInstance.id, index + 1);
-      }
+      // Use unified duplication that preserves all nested component linkages
+      const { instance: duplicate, links } = duplicateInstanceWithLinkage(instance);
+      addInstance(duplicate, parentInstance.id, index + 1);
+      // Apply linkage to all nested linked components
+      applyDuplicationLinks(links);
     }
     setContextMenu(null);
   };
