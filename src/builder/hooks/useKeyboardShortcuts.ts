@@ -1,8 +1,7 @@
 import { useEffect } from 'react';
 import { useBuilderStore } from '../store/useBuilderStore';
-import { useComponentInstanceStore, createLinkedInstance } from '../store/useComponentInstanceStore';
-import { generateId } from '../utils/instance';
 import { ComponentInstance } from '../store/types';
+import { duplicateInstanceWithLinkage, applyDuplicationLinks } from '../utils/duplication';
 
 export const useKeyboardShortcuts = () => {
   useEffect(() => {
@@ -84,32 +83,11 @@ export const useKeyboardShortcuts = () => {
         
         const index = parent.children.findIndex(c => c.id === selectedInstanceId);
         
-        // Check if this is a linked component instance
-        const { getInstanceLink, linkInstance } = useComponentInstanceStore.getState();
-        const existingLink = getInstanceLink(selectedInstanceId);
-        
-        if (existingLink) {
-          // Create a new linked instance from the same prebuilt
-          const result = createLinkedInstance(existingLink.prebuiltId);
-          if (result) {
-            const { instance: newInstance, styleIdMapping } = result;
-            addInstance(newInstance, parent.id, index + 1);
-            linkInstance(newInstance.id, existingLink.prebuiltId, styleIdMapping);
-          }
-        } else {
-          // Regular duplication for non-linked instances
-          const duplicateInstance = (inst: ComponentInstance): ComponentInstance => {
-            const newId = generateId();
-            return {
-              ...inst,
-              id: newId,
-              children: inst.children.map(child => duplicateInstance(child)),
-            };
-          };
-          
-          const duplicate = duplicateInstance(instance);
-          addInstance(duplicate, parent.id, index + 1);
-        }
+        // Use unified duplication that preserves all nested component linkages
+        const { instance: duplicate, links } = duplicateInstanceWithLinkage(instance);
+        addInstance(duplicate, parent.id, index + 1);
+        // Apply linkage to all nested linked components
+        applyDuplicationLinks(links);
         return;
       }
 

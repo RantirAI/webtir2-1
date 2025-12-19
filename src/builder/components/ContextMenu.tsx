@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 import { componentRegistry } from '../primitives/registry';
 import { generateId } from '../utils/instance';
-import { useComponentInstanceStore, createLinkedInstance } from '../store/useComponentInstanceStore';
+import { duplicateInstanceWithLinkage, applyDuplicationLinks } from '../utils/duplication';
 
 interface ContextMenuProps {
   x: number;
@@ -72,33 +72,11 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, instance, onClos
     if (parentInstance) {
       const index = parentInstance.children.findIndex(c => c.id === instance.id);
       
-      // Check if this is a linked component instance
-      const { getInstanceLink, linkInstance } = useComponentInstanceStore.getState();
-      const existingLink = getInstanceLink(instance.id);
-      
-      if (existingLink) {
-        // Create a new linked instance from the same prebuilt
-        const result = createLinkedInstance(existingLink.prebuiltId);
-        if (result) {
-          const { instance: newInstance, styleIdMapping } = result;
-          addInstance(newInstance, parentInstance.id, index + 1);
-          // Link the new instance to the same prebuilt
-          linkInstance(newInstance.id, existingLink.prebuiltId, styleIdMapping);
-        }
-      } else {
-        // Regular duplication for non-linked instances
-        const duplicateInstance = (inst: ComponentInstance): ComponentInstance => {
-          const newId = generateId();
-          return {
-            ...inst,
-            id: newId,
-            children: inst.children.map(child => duplicateInstance(child)),
-          };
-        };
-        
-        const duplicate = duplicateInstance(instance);
-        addInstance(duplicate, parentInstance.id, index + 1);
-      }
+      // Use unified duplication that preserves all nested component linkages
+      const { instance: duplicate, links } = duplicateInstanceWithLinkage(instance);
+      addInstance(duplicate, parentInstance.id, index + 1);
+      // Apply linkage to all nested linked components
+      applyDuplicationLinks(links);
     }
     onClose();
   };
