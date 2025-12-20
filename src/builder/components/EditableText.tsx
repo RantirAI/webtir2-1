@@ -21,12 +21,17 @@ export const EditableText: React.FC<EditableTextProps> = ({
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(value);
-  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const inputRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     if (isEditing && inputRef.current) {
       inputRef.current.focus();
-      inputRef.current.select();
+      // Select all text in contentEditable element
+      const range = document.createRange();
+      range.selectNodeContents(inputRef.current);
+      const selection = window.getSelection();
+      selection?.removeAllRanges();
+      selection?.addRange(range);
     }
   }, [isEditing]);
 
@@ -60,27 +65,27 @@ export const EditableText: React.FC<EditableTextProps> = ({
   };
 
   if (isEditing) {
-    return (
-      <textarea
-        ref={inputRef}
-        value={editValue}
-        onChange={(e) => setEditValue(e.target.value)}
-        onBlur={handleBlur}
-        onKeyDown={handleKeyDown}
-        className={`${className} resize-none overflow-hidden`}
-        style={{
+    // Use a contentEditable div instead of textarea to preserve all inherited styles
+    return React.createElement(
+      Component,
+      {
+        ref: inputRef as any,
+        contentEditable: true,
+        suppressContentEditableWarning: true,
+        onBlur: handleBlur,
+        onKeyDown: handleKeyDown,
+        onInput: (e: React.FormEvent<HTMLElement>) => {
+          setEditValue(e.currentTarget.textContent || '');
+        },
+        className,
+        style: {
           ...style,
-          minHeight: '1em',
-          padding: '0',
-          border: 'none',
           outline: 'none',
-          background: 'transparent',
-          font: 'inherit',
-          color: 'inherit',
-          width: '100%',
-        }}
-        rows={1}
-      />
+          cursor: 'text',
+        },
+        dangerouslySetInnerHTML: undefined,
+      },
+      editValue
     );
   }
 

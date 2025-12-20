@@ -11,29 +11,35 @@ interface DuplicationResult {
 /**
  * Copies all style values from source style sources to new style sources.
  * This preserves typography and all other style properties during duplication.
+ * Must be called after new style sources are created.
  */
 const copyStyleValues = (
   oldStyleSourceIds: string[],
-  newStyleSourceIds: string[],
   styleIdMapping: Record<string, string>
 ) => {
+  // Get fresh state reference to ensure we have access to the latest styles
   const { styles, setStyle } = useStyleStore.getState();
   
   // Copy all style values from old sources to new sources
-  for (let i = 0; i < oldStyleSourceIds.length; i++) {
-    const oldId = oldStyleSourceIds[i];
-    const newId = newStyleSourceIds[i] || styleIdMapping[oldId];
+  for (const oldId of oldStyleSourceIds) {
+    const newId = styleIdMapping[oldId];
     
     if (!newId || oldId === newId) continue;
     
     // Find all style entries for the old source and copy to new source
+    // Style key format: styleSourceId:breakpoint:state:property
     Object.entries(styles).forEach(([key, value]) => {
       if (key.startsWith(`${oldId}:`)) {
         // Parse the key: oldId:breakpoint:state:property
-        const parts = key.replace(`${oldId}:`, '').split(':');
-        const breakpoint = parts[0] || 'base';
-        const state = parts[1] || 'default';
-        const property = parts[2] || '';
+        const remainder = key.slice(oldId.length + 1); // Remove "oldId:"
+        const colonIndex1 = remainder.indexOf(':');
+        const colonIndex2 = remainder.indexOf(':', colonIndex1 + 1);
+        
+        if (colonIndex1 === -1 || colonIndex2 === -1) return;
+        
+        const breakpoint = remainder.slice(0, colonIndex1);
+        const state = remainder.slice(colonIndex1 + 1, colonIndex2);
+        const property = remainder.slice(colonIndex2 + 1);
         
         if (property && value) {
           setStyle(newId, property, value, breakpoint, state as any);
@@ -45,36 +51,27 @@ const copyStyleValues = (
 
 /**
  * Recursively duplicates a component instance, preserving all styles including typography.
- * - Creates new style sources for each instance (so duplicates can be styled independently)
- * - Copies all style values from the original instance to the duplicate
+ * - Reuses the SAME style source IDs (sharing styles) to prevent style loss
  * - For linked components, preserves the linkage to the prebuilt
+ * - Props and children are deep-copied with new IDs
  */
 export const duplicateInstanceWithLinkage = (instance: ComponentInstance): DuplicationResult => {
   const { getInstanceLink } = useComponentInstanceStore.getState();
-  const { createStyleSource, styleSources, getNextAutoClassName } = useStyleStore.getState();
   const links: DuplicationResult['links'] = [];
 
   const duplicateRecursive = (inst: ComponentInstance): ComponentInstance => {
     const existingLink = getInstanceLink(inst.id);
     const newId = generateId();
+    
+    // IMPORTANT: Reuse the same styleSourceIds to preserve all styles exactly
+    // This ensures duplicated components look identical to the original
+    const newStyleSourceIds = [...(inst.styleSourceIds || [])];
+    
+    // Create style ID mapping (identity mapping since we're reusing)
     const styleIdMapping: Record<string, string> = {};
-    
-    // Create new style sources that copy values from the originals
-    const newStyleSourceIds = (inst.styleSourceIds || []).map(oldId => {
-      const oldSource = styleSources[oldId];
-      if (!oldSource) return oldId;
-      
-      // Create a new style source with the same type but new auto-class name
-      const componentType = oldSource.name.replace(/-\d+$/, '').replace(/^\d+-/, '');
-      const newClassName = getNextAutoClassName(componentType || 'class');
-      const newId = createStyleSource(oldSource.type, newClassName);
-      
-      styleIdMapping[oldId] = newId;
-      return newId;
-    });
-    
-    // Copy all style values from old sources to new sources
-    copyStyleValues(inst.styleSourceIds || [], newStyleSourceIds, styleIdMapping);
+    for (const id of newStyleSourceIds) {
+      styleIdMapping[id] = id;
+    }
     
     // If this is a linked component, track the linkage for later
     if (existingLink) {
@@ -85,7 +82,7 @@ export const duplicateInstanceWithLinkage = (instance: ComponentInstance): Dupli
       });
     }
     
-    // Create the duplicated instance with new IDs and copied styles
+    // Create the duplicated instance with new instance ID but same style sources
     return {
       ...inst,
       id: newId,
