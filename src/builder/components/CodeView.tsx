@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useBuilderStore } from '../store/useBuilderStore';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 import { exportHTML, exportCSS, exportJS, exportAstro } from '../utils/codeExport';
+import { discoverComponents, getComponentCode, flattenComponents } from '../utils/componentCodeExport';
 import { parseHTMLToInstance } from '../utils/codeImport';
 import { Copy, Check, Monitor, Tablet, Smartphone, Upload } from 'lucide-react';
 import { ImportModal } from './ImportModal';
@@ -37,13 +38,31 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
   const [jsCode, setJsCode] = useState('');
   const [astroCode, setAstroCode] = useState('');
 
+  // Discover components from canvas
+  const componentEntries = useMemo(() => {
+    if (!rootInstance) return [];
+    return discoverComponents(rootInstance);
+  }, [rootInstance]);
+
+  // Check if selected file is a component
+  const isComponentFile = selectedFile.startsWith('/components/');
+  const componentCode = useMemo(() => {
+    if (!isComponentFile) return null;
+    return getComponentCode(componentEntries, selectedFile);
+  }, [isComponentFile, componentEntries, selectedFile]);
+
   useEffect(() => {
-    // Generate code exports
-    setHtmlCode(exportHTML(rootInstance));
-    setCssCode(exportCSS());
+    // Generate code exports based on selected file
+    if (isComponentFile && componentCode) {
+      setHtmlCode(componentCode.html);
+      setCssCode(componentCode.css);
+    } else {
+      setHtmlCode(exportHTML(rootInstance));
+      setCssCode(exportCSS());
+    }
     setJsCode(exportJS(rootInstance));
     setAstroCode(exportAstro(rootInstance));
-  }, [rootInstance]);
+  }, [rootInstance, selectedFile, isComponentFile, componentCode]);
 
   const handleCopy = (code: string, tab: string) => {
     navigator.clipboard.writeText(code);
