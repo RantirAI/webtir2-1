@@ -1,12 +1,16 @@
 import React, { useState, useMemo } from 'react';
-import { ChevronRight, ChevronDown, FileCode, FolderOpen, Folder, FileImage, Palette, MessageSquare } from 'lucide-react';
+import { ChevronRight, ChevronDown, FileCode, FolderOpen, Folder, Component } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useBuilderStore } from '../store/useBuilderStore';
+import { discoverComponents, ComponentCodeEntry } from '../utils/componentCodeExport';
 
 interface FileNode {
   name: string;
   type: 'file' | 'folder';
   children?: FileNode[];
   path: string;
+  isComponent?: boolean;
+  isLinked?: boolean;
 }
 
 interface FileTreeProps {
@@ -16,7 +20,28 @@ interface FileTreeProps {
 }
 
 export const FileTree: React.FC<FileTreeProps> = ({ onFileSelect, selectedFile, pages }) => {
+  const rootInstance = useBuilderStore((state) => state.rootInstance);
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set(['/', '/pages', '/components', '/media']));
+
+  // Discover components from canvas
+  const componentEntries = useMemo(() => {
+    if (!rootInstance) return [];
+    return discoverComponents(rootInstance);
+  }, [rootInstance]);
+
+  // Convert component entries to file nodes
+  const componentNodesToFileNodes = (entries: ComponentCodeEntry[]): FileNode[] => {
+    return entries.map(entry => ({
+      name: `${entry.name}.html`,
+      type: 'file' as const,
+      path: entry.path,
+      isComponent: true,
+      isLinked: entry.isLinked,
+      children: entry.children.length > 0 
+        ? componentNodesToFileNodes(entry.children) 
+        : undefined,
+    }));
+  };
 
   const fileStructure: FileNode[] = useMemo(() => {
     const structure: FileNode[] = [];
@@ -35,15 +60,16 @@ export const FileTree: React.FC<FileTreeProps> = ({ onFileSelect, selectedFile, 
       });
     }
     
-    // Components folder (always present)
+    // Components folder - now populated with actual canvas components
+    const componentNodes = componentNodesToFileNodes(componentEntries);
     structure.push({
       name: 'components',
       type: 'folder',
       path: '/components',
-      children: [],
+      children: componentNodes,
     });
     
-    // Media folder with placeholder files
+    // Media folder
     structure.push({
       name: 'media',
       type: 'folder',
@@ -60,7 +86,7 @@ export const FileTree: React.FC<FileTreeProps> = ({ onFileSelect, selectedFile, 
     structure.push({ name: 'script.js', type: 'file', path: '/script.js' });
     
     return structure;
-  }, [pages]);
+  }, [pages, componentEntries]);
 
   const toggleFolder = (path: string) => {
     const newExpanded = new Set(expandedFolders);
@@ -77,6 +103,8 @@ export const FileTree: React.FC<FileTreeProps> = ({ onFileSelect, selectedFile, 
     const isSelected = selectedFile === node.path;
 
     if (node.type === 'folder') {
+      const hasChildren = node.children && node.children.length > 0;
+      
       return (
         <div key={node.path}>
           <div
@@ -97,6 +125,11 @@ export const FileTree: React.FC<FileTreeProps> = ({ onFileSelect, selectedFile, 
               <Folder className="w-3 h-3 flex-shrink-0 text-blue-500" />
             )}
             <span className="truncate">{node.name}</span>
+            {node.path === '/components' && hasChildren && (
+              <span className="ml-auto text-[10px] text-muted-foreground">
+                {node.children?.length}
+              </span>
+            )}
           </div>
           {isExpanded && node.children && (
             <div>
@@ -107,6 +140,9 @@ export const FileTree: React.FC<FileTreeProps> = ({ onFileSelect, selectedFile, 
       );
     }
 
+    // File node
+    const isComponentFile = node.isComponent;
+    
     return (
       <div
         key={node.path}
@@ -116,8 +152,17 @@ export const FileTree: React.FC<FileTreeProps> = ({ onFileSelect, selectedFile, 
         style={{ paddingLeft: `${depth * 12 + 20}px` }}
         onClick={() => onFileSelect(node.path)}
       >
-        <FileCode className="w-3 h-3 flex-shrink-0 text-muted-foreground" />
+        {isComponentFile ? (
+          <Component className={`w-3 h-3 flex-shrink-0 ${node.isLinked ? 'text-green-500' : 'text-purple-500'}`} />
+        ) : (
+          <FileCode className="w-3 h-3 flex-shrink-0 text-muted-foreground" />
+        )}
         <span className="truncate">{node.name}</span>
+        {node.isLinked && (
+          <span className="ml-auto text-[8px] px-1 py-0.5 bg-green-500/20 text-green-500 rounded">
+            linked
+          </span>
+        )}
       </div>
     );
   };
