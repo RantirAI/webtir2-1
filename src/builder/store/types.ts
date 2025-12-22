@@ -288,6 +288,7 @@ export interface BuilderState {
   ) => void;
   deleteInstance: (id: string) => void;
   setSelectedInstanceId: (id: string | null) => void;
+  setHoveredInstanceId: (id: string | null) => void;
   setRootInstance: (instance: ComponentInstance) => void;
   moveInstance: (instanceId: string, newParentId: string, index: number) => void;
   
