@@ -564,6 +564,49 @@ export const createLinkedInstance = (
   return createInstanceFromPrebuilt(prebuilt);
 };
 
+// Create a linked instance by cloning from an existing master on canvas
+// This ensures all copies share the same style source IDs for instant sync
+export const createLinkedInstanceFromMaster = (
+  prebuiltId: string,
+  masterInstanceId: string
+): { instance: ComponentInstance; styleIdMapping: Record<string, string> } | null => {
+  const { findInstance } = useBuilderStore.getState();
+  const masterInstance = findInstance(masterInstanceId);
+  if (!masterInstance) return null;
+  
+  const { getInstanceLink } = useComponentInstanceStore.getState();
+  const masterLink = getInstanceLink(masterInstanceId);
+  if (!masterLink) return null;
+  
+  // Clone instance with new IDs but REUSE the same style source IDs
+  const styleIdMapping: Record<string, string> = {};
+  
+  const cloneWithNewIds = (inst: ComponentInstance): ComponentInstance => {
+    const newId = generateId();
+    
+    // Reuse the same style source IDs (no mapping needed, they share styles)
+    const styleSourceIds = [...(inst.styleSourceIds || [])];
+    
+    // Build the identity mapping for the link
+    styleSourceIds.forEach(id => {
+      styleIdMapping[id] = id;
+    });
+    
+    return {
+      ...inst,
+      id: newId,
+      styleSourceIds,
+      props: { ...inst.props },
+      children: (inst.children || []).map(cloneWithNewIds),
+    };
+  };
+  
+  return {
+    instance: cloneWithNewIds(masterInstance),
+    styleIdMapping,
+  };
+};
+
 // ============================================================================
 // STYLE CHANGE LISTENER (for master instance auto-sync)
 // ============================================================================
@@ -571,18 +614,16 @@ export const createLinkedInstance = (
 // Debounce map to prevent excessive syncs
 const styleSyncDebounce: Map<string, NodeJS.Timeout> = new Map();
 
-// Find which master instance owns a given styleSourceId
-const findMasterInstanceForStyle = (styleSourceId: string): string | null => {
+// Find which linked instance owns a given styleSourceId and return the linked root
+const findLinkedRootForStyle = (styleSourceId: string): { instanceId: string; link: InstanceLink } | null => {
   const { instanceLinks } = useComponentInstanceStore.getState();
   const { findInstance } = useBuilderStore.getState();
   
   for (const link of instanceLinks) {
-    if (!link.isMaster) continue;
-    
     const instance = findInstance(link.instanceId);
     if (!instance) continue;
     
-    // Check if this style belongs to this master instance
+    // Check if this style belongs to this linked instance
     const collectStyleIds = (inst: ComponentInstance): string[] => {
       const ids = [...(inst.styleSourceIds || [])];
       for (const child of inst.children || []) {
@@ -593,28 +634,42 @@ const findMasterInstanceForStyle = (styleSourceId: string): string | null => {
     
     const allStyleIds = collectStyleIds(instance);
     if (allStyleIds.includes(styleSourceId)) {
-      return link.instanceId;
+      return { instanceId: link.instanceId, link };
     }
   }
   
   return null;
 };
 
-// Handle style changes and sync master instances
+// Handle style changes with dynamic master promotion
 const handleStyleChange = (styleSourceId: string) => {
-  const masterInstanceId = findMasterInstanceForStyle(styleSourceId);
-  if (!masterInstanceId) return;
+  const result = findLinkedRootForStyle(styleSourceId);
+  if (!result) return;
   
-  // Debounce per master instance to batch rapid style changes
-  const existing = styleSyncDebounce.get(masterInstanceId);
+  const { instanceId, link } = result;
+  const { getMasterInstance, linkInstance, syncMasterToPrebuilt } = useComponentInstanceStore.getState();
+  
+  // Dynamic master promotion: if this instance is NOT the master, promote it
+  const currentMaster = getMasterInstance(link.prebuiltId);
+  
+  if (!link.isMaster) {
+    // Demote current master
+    if (currentMaster) {
+      linkInstance(currentMaster.instanceId, currentMaster.prebuiltId, currentMaster.styleIdMapping, false);
+    }
+    // Promote this instance to master
+    linkInstance(instanceId, link.prebuiltId, link.styleIdMapping, true);
+  }
+  
+  // Debounce per instance to batch rapid style changes
+  const existing = styleSyncDebounce.get(instanceId);
   if (existing) {
     clearTimeout(existing);
   }
   
-  styleSyncDebounce.set(masterInstanceId, setTimeout(() => {
-    styleSyncDebounce.delete(masterInstanceId);
-    const { syncMasterToPrebuilt } = useComponentInstanceStore.getState();
-    syncMasterToPrebuilt(masterInstanceId);
+  styleSyncDebounce.set(instanceId, setTimeout(() => {
+    styleSyncDebounce.delete(instanceId);
+    syncMasterToPrebuilt(instanceId);
   }, 150));
 };
 

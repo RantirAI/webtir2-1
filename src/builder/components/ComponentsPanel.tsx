@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { componentRegistry } from '../primitives/registry';
 import { useBuilderStore } from '../store/useBuilderStore';
 import { useStyleStore } from '../store/useStyleStore';
-import { useComponentInstanceStore, createLinkedInstance } from '../store/useComponentInstanceStore';
+import { useComponentInstanceStore, createLinkedInstance, createLinkedInstanceFromMaster } from '../store/useComponentInstanceStore';
 import { ComponentInstance, ComponentType } from '../store/types';
 import { generateId } from '../utils/instance';
 import * as Icons from 'lucide-react';
@@ -900,8 +900,20 @@ export const ComponentsPanel: React.FC = () => {
   const handleAddPrebuilt = (prebuilt: typeof prebuiltComponents[0]) => {
     const parentId = selectedInstanceId || 'root';
     
-    // Use the unified createLinkedInstance utility
-    const result = createLinkedInstance(prebuilt.id);
+    // Check if there's already a master for this prebuilt
+    const { getMasterInstance } = useComponentInstanceStore.getState();
+    const existingMaster = getMasterInstance(prebuilt.id);
+    
+    let result: { instance: ComponentInstance; styleIdMapping: Record<string, string> } | null;
+    
+    if (existingMaster) {
+      // Clone from the existing master to share style source IDs
+      result = createLinkedInstanceFromMaster(prebuilt.id, existingMaster.instanceId);
+    } else {
+      // First instance - create from prebuilt definition
+      result = createLinkedInstance(prebuilt.id);
+    }
+    
     if (!result) {
       toast.error(`Failed to create instance of "${prebuilt.name}"`);
       return;
@@ -911,10 +923,6 @@ export const ComponentsPanel: React.FC = () => {
     
     // Add to canvas
     addInstance(newInstance, parentId);
-    
-    // Check if there's already a master for this prebuilt
-    const { getMasterInstance } = useComponentInstanceStore.getState();
-    const existingMaster = getMasterInstance(prebuilt.id);
     
     // Link the instance: first instance becomes master, subsequent ones are copies
     linkInstance(newInstance.id, prebuilt.id, styleIdMapping, !existingMaster);
