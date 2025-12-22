@@ -114,31 +114,52 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
       return { rootInstance: newRoot, ...saveToHistory({ ...state, rootInstance: newRoot }) };
     });
     
-    // Auto-sync if this is a master instance OR if the edited instance is inside a master prebuilt subtree
+    // Auto-sync: if the edited instance is inside any linked prebuilt subtree, promote that to master and sync
     setTimeout(() => {
-      const { instanceLinks, isMasterInstance, syncMasterToPrebuilt } = useComponentInstanceStore.getState();
-
-      // Direct master edit
-      if (isMasterInstance(id)) {
-        syncMasterToPrebuilt(id);
-        return;
-      }
-
-      // Nested edit within a master (e.g. Heading/Text inside a master Section)
+      const { instanceLinks, syncMasterToPrebuilt, getInstanceLink } = useComponentInstanceStore.getState();
       const root = useBuilderStore.getState().rootInstance;
       if (!root) return;
 
-      for (const link of instanceLinks) {
-        if (!link.isMaster) continue;
-
-        const masterNode = findInstanceInTree(root, link.instanceId);
-        if (!masterNode) continue;
-
-        if (findInstanceInTree(masterNode, id)) {
-          syncMasterToPrebuilt(link.instanceId);
-          return;
+      // Helper to find the linked root that contains the edited instance
+      const findLinkedRootContaining = (editedId: string): string | null => {
+        for (const link of instanceLinks) {
+          const linkedRoot = findInstanceInTree(root, link.instanceId);
+          if (!linkedRoot) continue;
+          // Check if editedId is the linked root or is inside it
+          if (link.instanceId === editedId || findInstanceInTree(linkedRoot, editedId)) {
+            return link.instanceId;
+          }
         }
+        return null;
+      };
+
+      const linkedRootId = findLinkedRootContaining(id);
+      if (!linkedRootId) return;
+
+      const link = getInstanceLink(linkedRootId);
+      if (!link) return;
+
+      // If this linked instance is not already the master, promote it to master
+      if (!link.isMaster) {
+        // Demote the current master (if any)
+        const currentMasterLink = instanceLinks.find(l => l.prebuiltId === link.prebuiltId && l.isMaster);
+        if (currentMasterLink) {
+          useComponentInstanceStore.setState(state => ({
+            instanceLinks: state.instanceLinks.map(l =>
+              l.instanceId === currentMasterLink.instanceId ? { ...l, isMaster: false } : l
+            ),
+          }));
+        }
+        // Promote this one
+        useComponentInstanceStore.setState(state => ({
+          instanceLinks: state.instanceLinks.map(l =>
+            l.instanceId === linkedRootId ? { ...l, isMaster: true } : l
+          ),
+        }));
       }
+
+      // Now sync the master to prebuilt
+      syncMasterToPrebuilt(linkedRootId);
     }, 0);
   },
   

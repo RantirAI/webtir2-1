@@ -912,8 +912,12 @@ export const ComponentsPanel: React.FC = () => {
     // Add to canvas
     addInstance(newInstance, parentId);
     
-    // Link the instance to the prebuilt for future updates
-    linkInstance(newInstance.id, prebuilt.id, styleIdMapping);
+    // Check if there's already a master for this prebuilt
+    const { getMasterInstance } = useComponentInstanceStore.getState();
+    const existingMaster = getMasterInstance(prebuilt.id);
+    
+    // Link the instance: first instance becomes master, subsequent ones are copies
+    linkInstance(newInstance.id, prebuilt.id, styleIdMapping, !existingMaster);
     
     toast.success(`Added "${prebuilt.name}" to canvas (linked)`);
   };
