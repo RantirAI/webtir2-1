@@ -103,12 +103,14 @@ export const duplicateInstanceWithLinkage = (instance: ComponentInstance): Dupli
 /**
  * Applies linkage to duplicated instances after they've been added to the tree.
  * This must be called after addInstance to ensure the instances exist in the tree.
+ * NOTE: Duplicated instances are NOT masters - they receive updates from the master.
  */
 export const applyDuplicationLinks = (
   links: Array<{ instanceId: string; prebuiltId: string; styleIdMapping: Record<string, string> }>
 ) => {
   const { linkInstance } = useComponentInstanceStore.getState();
   for (const link of links) {
-    linkInstance(link.instanceId, link.prebuiltId, link.styleIdMapping);
+    // isMaster = false for duplicates - they receive updates, don't push them
+    linkInstance(link.instanceId, link.prebuiltId, link.styleIdMapping, false);
   }
 };

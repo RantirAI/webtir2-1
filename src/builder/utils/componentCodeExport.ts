@@ -1,6 +1,6 @@
 import { ComponentInstance } from '../store/types';
 import { useStyleStore } from '../store/useStyleStore';
-import { usePrebuiltStore } from '../store/usePrebuiltStore';
+import { useComponentInstanceStore } from '../store/useComponentInstanceStore';
 
 export interface ComponentCodeEntry {
   id: string;
@@ -16,15 +16,14 @@ export interface ComponentCodeEntry {
 
 // Discover all component instances from the canvas
 export function discoverComponents(rootInstance: ComponentInstance): ComponentCodeEntry[] {
-  const { prebuiltComponents, isPrebuiltInstance } = usePrebuiltStore.getState();
+  const { prebuiltComponents, isLinkedInstance, getInstanceLink } = useComponentInstanceStore.getState();
   const components: ComponentCodeEntry[] = [];
   
   function traverse(instance: ComponentInstance, parentPath: string = '/components'): ComponentCodeEntry | null {
-    const isLinked = isPrebuiltInstance(instance.id);
+    const isLinked = isLinkedInstance(instance.id);
+    const link = getInstanceLink(instance.id);
     // Check if this instance is linked to a prebuilt component
-    const linkedPrebuilt = prebuiltComponents.find(p => 
-      p.instance.id === instance.id
-    );
+    const linkedPrebuilt = link ? prebuiltComponents.find(p => p.id === link.prebuiltId) : undefined;
     
     // Determine component name
     const name = instance.label || 

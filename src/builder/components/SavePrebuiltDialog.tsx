@@ -51,9 +51,9 @@ export const SavePrebuiltDialog: React.FC<SavePrebuiltDialogProps> = ({
     });
 
     const prebuiltId = addPrebuilt(name.trim(), instance);
-    // Link the original instance to the prebuilt with proper style mapping
-    linkInstance(instance.id, prebuiltId, styleIdMapping);
-    toast.success(`"${name.trim()}" saved as prebuilt component`);
+    // Link the original instance as MASTER - edits to this will propagate to all copies
+    linkInstance(instance.id, prebuiltId, styleIdMapping, true);
+    toast.success(`"${name.trim()}" saved as prebuilt component (master)`);
     setName('');
     onOpenChange(false);
   };
