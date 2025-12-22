@@ -427,71 +427,81 @@ export const useComponentInstanceStore = create<ComponentInstanceStore>()(
         const { setStyle } = useStyleStore.getState();
         const { findInstance, updateInstance } = useBuilderStore.getState();
 
-        for (const link of linkedInstances) {
-          // Master is the source of truth; don't overwrite it from the prebuilt.
-          if (link.isMaster) continue;
+        // Guard to prevent internal propagation from re-triggering sync loops
+        isInternalPrebuiltPropagation = true;
+        try {
+          for (const link of linkedInstances) {
+            // Master is the source of truth; don't overwrite it from the prebuilt.
+            if (link.isMaster) continue;
 
-          const canvasInstance = findInstance(link.instanceId);
-          if (!canvasInstance) continue;
+            const canvasInstance = findInstance(link.instanceId);
+            if (!canvasInstance) continue;
 
-          // Skip if structure is overridden
-          if (link.overrides.structure) continue;
+            // Skip if structure is overridden
+            if (link.overrides.structure) continue;
 
-          // Update styles (respecting overrides)
-          for (const [oldStyleId, styleData] of Object.entries(prebuilt.styles)) {
-            const newStyleId = link.styleIdMapping[oldStyleId];
-            if (!newStyleId) continue;
+            // Update styles (respecting overrides)
+            for (const [oldStyleId, styleData] of Object.entries(prebuilt.styles)) {
+              const newStyleId = link.styleIdMapping[oldStyleId];
+              if (!newStyleId) continue;
 
-            for (const [styleKey, styleValue] of Object.entries(styleData.styleValues)) {
-              const keyParts = styleKey.replace(`${oldStyleId}:`, '').split(':');
-              const breakpoint = keyParts[0] || 'base';
-              const state = keyParts[1] || 'default';
-              const property = keyParts[2] || '';
+              for (const [styleKey, styleValue] of Object.entries(styleData.styleValues)) {
+                const keyParts = styleKey.replace(`${oldStyleId}:`, '').split(':');
+                const breakpoint = keyParts[0] || 'base';
+                const state = keyParts[1] || 'default';
+                const property = keyParts[2] || '';
 
-              if (property) {
-                // Skip if this property is overridden
-                const isOverridden = link.overrides.styles[newStyleId]?.has(property);
-                if (!isOverridden) {
-                  setStyle(newStyleId, property, styleValue, breakpoint, state as any);
+                if (property) {
+                  // Skip if this property is overridden
+                  const isOverridden = link.overrides.styles[newStyleId]?.has(property);
+                  if (!isOverridden) {
+                    setStyle(newStyleId, property, styleValue, breakpoint, state as any);
+                  }
                 }
               }
             }
-          }
 
-          // Update props recursively (this is what makes nested prebuilt content sync correctly)
-          const applyPropsFromPrebuilt = (
-            sourceNode: ComponentInstance,
-            targetNode: ComponentInstance,
-            isRoot: boolean
-          ): ComponentInstance => {
-            const nextProps: Record<string, any> = { ...targetNode.props };
+            // Update props recursively (this is what makes nested prebuilt content sync correctly)
+            const applyPropsFromPrebuilt = (
+              sourceNode: ComponentInstance,
+              targetNode: ComponentInstance,
+              isRoot: boolean
+            ): ComponentInstance => {
+              const nextProps: Record<string, any> = { ...targetNode.props };
 
-            for (const [propKey, propValue] of Object.entries(sourceNode.props)) {
-              // Only the *root* has override tracking today.
-              if (isRoot && link.overrides.props[propKey]) continue;
-              nextProps[propKey] = propValue;
-            }
+              for (const [propKey, propValue] of Object.entries(sourceNode.props)) {
+                // Only the *root* has override tracking today.
+                if (isRoot && link.overrides.props[propKey]) continue;
+                nextProps[propKey] = propValue;
+              }
 
-            const nextChildren = (targetNode.children || []).map((child, index) => {
-              const sourceChild = sourceNode.children?.[index];
-              if (!sourceChild) return child;
-              if (sourceChild.type !== child.type) return child;
-              return applyPropsFromPrebuilt(sourceChild, child, false);
-            });
+              const nextChildren = (targetNode.children || []).map((child, index) => {
+                const sourceChild = sourceNode.children?.[index];
+                if (!sourceChild) return child;
+                if (sourceChild.type !== child.type) return child;
+                return applyPropsFromPrebuilt(sourceChild, child, false);
+              });
 
-            return {
-              ...targetNode,
-              props: nextProps,
-              children: nextChildren,
+              return {
+                ...targetNode,
+                props: nextProps,
+                children: nextChildren,
+              };
             };
-          };
 
-          const updatedTree = applyPropsFromPrebuilt(prebuilt.instance, canvasInstance, true);
+            const updatedTree = applyPropsFromPrebuilt(prebuilt.instance, canvasInstance, true);
 
-          updateInstance(link.instanceId, {
-            props: updatedTree.props,
-            children: updatedTree.children,
-          });
+            updateInstance(
+              link.instanceId,
+              {
+                props: updatedTree.props,
+                children: updatedTree.children,
+              },
+              { skipPrebuiltSync: true }
+            );
+          }
+        } finally {
+          isInternalPrebuiltPropagation = false;
         }
       },
 
@@ -611,18 +621,21 @@ export const createLinkedInstanceFromMaster = (
 // STYLE CHANGE LISTENER (for master instance auto-sync)
 // ============================================================================
 
+// When we propagate changes programmatically, we must not re-trigger sync.
+let isInternalPrebuiltPropagation = false;
+
 // Debounce map to prevent excessive syncs
-const styleSyncDebounce: Map<string, NodeJS.Timeout> = new Map();
+const styleSyncDebounce: Map<string, ReturnType<typeof setTimeout>> = new Map();
 
 // Find which linked instance owns a given styleSourceId and return the linked root
 const findLinkedRootForStyle = (styleSourceId: string): { instanceId: string; link: InstanceLink } | null => {
   const { instanceLinks } = useComponentInstanceStore.getState();
   const { findInstance } = useBuilderStore.getState();
-  
+
   for (const link of instanceLinks) {
     const instance = findInstance(link.instanceId);
     if (!instance) continue;
-    
+
     // Check if this style belongs to this linked instance
     const collectStyleIds = (inst: ComponentInstance): string[] => {
       const ids = [...(inst.styleSourceIds || [])];
@@ -631,46 +644,47 @@ const findLinkedRootForStyle = (styleSourceId: string): { instanceId: string; li
       }
       return ids;
     };
-    
+
     const allStyleIds = collectStyleIds(instance);
     if (allStyleIds.includes(styleSourceId)) {
       return { instanceId: link.instanceId, link };
     }
   }
-  
+
   return null;
 };
 
-// Handle style changes with dynamic master promotion
+// Handle style changes without causing propagation loops.
+// NOTE: Styles may be shared across linked instances; we always sync from the current master.
 const handleStyleChange = (styleSourceId: string) => {
+  if (isInternalPrebuiltPropagation) return;
+
   const result = findLinkedRootForStyle(styleSourceId);
   if (!result) return;
-  
+
   const { instanceId, link } = result;
   const { getMasterInstance, linkInstance, syncMasterToPrebuilt } = useComponentInstanceStore.getState();
-  
-  // Dynamic master promotion: if this instance is NOT the master, promote it
-  const currentMaster = getMasterInstance(link.prebuiltId);
-  
-  if (!link.isMaster) {
-    // Demote current master
-    if (currentMaster) {
-      linkInstance(currentMaster.instanceId, currentMaster.prebuiltId, currentMaster.styleIdMapping, false);
-    }
-    // Promote this instance to master
+
+  const master = getMasterInstance(link.prebuiltId);
+  const syncFromInstanceId = master?.instanceId ?? instanceId;
+
+  // Ensure there is a master so syncMasterToPrebuilt actually runs.
+  if (!master) {
     linkInstance(instanceId, link.prebuiltId, link.styleIdMapping, true);
   }
-  
-  // Debounce per instance to batch rapid style changes
-  const existing = styleSyncDebounce.get(instanceId);
-  if (existing) {
-    clearTimeout(existing);
-  }
-  
-  styleSyncDebounce.set(instanceId, setTimeout(() => {
-    styleSyncDebounce.delete(instanceId);
-    syncMasterToPrebuilt(instanceId);
-  }, 150));
+
+  // Debounce per prebuilt to batch rapid style changes
+  const debounceKey = link.prebuiltId;
+  const existing = styleSyncDebounce.get(debounceKey);
+  if (existing) clearTimeout(existing);
+
+  styleSyncDebounce.set(
+    debounceKey,
+    setTimeout(() => {
+      styleSyncDebounce.delete(debounceKey);
+      syncMasterToPrebuilt(syncFromInstanceId);
+    }, 150)
+  );
 };
 
 // Register the callback
