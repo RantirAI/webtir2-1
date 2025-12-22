@@ -281,7 +281,7 @@ export interface BuilderState {
   
   // Actions
   addInstance: (instance: ComponentInstance, parentId?: string, index?: number) => void;
-  updateInstance: (id: string, updates: Partial<ComponentInstance>) => void;
+  updateInstance: (id: string, updates: Partial<ComponentInstance>, options?: { skipPrebuiltSync?: boolean }) => void;
   deleteInstance: (id: string) => void;
   setSelectedInstanceId: (id: string | null) => void;
   setHoveredInstanceId: (id: string | null) => void;

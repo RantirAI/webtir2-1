@@ -102,7 +102,7 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
     });
   },
   
-  updateInstance: (id, updates) => {
+  updateInstance: (id, updates, options?: { skipPrebuiltSync?: boolean }) => {
     set((state) => {
       const newRoot = JSON.parse(JSON.stringify(state.rootInstance)) as ComponentInstance;
       const instance = findInstanceInTree(newRoot, id);
@@ -114,8 +114,15 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
       return { rootInstance: newRoot, ...saveToHistory({ ...state, rootInstance: newRoot }) };
     });
     
+    // Skip auto-sync if this is an internal propagation update
+    if (options?.skipPrebuiltSync) return;
+    
     // Auto-sync: if the edited instance is inside any linked prebuilt subtree, promote that to master and sync
     setTimeout(() => {
+      // Check guard flag from component instance store
+      const { getIsInternalPropagation } = require('./useComponentInstanceStore');
+      if (getIsInternalPropagation()) return;
+      
       const { instanceLinks, syncMasterToPrebuilt, getInstanceLink } = useComponentInstanceStore.getState();
       const root = useBuilderStore.getState().rootInstance;
       if (!root) return;
@@ -296,8 +303,8 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
   },
 }));
 
-// Helper functions
-function findInstanceInTree(tree: ComponentInstance, id: string): ComponentInstance | null {
+// Helper functions - exported for use in other stores
+export function findInstanceInTree(tree: ComponentInstance, id: string): ComponentInstance | null {
   if (tree.id === id) return tree;
   
   for (const child of tree.children) {
