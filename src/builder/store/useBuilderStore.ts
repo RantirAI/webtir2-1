@@ -113,6 +113,14 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
       
       return { rootInstance: newRoot, ...saveToHistory({ ...state, rootInstance: newRoot }) };
     });
+    
+    // Auto-sync if this is a master instance
+    setTimeout(() => {
+      const { isMasterInstance, syncMasterToPrebuilt } = useComponentInstanceStore.getState();
+      if (isMasterInstance(id)) {
+        syncMasterToPrebuilt(id);
+      }
+    }, 0);
   },
   
   deleteInstance: (id) => {

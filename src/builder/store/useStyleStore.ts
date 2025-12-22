@@ -6,6 +6,13 @@ import {
   AutoClassConfig
 } from '../utils/autoClassSystem';
 
+// Callback for notifying about style changes (set by useComponentInstanceStore)
+let styleChangeCallback: ((styleSourceId: string) => void) | null = null;
+
+export const setStyleChangeCallback = (callback: ((styleSourceId: string) => void) | null) => {
+  styleChangeCallback = callback;
+};
+
 const defaultBreakpoints: Breakpoint[] = [
   { id: 'base', label: 'Base' },
   { id: 'tablet', label: 'Tablet', maxWidth: 991 },
@@ -155,6 +162,11 @@ export const useStyleStore = create<StyleStore>((set, get) => ({
         [key]: value,
       },
     }));
+    
+    // Notify about style change for master instance propagation
+    if (styleChangeCallback) {
+      styleChangeCallback(styleSourceId);
+    }
   },
 
   getComputedStyles: (styleSourceIds, breakpointId, state) => {

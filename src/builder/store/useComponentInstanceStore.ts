@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { ComponentInstance, StyleSource } from './types';
-import { useStyleStore } from './useStyleStore';
+import { useStyleStore, setStyleChangeCallback } from './useStyleStore';
 import { useBuilderStore } from './useBuilderStore';
 import { generateId } from '../utils/instance';
 import { createSystemPrebuilts, SystemPrebuiltDefinition } from '../utils/systemPrebuilts';
@@ -26,6 +26,7 @@ export interface InstanceLink {
   prebuiltId: string;
   styleIdMapping: Record<string, string>; // Maps prebuilt style IDs to instance style IDs
   overrides: InstanceOverrides;
+  isMaster: boolean; // If true, edits to this instance update the prebuilt definition
 }
 
 export interface InstanceOverrides {
@@ -52,10 +53,13 @@ interface ComponentInstanceStore {
   
   // ==================== INSTANCE LINKING ====================
   
-  linkInstance: (instanceId: string, prebuiltId: string, styleIdMapping: Record<string, string>) => void;
+  linkInstance: (instanceId: string, prebuiltId: string, styleIdMapping: Record<string, string>, isMaster?: boolean) => void;
   unlinkInstance: (instanceId: string) => void;
   getInstanceLink: (instanceId: string) => InstanceLink | undefined;
   getLinkedInstances: (prebuiltId: string) => InstanceLink[];
+  getMasterInstance: (prebuiltId: string) => InstanceLink | undefined;
+  isMasterInstance: (instanceId: string) => boolean;
+  syncMasterToPrebuilt: (instanceId: string) => void;
   isLinkedInstance: (instanceId: string) => boolean;
   
   // ==================== OVERRIDE MANAGEMENT ====================
@@ -291,7 +295,7 @@ export const useComponentInstanceStore = create<ComponentInstanceStore>()(
 
       // ==================== INSTANCE LINKING ====================
 
-      linkInstance: (instanceId, prebuiltId, styleIdMapping) => {
+      linkInstance: (instanceId, prebuiltId, styleIdMapping, isMaster = false) => {
         set((state) => {
           // Remove existing link if any
           const filtered = state.instanceLinks.filter((l) => l.instanceId !== instanceId);
@@ -303,6 +307,7 @@ export const useComponentInstanceStore = create<ComponentInstanceStore>()(
                 prebuiltId,
                 styleIdMapping,
                 overrides: { props: {}, styles: {}, structure: false },
+                isMaster,
               },
             ],
           };
@@ -321,6 +326,27 @@ export const useComponentInstanceStore = create<ComponentInstanceStore>()(
 
       getLinkedInstances: (prebuiltId) => {
         return get().instanceLinks.filter((l) => l.prebuiltId === prebuiltId);
+      },
+
+      getMasterInstance: (prebuiltId) => {
+        return get().instanceLinks.find((l) => l.prebuiltId === prebuiltId && l.isMaster);
+      },
+
+      isMasterInstance: (instanceId) => {
+        const link = get().getInstanceLink(instanceId);
+        return link?.isMaster ?? false;
+      },
+
+      syncMasterToPrebuilt: (instanceId) => {
+        const link = get().getInstanceLink(instanceId);
+        if (!link || !link.isMaster) return;
+        
+        const { findInstance } = useBuilderStore.getState();
+        const canvasInstance = findInstance(instanceId);
+        if (!canvasInstance) return;
+        
+        // Update the prebuilt with current instance state (this triggers propagation)
+        get().updatePrebuilt(link.prebuiltId, canvasInstance);
       },
 
       isLinkedInstance: (instanceId) => {
@@ -485,6 +511,7 @@ export const useComponentInstanceStore = create<ComponentInstanceStore>()(
           prebuiltComponents: [...systemPrebuilts, ...userPrebuilts],
           instanceLinks: (persistedState.instanceLinks || []).map((link: any) => ({
             ...link,
+            isMaster: link.isMaster ?? false, // Default to false for legacy links
             overrides: {
               ...link.overrides,
               styles: Object.fromEntries(
@@ -512,3 +539,60 @@ export const createLinkedInstance = (
   if (!prebuilt) return null;
   return createInstanceFromPrebuilt(prebuilt);
 };
+
+// ============================================================================
+// STYLE CHANGE LISTENER (for master instance auto-sync)
+// ============================================================================
+
+// Debounce map to prevent excessive syncs
+const styleSyncDebounce: Map<string, NodeJS.Timeout> = new Map();
+
+// Find which master instance owns a given styleSourceId
+const findMasterInstanceForStyle = (styleSourceId: string): string | null => {
+  const { instanceLinks } = useComponentInstanceStore.getState();
+  const { findInstance } = useBuilderStore.getState();
+  
+  for (const link of instanceLinks) {
+    if (!link.isMaster) continue;
+    
+    const instance = findInstance(link.instanceId);
+    if (!instance) continue;
+    
+    // Check if this style belongs to this master instance
+    const collectStyleIds = (inst: ComponentInstance): string[] => {
+      const ids = [...(inst.styleSourceIds || [])];
+      for (const child of inst.children || []) {
+        ids.push(...collectStyleIds(child));
+      }
+      return ids;
+    };
+    
+    const allStyleIds = collectStyleIds(instance);
+    if (allStyleIds.includes(styleSourceId)) {
+      return link.instanceId;
+    }
+  }
+  
+  return null;
+};
+
+// Handle style changes and sync master instances
+const handleStyleChange = (styleSourceId: string) => {
+  const masterInstanceId = findMasterInstanceForStyle(styleSourceId);
+  if (!masterInstanceId) return;
+  
+  // Debounce per master instance to batch rapid style changes
+  const existing = styleSyncDebounce.get(masterInstanceId);
+  if (existing) {
+    clearTimeout(existing);
+  }
+  
+  styleSyncDebounce.set(masterInstanceId, setTimeout(() => {
+    styleSyncDebounce.delete(masterInstanceId);
+    const { syncMasterToPrebuilt } = useComponentInstanceStore.getState();
+    syncMasterToPrebuilt(masterInstanceId);
+  }, 150));
+};
+
+// Register the callback
+setStyleChangeCallback(handleStyleChange);
