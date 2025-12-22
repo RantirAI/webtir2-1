@@ -12,14 +12,42 @@ interface SelectionOverlayProps {
   onAddElement?: (position: { x: number; y: number }) => void;
 }
 
+// Check if an instance is inside any linked prebuilt subtree
+const isInsideLinkedPrebuilt = (instanceId: string, rootInstance: ComponentInstance | null): boolean => {
+  if (!rootInstance) return false;
+  const { instanceLinks } = useComponentInstanceStore.getState();
+  
+  // Helper to find instance in tree
+  const findInTree = (tree: ComponentInstance, id: string): ComponentInstance | null => {
+    if (tree.id === id) return tree;
+    for (const child of tree.children || []) {
+      const found = findInTree(child, id);
+      if (found) return found;
+    }
+    return null;
+  };
+  
+  for (const link of instanceLinks) {
+    // Get the linked root instance
+    const linkedRoot = findInTree(rootInstance, link.instanceId);
+    if (!linkedRoot) continue;
+    
+    // Check if instanceId is the linked root OR is a descendant of it
+    if (link.instanceId === instanceId) return true;
+    if (findInTree(linkedRoot, instanceId)) return true;
+  }
+  return false;
+};
+
 export const SelectionOverlay: React.FC<SelectionOverlayProps> = ({ instance, element, onOpenHeadingSettings, onAddElement }) => {
   const [rect, setRect] = useState<DOMRect | null>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
-  const { moveInstance, findInstance } = useBuilderStore();
+  const { moveInstance, rootInstance } = useBuilderStore();
   const { getComputedStyles } = useStyleStore();
   const { isLinkedInstance } = useComponentInstanceStore();
   
-  const isPrebuilt = isLinkedInstance(instance.id);
+  // Check both direct link AND if inside a linked prebuilt subtree
+  const isPrebuilt = isLinkedInstance(instance.id) || isInsideLinkedPrebuilt(instance.id, rootInstance);
   
   // Get computed styles to check if element has grid display
   const computedStyles = getComputedStyles(instance.styleSourceIds || []);
