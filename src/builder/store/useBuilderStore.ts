@@ -114,11 +114,30 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
       return { rootInstance: newRoot, ...saveToHistory({ ...state, rootInstance: newRoot }) };
     });
     
-    // Auto-sync if this is a master instance
+    // Auto-sync if this is a master instance OR if the edited instance is inside a master prebuilt subtree
     setTimeout(() => {
-      const { isMasterInstance, syncMasterToPrebuilt } = useComponentInstanceStore.getState();
+      const { instanceLinks, isMasterInstance, syncMasterToPrebuilt } = useComponentInstanceStore.getState();
+
+      // Direct master edit
       if (isMasterInstance(id)) {
         syncMasterToPrebuilt(id);
+        return;
+      }
+
+      // Nested edit within a master (e.g. Heading/Text inside a master Section)
+      const root = useBuilderStore.getState().rootInstance;
+      if (!root) return;
+
+      for (const link of instanceLinks) {
+        if (!link.isMaster) continue;
+
+        const masterNode = findInstanceInTree(root, link.instanceId);
+        if (!masterNode) continue;
+
+        if (findInstanceInTree(masterNode, id)) {
+          syncMasterToPrebuilt(link.instanceId);
+          return;
+        }
       }
     }, 0);
   },

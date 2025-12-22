@@ -422,29 +422,32 @@ export const useComponentInstanceStore = create<ComponentInstanceStore>()(
       propagateChangesToInstances: (prebuiltId) => {
         const prebuilt = get().getPrebuilt(prebuiltId);
         if (!prebuilt) return;
-        
+
         const linkedInstances = get().getLinkedInstances(prebuiltId);
-        const { setStyle, styleSources } = useStyleStore.getState();
+        const { setStyle } = useStyleStore.getState();
         const { findInstance, updateInstance } = useBuilderStore.getState();
-        
+
         for (const link of linkedInstances) {
+          // Master is the source of truth; don't overwrite it from the prebuilt.
+          if (link.isMaster) continue;
+
           const canvasInstance = findInstance(link.instanceId);
           if (!canvasInstance) continue;
-          
+
           // Skip if structure is overridden
           if (link.overrides.structure) continue;
-          
+
           // Update styles (respecting overrides)
           for (const [oldStyleId, styleData] of Object.entries(prebuilt.styles)) {
             const newStyleId = link.styleIdMapping[oldStyleId];
             if (!newStyleId) continue;
-            
+
             for (const [styleKey, styleValue] of Object.entries(styleData.styleValues)) {
               const keyParts = styleKey.replace(`${oldStyleId}:`, '').split(':');
               const breakpoint = keyParts[0] || 'base';
               const state = keyParts[1] || 'default';
               const property = keyParts[2] || '';
-              
+
               if (property) {
                 // Skip if this property is overridden
                 const isOverridden = link.overrides.styles[newStyleId]?.has(property);
@@ -454,20 +457,41 @@ export const useComponentInstanceStore = create<ComponentInstanceStore>()(
               }
             }
           }
-          
-          // Update props (respecting overrides)
-          const updatedProps: Record<string, any> = {};
-          for (const [propKey, propValue] of Object.entries(prebuilt.instance.props)) {
-            if (!link.overrides.props[propKey]) {
-              updatedProps[propKey] = propValue;
+
+          // Update props recursively (this is what makes nested prebuilt content sync correctly)
+          const applyPropsFromPrebuilt = (
+            sourceNode: ComponentInstance,
+            targetNode: ComponentInstance,
+            isRoot: boolean
+          ): ComponentInstance => {
+            const nextProps: Record<string, any> = { ...targetNode.props };
+
+            for (const [propKey, propValue] of Object.entries(sourceNode.props)) {
+              // Only the *root* has override tracking today.
+              if (isRoot && link.overrides.props[propKey]) continue;
+              nextProps[propKey] = propValue;
             }
-          }
-          
-          if (Object.keys(updatedProps).length > 0) {
-            updateInstance(link.instanceId, {
-              props: { ...canvasInstance.props, ...updatedProps },
+
+            const nextChildren = (targetNode.children || []).map((child, index) => {
+              const sourceChild = sourceNode.children?.[index];
+              if (!sourceChild) return child;
+              if (sourceChild.type !== child.type) return child;
+              return applyPropsFromPrebuilt(sourceChild, child, false);
             });
-          }
+
+            return {
+              ...targetNode,
+              props: nextProps,
+              children: nextChildren,
+            };
+          };
+
+          const updatedTree = applyPropsFromPrebuilt(prebuilt.instance, canvasInstance, true);
+
+          updateInstance(link.instanceId, {
+            props: updatedTree.props,
+            children: updatedTree.children,
+          });
         }
       },
 
