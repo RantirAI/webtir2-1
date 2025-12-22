@@ -102,18 +102,21 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
     });
   },
   
-  updateInstance: (id, updates) => {
+  updateInstance: (id, updates, options) => {
     set((state) => {
       const newRoot = JSON.parse(JSON.stringify(state.rootInstance)) as ComponentInstance;
       const instance = findInstanceInTree(newRoot, id);
-      
+
       if (!instance) return state;
-      
+
       Object.assign(instance, updates);
-      
+
       return { rootInstance: newRoot, ...saveToHistory({ ...state, rootInstance: newRoot }) };
     });
-    
+
+    // Internal updates (e.g. prebuilt propagation) should not trigger auto-sync.
+    if (options?.skipPrebuiltSync) return;
+
     // Auto-sync: if the edited instance is inside any linked prebuilt subtree, promote that to master and sync
     setTimeout(() => {
       const { instanceLinks, syncMasterToPrebuilt, getInstanceLink } = useComponentInstanceStore.getState();
@@ -142,19 +145,17 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
       // If this linked instance is not already the master, promote it to master
       if (!link.isMaster) {
         // Demote the current master (if any)
-        const currentMasterLink = instanceLinks.find(l => l.prebuiltId === link.prebuiltId && l.isMaster);
+        const currentMasterLink = instanceLinks.find((l) => l.prebuiltId === link.prebuiltId && l.isMaster);
         if (currentMasterLink) {
-          useComponentInstanceStore.setState(state => ({
-            instanceLinks: state.instanceLinks.map(l =>
+          useComponentInstanceStore.setState((state) => ({
+            instanceLinks: state.instanceLinks.map((l) =>
               l.instanceId === currentMasterLink.instanceId ? { ...l, isMaster: false } : l
             ),
           }));
         }
         // Promote this one
-        useComponentInstanceStore.setState(state => ({
-          instanceLinks: state.instanceLinks.map(l =>
-            l.instanceId === linkedRootId ? { ...l, isMaster: true } : l
-          ),
+        useComponentInstanceStore.setState((state) => ({
+          instanceLinks: state.instanceLinks.map((l) => (l.instanceId === linkedRootId ? { ...l, isMaster: true } : l)),
         }));
       }
 
