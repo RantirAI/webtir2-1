@@ -1468,8 +1468,11 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
         className={`transition-transform origin-top ${isPreviewMode ? 'flex w-full' : 'inline-flex'} items-start justify-center ${isRulersView ? '' : 'gap-8'}`}
         style={{
           // NOTE: contentEditable has a known browser bug when inside ANY CSS transform.
-          // Avoid applying transform when zoom is 100% to prevent "typing backwards".
-          transform: isPreviewMode ? 'none' : (zoom === 100 ? 'none' : `scale(${zoom / 100})`),
+          // Avoid applying transform when zoom is effectively 100% to prevent "typing backwards".
+          transform:
+            isPreviewMode || Math.abs(zoom - 100) < 0.01
+              ? 'none'
+              : `scale(${zoom / 100})`,
           padding: isPreviewMode ? '0' : (isRulersView ? '2rem' : '4rem'),
           minHeight: isPreviewMode ? '100vh' : '100vh',
           minWidth: isPreviewMode ? '100%' : '100%',
