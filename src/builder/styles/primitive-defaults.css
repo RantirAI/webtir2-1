@@ -10,6 +10,12 @@
   position: relative;
 }
 
+/* Fix for text appearing reversed in scaled canvas containers */
+[contenteditable="true"] {
+  direction: ltr !important;
+  unicode-bidi: plaintext !important;
+}
+
 /* Root-specific styles */
 [data-instance-id="root"] {
   display: block !important;

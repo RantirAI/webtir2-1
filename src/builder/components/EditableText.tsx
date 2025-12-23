@@ -66,6 +66,7 @@ export const EditableText: React.FC<EditableTextProps> = ({
 
   if (isEditing) {
     // Use a contentEditable div instead of textarea to preserve all inherited styles
+    // Fix for text appearing reversed in scaled containers - apply explicit LTR direction
     return React.createElement(
       Component,
       {
@@ -82,6 +83,9 @@ export const EditableText: React.FC<EditableTextProps> = ({
           ...style,
           outline: 'none',
           cursor: 'text',
+          direction: 'ltr',
+          unicodeBidi: 'plaintext',
+          textAlign: style.textAlign || 'inherit',
         },
         dangerouslySetInnerHTML: undefined,
       },
