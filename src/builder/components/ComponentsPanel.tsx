@@ -121,145 +121,6 @@ export const ComponentsPanel: React.FC = () => {
     const parentId = selectedInstanceId || 'root';
     const newId = generateId();
     
-    // NAVIGATION - Box wrapper with children
-    if (type === 'Navigation') {
-      const navId = generateId();
-      const logoBoxId = generateId();
-      const logoId = generateId();
-      const linksBoxId = generateId();
-      const link1Id = generateId();
-      const link2Id = generateId();
-      const link3Id = generateId();
-      const buttonBoxId = generateId();
-      const buttonId = generateId();
-      
-      const { createStyleSource, setStyle, getNextAutoClassName } = useStyleStore.getState();
-      
-      const navClassName = getNextAutoClassName('navigation');
-      const navStyleId = createStyleSource('local', navClassName);
-      setStyle(navStyleId, 'display', 'flex');
-      setStyle(navStyleId, 'flexDirection', 'row');
-      setStyle(navStyleId, 'alignItems', 'center');
-      setStyle(navStyleId, 'justifyContent', 'space-between');
-      setStyle(navStyleId, 'padding', '16px 32px');
-      setStyle(navStyleId, 'backgroundColor', 'hsl(var(--background))');
-      setStyle(navStyleId, 'borderBottom', '1px solid hsl(var(--border))');
-      setStyle(navStyleId, 'width', '100%');
-      setStyle(navStyleId, 'gap', '24px');
-      
-      const logoBoxClassName = getNextAutoClassName('div');
-      const logoBoxStyleId = createStyleSource('local', logoBoxClassName);
-      setStyle(logoBoxStyleId, 'display', 'flex');
-      setStyle(logoBoxStyleId, 'alignItems', 'center');
-      setStyle(logoBoxStyleId, 'gap', '8px');
-      setStyle(logoBoxStyleId, 'order', '1');
-      
-      const linksBoxClassName = getNextAutoClassName('div');
-      const linksBoxStyleId = createStyleSource('local', linksBoxClassName);
-      setStyle(linksBoxStyleId, 'display', 'flex');
-      setStyle(linksBoxStyleId, 'gap', '24px');
-      setStyle(linksBoxStyleId, 'alignItems', 'center');
-      setStyle(linksBoxStyleId, 'order', '2');
-      setStyle(linksBoxStyleId, 'flexGrow', '1');
-      setStyle(linksBoxStyleId, 'justifyContent', 'flex-end');
-      
-      // Auto-classes for child components
-      const logoImageClassName = getNextAutoClassName('image');
-      const logoImageStyleId = createStyleSource('local', logoImageClassName);
-      const link1ClassName = getNextAutoClassName('link');
-      const link1StyleId = createStyleSource('local', link1ClassName);
-      const link2ClassName = getNextAutoClassName('link');
-      const link2StyleId = createStyleSource('local', link2ClassName);
-      const link3ClassName = getNextAutoClassName('link');
-      const link3StyleId = createStyleSource('local', link3ClassName);
-      const buttonBoxClassName = getNextAutoClassName('div');
-      const buttonBoxStyleId = createStyleSource('local', buttonBoxClassName);
-      setStyle(buttonBoxStyleId, 'order', '3');
-      setStyle(buttonBoxStyleId, 'marginLeft', '16px');
-      const buttonClassName = getNextAutoClassName('button');
-      const buttonStyleId = createStyleSource('local', buttonClassName);
-      
-      const container: ComponentInstance = {
-        id: navId,
-        type: 'Div' as ComponentType,
-        label: 'Navigation',
-        props: { template: 'logo-left-menu-right' },
-        styleSourceIds: [navStyleId],
-        children: [
-          {
-            id: logoBoxId,
-            type: 'Div' as ComponentType,
-            label: 'Div',
-            props: {},
-            styleSourceIds: [logoBoxStyleId],
-            children: [
-              {
-                id: logoId,
-                type: 'Image' as ComponentType,
-                label: 'Image',
-                props: { src: '/placeholder.svg', alt: 'Logo' },
-                styleSourceIds: [logoImageStyleId],
-                children: [],
-              },
-            ],
-          },
-          {
-            id: linksBoxId,
-            type: 'Div' as ComponentType,
-            label: 'Div',
-            props: {},
-            styleSourceIds: [linksBoxStyleId],
-            children: [
-              {
-                id: link1Id,
-                type: 'Link' as ComponentType,
-                label: 'Link',
-                props: { href: '#', children: 'Home' },
-                styleSourceIds: [link1StyleId],
-                children: [],
-              },
-              {
-                id: link2Id,
-                type: 'Link' as ComponentType,
-                label: 'Link',
-                props: { href: '#', children: 'About' },
-                styleSourceIds: [link2StyleId],
-                children: [],
-              },
-              {
-                id: link3Id,
-                type: 'Link' as ComponentType,
-                label: 'Link',
-                props: { href: '#', children: 'Contact' },
-                styleSourceIds: [link3StyleId],
-                children: [],
-              },
-            ],
-          },
-          {
-            id: buttonBoxId,
-            type: 'Div' as ComponentType,
-            label: 'Div',
-            props: {},
-            styleSourceIds: [buttonBoxStyleId],
-            children: [
-              {
-                id: buttonId,
-                type: 'Button' as ComponentType,
-                label: 'Button',
-                props: { children: 'Get Started' },
-                styleSourceIds: [buttonStyleId],
-                children: [],
-              },
-            ],
-          },
-        ],
-      };
-      
-      addInstance(container, parentId);
-      return;
-    }
-    
     // DROPDOWN - Box wrapper with Button and Menu
     if (type === 'Dropdown') {
       const dropdownId = generateId();
@@ -850,7 +711,7 @@ export const ComponentsPanel: React.FC = () => {
   const debouncedSearch = useDebounce(searchQuery, 300);
 
   const basicCategories = [
-    { name: 'Layout', types: ['Section', 'Container', 'Div', 'Navigation', 'Dropdown'] },
+    { name: 'Layout', types: ['Section', 'Container', 'Div', 'Dropdown'] },
     { name: 'Typography', types: ['Heading', 'Text', 'RichText', 'Button', 'Link'] },
     { name: 'Media', types: ['Image', 'Video', 'Youtube', 'Lottie'] },
     { name: 'Forms', types: ['Form', 'FormButton', 'InputLabel', 'TextInput', 'TextArea', 'Select', 'RadioGroup', 'CheckboxField'] },
@@ -965,6 +826,7 @@ export const ComponentsPanel: React.FC = () => {
   }, [filteredPrebuiltComponents]);
 
   const [openPrebuiltCategories, setOpenPrebuiltCategories] = useState<Record<string, boolean>>({
+    'Layout': true,
     'Sections': true,
     'Cards': true,
     'Custom': true,

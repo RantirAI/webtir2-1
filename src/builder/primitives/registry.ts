@@ -1204,14 +1204,6 @@ export const componentRegistry: Record<string, ComponentMeta> = {
     defaultStyles: {},
     propsDefinition: {},
   },
-  NavigationMenu: {
-    type: 'NavigationMenu',
-    label: 'Navigation Menu',
-    icon: 'Menu',
-    defaultProps: {},
-    defaultStyles: {},
-    propsDefinition: {},
-  },
   Tabs: {
     type: 'Tabs',
     label: 'Tabs',
