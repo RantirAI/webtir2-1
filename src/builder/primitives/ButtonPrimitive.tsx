@@ -131,6 +131,8 @@ export const ButtonPrimitive: React.FC<ButtonPrimitiveProps> = ({
         width: '100%',
         minWidth: '20px',
         textAlign: 'inherit',
+        direction: 'ltr',
+        unicodeBidi: 'normal',
         font: 'inherit',
         color: 'inherit',
         background: 'transparent',

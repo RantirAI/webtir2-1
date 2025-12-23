@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 interface EditableTextProps {
   value: string;
@@ -10,6 +10,10 @@ interface EditableTextProps {
   onDoubleClick?: () => void;
 }
 
+/**
+ * IMPORTANT: During editing we must NOT "control" the content (no state-driven children updates per keystroke),
+ * otherwise React reconciliation can reset the selection/caret and makes typing appear RTL/backwards.
+ */
 export const EditableText: React.FC<EditableTextProps> = ({
   value,
   onChange,
@@ -20,24 +24,52 @@ export const EditableText: React.FC<EditableTextProps> = ({
   onDoubleClick,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
-  const [editValue, setEditValue] = useState(value);
-  const inputRef = useRef<HTMLElement>(null);
+  const editableRef = useRef<HTMLElement>(null);
+  const liveValueRef = useRef<string>(value);
 
+  // Keep the live ref in sync when NOT editing
   useEffect(() => {
-    if (isEditing && inputRef.current) {
-      inputRef.current.focus();
-      // Select all text in contentEditable element
-      const range = document.createRange();
-      range.selectNodeContents(inputRef.current);
-      const selection = window.getSelection();
-      selection?.removeAllRanges();
-      selection?.addRange(range);
+    if (!isEditing) {
+      liveValueRef.current = value;
     }
+  }, [value, isEditing]);
+
+  // Focus + select on edit start, and seed the DOM content once.
+  useEffect(() => {
+    if (!isEditing) return;
+    const el = editableRef.current;
+    if (!el) return;
+
+    // Seed current value once at the start of editing
+    el.textContent = liveValueRef.current;
+    el.focus();
+
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    const selection = window.getSelection();
+    selection?.removeAllRanges();
+    selection?.addRange(range);
   }, [isEditing]);
 
-  useEffect(() => {
-    setEditValue(value);
-  }, [value]);
+  const commit = () => {
+    const next = (editableRef.current?.textContent ?? '').trim();
+    setIsEditing(false);
+
+    if (next) {
+      liveValueRef.current = next;
+      onChange(next);
+    } else {
+      // Revert to previous value if emptied
+      liveValueRef.current = value;
+      if (editableRef.current) editableRef.current.textContent = value;
+    }
+  };
+
+  const cancel = () => {
+    setIsEditing(false);
+    liveValueRef.current = value;
+    if (editableRef.current) editableRef.current.textContent = value;
+  };
 
   const handleDoubleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -45,59 +77,52 @@ export const EditableText: React.FC<EditableTextProps> = ({
     onDoubleClick?.();
   };
 
-  const handleBlur = () => {
-    setIsEditing(false);
-    if (editValue.trim()) {
-      onChange(editValue);
-    } else {
-      setEditValue(value);
-    }
-  };
-
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      handleBlur();
+      commit();
     } else if (e.key === 'Escape') {
-      setEditValue(value);
-      setIsEditing(false);
+      e.preventDefault();
+      cancel();
     }
   };
 
+  // LTR defaults (future: allow RTL only when explicitly set via style/class)
+  const direction = style.direction ?? 'ltr';
+  const unicodeBidi = (style as any).unicodeBidi ?? 'normal';
+
   if (isEditing) {
-    // Use a contentEditable div instead of textarea to preserve all inherited styles
-    // Fix for text appearing reversed in scaled containers - apply explicit LTR direction
-    return React.createElement(
-      Component,
-      {
-        ref: inputRef as any,
-        contentEditable: true,
-        suppressContentEditableWarning: true,
-        onBlur: handleBlur,
-        onKeyDown: handleKeyDown,
-        onInput: (e: React.FormEvent<HTMLElement>) => {
-          setEditValue(e.currentTarget.textContent || '');
-        },
-        className,
-        style: {
-          ...style,
-          outline: 'none',
-          cursor: 'text',
-          direction: 'ltr',
-          unicodeBidi: 'plaintext',
-          textAlign: style.textAlign || 'inherit',
-        },
-        dangerouslySetInnerHTML: undefined,
+    return React.createElement(Component, {
+      ref: editableRef as any,
+      contentEditable: true,
+      suppressContentEditableWarning: true,
+      dir: direction,
+      onBlur: commit,
+      onKeyDown: handleKeyDown,
+      onInput: (e: React.FormEvent<HTMLElement>) => {
+        // Do NOT set React state here (keeps caret stable).
+        liveValueRef.current = e.currentTarget.textContent ?? '';
       },
-      editValue
-    );
+      className,
+      style: {
+        ...style,
+        outline: 'none',
+        cursor: 'text',
+        direction,
+        unicodeBidi,
+      },
+    });
   }
 
   return React.createElement(
     Component,
     {
       className,
-      style,
+      style: {
+        ...style,
+        direction,
+        unicodeBidi,
+      },
       onDoubleClick: handleDoubleClick,
     },
     value
