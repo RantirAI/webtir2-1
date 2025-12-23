@@ -10,10 +10,10 @@
   position: relative;
 }
 
-/* Fix for text appearing reversed in scaled canvas containers */
+/* Default direction for ALL inline editable text */
 [contenteditable="true"] {
   direction: ltr !important;
-  unicode-bidi: plaintext !important;
+  unicode-bidi: normal !important;
 }
 
 /* Root-specific styles */

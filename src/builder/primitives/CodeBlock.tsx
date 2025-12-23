@@ -54,7 +54,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
         contentEditable={!isPreviewMode}
         suppressContentEditableWarning
         onBlur={handleCodeChange}
-        style={{ outline: 'none' }}
+        style={{ outline: 'none', direction: 'ltr', unicodeBidi: 'normal' }}
       >
         {instance.props.children || '// Code goes here'}
       </code>

@@ -60,7 +60,7 @@ export const UnorderedList: React.FC<UnorderedListProps> = ({
             contentEditable={!isPreviewMode}
             suppressContentEditableWarning
             onBlur={(e) => handleItemChange(index, e.currentTarget.textContent || '')}
-            style={{ outline: 'none' }}
+            style={{ outline: 'none', direction: 'ltr', unicodeBidi: 'normal' }}
           >
             {item}
           </span>
