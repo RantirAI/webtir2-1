@@ -44,9 +44,9 @@ export const ButtonPrimitive: React.FC<ButtonPrimitiveProps> = ({
   const updateInstance = useBuilderStore((state) => state.updateInstance);
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState('');
-  const [minInputWidth, setMinInputWidth] = useState<number | undefined>(undefined);
+  const [lockedWidth, setLockedWidth] = useState<number | undefined>(undefined);
   const inputRef = useRef<HTMLInputElement>(null);
-  const textSpanRef = useRef<HTMLSpanElement>(null);
+  const buttonRef = useRef<HTMLButtonElement | null>(null);
 
   // Extract non-style dataBindingProps
   const { style: dataBindingStyle, ...restDataBindingProps } = dataBindingProps;
@@ -81,16 +81,16 @@ export const ButtonPrimitive: React.FC<ButtonPrimitiveProps> = ({
     if (isPreviewMode) return;
     e.stopPropagation();
     e.preventDefault();
-    // Capture current text width before switching to input
-    if (textSpanRef.current) {
-      setMinInputWidth(textSpanRef.current.offsetWidth);
+    // Lock button width before entering edit mode
+    if (buttonRef.current) {
+      setLockedWidth(buttonRef.current.offsetWidth);
     }
     setIsEditing(true);
   };
 
   const handleBlur = () => {
     setIsEditing(false);
-    setMinInputWidth(undefined);
+    setLockedWidth(undefined);
     if (editValue.trim()) {
       updateInstance(instance.id, {
         props: { ...instance.props, children: editValue, text: editValue }
@@ -107,7 +107,7 @@ export const ButtonPrimitive: React.FC<ButtonPrimitiveProps> = ({
     } else if (e.key === 'Escape') {
       setEditValue(buttonText);
       setIsEditing(false);
-      setMinInputWidth(undefined);
+      setLockedWidth(undefined);
     }
   };
 
@@ -136,7 +136,8 @@ export const ButtonPrimitive: React.FC<ButtonPrimitiveProps> = ({
       onClick={(e) => e.stopPropagation()}
       style={{
         all: 'unset',
-        minWidth: minInputWidth ? `${minInputWidth}px` : '20px',
+        width: 'auto',
+        minWidth: '1ch',
         textAlign: 'inherit',
         direction: 'ltr',
         unicodeBidi: 'normal',
@@ -147,7 +148,7 @@ export const ButtonPrimitive: React.FC<ButtonPrimitiveProps> = ({
       }}
     />
   ) : (
-    <span ref={textSpanRef} onDoubleClick={handleDoubleClick}>{buttonText}</span>
+    <span onDoubleClick={handleDoubleClick}>{buttonText}</span>
   );
 
   // Button content
@@ -170,6 +171,8 @@ export const ButtonPrimitive: React.FC<ButtonPrimitiveProps> = ({
       alignItems: 'center',
       justifyContent: 'center',
       cursor: isEditing ? 'text' : 'pointer',
+      // Lock width during editing to prevent size changes
+      ...(isEditing && lockedWidth ? { width: `${lockedWidth}px` } : {}),
       ...dataBindingStyle 
     },
     onMouseEnter: isPreviewMode ? undefined : (e: React.MouseEvent) => {
@@ -202,6 +205,7 @@ export const ButtonPrimitive: React.FC<ButtonPrimitiveProps> = ({
   return (
     <button
       {...commonProps}
+      ref={buttonRef}
       onClick={isPreviewMode ? undefined : (e) => {
         if (isEditing) return;
         e.stopPropagation();
