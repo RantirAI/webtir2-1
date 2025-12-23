@@ -35,8 +35,14 @@ export const DraggableInstance: React.FC<DraggableInstanceProps> = ({
 
   const isFullWidth = ['Section', 'Container'].includes(instance.type);
 
+  // Important: avoid setting an "identity" CSS transform (e.g. translate3d(0,0,0))
+  // because some browsers have contentEditable caret/input bugs inside transformed ancestors.
+  const hasTransform =
+    !!transform &&
+    (transform.x !== 0 || transform.y !== 0 || transform.scaleX !== 1 || transform.scaleY !== 1);
+
   const style: React.CSSProperties = {
-    transform: CSS.Transform.toString(transform),
+    transform: hasTransform ? CSS.Transform.toString(transform) : undefined,
     transition: transition || 'transform 200ms cubic-bezier(0.2, 0, 0, 1)',
     opacity: isDragging ? 0.4 : 1,
     position: 'relative',
