@@ -7,7 +7,7 @@ import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/componen
 import { exportHTML, exportCSS, exportJS, exportAstro } from '../utils/codeExport';
 import { discoverComponents, getComponentCode, flattenComponents } from '../utils/componentCodeExport';
 import { parseHTMLToInstance, parseHTMLPreservingLinks } from '../utils/codeImport';
-import { Copy, Check, Monitor, Tablet, Smartphone, Upload, Lock } from 'lucide-react';
+import { Copy, Check, Monitor, Tablet, Smartphone, Upload } from 'lucide-react';
 import { ImportModal } from './ImportModal';
 import { FileTree } from './FileTree';
 import { toast } from '@/hooks/use-toast';
@@ -199,38 +199,26 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
     }
   };
 
-  // Page files are editable but show component regions as visually locked
-  const hasLockedComponents = isPageFile && activeTab === 'html';
-
   return (
     <div className="fixed inset-0 z-50 bg-background animate-fade-in">
       {/* Top Bar */}
       <div className="h-16 border-b border-border flex items-center justify-between px-6">
-        <div className="flex items-center gap-4">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="h-10">
-            <TabsList className="h-10 bg-muted/50">
-              <TabsTrigger value="html" className="data-[state=active]:bg-background text-xs">
-                HTML
-              </TabsTrigger>
-              <TabsTrigger value="react" className="data-[state=active]:bg-background text-xs">
-                React
-              </TabsTrigger>
-              <TabsTrigger value="astro" className="data-[state=active]:bg-background text-xs">
-                Astro
-              </TabsTrigger>
-              <TabsTrigger value="css" className="data-[state=active]:bg-background text-xs">
-                CSS
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-          
-          {hasLockedComponents && (
-            <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/50 px-3 py-1.5 rounded">
-              <Lock className="w-3 h-3" />
-              <span>Component sections (greyed) should be edited in /components</span>
-            </div>
-          )}
-        </div>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="h-10">
+          <TabsList className="h-10 bg-muted/50">
+            <TabsTrigger value="html" className="data-[state=active]:bg-background text-xs">
+              HTML
+            </TabsTrigger>
+            <TabsTrigger value="react" className="data-[state=active]:bg-background text-xs">
+              React
+            </TabsTrigger>
+            <TabsTrigger value="astro" className="data-[state=active]:bg-background text-xs">
+              Astro
+            </TabsTrigger>
+            <TabsTrigger value="css" className="data-[state=active]:bg-background text-xs">
+              CSS
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
         
         <div className="flex items-center gap-2">
           {isCodeEdited && activeTab === 'html' && (
@@ -294,19 +282,12 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
         {/* Code Editor - Center */}
         <ResizablePanel defaultSize={44} minSize={30}>
           <div className="h-full border-r border-border overflow-hidden">
-            <div className="h-10 border-b border-border flex items-center justify-between px-3 bg-muted/20">
+          <div className="h-10 border-b border-border flex items-center px-3 bg-muted/20">
               <span className="text-xs font-mono text-muted-foreground">{selectedFile}</span>
-              {hasLockedComponents && (
-                <span className="text-[10px] text-amber-500 flex items-center gap-1">
-                  <Lock className="w-3 h-3" />
-                  Components locked
-                </span>
-              )}
             </div>
             <CodeEditor 
               code={getCode(activeTab)} 
               language={activeTab === 'astro' || activeTab === 'html' ? 'html' : activeTab === 'react' ? 'jsx' : activeTab}
-              highlightComponentRegions={hasLockedComponents}
               onChange={(newCode) => {
                 setIsCodeEdited(true);
                 switch (activeTab) {
@@ -387,98 +368,32 @@ interface CodeEditorProps {
   code: string;
   language: string;
   onChange: (code: string) => void;
-  highlightComponentRegions?: boolean;
 }
 
-const CodeEditor: React.FC<CodeEditorProps> = ({ code, language, onChange, highlightComponentRegions = false }) => {
+const CodeEditor: React.FC<CodeEditorProps> = ({ code, language, onChange }) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const preRef = useRef<HTMLPreElement>(null);
-  const overlayRef = useRef<HTMLDivElement>(null);
-
-  // Find component regions in code (lines between @component markers)
-  const componentLineRanges = useMemo(() => {
-    if (!highlightComponentRegions) return [];
-    
-    const lines = code.split('\n');
-    const ranges: { start: number; end: number; name: string }[] = [];
-    let currentComponent: { start: number; name: string } | null = null;
-    
-    lines.forEach((line, index) => {
-      const startMatch = line.match(/<!-- @component:(.+?) -->/);
-      const endMatch = line.match(/<!-- @\/component:(.+?) -->/);
-      
-      if (startMatch && !currentComponent) {
-        currentComponent = { start: index, name: startMatch[1] };
-      } else if (endMatch && currentComponent) {
-        ranges.push({ start: currentComponent.start, end: index, name: currentComponent.name });
-        currentComponent = null;
-      }
-    });
-    
-    return ranges;
-  }, [code, highlightComponentRegions]);
 
   useEffect(() => {
     if (preRef.current) {
-      let highlighted = Prism.highlight(
+      const highlighted = Prism.highlight(
         code,
         Prism.languages[language] || Prism.languages.markup,
         language
       );
-      
-      // Add visual markers to component regions
-      if (highlightComponentRegions && componentLineRanges.length > 0) {
-        const lines = highlighted.split('\n');
-        const modifiedLines = lines.map((line, index) => {
-          const isInComponent = componentLineRanges.some(r => index >= r.start && index <= r.end);
-          if (isInComponent) {
-            return `<span class="component-region">${line}</span>`;
-          }
-          return line;
-        });
-        highlighted = modifiedLines.join('\n');
-      }
-      
       preRef.current.innerHTML = highlighted;
     }
-  }, [code, language, highlightComponentRegions, componentLineRanges]);
+  }, [code, language]);
 
   const handleScroll = (e: React.UIEvent<HTMLTextAreaElement>) => {
     if (preRef.current) {
       preRef.current.scrollTop = e.currentTarget.scrollTop;
       preRef.current.scrollLeft = e.currentTarget.scrollLeft;
     }
-    if (overlayRef.current) {
-      overlayRef.current.scrollTop = e.currentTarget.scrollTop;
-    }
   };
 
   return (
     <div className="relative h-full w-full overflow-hidden">
-      {/* Component region overlay backgrounds */}
-      {highlightComponentRegions && componentLineRanges.length > 0 && (
-        <div 
-          ref={overlayRef}
-          className="absolute inset-0 p-4 pointer-events-none overflow-hidden"
-          style={{ tabSize: 2 }}
-        >
-          {componentLineRanges.map((range, idx) => (
-            <div
-              key={idx}
-              className="absolute left-0 right-0 bg-amber-500/10 border-l-2 border-amber-500/50"
-              style={{
-                top: `calc(1rem + ${range.start * 1.5}rem)`,
-                height: `calc(${(range.end - range.start + 1) * 1.5}rem)`,
-              }}
-            >
-              <span className="absolute right-2 top-0 text-[9px] text-amber-500/70 font-mono">
-                {range.name} (edit in /components)
-              </span>
-            </div>
-          ))}
-        </div>
-      )}
-      
       {/* Syntax Highlighted Display */}
       <pre
         ref={preRef}
@@ -505,14 +420,6 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ code, language, onChange, highl
           caretColor: 'hsl(var(--foreground))'
         }}
       />
-      
-      {/* Component regions indicator */}
-      {highlightComponentRegions && componentLineRanges.length > 0 && (
-        <div className="absolute top-2 right-2 bg-amber-500/20 text-amber-500 text-[10px] px-2 py-1 rounded flex items-center gap-1">
-          <Lock className="w-3 h-3" />
-          {componentLineRanges.length} component{componentLineRanges.length !== 1 ? 's' : ''} locked
-        </div>
-      )}
     </div>
   );
 };
