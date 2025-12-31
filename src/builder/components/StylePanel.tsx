@@ -2447,7 +2447,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({
                         style={{ display: "grid", gridTemplateColumns: "40px 1fr", gap: "4px", alignItems: "center" }}
                       >
                         <label className={`Label ${getPropertyColorClass("backgroundImage")}`}>
-                          Image
+                          Media
                           <PropertyIndicator property="backgroundImage" />
                         </label>
                         <div className="flex items-center gap-1">

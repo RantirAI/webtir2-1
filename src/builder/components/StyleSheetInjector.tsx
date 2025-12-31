@@ -15,6 +15,45 @@ function toCssProp(prop: string) {
   return prop.replace(/([A-Z])/g, '-$1').toLowerCase();
 }
 
+// Combines background layers: fill color (overlay) on top of image/media
+// CSS background-image layers are stacked: first = top, last = bottom
+function combineBackgroundLayers(props: Record<string, string>): Record<string, string> {
+  const result = { ...props };
+  
+  const bgColor = props['background-color'];
+  const bgImage = props['background-image'];
+  const bgGradient = props['background-gradient']; // Custom prop that maps to background-image
+  
+  // Check if we have a fill color AND media (image or gradient)
+  if (bgColor && bgColor !== 'transparent' && (bgImage || bgGradient)) {
+    // Create a solid color gradient layer to sit on top
+    const colorOverlay = `linear-gradient(${bgColor}, ${bgColor})`;
+    
+    // Combine layers: overlay first (top), then gradient, then image (bottom)
+    const layers: string[] = [colorOverlay];
+    if (bgGradient) layers.push(bgGradient);
+    if (bgImage) layers.push(bgImage);
+    
+    result['background-image'] = layers.join(', ');
+    
+    // Remove background-color since it's now part of background-image layers
+    delete result['background-color'];
+    
+    // Adjust background-size and position to match layer count
+    const existingSize = props['background-size'] || 'cover';
+    const existingPosition = props['background-position'] || 'center';
+    const existingRepeat = props['background-repeat'] || 'no-repeat';
+    
+    // The overlay layer needs its own size/position/repeat
+    const layerCount = layers.length;
+    result['background-size'] = Array(layerCount).fill(existingSize).join(', ');
+    result['background-position'] = Array(layerCount).fill(existingPosition).join(', ');
+    result['background-repeat'] = Array(layerCount).fill(existingRepeat).join(', ');
+  }
+  
+  return result;
+}
+
 export const StyleSheetInjector: React.FC = () => {
   const { styleSources, styles, breakpoints } = useStyleStore();
 
@@ -61,7 +100,10 @@ export const StyleSheetInjector: React.FC = () => {
           });
         }
         
-        const baseCss = Object.entries(baseProps)
+        // Combine background layers (fill color overlay on top of image/media)
+        const finalProps = combineBackgroundLayers(baseProps);
+        
+        const baseCss = Object.entries(finalProps)
           .map(([k, v]) => `${k}: ${v};`)
           .join(' ');
         if (baseCss) rules.push(`${stateSelector} { ${baseCss} }`);
@@ -80,7 +122,11 @@ export const StyleSheetInjector: React.FC = () => {
                 }
               }
             });
-            const bpCss = Object.entries(bpProps)
+            
+            // Combine background layers for breakpoint styles too
+            const finalBpProps = combineBackgroundLayers(bpProps);
+            
+            const bpCss = Object.entries(finalBpProps)
               .map(([k, v]) => `${k}: ${v};`)
               .join(' ');
             if (bpCss) {
