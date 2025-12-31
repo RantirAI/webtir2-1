@@ -32,9 +32,16 @@ export function exportMultiPageHTML(pages: Array<{ id: string; name: string; roo
   return pageFiles;
 }
 
+// Component types that should be wrapped with markers for code editor
+const COMPONENT_TYPES = ['Section', 'Navigation', 'Header', 'Footer', 'Card', 'Accordion', 'Carousel', 'Tabs', 'Table', 'Form'];
+
 function instanceToHTML(instance: ComponentInstance, indent: number = 1): string {
   const spaces = '  '.repeat(indent);
   const { styleSources } = useStyleStore.getState();
+  
+  // Check if this is a component that should be marked
+  const isComponent = COMPONENT_TYPES.includes(instance.type);
+  const componentLabel = instance.label || instance.type;
   
   // Get class names
   const classNames = instance.styleSourceIds
@@ -134,26 +141,33 @@ function instanceToHTML(instance: ComponentInstance, indent: number = 1): string
   // Get text content
   const textContent = instance.props.children || instance.props.text || '';
   
+  // Build the HTML content
+  let htmlContent = '';
+  
   // Self-closing tags
   if (selfClosing) {
-    return `${spaces}<${tag}${allAttrs} />`;
-  }
-  
-  // Tags with children
-  if (instance.children && instance.children.length > 0) {
+    htmlContent = `${spaces}<${tag}${allAttrs} />`;
+  } else if (instance.children && instance.children.length > 0) {
+    // Tags with children
     const childrenHTML = instance.children
       .map(child => instanceToHTML(child, indent + 1))
       .join('\n');
-    return `${spaces}<${tag}${allAttrs}>\n${childrenHTML}\n${spaces}</${tag}>`;
+    htmlContent = `${spaces}<${tag}${allAttrs}>\n${childrenHTML}\n${spaces}</${tag}>`;
+  } else if (textContent) {
+    // Tags with text content
+    htmlContent = `${spaces}<${tag}${allAttrs}>${textContent}</${tag}>`;
+  } else {
+    // Empty tags
+    htmlContent = `${spaces}<${tag}${allAttrs}></${tag}>`;
   }
   
-  // Tags with text content
-  if (textContent) {
-    return `${spaces}<${tag}${allAttrs}>${textContent}</${tag}>`;
+  // Wrap components with markers
+  if (isComponent) {
+    const markerSpaces = '  '.repeat(Math.max(0, indent - 1));
+    return `${markerSpaces}<!-- @component:${componentLabel} -->\n${htmlContent}\n${markerSpaces}<!-- @/component:${componentLabel} -->`;
   }
   
-  // Empty tags
-  return `${spaces}<${tag}${allAttrs}></${tag}>`;
+  return htmlContent;
 }
 
 // Export CSS
