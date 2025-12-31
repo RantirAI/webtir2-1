@@ -506,7 +506,6 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
 
   return (
     <div className="space-y-2">
-      <Label className="text-xs font-medium text-muted-foreground tracking-wider">padding & margin</Label>
       
       <TooltipProvider delayDuration={300}>
         <div className="relative w-full" style={{ padding: '8px' }}>
