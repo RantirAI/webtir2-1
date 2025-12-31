@@ -39,6 +39,7 @@ import {
   Copy,
   Trash2,
   Pencil,
+  AlignCenterHorizontal,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -677,7 +678,8 @@ export const StylePanel: React.FC<StylePanelProps> = ({
     hasAddButton?: boolean;
     indicator?: boolean;
     properties?: string[];
-  }> = ({ title, section, children, hasAddButton, indicator, properties }) => {
+    headerAction?: React.ReactNode;
+  }> = ({ title, section, children, hasAddButton, indicator, properties, headerAction }) => {
     const hasStyles = properties ? hasStylesInSection(properties) : indicator;
     const isPrimary = activeClassIndex === null || activeClassIndex === 0;
     const [isHovered, setIsHovered] = useState(false);
@@ -726,7 +728,10 @@ export const StylePanel: React.FC<StylePanelProps> = ({
               </div>
             )}
           </div>
-          {hasAddButton && <Plus className={`SectionIcon ${openSections[section] ? "open" : ""}`} size={18} />}
+          <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+            {headerAction}
+            {hasAddButton && <Plus className={`SectionIcon ${openSections[section] ? "open" : ""}`} size={18} />}
+          </div>
         </div>
         {openSections[section] && children && <div className="SectionContent">{children}</div>}
       </div>
@@ -1387,6 +1392,28 @@ export const StylePanel: React.FC<StylePanelProps> = ({
                   "paddingBottom",
                   "paddingLeft",
                 ]}
+                headerAction={
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            // Center the element by setting margin-left and margin-right to auto
+                            updateStyle("marginLeft", "auto");
+                            updateStyle("marginRight", "auto");
+                          }}
+                          className="w-5 h-5 flex items-center justify-center rounded border border-border hover:bg-accent transition-colors"
+                        >
+                          <AlignCenterHorizontal className="w-3 h-3 text-muted-foreground" />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="left" className="bg-popover border border-border">
+                        <span className="text-xs">Center element horizontally</span>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                }
               >
                 <SpacingControl
                   marginTop={computedStyles.marginTop}
@@ -3142,22 +3169,22 @@ export const StylePanel: React.FC<StylePanelProps> = ({
                     </>
                   )}
 
-                  {/* Heading - tag selection */}
+                  {/* Heading - level selection */}
                   {selectedInstance.type === "Heading" && (
                     <div className="space-y-1">
                       <label className="text-[10px] text-muted-foreground">Heading Level</label>
                       <select
                         className="w-full h-6 px-2 text-[10px] rounded border border-border bg-background"
-                        value={selectedInstance.props.tag || "h2"}
+                        value={selectedInstance.props.level || "h1"}
                         onChange={(e) => {
                           updateInstance(selectedInstance.id, {
-                            props: { ...selectedInstance.props, tag: e.target.value },
+                            props: { ...selectedInstance.props, level: e.target.value },
                           });
                           // Apply heading typography
                           if (activeStyleSourceId) {
                             applyHeadingTypography(
-                              e.target.value as "h1" | "h2" | "h3" | "h4" | "h5" | "h6",
                               activeStyleSourceId,
+                              e.target.value as "h1" | "h2" | "h3" | "h4" | "h5" | "h6",
                               setStyle,
                             );
                           }
