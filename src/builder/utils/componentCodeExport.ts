@@ -14,7 +14,8 @@ export interface ComponentCodeEntry {
   children: ComponentCodeEntry[];
 }
 
-// Discover all component instances from the canvas
+// Discover ONLY linked/prebuilt component instances from the canvas
+// Static sections, containers, text, etc. are NOT components
 export function discoverComponents(rootInstance: ComponentInstance): ComponentCodeEntry[] {
   const { prebuiltComponents, isLinkedInstance, getInstanceLink } = useComponentInstanceStore.getState();
   const components: ComponentCodeEntry[] = [];
@@ -22,12 +23,25 @@ export function discoverComponents(rootInstance: ComponentInstance): ComponentCo
   function traverse(instance: ComponentInstance, parentPath: string = '/components'): ComponentCodeEntry | null {
     const isLinked = isLinkedInstance(instance.id);
     const link = getInstanceLink(instance.id);
-    // Check if this instance is linked to a prebuilt component
-    const linkedPrebuilt = link ? prebuiltComponents.find(p => p.id === link.prebuiltId) : undefined;
+    
+    // ONLY include linked/prebuilt components - not static elements
+    if (!isLinked || !link) {
+      // Still check children for linked components
+      for (const child of instance.children || []) {
+        const childEntry = traverse(child, parentPath);
+        if (childEntry) {
+          components.push(childEntry);
+        }
+      }
+      return null;
+    }
+    
+    // This is a linked prebuilt component
+    const linkedPrebuilt = prebuiltComponents.find(p => p.id === link.prebuiltId);
     
     // Determine component name
-    const name = instance.label || 
-                 linkedPrebuilt?.name || 
+    const name = linkedPrebuilt?.name || 
+                 instance.label || 
                  `${instance.type}-${instance.id.slice(-4)}`;
     
     const safeName = name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
@@ -37,7 +51,7 @@ export function discoverComponents(rootInstance: ComponentInstance): ComponentCo
     const htmlCode = generateComponentHTML(instance);
     const cssCode = generateComponentCSS(instance);
     
-    // Process children recursively
+    // Process children for nested linked components
     const childComponents: ComponentCodeEntry[] = [];
     for (const child of instance.children || []) {
       const childEntry = traverse(child, `${parentPath}/${safeName}`);
@@ -51,7 +65,7 @@ export function discoverComponents(rootInstance: ComponentInstance): ComponentCo
       name,
       path,
       instanceId: instance.id,
-      isLinked,
+      isLinked: true,
       prebuiltId: linkedPrebuilt?.id,
       htmlCode,
       cssCode,
@@ -63,10 +77,7 @@ export function discoverComponents(rootInstance: ComponentInstance): ComponentCo
   
   // Start from root children (don't include root itself as a component)
   for (const child of rootInstance.children || []) {
-    const entry = traverse(child);
-    if (entry) {
-      components.push(entry);
-    }
+    traverse(child);
   }
   
   return components;
