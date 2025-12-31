@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 import { exportHTML, exportCSS, exportJS, exportAstro } from '../utils/codeExport';
 import { discoverComponents, getComponentCode, flattenComponents } from '../utils/componentCodeExport';
-import { parseHTMLToInstance } from '../utils/codeImport';
+import { parseHTMLToInstance, parseHTMLPreservingLinks } from '../utils/codeImport';
 import { Copy, Check, Monitor, Tablet, Smartphone, Upload, Lock } from 'lucide-react';
 import { ImportModal } from './ImportModal';
 import { FileTree } from './FileTree';
@@ -153,27 +153,19 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
   const applyCodeChanges = () => {
     try {
       if (activeTab === 'html') {
-        // Only allow changes to component files, not page files
-        if (isPageFile) {
-          toast({
-            title: 'Cannot edit page HTML directly',
-            description: 'Edit components in the /components folder to change page content.',
-            variant: 'destructive',
-          });
-          return;
-        }
-        
-        const newInstance = parseHTMLToInstance(htmlCode);
+        // Use link-preserving parser to maintain component connections
+        const newInstance = parseHTMLPreservingLinks(htmlCode, rootInstance);
         if (newInstance && rootInstance) {
-          // Update the root instance while preserving the ID
+          // Update the root instance while preserving the ID and links
           updateInstance(rootInstance.id, {
             children: newInstance.children,
             styleSourceIds: newInstance.styleSourceIds,
+            props: newInstance.props,
           });
           
           toast({
             title: 'Code applied',
-            description: 'HTML changes have been applied to the canvas',
+            description: 'HTML changes have been applied to the canvas. Component links preserved.',
           });
         }
       }
