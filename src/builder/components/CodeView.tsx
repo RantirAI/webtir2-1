@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useBuilderStore } from '../store/useBuilderStore';
+import { usePageStore } from '../store/usePageStore';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 import { exportHTML, exportCSS, exportJS, exportAstro } from '../utils/codeExport';
 import { discoverComponents, getComponentCode, flattenComponents } from '../utils/componentCodeExport';
 import { parseHTMLToInstance } from '../utils/codeImport';
-import { Copy, Check, Monitor, Tablet, Smartphone, Upload } from 'lucide-react';
+import { Copy, Check, Monitor, Tablet, Smartphone, Upload, Lock } from 'lucide-react';
 import { ImportModal } from './ImportModal';
 import { FileTree } from './FileTree';
 import { toast } from '@/hooks/use-toast';
@@ -25,6 +26,10 @@ interface CodeViewProps {
 export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames }) => {
   const rootInstance = useBuilderStore((state) => state.rootInstance);
   const updateInstance = useBuilderStore((state) => state.updateInstance);
+  const { getCurrentPage, getPageCustomCode } = usePageStore();
+  const currentPage = getCurrentPage();
+  const customCode = currentPage ? getPageCustomCode(currentPage.id) : { header: '', body: '', footer: '' };
+  
   const [activeTab, setActiveTab] = useState('html');
   const [copiedTab, setCopiedTab] = useState<string | null>(null);
   const [previewSize, setPreviewSize] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
@@ -46,10 +51,74 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
 
   // Check if selected file is a component
   const isComponentFile = selectedFile.startsWith('/components/');
+  const isPageFile = selectedFile.startsWith('/pages/');
   const componentCode = useMemo(() => {
     if (!isComponentFile) return null;
     return getComponentCode(componentEntries, selectedFile);
   }, [isComponentFile, componentEntries, selectedFile]);
+
+  // Generate HTML with custom code sections and component placeholders for page files
+  const generatePageHTML = () => {
+    const baseHTML = exportHTML(rootInstance);
+    
+    // Inject custom code sections
+    let modifiedHTML = baseHTML;
+    
+    // Add custom header code before </head>
+    if (customCode.header) {
+      modifiedHTML = modifiedHTML.replace(
+        '</head>',
+        `  <!-- Custom Header Code -->\n${customCode.header}\n  </head>`
+      );
+    }
+    
+    // Add custom body code after <body>
+    if (customCode.body) {
+      modifiedHTML = modifiedHTML.replace(
+        /<body[^>]*>/,
+        `$&\n  <!-- Custom Body Start Code -->\n${customCode.body}\n`
+      );
+    }
+    
+    // Add custom footer code before </body>
+    if (customCode.footer) {
+      modifiedHTML = modifiedHTML.replace(
+        '</body>',
+        `  <!-- Custom Footer Code -->\n${customCode.footer}\n  </body>`
+      );
+    }
+    
+    return modifiedHTML;
+  };
+
+  // Identify component regions in HTML for read-only display
+  const componentRegions = useMemo(() => {
+    if (!isPageFile || !rootInstance) return [];
+    
+    const regions: { start: number; end: number; componentName: string }[] = [];
+    const html = generatePageHTML();
+    
+    // Find component markers in the HTML
+    componentEntries.forEach(entry => {
+      const componentMarkerStart = `<!-- Component: ${entry.name} -->`;
+      const componentMarkerEnd = `<!-- /Component: ${entry.name} -->`;
+      
+      let startIdx = html.indexOf(componentMarkerStart);
+      while (startIdx !== -1) {
+        const endIdx = html.indexOf(componentMarkerEnd, startIdx);
+        if (endIdx !== -1) {
+          regions.push({
+            start: startIdx,
+            end: endIdx + componentMarkerEnd.length,
+            componentName: entry.name,
+          });
+        }
+        startIdx = html.indexOf(componentMarkerStart, startIdx + 1);
+      }
+    });
+    
+    return regions;
+  }, [isPageFile, rootInstance, componentEntries, customCode]);
 
   useEffect(() => {
     // Generate code exports based on selected file
@@ -57,12 +126,12 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
       setHtmlCode(componentCode.html);
       setCssCode(componentCode.css);
     } else {
-      setHtmlCode(exportHTML(rootInstance));
+      setHtmlCode(generatePageHTML());
       setCssCode(exportCSS());
     }
     setJsCode(exportJS(rootInstance));
     setAstroCode(exportAstro(rootInstance));
-  }, [rootInstance, selectedFile, isComponentFile, componentCode]);
+  }, [rootInstance, selectedFile, isComponentFile, componentCode, customCode]);
 
   const handleCopy = (code: string, tab: string) => {
     navigator.clipboard.writeText(code);
@@ -80,6 +149,16 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
   const applyCodeChanges = () => {
     try {
       if (activeTab === 'html') {
+        // Only allow changes to component files, not page files
+        if (isPageFile) {
+          toast({
+            title: 'Cannot edit page HTML directly',
+            description: 'Edit components in the /components folder to change page content.',
+            variant: 'destructive',
+          });
+          return;
+        }
+        
         const newInstance = parseHTMLToInstance(htmlCode);
         if (newInstance && rootInstance) {
           // Update the root instance while preserving the ID
@@ -124,6 +203,9 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
     }
   };
 
+  // Determine if current file is read-only
+  const isReadOnly = isPageFile && activeTab === 'html';
+
   return (
     <div className="fixed inset-0 z-50 bg-background animate-fade-in">
       {/* Top Bar */}
@@ -145,10 +227,17 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
               </TabsTrigger>
             </TabsList>
           </Tabs>
+          
+          {isReadOnly && (
+            <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/50 px-3 py-1.5 rounded">
+              <Lock className="w-3 h-3" />
+              <span>Components are read-only on page files. Edit in /components folder.</span>
+            </div>
+          )}
         </div>
         
         <div className="flex items-center gap-2">
-          {isCodeEdited && activeTab === 'html' && (
+          {isCodeEdited && activeTab === 'html' && !isReadOnly && (
             <Button
               variant="default"
               size="sm"
@@ -209,13 +298,21 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
         {/* Code Editor - Center */}
         <ResizablePanel defaultSize={44} minSize={30}>
           <div className="h-full border-r border-border overflow-hidden">
-            <div className="h-10 border-b border-border flex items-center px-3 bg-muted/20">
+            <div className="h-10 border-b border-border flex items-center justify-between px-3 bg-muted/20">
               <span className="text-xs font-mono text-muted-foreground">{selectedFile}</span>
+              {isReadOnly && (
+                <span className="text-[10px] text-amber-500 flex items-center gap-1">
+                  <Lock className="w-3 h-3" />
+                  Read-only
+                </span>
+              )}
             </div>
             <CodeEditor 
               code={getCode(activeTab)} 
               language={activeTab === 'astro' || activeTab === 'html' ? 'html' : activeTab === 'react' ? 'jsx' : activeTab}
+              readOnly={isReadOnly}
               onChange={(newCode) => {
+                if (isReadOnly) return;
                 setIsCodeEdited(true);
                 switch (activeTab) {
                   case 'html': setHtmlCode(newCode); break;
@@ -295,9 +392,10 @@ interface CodeEditorProps {
   code: string;
   language: string;
   onChange: (code: string) => void;
+  readOnly?: boolean;
 }
 
-const CodeEditor: React.FC<CodeEditorProps> = ({ code, language, onChange }) => {
+const CodeEditor: React.FC<CodeEditorProps> = ({ code, language, onChange, readOnly = false }) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const preRef = useRef<HTMLPreElement>(null);
 
@@ -320,7 +418,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ code, language, onChange }) => 
   };
 
   return (
-    <div className="relative h-full w-full overflow-hidden">
+    <div className={`relative h-full w-full overflow-hidden ${readOnly ? 'opacity-75' : ''}`}>
       {/* Syntax Highlighted Display */}
       <pre
         ref={preRef}
@@ -336,17 +434,28 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ code, language, onChange }) => 
       <textarea
         ref={textareaRef}
         value={code}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(e) => !readOnly && onChange(e.target.value)}
         onScroll={handleScroll}
         spellCheck={false}
-        className="absolute inset-0 p-4 m-0 font-mono text-sm leading-6 bg-transparent text-transparent caret-white resize-none focus:outline-none selection:bg-primary/30"
+        readOnly={readOnly}
+        className={`absolute inset-0 p-4 m-0 font-mono text-sm leading-6 bg-transparent text-transparent caret-white resize-none focus:outline-none selection:bg-primary/30 ${
+          readOnly ? 'cursor-not-allowed' : ''
+        }`}
         style={{ 
           tabSize: 2,
           whiteSpace: 'pre',
           wordWrap: 'normal',
-          caretColor: 'hsl(var(--foreground))'
+          caretColor: readOnly ? 'transparent' : 'hsl(var(--foreground))'
         }}
       />
+      
+      {/* Read-only overlay indicator */}
+      {readOnly && (
+        <div className="absolute top-2 right-2 bg-amber-500/20 text-amber-500 text-[10px] px-2 py-1 rounded flex items-center gap-1">
+          <Lock className="w-3 h-3" />
+          Components are locked
+        </div>
+      )}
     </div>
   );
 };

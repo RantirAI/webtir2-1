@@ -1,10 +1,17 @@
 import { create } from 'zustand';
 import { ComponentInstance } from './types';
 
+interface PageCustomCode {
+  header: string;  // Code injected into <head>
+  body: string;    // Code injected at start of <body>
+  footer: string;  // Code injected at end of <body>
+}
+
 interface PageData {
   id: string;
   name: string;
   rootInstance: ComponentInstance;
+  customCode: PageCustomCode;
 }
 
 interface PageStore {
@@ -17,6 +24,8 @@ interface PageStore {
   setCurrentPage: (id: string) => void;
   getCurrentPage: () => PageData | null;
   getAllPages: () => PageData[];
+  updatePageCustomCode: (id: string, section: keyof PageCustomCode, code: string) => void;
+  getPageCustomCode: (id: string) => PageCustomCode;
 }
 
 // Create initial page
@@ -30,6 +39,7 @@ const initialRoot: ComponentInstance = {
 };
 
 const initialPageId = 'page-1';
+const defaultCustomCode: PageCustomCode = { header: '', body: '', footer: '' };
 
 export const usePageStore = create<PageStore>((set, get) => ({
   pages: {
@@ -37,6 +47,7 @@ export const usePageStore = create<PageStore>((set, get) => ({
       id: initialPageId,
       name: 'Page 1',
       rootInstance: initialRoot,
+      customCode: { ...defaultCustomCode },
     },
   },
   currentPageId: initialPageId,
@@ -48,7 +59,7 @@ export const usePageStore = create<PageStore>((set, get) => ({
     set((state) => ({
       pages: {
         ...state.pages,
-        [id]: { id, name, rootInstance },
+        [id]: { id, name, rootInstance, customCode: { ...defaultCustomCode } },
       },
     }));
     return id;
@@ -83,5 +94,29 @@ export const usePageStore = create<PageStore>((set, get) => ({
   getAllPages: () => {
     const state = get();
     return Object.values(state.pages);
+  },
+  
+  updatePageCustomCode: (id, section, code) => {
+    set((state) => {
+      const page = state.pages[id];
+      if (!page) return state;
+      return {
+        pages: {
+          ...state.pages,
+          [id]: {
+            ...page,
+            customCode: {
+              ...page.customCode,
+              [section]: code,
+            },
+          },
+        },
+      };
+    });
+  },
+  
+  getPageCustomCode: (id) => {
+    const state = get();
+    return state.pages[id]?.customCode || { ...defaultCustomCode };
   },
 }));

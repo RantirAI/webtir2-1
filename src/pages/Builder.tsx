@@ -1089,6 +1089,7 @@ const Builder: React.FC = () => {
         onMetaTitleChange={setMetaTitle}
         metaDescription={metaDescription}
         onMetaDescriptionChange={setMetaDescription}
+        currentPageId={currentPageId}
       />
       
       <DragOverlay dropAnimation={null}>
