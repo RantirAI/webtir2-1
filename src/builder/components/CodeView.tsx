@@ -49,13 +49,17 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
     return discoverComponents(rootInstance);
   }, [rootInstance]);
 
-  // Check if selected file is a component
+  // Check if selected file is a component file or page file
   const isComponentFile = selectedFile.startsWith('/components/');
   const isPageFile = selectedFile.startsWith('/pages/');
+  
   const componentCode = useMemo(() => {
     if (!isComponentFile) return null;
     return getComponentCode(componentEntries, selectedFile);
   }, [isComponentFile, componentEntries, selectedFile]);
+
+  // Get list of component types that should be locked in page view
+  const lockedComponentTypes = ['Section', 'Navigation', 'Header', 'Footer', 'Card', 'Accordion', 'Carousel', 'Tabs'];
 
   // Generate HTML with custom code sections and component placeholders for page files
   const generatePageHTML = () => {
@@ -203,8 +207,8 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
     }
   };
 
-  // Determine if current file is read-only
-  const isReadOnly = isPageFile && activeTab === 'html';
+  // Page files are editable but show component regions as visually locked
+  const hasLockedComponents = isPageFile && activeTab === 'html';
 
   return (
     <div className="fixed inset-0 z-50 bg-background animate-fade-in">
@@ -228,16 +232,16 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
             </TabsList>
           </Tabs>
           
-          {isReadOnly && (
+          {hasLockedComponents && (
             <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/50 px-3 py-1.5 rounded">
               <Lock className="w-3 h-3" />
-              <span>Components are read-only on page files. Edit in /components folder.</span>
+              <span>Component sections (greyed) should be edited in /components</span>
             </div>
           )}
         </div>
         
         <div className="flex items-center gap-2">
-          {isCodeEdited && activeTab === 'html' && !isReadOnly && (
+          {isCodeEdited && activeTab === 'html' && (
             <Button
               variant="default"
               size="sm"
@@ -300,19 +304,18 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
           <div className="h-full border-r border-border overflow-hidden">
             <div className="h-10 border-b border-border flex items-center justify-between px-3 bg-muted/20">
               <span className="text-xs font-mono text-muted-foreground">{selectedFile}</span>
-              {isReadOnly && (
+              {hasLockedComponents && (
                 <span className="text-[10px] text-amber-500 flex items-center gap-1">
                   <Lock className="w-3 h-3" />
-                  Read-only
+                  Components locked
                 </span>
               )}
             </div>
             <CodeEditor 
               code={getCode(activeTab)} 
               language={activeTab === 'astro' || activeTab === 'html' ? 'html' : activeTab === 'react' ? 'jsx' : activeTab}
-              readOnly={isReadOnly}
+              highlightComponentRegions={hasLockedComponents}
               onChange={(newCode) => {
-                if (isReadOnly) return;
                 setIsCodeEdited(true);
                 switch (activeTab) {
                   case 'html': setHtmlCode(newCode); break;
@@ -392,33 +395,98 @@ interface CodeEditorProps {
   code: string;
   language: string;
   onChange: (code: string) => void;
-  readOnly?: boolean;
+  highlightComponentRegions?: boolean;
 }
 
-const CodeEditor: React.FC<CodeEditorProps> = ({ code, language, onChange, readOnly = false }) => {
+const CodeEditor: React.FC<CodeEditorProps> = ({ code, language, onChange, highlightComponentRegions = false }) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const preRef = useRef<HTMLPreElement>(null);
+  const overlayRef = useRef<HTMLDivElement>(null);
+
+  // Find component regions in code (lines between @component markers)
+  const componentLineRanges = useMemo(() => {
+    if (!highlightComponentRegions) return [];
+    
+    const lines = code.split('\n');
+    const ranges: { start: number; end: number; name: string }[] = [];
+    let currentComponent: { start: number; name: string } | null = null;
+    
+    lines.forEach((line, index) => {
+      const startMatch = line.match(/<!-- @component:(.+?) -->/);
+      const endMatch = line.match(/<!-- @\/component:(.+?) -->/);
+      
+      if (startMatch && !currentComponent) {
+        currentComponent = { start: index, name: startMatch[1] };
+      } else if (endMatch && currentComponent) {
+        ranges.push({ start: currentComponent.start, end: index, name: currentComponent.name });
+        currentComponent = null;
+      }
+    });
+    
+    return ranges;
+  }, [code, highlightComponentRegions]);
 
   useEffect(() => {
     if (preRef.current) {
-      const highlighted = Prism.highlight(
+      let highlighted = Prism.highlight(
         code,
         Prism.languages[language] || Prism.languages.markup,
         language
       );
+      
+      // Add visual markers to component regions
+      if (highlightComponentRegions && componentLineRanges.length > 0) {
+        const lines = highlighted.split('\n');
+        const modifiedLines = lines.map((line, index) => {
+          const isInComponent = componentLineRanges.some(r => index >= r.start && index <= r.end);
+          if (isInComponent) {
+            return `<span class="component-region">${line}</span>`;
+          }
+          return line;
+        });
+        highlighted = modifiedLines.join('\n');
+      }
+      
       preRef.current.innerHTML = highlighted;
     }
-  }, [code, language]);
+  }, [code, language, highlightComponentRegions, componentLineRanges]);
 
   const handleScroll = (e: React.UIEvent<HTMLTextAreaElement>) => {
     if (preRef.current) {
       preRef.current.scrollTop = e.currentTarget.scrollTop;
       preRef.current.scrollLeft = e.currentTarget.scrollLeft;
     }
+    if (overlayRef.current) {
+      overlayRef.current.scrollTop = e.currentTarget.scrollTop;
+    }
   };
 
   return (
-    <div className={`relative h-full w-full overflow-hidden ${readOnly ? 'opacity-75' : ''}`}>
+    <div className="relative h-full w-full overflow-hidden">
+      {/* Component region overlay backgrounds */}
+      {highlightComponentRegions && componentLineRanges.length > 0 && (
+        <div 
+          ref={overlayRef}
+          className="absolute inset-0 p-4 pointer-events-none overflow-hidden"
+          style={{ tabSize: 2 }}
+        >
+          {componentLineRanges.map((range, idx) => (
+            <div
+              key={idx}
+              className="absolute left-0 right-0 bg-amber-500/10 border-l-2 border-amber-500/50"
+              style={{
+                top: `calc(1rem + ${range.start * 1.5}rem)`,
+                height: `calc(${(range.end - range.start + 1) * 1.5}rem)`,
+              }}
+            >
+              <span className="absolute right-2 top-0 text-[9px] text-amber-500/70 font-mono">
+                {range.name} (edit in /components)
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+      
       {/* Syntax Highlighted Display */}
       <pre
         ref={preRef}
@@ -434,26 +502,23 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ code, language, onChange, readO
       <textarea
         ref={textareaRef}
         value={code}
-        onChange={(e) => !readOnly && onChange(e.target.value)}
+        onChange={(e) => onChange(e.target.value)}
         onScroll={handleScroll}
         spellCheck={false}
-        readOnly={readOnly}
-        className={`absolute inset-0 p-4 m-0 font-mono text-sm leading-6 bg-transparent text-transparent caret-white resize-none focus:outline-none selection:bg-primary/30 ${
-          readOnly ? 'cursor-not-allowed' : ''
-        }`}
+        className="absolute inset-0 p-4 m-0 font-mono text-sm leading-6 bg-transparent text-transparent caret-white resize-none focus:outline-none selection:bg-primary/30"
         style={{ 
           tabSize: 2,
           whiteSpace: 'pre',
           wordWrap: 'normal',
-          caretColor: readOnly ? 'transparent' : 'hsl(var(--foreground))'
+          caretColor: 'hsl(var(--foreground))'
         }}
       />
       
-      {/* Read-only overlay indicator */}
-      {readOnly && (
+      {/* Component regions indicator */}
+      {highlightComponentRegions && componentLineRanges.length > 0 && (
         <div className="absolute top-2 right-2 bg-amber-500/20 text-amber-500 text-[10px] px-2 py-1 rounded flex items-center gap-1">
           <Lock className="w-3 h-3" />
-          Components are locked
+          {componentLineRanges.length} component{componentLineRanges.length !== 1 ? 's' : ''} locked
         </div>
       )}
     </div>
