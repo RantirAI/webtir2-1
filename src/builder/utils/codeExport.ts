@@ -1,5 +1,6 @@
 import { ComponentInstance } from '../store/types';
 import { useStyleStore } from '../store/useStyleStore';
+import { useComponentInstanceStore } from '../store/useComponentInstanceStore';
 import { exportStylesheet } from './export';
 
 // Export HTML for a single page
@@ -32,16 +33,17 @@ export function exportMultiPageHTML(pages: Array<{ id: string; name: string; roo
   return pageFiles;
 }
 
-// Component types that should be wrapped with markers for code editor
-const COMPONENT_TYPES = ['Section', 'Navigation', 'Header', 'Footer', 'Card', 'Accordion', 'Carousel', 'Tabs', 'Table', 'Form'];
-
 function instanceToHTML(instance: ComponentInstance, indent: number = 1): string {
   const spaces = '  '.repeat(indent);
   const { styleSources } = useStyleStore.getState();
+  const { isLinkedInstance, getInstanceLink, prebuiltComponents } = useComponentInstanceStore.getState();
   
-  // Check if this is a component that should be marked
-  const isComponent = COMPONENT_TYPES.includes(instance.type);
-  const componentLabel = instance.label || instance.type;
+  // ONLY mark as component if it's actually a LINKED prebuilt component
+  // Static sections, containers, etc. are NOT components
+  const isLinked = isLinkedInstance(instance.id);
+  const link = isLinked ? getInstanceLink(instance.id) : null;
+  const linkedPrebuilt = link ? prebuiltComponents.find(p => p.id === link.prebuiltId) : null;
+  const componentLabel = linkedPrebuilt?.name || instance.label || instance.type;
   
   // Get class names
   const classNames = instance.styleSourceIds
@@ -161,8 +163,9 @@ function instanceToHTML(instance: ComponentInstance, indent: number = 1): string
     htmlContent = `${spaces}<${tag}${allAttrs}></${tag}>`;
   }
   
-  // Wrap components with markers
-  if (isComponent) {
+  // ONLY wrap with component markers if it's a LINKED prebuilt component
+  // Static elements on the page should NOT have component markers
+  if (isLinked && linkedPrebuilt) {
     const markerSpaces = '  '.repeat(Math.max(0, indent - 1));
     return `${markerSpaces}<!-- @component:${componentLabel} -->\n${htmlContent}\n${markerSpaces}<!-- @/component:${componentLabel} -->`;
   }
