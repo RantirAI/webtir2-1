@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { ChevronRight, ChevronDown, FileCode, FolderOpen, Folder, Component } from 'lucide-react';
+import { ChevronRight, ChevronDown, FileCode, FolderOpen, Folder, Component, Plus } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useBuilderStore } from '../store/useBuilderStore';
 import { discoverComponents, ComponentCodeEntry } from '../utils/componentCodeExport';
@@ -17,9 +17,12 @@ interface FileTreeProps {
   onFileSelect: (path: string) => void;
   selectedFile: string;
   pages: string[];
+  onAddComponent?: () => void;
+  onAddPage?: () => void;
+  onAddMedia?: () => void;
 }
 
-export const FileTree: React.FC<FileTreeProps> = ({ onFileSelect, selectedFile, pages }) => {
+export const FileTree: React.FC<FileTreeProps> = ({ onFileSelect, selectedFile, pages, onAddComponent, onAddPage, onAddMedia }) => {
   const rootInstance = useBuilderStore((state) => state.rootInstance);
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set(['/', '/pages', '/components', '/media']));
 
@@ -102,13 +105,22 @@ export const FileTree: React.FC<FileTreeProps> = ({ onFileSelect, selectedFile, 
     const isExpanded = expandedFolders.has(node.path);
     const isSelected = selectedFile === node.path;
 
+    // Determine which add handler to use based on folder path
+    const getAddHandler = (path: string) => {
+      if (path === '/pages') return onAddPage;
+      if (path === '/components') return onAddComponent;
+      if (path === '/media') return onAddMedia;
+      return undefined;
+    };
+
     if (node.type === 'folder') {
       const hasChildren = node.children && node.children.length > 0;
+      const addHandler = getAddHandler(node.path);
       
       return (
         <div key={node.path}>
           <div
-            className={`flex items-center gap-1 px-2 py-1.5 cursor-pointer hover:bg-muted/50 text-xs ${
+            className={`group flex items-center gap-1 px-2 py-1.5 cursor-pointer hover:bg-muted/50 text-xs ${
               isSelected ? 'bg-muted' : ''
             }`}
             style={{ paddingLeft: `${depth * 12 + 8}px` }}
@@ -124,9 +136,24 @@ export const FileTree: React.FC<FileTreeProps> = ({ onFileSelect, selectedFile, 
             ) : (
               <Folder className="w-3 h-3 flex-shrink-0 text-blue-500" />
             )}
-            <span className="truncate">{node.name}</span>
+            <span className="truncate flex-1">{node.name}</span>
+            
+            {/* Add button for specific folders */}
+            {addHandler && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  addHandler();
+                }}
+                className="p-0.5 rounded opacity-0 group-hover:opacity-100 hover:bg-primary/20 hover:text-primary transition-opacity"
+                title={`Add to ${node.name}`}
+              >
+                <Plus className="w-3 h-3" />
+              </button>
+            )}
+            
             {node.path === '/components' && hasChildren && (
-              <span className="ml-auto text-[10px] text-muted-foreground">
+              <span className="text-[10px] text-muted-foreground">
                 {node.children?.length}
               </span>
             )}

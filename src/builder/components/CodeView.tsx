@@ -10,6 +10,7 @@ import { parseHTMLToInstance, parseHTMLPreservingLinks } from '../utils/codeImpo
 import { Copy, Check, Monitor, Tablet, Smartphone, Upload } from 'lucide-react';
 import { ImportModal } from './ImportModal';
 import { FileTree } from './FileTree';
+import { CreateComponentDialog } from './CreateComponentDialog';
 import { toast } from '@/hooks/use-toast';
 import Prism from 'prismjs';
 import 'prismjs/themes/prism-tomorrow.css';
@@ -34,6 +35,7 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
   const [copiedTab, setCopiedTab] = useState<string | null>(null);
   const [previewSize, setPreviewSize] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
   const [showImportModal, setShowImportModal] = useState(false);
+  const [showCreateComponentDialog, setShowCreateComponentDialog] = useState(false);
   const defaultFile = pages.length > 0 ? `/pages/${pages[0].toLowerCase().replace(/\s+/g, '-')}.html` : '/pages/page-1.html';
   const [selectedFile, setSelectedFile] = useState(defaultFile);
   const [isCodeEdited, setIsCodeEdited] = useState(false);
@@ -273,6 +275,19 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
               onFileSelect={setSelectedFile}
               selectedFile={selectedFile}
               pages={pages}
+              onAddComponent={() => setShowCreateComponentDialog(true)}
+              onAddPage={() => {
+                toast({
+                  title: 'Add Page',
+                  description: 'Use the page navigation at the bottom to add new pages.',
+                });
+              }}
+              onAddMedia={() => {
+                toast({
+                  title: 'Add Media',
+                  description: 'Drag and drop media files onto the canvas to add them.',
+                });
+              }}
             />
           </div>
         </ResizablePanel>
@@ -359,6 +374,11 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
         open={showImportModal}
         onOpenChange={setShowImportModal}
         onImport={handleImport}
+      />
+      
+      <CreateComponentDialog
+        open={showCreateComponentDialog}
+        onOpenChange={setShowCreateComponentDialog}
       />
     </div>
   );
