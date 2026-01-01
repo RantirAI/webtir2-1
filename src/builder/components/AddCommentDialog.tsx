@@ -46,25 +46,23 @@ export const AddCommentDialog: React.FC<AddCommentDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle className="text-sm">Add Comment</DialogTitle>
+      <DialogContent className="sm:max-w-[280px] p-3 gap-2">
+        <DialogHeader className="pb-0">
+          <DialogTitle className="text-xs font-medium">Add Comment</DialogTitle>
         </DialogHeader>
-        <div className="space-y-4">
-          <Textarea
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            placeholder="Write your comment..."
-            className="min-h-[100px] resize-none"
-            autoFocus
-          />
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={handleClose}>
+        <Textarea
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          placeholder="Write your comment..."
+          className="min-h-[60px] text-xs resize-none"
+          autoFocus
+        />
+        <DialogFooter className="gap-1.5 sm:gap-1.5">
+          <Button variant="ghost" size="sm" onClick={handleClose} className="h-6 px-2 text-xs">
             Cancel
           </Button>
-          <Button onClick={handleSubmit} disabled={!content.trim()}>
-            Add Comment
+          <Button size="sm" onClick={handleSubmit} disabled={!content.trim()} className="h-6 px-2 text-xs">
+            Add
           </Button>
         </DialogFooter>
       </DialogContent>
