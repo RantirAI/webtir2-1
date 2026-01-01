@@ -1,11 +1,14 @@
 import { create } from 'zustand';
 import { ComponentInstance } from './types';
 
-interface PageCustomCode {
+interface CustomCode {
   header: string;  // Code injected into <head>
   body: string;    // Code injected at start of <body>
   footer: string;  // Code injected at end of <body>
 }
+
+// Alias for backwards compatibility
+type PageCustomCode = CustomCode;
 
 interface PageData {
   id: string;
@@ -17,6 +20,7 @@ interface PageData {
 interface PageStore {
   pages: Record<string, PageData>;
   currentPageId: string;
+  projectCustomCode: CustomCode; // Universal code for all pages
   
   addPage: (name: string, rootInstance: ComponentInstance) => string;
   updatePage: (id: string, updates: Partial<PageData>) => void;
@@ -26,6 +30,8 @@ interface PageStore {
   getAllPages: () => PageData[];
   updatePageCustomCode: (id: string, section: keyof PageCustomCode, code: string) => void;
   getPageCustomCode: (id: string) => PageCustomCode;
+  updateProjectCustomCode: (section: keyof CustomCode, code: string) => void;
+  getProjectCustomCode: () => CustomCode;
 }
 
 // Create initial page
@@ -51,6 +57,7 @@ export const usePageStore = create<PageStore>((set, get) => ({
     },
   },
   currentPageId: initialPageId,
+  projectCustomCode: { ...defaultCustomCode },
   
   addPage: (name, rootInstance) => {
     const state = get();
@@ -118,5 +125,18 @@ export const usePageStore = create<PageStore>((set, get) => ({
   getPageCustomCode: (id) => {
     const state = get();
     return state.pages[id]?.customCode || { ...defaultCustomCode };
+  },
+  
+  updateProjectCustomCode: (section, code) => {
+    set((state) => ({
+      projectCustomCode: {
+        ...state.projectCustomCode,
+        [section]: code,
+      },
+    }));
+  },
+  
+  getProjectCustomCode: () => {
+    return get().projectCustomCode;
   },
 }));

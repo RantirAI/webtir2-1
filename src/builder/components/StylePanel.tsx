@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useBuilderStore } from "../store/useBuilderStore";
 import { useStyleStore } from "../store/useStyleStore";
+import { usePageStore } from "../store/usePageStore";
 import { PseudoState, ComponentType } from "../store/types";
 import { componentSupportsPropertyGroup, showBackgroundImageControl } from "../utils/componentPropertyMap";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -101,6 +102,73 @@ import { CarouselStyleEditor } from "./style-editors/CarouselStyleEditor";
 import { TableStyleEditor } from "./style-editors/TableStyleEditor";
 import "../styles/style-panel.css";
 import "../styles/tokens.css";
+import { Code } from "lucide-react";
+
+// Page Custom Code Section component
+const PageCustomCodeSection: React.FC<{ pageId: string }> = ({ pageId }) => {
+  const { getPageCustomCode, updatePageCustomCode } = usePageStore();
+  const customCode = getPageCustomCode(pageId);
+  
+  return (
+    <div className="space-y-2.5">
+      <div>
+        <h3 className="text-xs font-semibold mb-0.5 flex items-center gap-1.5">
+          <Code className="w-3 h-3" />
+          Custom Code
+        </h3>
+        <p className="text-[10px] text-muted-foreground">
+          Add custom code that applies only to this page.
+        </p>
+      </div>
+
+      <div className="space-y-1.5">
+        <Label htmlFor="page-header-code" className="text-xs flex items-center gap-1.5">
+          <span className="text-[10px] font-mono bg-muted px-1.5 py-0.5 rounded">&lt;head&gt;</span>
+          Header
+        </Label>
+        <Textarea
+          id="page-header-code"
+          value={customCode.header}
+          onChange={(e) => updatePageCustomCode(pageId, 'header', e.target.value)}
+          placeholder="<!-- Meta tags, scripts, styles -->"
+          className="font-mono text-[10px] min-h-[60px] resize-none"
+          rows={3}
+        />
+      </div>
+
+      <div className="space-y-1.5">
+        <Label htmlFor="page-body-code" className="text-xs flex items-center gap-1.5">
+          <span className="text-[10px] font-mono bg-muted px-1.5 py-0.5 rounded">&lt;body&gt;</span>
+          Body Start
+        </Label>
+        <Textarea
+          id="page-body-code"
+          value={customCode.body}
+          onChange={(e) => updatePageCustomCode(pageId, 'body', e.target.value)}
+          placeholder="<!-- Code at start of body -->"
+          className="font-mono text-[10px] min-h-[60px] resize-none"
+          rows={3}
+        />
+      </div>
+
+      <div className="space-y-1.5">
+        <Label htmlFor="page-footer-code" className="text-xs flex items-center gap-1.5">
+          <span className="text-[10px] font-mono bg-muted px-1.5 py-0.5 rounded">&lt;/body&gt;</span>
+          Footer
+        </Label>
+        <Textarea
+          id="page-footer-code"
+          value={customCode.footer}
+          onChange={(e) => updatePageCustomCode(pageId, 'footer', e.target.value)}
+          placeholder="<!-- Code before closing body -->"
+          className="font-mono text-[10px] min-h-[60px] resize-none"
+          rows={3}
+        />
+      </div>
+    </div>
+  );
+};
+
 // Helper to find path from root to an instance
 const findPathToInstance = (
   root: ComponentInstance | null,
@@ -406,12 +474,12 @@ export const StylePanel: React.FC<StylePanelProps> = ({
 
         {/* Page Settings Drawer - also available when no element selected */}
         <Sheet open={pageSettingsOpen} onOpenChange={setPageSettingsOpen}>
-          <SheetContent side="right" className="w-[340px] overflow-y-auto p-4">
-            <SheetHeader className="pb-3 space-y-1">
+          <SheetContent side="right" className="w-[340px] p-0 flex flex-col max-h-screen">
+            <SheetHeader className="p-4 pb-3 space-y-1 flex-shrink-0 border-b">
               <SheetTitle className="text-sm">Page Settings</SheetTitle>
               <SheetDescription className="text-xs">Configure settings for this page</SheetDescription>
             </SheetHeader>
-            <div className="mt-3 space-y-3">
+            <div className="flex-1 overflow-y-auto p-4 space-y-3">
               {/* Page Name */}
               <div className="space-y-1.5">
                 <Label htmlFor="page-name-no-sel" className="text-xs">
@@ -4845,12 +4913,12 @@ export const StylePanel: React.FC<StylePanelProps> = ({
 
       {/* Page Settings Drawer */}
       <Sheet open={pageSettingsOpen} onOpenChange={setPageSettingsOpen}>
-        <SheetContent side="right" className="w-[340px] overflow-y-auto p-4">
-          <SheetHeader className="pb-3 space-y-1">
+        <SheetContent side="right" className="w-[340px] p-0 flex flex-col max-h-screen">
+          <SheetHeader className="p-4 pb-3 space-y-1 flex-shrink-0 border-b">
             <SheetTitle className="text-sm">Page Settings</SheetTitle>
             <SheetDescription className="text-xs">Configure settings for this page</SheetDescription>
           </SheetHeader>
-          <div className="mt-3 space-y-3">
+          <div className="flex-1 overflow-y-auto p-4 space-y-3">
             {/* Page Name */}
             <div className="space-y-1.5">
               <Label htmlFor="page-name" className="text-xs">
@@ -4972,6 +5040,11 @@ export const StylePanel: React.FC<StylePanelProps> = ({
                 />
               </div>
             </div>
+
+            <Separator className="my-3" />
+
+            {/* Custom Code Section */}
+            <PageCustomCodeSection pageId={selectedPageForSettings} />
 
             <Separator className="my-3" />
 
