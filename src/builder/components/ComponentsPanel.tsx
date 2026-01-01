@@ -8,11 +8,12 @@ import { generateId } from '../utils/instance';
 import * as Icons from 'lucide-react';
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
-import { Search, ChevronDown, Trash2, Package, Link2, Link2Off } from 'lucide-react';
+import { Search, ChevronDown, Trash2, Package, Link2, Link2Off, Plus } from 'lucide-react';
 import { useDebounce } from '@/hooks/useDebounce';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { toast } from 'sonner';
+import { CreateComponentDialog } from './CreateComponentDialog';
 
 const DraggableComponent: React.FC<{ type: string; label: string; icon: string; onAdd: () => void }> = ({ type, label, icon, onAdd }) => {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
@@ -113,6 +114,7 @@ export const ComponentsPanel: React.FC = () => {
     linkInstance, 
     getLinkedInstances 
   } = useComponentInstanceStore();
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
   const handleAddComponent = (type: string) => {
     const meta = componentRegistry[type];
@@ -855,6 +857,15 @@ export const ComponentsPanel: React.FC = () => {
           <>{renderCategorySection(filteredBasicCategories)}{filteredBasicCategories.length === 0 && (<div className="flex flex-col items-center justify-center py-12 text-center space-y-2"><Search className="w-8 h-8 text-muted-foreground/50" /><p className="text-sm text-muted-foreground">No elements found</p></div>)}</>
         ) : (
           <div className="space-y-2">
+            {/* Create new component button */}
+            <button
+              onClick={() => setIsCreateDialogOpen(true)}
+              className="w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg border border-dashed border-border hover:border-primary hover:bg-accent/50 transition-all text-sm text-muted-foreground hover:text-foreground"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Create Component</span>
+            </button>
+            
             {/* System prebuilts grouped by category */}
             {Object.entries(groupedPrebuilts.categorizedSystem).map(([category, prebuilts]) => (
               <Collapsible 
@@ -915,6 +926,11 @@ export const ComponentsPanel: React.FC = () => {
           </div>
         )}
       </div>
+      
+      <CreateComponentDialog 
+        open={isCreateDialogOpen} 
+        onOpenChange={setIsCreateDialogOpen} 
+      />
     </div>
   );
 };
