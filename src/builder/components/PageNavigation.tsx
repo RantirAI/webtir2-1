@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Plus, ChevronDown, Monitor, Tablet, Smartphone, Download, Save, Eye, ZoomIn, ZoomOut, Sun, Moon, Hand, FileCode, FileText, Palette, Zap, X, PanelLeftClose, Ruler, MessageSquare, Code2, User } from 'lucide-react';
+import { Plus, ChevronDown, Monitor, Tablet, Smartphone, Download, Eye, ZoomIn, ZoomOut, Sun, Moon, Hand, FileCode, FileText, Palette, Zap, X, PanelLeftClose, Ruler, MessageSquare, Code2, User } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Separator } from '@/components/ui/separator';
 import { useTheme } from 'next-themes';
@@ -139,17 +139,17 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
 
   return (
     <div 
-      className={`backdrop-blur-md border border-border flex items-center gap-2 ${
+      className={`backdrop-blur-md border border-border flex items-center gap-1 ${
         isRulersView 
-          ? 'rounded-none shadow-none bg-background w-full px-4 py-2' 
-          : 'rounded-lg shadow-lg bg-white/70 dark:bg-zinc-900/70 px-3 py-2'
+          ? 'rounded-none shadow-none bg-background w-full px-2 py-1.5' 
+          : 'rounded-lg shadow-lg bg-white/70 dark:bg-zinc-900/70 px-2 py-1.5'
       }`}
     >
       {/* App Icon and Project Name */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1.5">
         <button 
           onClick={onProjectSettingsOpen}
-          className="w-8 h-8 bg-primary rounded flex items-center justify-center text-primary-foreground font-bold text-xs hover:opacity-80"
+          className="w-7 h-7 bg-primary rounded flex items-center justify-center text-primary-foreground font-bold text-xs hover:opacity-80"
         >
           {projectName.charAt(0).toUpperCase()}
         </button>
@@ -184,12 +184,12 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
           </span>
         )}
         
-        {/* Role Badge */}
+        {/* Role Badge Dropdown */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Badge 
               variant={currentRole === 'developer' ? 'default' : 'secondary'}
-              className="cursor-pointer text-[10px] h-5 gap-1"
+              className="cursor-pointer text-[10px] h-5 gap-1 hover:opacity-80"
             >
               {currentRole === 'developer' ? (
                 <>
@@ -202,15 +202,22 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
                   Client
                 </>
               )}
+              <ChevronDown className="w-2.5 h-2.5 ml-0.5" />
             </Badge>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="start">
-            <DropdownMenuItem onClick={() => setRole('developer')} className="gap-2">
+          <DropdownMenuContent align="start" className="bg-popover">
+            <DropdownMenuItem 
+              onClick={() => setRole('developer')} 
+              className="gap-2 cursor-pointer"
+            >
               <Code2 className="w-4 h-4" />
               Developer
               {currentRole === 'developer' && <span className="ml-auto">✓</span>}
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setRole('client')} className="gap-2">
+            <DropdownMenuItem 
+              onClick={() => setRole('client')} 
+              className="gap-2 cursor-pointer"
+            >
               <User className="w-4 h-4" />
               Client
               {currentRole === 'client' && <span className="ml-auto">✓</span>}
@@ -219,13 +226,13 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
         </DropdownMenu>
       </div>
 
-      <Separator orientation="vertical" className="h-6" />
+      <Separator orientation="vertical" className="h-5" />
 
       {/* Comments Toggle - Single Icon */}
       <Button
         variant="ghost"
         size="sm"
-        className={`h-8 px-2 ${isAddingComment ? 'bg-primary text-primary-foreground' : commentsVisible ? 'bg-[#F5F5F5] dark:bg-zinc-800' : ''}`}
+        className={`h-7 w-7 p-0 ${isAddingComment ? 'bg-primary text-primary-foreground' : commentsVisible ? 'bg-muted' : ''}`}
         onClick={() => {
           if (!commentsVisible) {
             toggleCommentsVisibility();
@@ -234,35 +241,35 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
         }}
         title={isAddingComment ? "Cancel Adding Comment" : "Add Comment"}
       >
-        <MessageSquare className="w-4 h-4" />
+        <MessageSquare className="w-3.5 h-3.5" />
       </Button>
 
       {!isCodeViewOpen && (
         <>
-          <Separator orientation="vertical" className="h-6" />
+          <Separator orientation="vertical" className="h-5" />
 
           {/* Zoom Controls */}
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-0.5">
             <Button
               variant="ghost"
               size="sm"
-              className="h-8 px-2"
+              className="h-7 w-7 p-0"
               onClick={handleZoomOut}
             >
-              <ZoomOut className="w-4 h-4" />
+              <ZoomOut className="w-3.5 h-3.5" />
             </Button>
-            <span className="text-xs font-medium min-w-[2.5rem] text-center">{zoom}%</span>
+            <span className="text-xs font-medium min-w-[2rem] text-center">{zoom}%</span>
             <Button
               variant="ghost"
               size="sm"
-              className="h-8 px-2"
+              className="h-7 w-7 p-0"
               onClick={handleZoomIn}
             >
-              <ZoomIn className="w-4 h-4" />
+              <ZoomIn className="w-3.5 h-3.5" />
             </Button>
           </div>
 
-          <Separator orientation="vertical" className="h-6" />
+          <Separator orientation="vertical" className="h-5" />
         </>
       )}
 
@@ -270,23 +277,23 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
       <Button
         variant="ghost"
         size="sm"
-        className={`h-8 px-2 ${isPanMode ? 'bg-[#F5F5F5] dark:bg-zinc-800' : ''}`}
+        className={`h-7 w-7 p-0 ${isPanMode ? 'bg-muted' : ''}`}
         onClick={onPanModeToggle}
       >
-        <Hand className="w-4 h-4" />
+        <Hand className="w-3.5 h-3.5" />
       </Button>
 
       {/* Theme Toggle */}
       <Button
         variant="ghost"
         size="sm"
-        className="h-8 px-2"
+        className="h-7 w-7 p-0"
         onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
       >
         {theme === 'dark' ? (
-          <Sun className="w-4 h-4" />
+          <Sun className="w-3.5 h-3.5" />
         ) : (
-          <Moon className="w-4 h-4" />
+          <Moon className="w-3.5 h-3.5" />
         )}
       </Button>
 
@@ -294,11 +301,11 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
       <Button
         variant="ghost"
         size="sm"
-        className={`h-8 px-2 ${isCodeViewOpen ? 'bg-[#F5F5F5] dark:bg-zinc-800' : ''}`}
+        className={`h-7 w-7 p-0 ${isCodeViewOpen ? 'bg-muted' : ''}`}
         onClick={onCodeViewToggle}
         title={isCodeViewOpen ? "Close Code View" : "Open Code View"}
       >
-        {isCodeViewOpen ? <X className="w-4 h-4" /> : <FileCode className="w-4 h-4" />}
+        {isCodeViewOpen ? <X className="w-3.5 h-3.5" /> : <FileCode className="w-3.5 h-3.5" />}
       </Button>
 
       {/* Rulers View Toggle */}
@@ -306,11 +313,11 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
         <Button
           variant="ghost"
           size="sm"
-          className={`h-8 px-2 ${isRulersView ? 'bg-[#F5F5F5] dark:bg-zinc-800' : ''}`}
+          className={`h-7 w-7 p-0 ${isRulersView ? 'bg-muted' : ''}`}
           onClick={onRulersViewToggle}
           title={isRulersView ? "Exit Rulers View" : "Rulers View"}
         >
-          <Ruler className="w-4 h-4" />
+          <Ruler className="w-3.5 h-3.5" />
         </Button>
       )}
 
@@ -319,22 +326,22 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
         <Button
           variant="ghost"
           size="sm"
-          className={`h-8 px-2 ${sidebarsHidden ? 'bg-[#F5F5F5] dark:bg-zinc-800' : ''}`}
+          className={`h-7 w-7 p-0 ${sidebarsHidden ? 'bg-muted' : ''}`}
           onClick={onToggleSidebars}
           title={sidebarsHidden ? "Show Sidebars" : "Hide Sidebars"}
         >
-          <PanelLeftClose className={`w-4 h-4 transition-transform ${sidebarsHidden ? 'rotate-180' : ''}`} />
+          <PanelLeftClose className={`w-3.5 h-3.5 transition-transform ${sidebarsHidden ? 'rotate-180' : ''}`} />
         </Button>
       )}
 
-      <Separator orientation="vertical" className="h-6" />
+      <Separator orientation="vertical" className="h-5" />
 
       {/* Pages Dropdown */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="sm" className="h-8 px-3 gap-2">
+          <Button variant="ghost" size="sm" className="h-7 px-2 gap-1 text-xs">
             {currentPage}
-            <ChevronDown className="w-4 h-4" />
+            <ChevronDown className="w-3 h-3" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="w-48 bg-popover">
@@ -353,18 +360,18 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
 
       {!isCodeViewOpen && (
         <>
-          <Separator orientation="vertical" className="h-6" />
+          <Separator orientation="vertical" className="h-5" />
 
           {/* Breakpoint Selector Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-8 px-2 gap-1">
+              <Button variant="ghost" size="sm" className="h-7 px-1.5 gap-0.5">
                 {(() => {
                   const current = breakpoints.find(bp => bp.id === currentBreakpoint);
                   const Icon = current?.icon || Monitor;
-                  return <Icon className="w-4 h-4" />;
+                  return <Icon className="w-3.5 h-3.5" />;
                 })()}
-                <ChevronDown className="w-3 h-3" />
+                <ChevronDown className="w-2.5 h-2.5" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="bg-popover">
@@ -385,17 +392,13 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <Separator orientation="vertical" className="h-6" />
+          <Separator orientation="vertical" className="h-5" />
         </>
       )}
 
-      {/* Action Buttons */}
-      <Button variant="ghost" size="sm" className="h-8 px-2" onClick={onPreviewToggle}>
-        <Eye className="w-4 h-4" />
-      </Button>
-
-      <Button variant="ghost" size="sm" className="h-8 px-2">
-        <Save className="w-4 h-4" />
+      {/* Preview Button */}
+      <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={onPreviewToggle}>
+        <Eye className="w-3.5 h-3.5" />
       </Button>
 
       <DropdownMenu>
