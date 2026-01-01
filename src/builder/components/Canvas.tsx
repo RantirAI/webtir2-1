@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useBuilderStore } from '../store/useBuilderStore';
 import { useStyleStore } from '../store/useStyleStore';
+import { useCommentStore } from '../store/useCommentStore';
+import { usePageStore } from '../store/usePageStore';
 import { ComponentInstance } from '../store/types';
 import { Div } from '../primitives/Box';
 import { Container } from '../primitives/Container';
@@ -36,6 +38,8 @@ import { SelectionOverlay } from './SelectionOverlay';
 import { HoverOverlay } from './HoverOverlay';
 import { HeadingSettingsPopover } from './HeadingSettingsPopover';
 import { SavePrebuiltDialog } from './SavePrebuiltDialog';
+import { AddCommentDialog } from './AddCommentDialog';
+import { CommentMarker } from './CommentMarker';
 import { useDroppable } from '@dnd-kit/core';
 import { componentRegistry } from '../primitives/registry';
 import { generateId } from '../utils/instance';
@@ -88,6 +92,11 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
   const [touchStart, setTouchStart] = useState<{ x: number; y: number; distance: number } | null>(null);
   const [initialZoom, setInitialZoom] = useState<number>(100);
   const [prebuiltDialog, setPrebuiltDialog] = useState<{ open: boolean; instance: ComponentInstance | null }>({ open: false, instance: null });
+  const [addCommentPosition, setAddCommentPosition] = useState<{ x: number; y: number } | null>(null);
+  
+  // Comment store
+  const { commentsVisible, isAddingComment, setIsAddingComment, getPageComments } = useCommentStore();
+  const pageComments = getPageComments(currentPage);
 
   const { setNodeRef } = useDroppable({
     id: 'canvas-drop-zone',
@@ -1490,7 +1499,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
           return (
           <div 
             key={pageId}
-            className={`builder-page ${!isPreviewMode ? 'scrollbar-thin' : ''} ${isCurrentPage ? 'ring-2 ring-blue-500' : ''}`}
+            className={`builder-page ${!isPreviewMode ? 'scrollbar-thin' : ''} ${isCurrentPage ? 'ring-2 ring-blue-500' : ''} ${isAddingComment && isCurrentPage ? 'cursor-crosshair' : ''}`}
             style={{ 
               ...pageStyles,
               width: isPreviewMode ? '100%' : `${frameWidth}px`,
@@ -1501,9 +1510,19 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
               position: 'relative',
               overflow: isPreviewMode ? 'visible' : 'auto',
               flexShrink: 0,
-              cursor: isCurrentPage ? 'default' : 'pointer',
+              cursor: isAddingComment && isCurrentPage ? 'crosshair' : (isCurrentPage ? 'default' : 'pointer'),
             }}
             onClick={(e) => {
+              // Handle adding comment on canvas click
+              if (isAddingComment && isCurrentPage) {
+                e.stopPropagation();
+                const rect = e.currentTarget.getBoundingClientRect();
+                const x = ((e.clientX - rect.left) / rect.width) * 100;
+                const y = ((e.clientY - rect.top) / rect.height) * 100;
+                setAddCommentPosition({ x, y });
+                return;
+              }
+              
               if (!isCurrentPage && e.target === e.currentTarget) {
                 onPageChange?.(pageId);
               }
@@ -1542,6 +1561,15 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
                 onMouseDown={(e) => handleResizeStart(e, 'right')}
               />
             )}
+
+            {/* Comment Markers */}
+            {commentsVisible && isCurrentPage && pageComments.map((comment, index) => (
+              <CommentMarker
+                key={comment.id}
+                comment={comment}
+                index={index + 1}
+              />
+            ))}
 
             {pageRootInstance && renderInstance(pageRootInstance)}
           </div>
@@ -1603,6 +1631,19 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
         open={prebuiltDialog.open}
         onOpenChange={(open) => setPrebuiltDialog({ ...prebuiltDialog, open })}
         instance={prebuiltDialog.instance}
+      />
+      
+      {/* Add Comment Dialog */}
+      <AddCommentDialog
+        open={addCommentPosition !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setAddCommentPosition(null);
+            setIsAddingComment(false);
+          }
+        }}
+        position={addCommentPosition}
+        pageId={currentPage}
       />
     </div>
   );
