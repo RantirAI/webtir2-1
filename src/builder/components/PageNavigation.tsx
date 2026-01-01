@@ -208,22 +208,22 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
               <ChevronDown className="w-2 h-2" />
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="bg-popover min-w-[120px]">
+          <DropdownMenuContent align="start" side="top" className="bg-popover min-w-[100px] p-1">
             <DropdownMenuItem 
               onClick={() => setRole('developer')} 
-              className="gap-2 text-xs cursor-pointer"
+              className="gap-1.5 text-[11px] py-1 px-2 cursor-pointer"
             >
               <Code2 className="w-3 h-3" />
               Developer
-              {currentRole === 'developer' && <span className="ml-auto text-primary">✓</span>}
+              {currentRole === 'developer' && <span className="ml-auto text-primary text-[10px]">✓</span>}
             </DropdownMenuItem>
             <DropdownMenuItem 
               onClick={() => setRole('client')} 
-              className="gap-2 text-xs cursor-pointer"
+              className="gap-1.5 text-[11px] py-1 px-2 cursor-pointer"
             >
               <User className="w-3 h-3" />
               Client
-              {currentRole === 'client' && <span className="ml-auto text-primary">✓</span>}
+              {currentRole === 'client' && <span className="ml-auto text-primary text-[10px]">✓</span>}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -347,15 +347,15 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
             <ChevronDown className="w-3 h-3" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="w-48 bg-popover">
+        <DropdownMenuContent align="start" side="top" className="w-40 bg-popover p-1">
           {safePages.map((page) => (
-            <DropdownMenuItem key={page} onClick={() => onPageChange(page)}>
+            <DropdownMenuItem key={page} onClick={() => onPageChange(page)} className="text-[11px] py-1 px-2">
               {page}
             </DropdownMenuItem>
           ))}
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={onAddPage} className="gap-2">
-            <Plus className="w-4 h-4" />
+          <DropdownMenuSeparator className="my-1" />
+          <DropdownMenuItem onClick={onAddPage} className="gap-1.5 text-[11px] py-1 px-2">
+            <Plus className="w-3 h-3" />
             Add Page
           </DropdownMenuItem>
         </DropdownMenuContent>
@@ -377,18 +377,18 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
                 <ChevronDown className="w-2.5 h-2.5" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="bg-popover">
+            <DropdownMenuContent align="start" side="top" className="bg-popover p-1">
               {breakpoints.map((bp) => {
                 const Icon = bp.icon;
                 return (
                   <DropdownMenuItem
                     key={bp.id}
                     onClick={() => onBreakpointChange(bp.id)}
-                    className="gap-2"
+                    className="gap-1.5 text-[11px] py-1 px-2"
                   >
-                    <Icon className="w-4 h-4" />
+                    <Icon className="w-3 h-3" />
                     {bp.label}
-                    {currentBreakpoint === bp.id && <span className="ml-auto">✓</span>}
+                    {currentBreakpoint === bp.id && <span className="ml-auto text-[10px]">✓</span>}
                   </DropdownMenuItem>
                 );
               })}
@@ -411,28 +411,28 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
             Export
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-48">
-          <DropdownMenuItem onClick={handleExportReact} className="gap-2">
-            <FileCode className="w-4 h-4" />
+        <DropdownMenuContent align="end" side="top" className="w-44 p-1">
+          <DropdownMenuItem onClick={handleExportReact} className="gap-1.5 text-[11px] py-1 px-2">
+            <FileCode className="w-3 h-3" />
             Export React (.jsx)
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={handleExportHTML} className="gap-2">
-            <FileText className="w-4 h-4" />
+          <DropdownMenuItem onClick={handleExportHTML} className="gap-1.5 text-[11px] py-1 px-2">
+            <FileText className="w-3 h-3" />
             Export HTML
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={handleExportCSS} className="gap-2">
-            <Palette className="w-4 h-4" />
+          <DropdownMenuItem onClick={handleExportCSS} className="gap-1.5 text-[11px] py-1 px-2">
+            <Palette className="w-3 h-3" />
             Export CSS
           </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={handleExportAll} className="gap-2 font-semibold">
-            <Download className="w-4 h-4" />
-            Export All Files (Legacy)
+          <DropdownMenuSeparator className="my-1" />
+          <DropdownMenuItem onClick={handleExportAll} className="gap-1.5 text-[11px] py-1 px-2 font-medium">
+            <Download className="w-3 h-3" />
+            Export All (Legacy)
           </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setShowRantirModal(true)} className="gap-2 font-semibold">
-                <Zap className="w-4 h-4" />
-                Export Rantir Framework
-              </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setShowRantirModal(true)} className="gap-1.5 text-[11px] py-1 px-2 font-medium">
+            <Zap className="w-3 h-3" />
+            Export Rantir
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
 
