@@ -221,27 +221,20 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
 
       <Separator orientation="vertical" className="h-6" />
 
-      {/* Comments Toggle */}
+      {/* Comments Toggle - Single Icon */}
       <Button
         variant="ghost"
         size="sm"
-        className={`h-8 px-2 gap-1 ${commentsVisible ? 'bg-[#F5F5F5] dark:bg-zinc-800' : ''}`}
-        onClick={toggleCommentsVisibility}
-        title={commentsVisible ? "Hide Comments" : "Show Comments"}
-      >
-        <MessageSquare className="w-4 h-4" />
-      </Button>
-
-      {/* Add Comment Button */}
-      <Button
-        variant="ghost"
-        size="sm"
-        className={`h-8 px-2 gap-1 ${isAddingComment ? 'bg-primary text-primary-foreground' : ''}`}
-        onClick={() => setIsAddingComment(!isAddingComment)}
+        className={`h-8 px-2 ${isAddingComment ? 'bg-primary text-primary-foreground' : commentsVisible ? 'bg-[#F5F5F5] dark:bg-zinc-800' : ''}`}
+        onClick={() => {
+          if (!commentsVisible) {
+            toggleCommentsVisibility();
+          }
+          setIsAddingComment(!isAddingComment);
+        }}
         title={isAddingComment ? "Cancel Adding Comment" : "Add Comment"}
       >
-        <Plus className="w-4 h-4" />
-        <MessageSquare className="w-3 h-3" />
+        <MessageSquare className="w-4 h-4" />
       </Button>
 
       {!isCodeViewOpen && (
@@ -344,43 +337,53 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
             <ChevronDown className="w-4 h-4" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="w-48">
+        <DropdownMenuContent align="start" className="w-48 bg-popover">
           {safePages.map((page) => (
             <DropdownMenuItem key={page} onClick={() => onPageChange(page)}>
               {page}
             </DropdownMenuItem>
           ))}
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={onAddPage} className="gap-2">
+            <Plus className="w-4 h-4" />
+            Add Page
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
-
-      {/* Add Page Button */}
-      <Button variant="ghost" size="sm" className="h-8 px-2" onClick={onAddPage}>
-        <Plus className="w-4 h-4" />
-      </Button>
 
       {!isCodeViewOpen && (
         <>
           <Separator orientation="vertical" className="h-6" />
 
-          {/* Breakpoint Selector */}
-          <div className="flex gap-1">
-            {breakpoints.map((bp) => {
-              const Icon = bp.icon;
-              return (
-                <Button
-                  key={bp.id}
-                  variant="ghost"
-                  size="sm"
-                  className={`h-8 px-2 ${
-                    currentBreakpoint === bp.id ? 'bg-[#F5F5F5] dark:bg-zinc-800' : ''
-                  }`}
-                  onClick={() => onBreakpointChange(bp.id)}
-                >
-                  <Icon className="w-3.5 h-3.5" />
-                </Button>
-              );
-            })}
-          </div>
+          {/* Breakpoint Selector Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="h-8 px-2 gap-1">
+                {(() => {
+                  const current = breakpoints.find(bp => bp.id === currentBreakpoint);
+                  const Icon = current?.icon || Monitor;
+                  return <Icon className="w-4 h-4" />;
+                })()}
+                <ChevronDown className="w-3 h-3" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="bg-popover">
+              {breakpoints.map((bp) => {
+                const Icon = bp.icon;
+                return (
+                  <DropdownMenuItem
+                    key={bp.id}
+                    onClick={() => onBreakpointChange(bp.id)}
+                    className="gap-2"
+                  >
+                    <Icon className="w-4 h-4" />
+                    {bp.label}
+                    {currentBreakpoint === bp.id && <span className="ml-auto">✓</span>}
+                  </DropdownMenuItem>
+                );
+              })}
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           <Separator orientation="vertical" className="h-6" />
         </>
