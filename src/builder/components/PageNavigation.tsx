@@ -11,7 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { RantirExportModal } from './RantirExportModal';
 import { useRoleStore, UserRole } from '@/builder/store/useRoleStore';
 import { useCommentStore } from '@/builder/store/useCommentStore';
-import { Badge } from '@/components/ui/badge';
+
 interface PageNavigationProps {
   currentPage: string;
   pages: string[];
@@ -187,40 +187,43 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
         {/* Role Badge Dropdown */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Badge 
-              variant={currentRole === 'developer' ? 'default' : 'secondary'}
-              className="cursor-pointer text-[10px] h-5 gap-1 hover:opacity-80"
+            <button
+              className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium cursor-pointer transition-colors ${
+                currentRole === 'developer' 
+                  ? 'bg-primary text-primary-foreground hover:bg-primary/90' 
+                  : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+              }`}
             >
               {currentRole === 'developer' ? (
                 <>
-                  <Code2 className="w-3 h-3" />
+                  <Code2 className="w-2.5 h-2.5" />
                   Dev
                 </>
               ) : (
                 <>
-                  <User className="w-3 h-3" />
+                  <User className="w-2.5 h-2.5" />
                   Client
                 </>
               )}
-              <ChevronDown className="w-2.5 h-2.5 ml-0.5" />
-            </Badge>
+              <ChevronDown className="w-2 h-2" />
+            </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="bg-popover">
+          <DropdownMenuContent align="start" className="bg-popover min-w-[120px]">
             <DropdownMenuItem 
               onClick={() => setRole('developer')} 
-              className="gap-2 cursor-pointer"
+              className="gap-2 text-xs cursor-pointer"
             >
-              <Code2 className="w-4 h-4" />
+              <Code2 className="w-3 h-3" />
               Developer
-              {currentRole === 'developer' && <span className="ml-auto">✓</span>}
+              {currentRole === 'developer' && <span className="ml-auto text-primary">✓</span>}
             </DropdownMenuItem>
             <DropdownMenuItem 
               onClick={() => setRole('client')} 
-              className="gap-2 cursor-pointer"
+              className="gap-2 text-xs cursor-pointer"
             >
-              <User className="w-4 h-4" />
+              <User className="w-3 h-3" />
               Client
-              {currentRole === 'client' && <span className="ml-auto">✓</span>}
+              {currentRole === 'client' && <span className="ml-auto text-primary">✓</span>}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
