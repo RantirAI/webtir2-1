@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Plus, ChevronDown, Monitor, Tablet, Smartphone, Download, Save, Eye, ZoomIn, ZoomOut, Sun, Moon, Hand, FileCode, FileText, Palette, Zap, X, PanelLeftClose, Ruler } from 'lucide-react';
+import { Plus, ChevronDown, Monitor, Tablet, Smartphone, Download, Save, Eye, ZoomIn, ZoomOut, Sun, Moon, Hand, FileCode, FileText, Palette, Zap, X, PanelLeftClose, Ruler, MessageSquare, Code2, User } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Separator } from '@/components/ui/separator';
 import { useTheme } from 'next-themes';
@@ -9,7 +9,9 @@ import { exportReactComponent, exportHTML, exportStylesheet, downloadFile, expor
 import { exportRantirProject } from '@/builder/utils/rantirExport';
 import { useToast } from '@/hooks/use-toast';
 import { RantirExportModal } from './RantirExportModal';
-
+import { useRoleStore, UserRole } from '@/builder/store/useRoleStore';
+import { useCommentStore } from '@/builder/store/useCommentStore';
+import { Badge } from '@/components/ui/badge';
 interface PageNavigationProps {
   currentPage: string;
   pages: string[];
@@ -68,10 +70,11 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
   const { theme, setTheme } = useTheme();
   const { toast } = useToast();
   const { rootInstance } = useBuilderStore();
+  const { currentRole, setRole, isClient } = useRoleStore();
+  const { commentsVisible, toggleCommentsVisibility, isAddingComment, setIsAddingComment } = useCommentStore();
   const [isEditingName, setIsEditingName] = useState(false);
   const [nameInput, setNameInput] = useState(projectName);
   const [showRantirModal, setShowRantirModal] = useState(false);
-
   const handleExportReact = () => {
     if (!rootInstance) return;
     const code = exportReactComponent(rootInstance, 'App');
@@ -180,7 +183,66 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
             {truncatedName}
           </span>
         )}
+        
+        {/* Role Badge */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Badge 
+              variant={currentRole === 'developer' ? 'default' : 'secondary'}
+              className="cursor-pointer text-[10px] h-5 gap-1"
+            >
+              {currentRole === 'developer' ? (
+                <>
+                  <Code2 className="w-3 h-3" />
+                  Dev
+                </>
+              ) : (
+                <>
+                  <User className="w-3 h-3" />
+                  Client
+                </>
+              )}
+            </Badge>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            <DropdownMenuItem onClick={() => setRole('developer')} className="gap-2">
+              <Code2 className="w-4 h-4" />
+              Developer
+              {currentRole === 'developer' && <span className="ml-auto">✓</span>}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setRole('client')} className="gap-2">
+              <User className="w-4 h-4" />
+              Client
+              {currentRole === 'client' && <span className="ml-auto">✓</span>}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
+
+      <Separator orientation="vertical" className="h-6" />
+
+      {/* Comments Toggle */}
+      <Button
+        variant="ghost"
+        size="sm"
+        className={`h-8 px-2 gap-1 ${commentsVisible ? 'bg-[#F5F5F5] dark:bg-zinc-800' : ''}`}
+        onClick={toggleCommentsVisibility}
+        title={commentsVisible ? "Hide Comments" : "Show Comments"}
+      >
+        <MessageSquare className="w-4 h-4" />
+      </Button>
+
+      {/* Add Comment Button */}
+      <Button
+        variant="ghost"
+        size="sm"
+        className={`h-8 px-2 gap-1 ${isAddingComment ? 'bg-primary text-primary-foreground' : ''}`}
+        onClick={() => setIsAddingComment(!isAddingComment)}
+        title={isAddingComment ? "Cancel Adding Comment" : "Add Comment"}
+      >
+        <Plus className="w-4 h-4" />
+        <MessageSquare className="w-3 h-3" />
+      </Button>
 
       {!isCodeViewOpen && (
         <>

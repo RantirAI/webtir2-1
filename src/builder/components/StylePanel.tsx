@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useBuilderStore } from "../store/useBuilderStore";
 import { useStyleStore } from "../store/useStyleStore";
 import { usePageStore } from "../store/usePageStore";
+import { useRoleStore } from "../store/useRoleStore";
 import { PseudoState, ComponentType } from "../store/types";
 import { componentSupportsPropertyGroup, showBackgroundImageControl } from "../utils/componentPropertyMap";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -277,6 +278,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({
   isRulersView = false,
 }) => {
   const { getSelectedInstance, updateInstance } = useBuilderStore();
+  const { isClient, isDeveloper } = useRoleStore();
   const {
     setStyle,
     getComputedStyles,
@@ -810,15 +812,17 @@ export const StylePanel: React.FC<StylePanelProps> = ({
     <div
       className={`w-64 h-full bg-background border border-border shadow-xl flex flex-col overflow-hidden backdrop-blur-md bg-white/70 dark:bg-zinc-900/70 ${isRulersView ? "rounded-none p-2" : "rounded-lg"}`}
     >
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
-        <TabsList className="w-full grid grid-cols-3 rounded-none border-b bg-transparent h-10 p-1 gap-1 flex-shrink-0">
-          <TabsTrigger
-            value="style"
-            className="text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none flex items-center gap-1"
-          >
-            <Paintbrush className="w-3 h-3" />
-            Style
-          </TabsTrigger>
+      <Tabs value={isClient() ? "data" : activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
+        <TabsList className={`w-full grid rounded-none border-b bg-transparent h-10 p-1 gap-1 flex-shrink-0 ${isClient() ? 'grid-cols-2' : 'grid-cols-3'}`}>
+          {isDeveloper() && (
+            <TabsTrigger
+              value="style"
+              className="text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none flex items-center gap-1"
+            >
+              <Paintbrush className="w-3 h-3" />
+              Style
+            </TabsTrigger>
+          )}
           <TabsTrigger
             value="data"
             className="text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none flex items-center gap-1"
@@ -2929,120 +2933,126 @@ export const StylePanel: React.FC<StylePanelProps> = ({
 
         <TabsContent value="data" className="flex-1 min-h-0 m-0 p-2 overflow-y-auto overflow-x-hidden">
           <div className="space-y-2">
-            {/* ID Section - Global for all components */}
-            <div className="space-y-1">
-              <label className="text-[10px] font-semibold text-foreground">ID</label>
-              <Input
-                type="text"
-                placeholder="For in-page linking"
-                value={selectedInstance.idAttribute || ""}
-                onChange={(e) => {
-                  const sanitized = e.target.value.replace(/[^a-zA-Z0-9_-]/g, "");
-                  updateInstance(selectedInstance.id, { idAttribute: sanitized });
-                }}
-                className="h-6 text-[10px]"
-              />
-            </div>
-
-            {/* Visibility Section - Global for all components */}
-            <div className="space-y-1">
-              <div
-                className="flex items-center justify-between cursor-pointer py-0.5"
-                onClick={() => setOpenSections((prev) => ({ ...prev, visibility: !prev.visibility }))}
-              >
-                <label className="text-[10px] font-semibold text-foreground">Visibility</label>
-                {openSections.visibility ? (
-                  <ChevronDown className="w-2.5 h-2.5" />
-                ) : (
-                  <ChevronRight className="w-2.5 h-2.5" />
-                )}
+            {/* ID Section - Global for all components - Developer only */}
+            {isDeveloper() && (
+              <div className="space-y-1">
+                <label className="text-[10px] font-semibold text-foreground">ID</label>
+                <Input
+                  type="text"
+                  placeholder="For in-page linking"
+                  value={selectedInstance.idAttribute || ""}
+                  onChange={(e) => {
+                    const sanitized = e.target.value.replace(/[^a-zA-Z0-9_-]/g, "");
+                    updateInstance(selectedInstance.id, { idAttribute: sanitized });
+                  }}
+                  className="h-6 text-[10px]"
+                />
               </div>
-              {openSections.visibility && (
-                <div className="flex items-center gap-1">
-                  <ToggleGroup
-                    type="single"
-                    value={selectedInstance.visibility || "visible"}
-                    onValueChange={(value) => {
-                      if (value) {
-                        updateInstance(selectedInstance.id, { visibility: value as "visible" | "hidden" });
-                      }
-                    }}
-                    className="h-6"
-                  >
-                    <ToggleGroupItem value="visible" className="text-[10px] h-6 px-2">
-                      Visible
-                    </ToggleGroupItem>
-                    <ToggleGroupItem value="hidden" className="text-[10px] h-6 px-2">
-                      Hidden
-                    </ToggleGroupItem>
-                  </ToggleGroup>
-                </div>
-              )}
-            </div>
+            )}
 
-            {/* Custom Attributes Section - Per-component unique */}
-            <div className="space-y-0.5">
-              <div
-                className="flex items-center justify-between cursor-pointer py-0.5"
-                onClick={() => setOpenSections((prev) => ({ ...prev, customAttributes: !prev.customAttributes }))}
-              >
-                <div className="flex items-center gap-1">
-                  <label className="text-[10px] font-semibold text-foreground">Custom Attributes</label>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      // Get THIS instance's current attributes only
-                      const thisInstanceAttrs = selectedInstance.attributes || {};
-                      const newKey = `data-attr-${Object.keys(thisInstanceAttrs).length + 1}`;
-                      // Update only THIS specific instance
-                      updateInstance(selectedInstance.id, {
-                        attributes: { ...thisInstanceAttrs, [newKey]: "" },
-                      });
-                      setOpenSections((prev) => ({ ...prev, customAttributes: true }));
-                    }}
-                    className="h-4 w-4 p-0"
-                  >
-                    <Plus className="w-2.5 h-2.5" />
-                  </Button>
-                </div>
-                {openSections.customAttributes ? (
-                  <ChevronDown className="w-2.5 h-2.5" />
-                ) : (
-                  <ChevronRight className="w-2.5 h-2.5" />
-                )}
-              </div>
-              {openSections.customAttributes && (
-                <div className="space-y-0.5">
-                  {Object.keys(selectedInstance.attributes || {}).length > 0 ? (
-                    <div className="space-y-0.5">
-                      {Object.entries(selectedInstance.attributes || {}).map(([name, value], index) => (
-                        <AttributeRow
-                          key={`${selectedInstance.id}-attr-${name}-${index}`}
-                          name={name}
-                          value={value}
-                          instanceId={selectedInstance.id}
-                          onSave={(oldName, newName, newValue) => {
-                            const currentAttrs = { ...selectedInstance.attributes };
-                            delete currentAttrs[oldName];
-                            currentAttrs[newName] = newValue;
-                            updateInstance(selectedInstance.id, { attributes: currentAttrs });
-                          }}
-                          onDelete={(attrName) => {
-                            const currentAttrs = { ...selectedInstance.attributes };
-                            delete currentAttrs[attrName];
-                            updateInstance(selectedInstance.id, { attributes: currentAttrs });
-                          }}
-                        />
-                      ))}
-                    </div>
+            {/* Visibility Section - Global for all components - Developer only */}
+            {isDeveloper() && (
+              <div className="space-y-1">
+                <div
+                  className="flex items-center justify-between cursor-pointer py-0.5"
+                  onClick={() => setOpenSections((prev) => ({ ...prev, visibility: !prev.visibility }))}
+                >
+                  <label className="text-[10px] font-semibold text-foreground">Visibility</label>
+                  {openSections.visibility ? (
+                    <ChevronDown className="w-2.5 h-2.5" />
                   ) : (
-                    <p className="text-[9px] text-muted-foreground pl-1">No custom attributes</p>
+                    <ChevronRight className="w-2.5 h-2.5" />
                   )}
                 </div>
-              )}
-            </div>
+                {openSections.visibility && (
+                  <div className="flex items-center gap-1">
+                    <ToggleGroup
+                      type="single"
+                      value={selectedInstance.visibility || "visible"}
+                      onValueChange={(value) => {
+                        if (value) {
+                          updateInstance(selectedInstance.id, { visibility: value as "visible" | "hidden" });
+                        }
+                      }}
+                      className="h-6"
+                    >
+                      <ToggleGroupItem value="visible" className="text-[10px] h-6 px-2">
+                        Visible
+                      </ToggleGroupItem>
+                      <ToggleGroupItem value="hidden" className="text-[10px] h-6 px-2">
+                        Hidden
+                      </ToggleGroupItem>
+                    </ToggleGroup>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Custom Attributes Section - Per-component unique - Developer only */}
+            {isDeveloper() && (
+              <div className="space-y-0.5">
+                <div
+                  className="flex items-center justify-between cursor-pointer py-0.5"
+                  onClick={() => setOpenSections((prev) => ({ ...prev, customAttributes: !prev.customAttributes }))}
+                >
+                  <div className="flex items-center gap-1">
+                    <label className="text-[10px] font-semibold text-foreground">Custom Attributes</label>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        // Get THIS instance's current attributes only
+                        const thisInstanceAttrs = selectedInstance.attributes || {};
+                        const newKey = `data-attr-${Object.keys(thisInstanceAttrs).length + 1}`;
+                        // Update only THIS specific instance
+                        updateInstance(selectedInstance.id, {
+                          attributes: { ...thisInstanceAttrs, [newKey]: "" },
+                        });
+                        setOpenSections((prev) => ({ ...prev, customAttributes: true }));
+                      }}
+                      className="h-4 w-4 p-0"
+                    >
+                      <Plus className="w-2.5 h-2.5" />
+                    </Button>
+                  </div>
+                  {openSections.customAttributes ? (
+                    <ChevronDown className="w-2.5 h-2.5" />
+                  ) : (
+                    <ChevronRight className="w-2.5 h-2.5" />
+                  )}
+                </div>
+                {openSections.customAttributes && (
+                  <div className="space-y-0.5">
+                    {Object.keys(selectedInstance.attributes || {}).length > 0 ? (
+                      <div className="space-y-0.5">
+                        {Object.entries(selectedInstance.attributes || {}).map(([name, value], index) => (
+                          <AttributeRow
+                            key={`${selectedInstance.id}-attr-${name}-${index}`}
+                            name={name}
+                            value={value}
+                            instanceId={selectedInstance.id}
+                            onSave={(oldName, newName, newValue) => {
+                              const currentAttrs = { ...selectedInstance.attributes };
+                              delete currentAttrs[oldName];
+                              currentAttrs[newName] = newValue;
+                              updateInstance(selectedInstance.id, { attributes: currentAttrs });
+                            }}
+                            onDelete={(attrName) => {
+                              const currentAttrs = { ...selectedInstance.attributes };
+                              delete currentAttrs[attrName];
+                              updateInstance(selectedInstance.id, { attributes: currentAttrs });
+                            }}
+                          />
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-[9px] text-muted-foreground pl-1">No custom attributes</p>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Content Editing Section - For text-based components */}
             {(selectedInstance.type === "Text" ||

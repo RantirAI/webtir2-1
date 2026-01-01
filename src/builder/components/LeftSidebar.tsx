@@ -3,7 +3,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Navigator } from './Navigator';
 import { ComponentsPanel } from './ComponentsPanel';
 import { AIChat } from './AIChat';
-import { Layers, Plus, FileText, ChevronRight, Home, Box, Sparkles } from 'lucide-react';
+import { CommentsSidebar } from './CommentsSidebar';
+import { Layers, Plus, FileText, ChevronRight, Home, Box, Sparkles, MessageCircle } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,12 +14,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Copy, Trash2 } from 'lucide-react';
+import { useRoleStore } from '@/builder/store/useRoleStore';
 
 interface LeftSidebarProps {
   isRulersView?: boolean;
 }
 
 export const LeftSidebar: React.FC<LeftSidebarProps> = ({ isRulersView = false }) => {
+  const { isClient } = useRoleStore();
   const [activeTab, setActiveTab] = useState(() => {
     return localStorage.getItem('builder-sidebar-tab') || 'components';
   });
@@ -27,6 +30,26 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({ isRulersView = false }
     localStorage.setItem('builder-sidebar-tab', activeTab);
   }, [activeTab]);
 
+  // Client view - only show comments sidebar
+  if (isClient()) {
+    return (
+      <div 
+        className={`w-64 h-full border border-border shadow-xl flex flex-col overflow-hidden backdrop-blur-md bg-white/70 dark:bg-zinc-900/70 ${
+          isRulersView ? 'rounded-none' : 'rounded-lg'
+        }`}
+      >
+        <div className="h-10 px-3 flex items-center border-b bg-transparent">
+          <div className="flex items-center gap-1.5 text-xs font-medium">
+            <MessageCircle className="w-3 h-3" />
+            <span>Comments</span>
+          </div>
+        </div>
+        <CommentsSidebar />
+      </div>
+    );
+  }
+
+  // Developer view - show all tabs
   return (
     <div 
       className={`w-64 h-full border border-border shadow-xl flex flex-col overflow-hidden backdrop-blur-md bg-white/70 dark:bg-zinc-900/70 ${
@@ -73,3 +96,4 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({ isRulersView = false }
     </div>
   );
 };
+
