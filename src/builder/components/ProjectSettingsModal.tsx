@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -33,12 +33,9 @@ export const ProjectSettingsModal: React.FC<ProjectSettingsModalProps> = ({
   onMetaTitleChange,
   metaDescription,
   onMetaDescriptionChange,
-  currentPageId,
 }) => {
-  const { getPageCustomCode, updatePageCustomCode, getCurrentPage } = usePageStore();
-  const currentPage = getCurrentPage();
-  const pageId = currentPageId || currentPage?.id || 'page-1';
-  const customCode = getPageCustomCode(pageId);
+  const { getProjectCustomCode, updateProjectCustomCode } = usePageStore();
+  const projectCode = getProjectCustomCode();
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -117,58 +114,58 @@ export const ProjectSettingsModal: React.FC<ProjectSettingsModalProps> = ({
           
           <TabsContent value="custom-code" className="space-y-6 py-4">
             <div className="text-sm text-muted-foreground mb-4">
-              Add custom code to the current page ({currentPage?.name || 'Page 1'}). 
-              This code will be visible in the code editor and included in exports.
+              Add custom code that will be applied to <strong>all pages</strong> in the project.
+              For page-specific code, use the Page Settings drawer.
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="header-code" className="flex items-center gap-2">
+              <Label htmlFor="project-header-code" className="flex items-center gap-2">
                 <span className="text-xs font-mono bg-muted px-2 py-0.5 rounded">&lt;head&gt;</span>
-                Header Code
+                Header Code (All Pages)
               </Label>
               <Textarea
-                id="header-code"
-                value={customCode.header}
-                onChange={(e) => updatePageCustomCode(pageId, 'header', e.target.value)}
-                placeholder="<!-- Add meta tags, scripts, stylesheets, etc. -->"
+                id="project-header-code"
+                value={projectCode.header}
+                onChange={(e) => updateProjectCustomCode('header', e.target.value)}
+                placeholder="<!-- Add meta tags, scripts, stylesheets that apply to all pages -->"
                 className="font-mono text-xs min-h-[100px]"
               />
               <p className="text-xs text-muted-foreground">
-                Code injected into the &lt;head&gt; section (meta tags, stylesheets, scripts)
+                Code injected into the &lt;head&gt; section of every page
               </p>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="body-code" className="flex items-center gap-2">
+              <Label htmlFor="project-body-code" className="flex items-center gap-2">
                 <span className="text-xs font-mono bg-muted px-2 py-0.5 rounded">&lt;body&gt;</span>
-                Body Start Code
+                Body Start Code (All Pages)
               </Label>
               <Textarea
-                id="body-code"
-                value={customCode.body}
-                onChange={(e) => updatePageCustomCode(pageId, 'body', e.target.value)}
-                placeholder="<!-- Code at the start of body -->"
+                id="project-body-code"
+                value={projectCode.body}
+                onChange={(e) => updateProjectCustomCode('body', e.target.value)}
+                placeholder="<!-- Code at the start of body for all pages -->"
                 className="font-mono text-xs min-h-[100px]"
               />
               <p className="text-xs text-muted-foreground">
-                Code injected at the beginning of &lt;body&gt; (tracking scripts, noscript tags)
+                Code injected at the beginning of &lt;body&gt; on every page
               </p>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="footer-code" className="flex items-center gap-2">
+              <Label htmlFor="project-footer-code" className="flex items-center gap-2">
                 <span className="text-xs font-mono bg-muted px-2 py-0.5 rounded">&lt;/body&gt;</span>
-                Footer Code
+                Footer Code (All Pages)
               </Label>
               <Textarea
-                id="footer-code"
-                value={customCode.footer}
-                onChange={(e) => updatePageCustomCode(pageId, 'footer', e.target.value)}
-                placeholder="<!-- Code before closing body tag -->"
+                id="project-footer-code"
+                value={projectCode.footer}
+                onChange={(e) => updateProjectCustomCode('footer', e.target.value)}
+                placeholder="<!-- Code before closing body tag on all pages -->"
                 className="font-mono text-xs min-h-[100px]"
               />
               <p className="text-xs text-muted-foreground">
-                Code injected before the closing &lt;/body&gt; tag (analytics, chat widgets)
+                Code injected before the closing &lt;/body&gt; tag on every page
               </p>
             </div>
           </TabsContent>
