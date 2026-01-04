@@ -11,6 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { RantirExportModal } from './RantirExportModal';
 import { useRoleStore, UserRole } from '@/builder/store/useRoleStore';
 import { useCommentStore } from '@/builder/store/useCommentStore';
+import { useProjectSettingsStore } from '@/builder/store/useProjectSettingsStore';
 
 interface PageNavigationProps {
   currentPage: string;
@@ -72,6 +73,7 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
   const { rootInstance } = useBuilderStore();
   const { currentRole, setRole, isClient } = useRoleStore();
   const { commentsVisible, toggleCommentsVisibility, isAddingComment, setIsAddingComment } = useCommentStore();
+  const { faviconUrl } = useProjectSettingsStore();
   const [isEditingName, setIsEditingName] = useState(false);
   const [nameInput, setNameInput] = useState(projectName);
   const [showRantirModal, setShowRantirModal] = useState(false);
@@ -149,9 +151,13 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
       <div className="flex items-center gap-1.5">
         <button 
           onClick={onProjectSettingsOpen}
-          className="w-7 h-7 bg-primary rounded flex items-center justify-center text-primary-foreground font-bold text-xs hover:opacity-80"
+          className="w-7 h-7 bg-primary rounded flex items-center justify-center text-primary-foreground font-bold text-xs hover:opacity-80 overflow-hidden"
         >
-          {projectName.charAt(0).toUpperCase()}
+          {faviconUrl ? (
+            <img src={faviconUrl} alt="Project icon" className="w-full h-full object-cover" />
+          ) : (
+            projectName.charAt(0).toUpperCase()
+          )}
         </button>
         {isEditingName ? (
           <input
