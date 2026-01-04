@@ -92,7 +92,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
   const [touchStart, setTouchStart] = useState<{ x: number; y: number; distance: number } | null>(null);
   const [initialZoom, setInitialZoom] = useState<number>(100);
   const [prebuiltDialog, setPrebuiltDialog] = useState<{ open: boolean; instance: ComponentInstance | null }>({ open: false, instance: null });
-  const [addCommentPosition, setAddCommentPosition] = useState<{ x: number; y: number } | null>(null);
+  const [addCommentPosition, setAddCommentPosition] = useState<{ x: number; y: number; screenX: number; screenY: number } | null>(null);
   
   // Comment store
   const { commentsVisible, isAddingComment, setIsAddingComment, getPageComments } = useCommentStore();
@@ -1514,14 +1514,21 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
             }}
             onClickCapture={(e) => {
               // Handle adding comment on canvas click - use capture to intercept before children
-              if (isAddingComment && isCurrentPage) {
+              // But don't trigger if clicking inside the comment dialog
+              const target = e.target as HTMLElement;
+              if (target.closest('.add-comment-dialog')) {
+                return; // Don't reposition if clicking inside dialog
+              }
+              
+              if (isAddingComment && isCurrentPage && addCommentPosition === null) {
                 e.stopPropagation();
                 e.preventDefault();
                 const rect = e.currentTarget.getBoundingClientRect();
                 const scrollTop = e.currentTarget.scrollTop || 0;
                 const x = ((e.clientX - rect.left) / rect.width) * 100;
                 const y = (e.clientY - rect.top) + scrollTop;
-                setAddCommentPosition({ x, y });
+                // Store both page-relative and screen positions
+                setAddCommentPosition({ x, y, screenX: e.clientX, screenY: e.clientY });
                 return;
               }
             }}
@@ -1574,19 +1581,6 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
               />
             ))}
 
-            {/* Add Comment Dialog - Positioned inside page */}
-            {isCurrentPage && (
-              <AddCommentDialog
-                open={addCommentPosition !== null}
-                onOpenChange={(open) => {
-                  if (!open) {
-                    setAddCommentPosition(null);
-                  }
-                }}
-                position={addCommentPosition}
-                pageId={currentPage}
-              />
-            )}
 
             {pageRootInstance && renderInstance(pageRootInstance)}
           </div>
@@ -1650,7 +1644,17 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
         instance={prebuiltDialog.instance}
       />
       
-      {/* Add Comment Dialog - Rendered inside the page container */}
+      {/* Add Comment Dialog - Fixed position, rendered at root level */}
+      <AddCommentDialog
+        open={addCommentPosition !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setAddCommentPosition(null);
+          }
+        }}
+        position={addCommentPosition}
+        pageId={currentPage}
+      />
     </div>
   );
 };
