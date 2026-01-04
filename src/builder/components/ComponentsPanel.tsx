@@ -848,11 +848,9 @@ export const ComponentsPanel: React.FC = () => {
         </div>
         <Tabs value={activeSubTab} onValueChange={setActiveSubTab}>
           <TabsList className="w-full grid grid-cols-3 h-8 bg-muted/30">
-            <TabsTrigger value="elements" className="text-xs">Elements</TabsTrigger>
-            <TabsTrigger value="blocks" className="text-xs">Components</TabsTrigger>
-            <TabsTrigger value="assets" className="text-xs">
-              Assets
-            </TabsTrigger>
+            <TabsTrigger value="elements" className="text-xs px-1 data-[state=active]:px-3">Elements</TabsTrigger>
+            <TabsTrigger value="blocks" className="text-xs px-1 data-[state=active]:px-3">Components</TabsTrigger>
+            <TabsTrigger value="assets" className="text-xs px-1 data-[state=active]:px-3">Assets</TabsTrigger>
           </TabsList>
         </Tabs>
       </div>

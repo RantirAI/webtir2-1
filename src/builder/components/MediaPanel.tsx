@@ -118,21 +118,30 @@ const MediaItem: React.FC<MediaItemProps> = ({ asset, isSelected, onSelect, onCl
   };
   
   const renderPreview = () => {
-    if (asset.type === 'image') {
+    if (asset.type === 'image' && asset.url) {
       return (
         <img 
           src={asset.url} 
           alt={asset.altText || asset.name} 
           className="w-full h-full object-cover"
+          onError={(e) => {
+            // Fallback to icon if image fails to load
+            e.currentTarget.style.display = 'none';
+            e.currentTarget.parentElement?.classList.add('fallback-icon');
+          }}
         />
       );
     }
-    if (asset.type === 'video') {
+    if (asset.type === 'video' && asset.url) {
       return (
         <video 
           src={asset.url} 
           className="w-full h-full object-cover"
           muted
+          playsInline
+          onError={(e) => {
+            e.currentTarget.style.display = 'none';
+          }}
         />
       );
     }
@@ -186,7 +195,7 @@ const MediaItem: React.FC<MediaItemProps> = ({ asset, isSelected, onSelect, onCl
       </div>
       
       {/* Preview */}
-      <div className="aspect-square">
+      <div className="aspect-square bg-muted overflow-hidden">
         {renderPreview()}
       </div>
       
