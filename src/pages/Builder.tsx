@@ -168,6 +168,70 @@ const Builder: React.FC = () => {
         moveInstance(activeId, targetParentId, targetIndex);
       }
     } else {
+      // Check if it's a media asset being dragged
+      const isMediaAsset = active.data.current?.isMediaAsset;
+      const mediaAsset = active.data.current?.asset;
+      
+      if (isMediaAsset && mediaAsset) {
+        // Handle media asset drop - create Image or Video element with the asset
+        const newId = generateId();
+        const { createStyleSource, setStyle, getNextAutoClassName } = useStyleStore.getState();
+        
+        // Compute parent ID
+        let parentId = 'root';
+        if (over.id.toString().startsWith('droppable-')) {
+          parentId = (over as any).data.current?.instanceId || 'root';
+        } else if (over.id === 'canvas-drop-zone') {
+          const selectedType = useBuilderStore.getState().getSelectedInstance()?.type;
+          if (selectedInstanceId && (selectedType === 'Div' || selectedType === 'Container' || selectedType === 'Section')) {
+            parentId = selectedInstanceId;
+          }
+        } else {
+          const overInstance = findInstance(overId);
+          if (overInstance) {
+            if (overInstance.type === 'Div' || overInstance.type === 'Container' || overInstance.type === 'Section') {
+              parentId = overId;
+            }
+          }
+        }
+        
+        if (mediaAsset.type === 'image') {
+          const imageClassName = getNextAutoClassName('image');
+          const imageStyleId = createStyleSource('local', imageClassName);
+          const imageInstance: ComponentInstance = {
+            id: newId,
+            type: 'Image' as ComponentType,
+            label: 'Image',
+            props: { 
+              src: mediaAsset.url, 
+              alt: mediaAsset.altText || mediaAsset.name 
+            },
+            styleSourceIds: [imageStyleId],
+            children: [],
+          };
+          addInstance(imageInstance, parentId);
+        } else if (mediaAsset.type === 'video') {
+          const videoClassName = getNextAutoClassName('video');
+          const videoStyleId = createStyleSource('local', videoClassName);
+          const videoInstance: ComponentInstance = {
+            id: newId,
+            type: 'Video' as ComponentType,
+            label: 'Video',
+            props: { 
+              src: mediaAsset.url,
+              controls: true,
+              autoplay: false,
+              loop: false,
+              muted: true,
+            },
+            styleSourceIds: [videoStyleId],
+            children: [],
+          };
+          addInstance(videoInstance, parentId);
+        }
+        return;
+      }
+      
       // Check if it's a prebuilt component being dragged
       const isPrebuilt = active.data.current?.isPrebuilt;
       const prebuiltId = active.data.current?.prebuiltId;

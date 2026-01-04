@@ -1,10 +1,12 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { Upload, X, Check, Loader2, Image as ImageIcon } from 'lucide-react';
+import { Upload, X, Check, Loader2, Image as ImageIcon, FolderOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from '@/hooks/use-toast';
+import { useMediaStore, MediaAsset, formatFileSize } from '../store/useMediaStore';
 
 interface ImageUploadProps {
   currentValue: string;
@@ -25,8 +27,12 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
   const [isUploading, setIsUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState(currentValue);
   const [urlInput, setUrlInput] = useState(currentValue);
+  const [showMediaLibrary, setShowMediaLibrary] = useState(false);
+  
+  const { assets, addAsset } = useMediaStore();
+  const imageAssets = Object.values(assets).filter(a => a.type === 'image');
 
-  // Sync internal state when currentValue prop changes (e.g., from another upload source)
+  // Sync internal state when currentValue prop changes
   useEffect(() => {
     setPreviewUrl(currentValue);
     setUrlInput(currentValue);
@@ -60,15 +66,29 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
 
     try {
       // Create object URL for local preview
-      const objectUrl = URL.createObjectURL(file);
-      setPreviewUrl(objectUrl);
-      onImageChange(objectUrl);
-      setUrlInput(objectUrl);
-
-      toast({
-        title: 'Image applied successfully',
-        description: `${file.name} has been uploaded`,
-      });
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const dataUrl = event.target?.result as string;
+        setPreviewUrl(dataUrl);
+        onImageChange(dataUrl);
+        setUrlInput(dataUrl);
+        
+        // Also add to media store
+        addAsset({
+          name: file.name,
+          type: 'image',
+          url: dataUrl,
+          size: file.size,
+          mimeType: file.type,
+          altText: '',
+        });
+        
+        toast({
+          title: 'Image applied',
+          description: `${file.name} added to assets`,
+        });
+      };
+      reader.readAsDataURL(file);
     } catch (error) {
       toast({
         title: 'Upload failed',
@@ -90,7 +110,6 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
       onImageChange(urlInput);
       toast({
         title: 'Image URL applied',
-        description: 'The image URL has been updated',
       });
     }
   };
@@ -103,12 +122,22 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
     
     toast({
       title: 'Image removed',
-      description: 'The image has been cleared',
     });
   };
 
   const handleUploadClick = () => {
     fileInputRef.current?.click();
+  };
+
+  const handleSelectFromLibrary = (asset: MediaAsset) => {
+    setPreviewUrl(asset.url);
+    setUrlInput(asset.url);
+    onImageChange(asset.url);
+    setShowMediaLibrary(false);
+    toast({
+      title: 'Image applied',
+      description: asset.name,
+    });
   };
 
   // Compact mode - small button that opens a popover
@@ -131,25 +160,25 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
               {!previewUrl && <ImageIcon className="w-3.5 h-3.5 text-muted-foreground" />}
             </button>
           </PopoverTrigger>
-          <PopoverContent className="w-64 p-3" align="start">
-            <div className="space-y-3">
+          <PopoverContent className="w-56 p-2" align="start">
+            <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-semibold">{mode === 'src' ? 'Image Source' : 'Background Image'}</label>
+                <label className="text-[10px] font-semibold">{mode === 'src' ? 'Image Source' : 'Background'}</label>
                 {previewUrl && (
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-6 px-2 text-xs"
+                    className="h-5 px-1.5 text-[10px]"
                     onClick={handleRemoveImage}
                   >
-                    <X className="w-3 h-3 mr-1" />
+                    <X className="w-2.5 h-2.5 mr-0.5" />
                     Clear
                   </Button>
                 )}
               </div>
               
               {previewUrl && (
-                <div className="relative rounded-md overflow-hidden border border-border h-20">
+                <div className="relative rounded overflow-hidden border border-border h-16">
                   <div
                     className="w-full h-full bg-cover bg-center"
                     style={{ backgroundImage: `url(${previewUrl})` }}
@@ -157,23 +186,59 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
                 </div>
               )}
               
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full h-8"
-                onClick={handleUploadClick}
-                disabled={isUploading}
-              >
-                {isUploading ? (
-                  <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                ) : (
-                  <Upload className="w-3 h-3 mr-1" />
-                )}
-                {previewUrl ? 'Replace' : 'Upload'}
-              </Button>
+              <div className="flex gap-1">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1 h-6 text-[10px]"
+                  onClick={handleUploadClick}
+                  disabled={isUploading}
+                >
+                  {isUploading ? (
+                    <Loader2 className="w-2.5 h-2.5 animate-spin" />
+                  ) : (
+                    <>
+                      <Upload className="w-2.5 h-2.5 mr-1" />
+                      Upload
+                    </>
+                  )}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1 h-6 text-[10px]"
+                  onClick={() => setShowMediaLibrary(!showMediaLibrary)}
+                >
+                  <FolderOpen className="w-2.5 h-2.5 mr-1" />
+                  Library
+                </Button>
+              </div>
+              
+              {/* Media Library Selector */}
+              {showMediaLibrary && (
+                <div className="border rounded p-1.5 bg-muted/30">
+                  <p className="text-[9px] text-muted-foreground mb-1">Select from assets</p>
+                  <ScrollArea className="h-24">
+                    <div className="grid grid-cols-4 gap-1">
+                      {imageAssets.map(asset => (
+                        <button
+                          key={asset.id}
+                          className="aspect-square rounded border border-border overflow-hidden hover:border-primary transition-colors"
+                          onClick={() => handleSelectFromLibrary(asset)}
+                        >
+                          <img src={asset.url} alt={asset.name} className="w-full h-full object-cover" />
+                        </button>
+                      ))}
+                      {imageAssets.length === 0 && (
+                        <p className="col-span-4 text-[9px] text-muted-foreground text-center py-2">No images in library</p>
+                      )}
+                    </div>
+                  </ScrollArea>
+                </div>
+              )}
               
               <div className="space-y-1">
-                <label className="text-[10px] text-muted-foreground">Image URL</label>
+                <label className="text-[9px] text-muted-foreground">Image URL</label>
                 <div className="flex gap-1">
                   <Input
                     type="text"
@@ -181,16 +246,16 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
                     value={urlInput}
                     onChange={(e) => handleUrlChange(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleUrlApply()}
-                    className="flex-1 h-7 text-xs"
+                    className="flex-1 h-6 text-[10px]"
                   />
                   <Button
                     variant="outline"
                     size="sm"
-                    className="h-7 px-2"
+                    className="h-6 w-6 p-0"
                     onClick={handleUrlApply}
                     disabled={!urlInput.trim() || urlInput === previewUrl}
                   >
-                    <Check className="w-3 h-3" />
+                    <Check className="w-2.5 h-2.5" />
                   </Button>
                 </div>
               </div>
@@ -202,17 +267,17 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       <div className="flex items-center justify-between">
         <label className="text-xs font-semibold text-foreground">{label}</label>
         {previewUrl && mode === 'src' && (
           <Button
             variant="ghost"
             size="sm"
-            className="h-6 px-2 text-xs"
+            className="h-5 px-1.5 text-[10px]"
             onClick={handleRemoveImage}
           >
-            <X className="w-3 h-3 mr-1" />
+            <X className="w-2.5 h-2.5 mr-0.5" />
             Remove
           </Button>
         )}
@@ -220,34 +285,34 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
 
       {/* Preview */}
       {previewUrl && (
-        <div className="relative group rounded-md overflow-hidden border border-border bg-muted/30">
+        <div className="relative group rounded overflow-hidden border border-border bg-muted/30">
           {mode === 'src' ? (
             <img
               src={previewUrl}
               alt="Preview"
-              className="w-full h-32 object-cover"
+              className="w-full h-24 object-cover"
               onError={(e) => {
                 e.currentTarget.src = 'https://via.placeholder.com/400x300?text=Invalid+Image';
               }}
             />
           ) : (
             <div
-              className="w-full h-32 bg-cover bg-center"
+              className="w-full h-24 bg-cover bg-center"
               style={{ backgroundImage: `url(${previewUrl})` }}
             />
           )}
-          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1">
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
                     variant="secondary"
                     size="sm"
-                    className="h-8"
+                    className="h-6 text-[10px]"
                     onClick={handleUploadClick}
                     disabled={isUploading}
                   >
-                    <Upload className="w-3 h-3 mr-1" />
+                    <Upload className="w-2.5 h-2.5 mr-1" />
                     Replace
                   </Button>
                 </TooltipTrigger>
@@ -258,10 +323,10 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
               <Button
                 variant="secondary"
                 size="sm"
-                className="h-8"
+                className="h-6 text-[10px]"
                 onClick={handleRemoveImage}
               >
-                <X className="w-3 h-3 mr-1" />
+                <X className="w-2.5 h-2.5 mr-1" />
                 Clear
               </Button>
             )}
@@ -269,33 +334,40 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
         </div>
       )}
 
-      {/* Upload Button */}
+      {/* Upload Buttons */}
       {!previewUrl && (
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="outline"
-                className="w-full h-24 border-dashed hover:border-primary hover:bg-primary/5"
-                onClick={handleUploadClick}
-                disabled={isUploading}
-              >
-                {isUploading ? (
-                  <>
-                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                    Uploading...
-                  </>
-                ) : (
-                  <>
-                    <Upload className="w-5 h-5 mr-2" />
-                    Upload from device
-                  </>
-                )}
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Select an image from your computer</TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <div className="flex gap-1">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="flex-1 h-16 border-dashed hover:border-primary hover:bg-primary/5"
+                  onClick={handleUploadClick}
+                  disabled={isUploading}
+                >
+                  {isUploading ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <>
+                      <Upload className="w-4 h-4 mr-1.5" />
+                      <span className="text-[10px]">Upload</span>
+                    </>
+                  )}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Select from computer</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          <Button
+            variant="outline"
+            className="flex-1 h-16 border-dashed hover:border-primary hover:bg-primary/5"
+            onClick={() => setShowMediaLibrary(!showMediaLibrary)}
+          >
+            <FolderOpen className="w-4 h-4 mr-1.5" />
+            <span className="text-[10px]">Library</span>
+          </Button>
+        </div>
       )}
 
       {/* Hidden file input */}
@@ -306,11 +378,38 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
         className="hidden"
         onChange={handleFileSelect}
       />
+      
+      {/* Media Library Selector */}
+      {showMediaLibrary && (
+        <div className="border rounded p-2 bg-muted/30">
+          <p className="text-[10px] text-muted-foreground mb-1.5">Select from assets</p>
+          <ScrollArea className="h-28">
+            <div className="grid grid-cols-4 gap-1.5">
+              {imageAssets.map(asset => (
+                <button
+                  key={asset.id}
+                  className="aspect-square rounded border border-border overflow-hidden hover:border-primary transition-colors group relative"
+                  onClick={() => handleSelectFromLibrary(asset)}
+                  title={asset.name}
+                >
+                  <img src={asset.url} alt={asset.name} className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <Check className="w-4 h-4 text-white" />
+                  </div>
+                </button>
+              ))}
+              {imageAssets.length === 0 && (
+                <p className="col-span-4 text-[10px] text-muted-foreground text-center py-4">No images in library</p>
+              )}
+            </div>
+          </ScrollArea>
+        </div>
+      )}
 
       {/* URL Input */}
-      <div className="space-y-2">
-        <label className="text-xs text-muted-foreground">Or enter image URL</label>
-        <div className="flex gap-2">
+      <div className="space-y-1">
+        <label className="text-[10px] text-muted-foreground">Or enter image URL</label>
+        <div className="flex gap-1">
           <Input
             type="text"
             placeholder="https://example.com/image.jpg"
@@ -321,12 +420,12 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
                 handleUrlApply();
               }
             }}
-            className="flex-1 h-8 text-xs"
+            className="flex-1 h-7 text-[10px]"
           />
           <Button
             variant="outline"
             size="sm"
-            className="h-8 px-3"
+            className="h-7 px-2"
             onClick={handleUrlApply}
             disabled={!urlInput.trim() || urlInput === previewUrl}
           >
