@@ -5,15 +5,18 @@ import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { ArrowUp, Plus, Sparkles, MessageSquare, FileCode, FileText, Image, Figma, History } from 'lucide-react';
+import { ArrowUp, Plus, Sparkles, MessageSquare, FileCode, FileText, Image, Figma, History, Wrench } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+
+type ChatMode = 'build' | 'discuss';
 
 interface Message {
   id: string;
   role: 'user' | 'assistant';
   content: string;
   timestamp: Date;
+  mode?: ChatMode;
 }
 
 export const AIChat: React.FC = () => {
@@ -23,6 +26,7 @@ export const AIChat: React.FC = () => {
   const [showSettingsDialog, setShowSettingsDialog] = useState(false);
   const [apiKey, setApiKey] = useState('');
   const [selectedProvider, setSelectedProvider] = useState('openai');
+  const [chatMode, setChatMode] = useState<ChatMode>('build');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -34,6 +38,7 @@ export const AIChat: React.FC = () => {
       role: 'user',
       content: input.trim(),
       timestamp: new Date(),
+      mode: chatMode,
     };
 
     setMessages(prev => [...prev, userMessage]);
@@ -45,8 +50,11 @@ export const AIChat: React.FC = () => {
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: 'AI chat integration coming soon. This will help you build and modify components using natural language.',
+        content: chatMode === 'build' 
+          ? 'AI build integration coming soon. This will help you build and modify components using natural language.'
+          : 'AI discussion mode coming soon. This will help you discuss features and get suggestions.',
         timestamp: new Date(),
+        mode: chatMode,
       };
       setMessages(prev => [...prev, aiMessage]);
       setIsLoading(false);
@@ -127,9 +135,19 @@ export const AIChat: React.FC = () => {
             <div className="space-y-2">
               {messages.length === 0 ? (
                 <div className="text-[10px] text-muted-foreground text-center py-8">
-                  <Sparkles className="w-6 h-6 mx-auto mb-2 text-primary/50" />
-                  <p className="font-medium">Ask AI to build something</p>
-                  <p className="mt-1 text-muted-foreground/70">Create or modify components</p>
+                  {chatMode === 'build' ? (
+                    <>
+                      <Sparkles className="w-6 h-6 mx-auto mb-2 text-primary/50" />
+                      <p className="font-medium">Ask AI to build something</p>
+                      <p className="mt-1 text-muted-foreground/70">Create or modify components</p>
+                    </>
+                  ) : (
+                    <>
+                      <MessageSquare className="w-6 h-6 mx-auto mb-2 text-blue-500/50" />
+                      <p className="font-medium">Discuss features and ideas</p>
+                      <p className="mt-1 text-muted-foreground/70">Chat about your project</p>
+                    </>
+                  )}
                 </div>
               ) : (
                 messages.map((message) => (
@@ -165,7 +183,7 @@ export const AIChat: React.FC = () => {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Ask AI to build something..."
+                placeholder={chatMode === 'build' ? 'Ask AI to build something...' : 'Discuss features and ideas...'}
                 className="min-h-[60px] max-h-[120px] resize-none bg-transparent border-none outline-none text-[11px] p-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                 disabled={isLoading}
               />
@@ -203,12 +221,27 @@ export const AIChat: React.FC = () => {
                     </PopoverContent>
                   </Popover>
 
-                  {/* Chat Mode Indicator */}
+                  {/* Chat Mode Toggle */}
                   <button
-                    className="flex items-center gap-1 px-2 py-1 rounded-full bg-background text-[10px] text-foreground border border-border/50"
+                    onClick={() => setChatMode(chatMode === 'build' ? 'discuss' : 'build')}
+                    className={`flex items-center gap-1 px-2 py-1 rounded-full text-[10px] border transition-colors ${
+                      chatMode === 'build'
+                        ? 'bg-primary/10 text-primary border-primary/30'
+                        : 'bg-blue-500/10 text-blue-500 border-blue-500/30'
+                    }`}
+                    title={chatMode === 'build' ? 'Build Mode - AI makes changes to canvas' : 'Chat Mode - Discuss features'}
                   >
-                    <MessageSquare className="w-3 h-3" />
-                    <span>Chat</span>
+                    {chatMode === 'build' ? (
+                      <>
+                        <Wrench className="w-3 h-3" />
+                        <span>Build</span>
+                      </>
+                    ) : (
+                      <>
+                        <MessageSquare className="w-3 h-3" />
+                        <span>Chat</span>
+                      </>
+                    )}
                   </button>
                 </div>
 

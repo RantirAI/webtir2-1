@@ -1517,8 +1517,9 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
               if (isAddingComment && isCurrentPage) {
                 e.stopPropagation();
                 const rect = e.currentTarget.getBoundingClientRect();
+                const scrollTop = e.currentTarget.scrollTop || 0;
                 const x = ((e.clientX - rect.left) / rect.width) * 100;
-                const y = ((e.clientY - rect.top) / rect.height) * 100;
+                const y = (e.clientY - rect.top) + scrollTop;
                 setAddCommentPosition({ x, y });
                 return;
               }
@@ -1567,7 +1568,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
               <CommentMarker
                 key={comment.id}
                 comment={comment}
-                index={index + 1}
+                index={index}
               />
             ))}
 
