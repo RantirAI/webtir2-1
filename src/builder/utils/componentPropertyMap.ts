@@ -133,9 +133,9 @@ const componentPropertyGroupsPartial: Partial<Record<ComponentType, StylePropert
   Blockquote: ['layout', 'space', 'size', 'position', 'typography', 'borders', 'effects'],
   CodeBlock: ['layout', 'space', 'size', 'position', 'typography', 'backgrounds', 'borders', 'effects'],
   
-  // Interactive typography - includes backgrounds for button styling
+  // Interactive typography - includes backgrounds for button/link styling
   Button: ['layout', 'space', 'size', 'position', 'typography', 'backgrounds', 'borders', 'effects'],
-  Link: ['layout', 'space', 'size', 'position', 'typography', 'borders', 'effects'],
+  Link: ['layout', 'space', 'size', 'position', 'typography', 'backgrounds', 'borders', 'effects'],
   
   // Media components - size and positioning focused
   Image: ['layout', 'space', 'size', 'position', 'borders', 'effects'],

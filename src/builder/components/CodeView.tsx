@@ -45,6 +45,14 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
   const [cssCode, setCssCode] = useState('');
   const [jsCode, setJsCode] = useState('');
   const [astroCode, setAstroCode] = useState('');
+  
+  // Track which tabs have been edited (user-modified content)
+  const [editedTabs, setEditedTabs] = useState<Record<string, boolean>>({
+    html: false,
+    css: false,
+    react: false,
+    astro: false,
+  });
 
   // Discover components from canvas
   const componentEntries = useMemo(() => {
@@ -129,15 +137,16 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
 
   useEffect(() => {
     // Generate code exports based on selected file
+    // Only regenerate tabs that haven't been user-edited
     if (isComponentFile && componentCode) {
-      setHtmlCode(componentCode.html);
-      setCssCode(componentCode.css);
+      if (!editedTabs.html) setHtmlCode(componentCode.html);
+      if (!editedTabs.css) setCssCode(componentCode.css);
     } else {
-      setHtmlCode(generatePageHTML());
-      setCssCode(exportCSS());
+      if (!editedTabs.html) setHtmlCode(generatePageHTML());
+      if (!editedTabs.css) setCssCode(exportCSS());
     }
-    setJsCode(exportJS(rootInstance));
-    setAstroCode(exportAstro(rootInstance));
+    if (!editedTabs.react) setJsCode(exportJS(rootInstance));
+    if (!editedTabs.astro) setAstroCode(exportAstro(rootInstance));
   }, [rootInstance, selectedFile, isComponentFile, componentCode, customCode]);
 
   const handleCopy = (code: string, tab: string) => {
@@ -191,6 +200,8 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
       }
       
       setIsCodeEdited(false);
+      // Clear edited flag for this tab after applying so it can sync again
+      setEditedTabs(prev => ({ ...prev, [activeTab]: false }));
     } catch (error) {
       toast({
         title: 'Error applying code',
@@ -333,6 +344,8 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
               language={activeTab === 'astro' || activeTab === 'html' ? 'html' : activeTab === 'react' ? 'jsx' : activeTab}
               onChange={(newCode) => {
                 setIsCodeEdited(true);
+                // Mark this tab as edited so it won't be overwritten
+                setEditedTabs(prev => ({ ...prev, [activeTab]: true }));
                 switch (activeTab) {
                   case 'html': setHtmlCode(newCode); break;
                   case 'css': setCssCode(newCode); break;
