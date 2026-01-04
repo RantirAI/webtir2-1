@@ -207,7 +207,10 @@ const Builder: React.FC = () => {
           }
         }
         
-        if (mediaAsset.type === 'image') {
+        const isImage = mediaAsset.type === 'image' || mediaAsset.mimeType?.startsWith('image/');
+        const isVideo = mediaAsset.type === 'video' || mediaAsset.mimeType?.startsWith('video/');
+
+        if (isImage) {
           const imageClassName = getNextAutoClassName('image');
           const imageStyleId = createStyleSource('local', imageClassName);
           const imageInstance: ComponentInstance = {
@@ -222,7 +225,7 @@ const Builder: React.FC = () => {
             children: [],
           };
           addInstance(imageInstance, parentId);
-        } else if (mediaAsset.type === 'video') {
+        } else if (isVideo) {
           const videoClassName = getNextAutoClassName('video');
           const videoStyleId = createStyleSource('local', videoClassName);
           const videoInstance: ComponentInstance = {

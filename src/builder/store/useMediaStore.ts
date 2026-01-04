@@ -101,21 +101,23 @@ export const useMediaStore = create<MediaStore>()(
       addAsset: (asset) => {
         const id = `asset-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
         const state = get();
+        const detectedType = getMediaType(asset.mimeType);
+        const finalType: MediaType = asset.type && asset.type !== 'other' ? asset.type : detectedType;
         const newAsset: MediaAsset = {
           ...asset,
           id,
           addedAt: Date.now(),
           folderId: asset.folderId !== undefined ? asset.folderId : state.currentFolderId,
-          type: asset.type || getMediaType(asset.mimeType),
+          type: finalType,
         };
-        
+
         set((state) => ({
           assets: {
             ...state.assets,
             [id]: newAsset,
           },
         }));
-        
+
         return id;
       },
       
@@ -123,23 +125,26 @@ export const useMediaStore = create<MediaStore>()(
         const ids: string[] = [];
         const state = get();
         const newAssets: Record<string, MediaAsset> = {};
-        
+
         assets.forEach((asset) => {
           const id = `asset-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+          const detectedType = getMediaType(asset.mimeType);
+          const finalType: MediaType = asset.type && asset.type !== 'other' ? asset.type : detectedType;
+
           ids.push(id);
           newAssets[id] = {
             ...asset,
             id,
             addedAt: Date.now(),
             folderId: asset.folderId !== undefined ? asset.folderId : state.currentFolderId,
-            type: asset.type || getMediaType(asset.mimeType),
+            type: finalType,
           };
         });
-        
+
         set((state) => ({
           assets: { ...state.assets, ...newAssets },
         }));
-        
+
         return ids;
       },
       
@@ -338,6 +343,60 @@ export const useMediaStore = create<MediaStore>()(
     }),
     {
       name: 'builder-media-store',
+      version: 2,
+      migrate: (persistedState: any) => {
+        const safeState = persistedState || {};
+
+        const rawAssets = safeState.assets && typeof safeState.assets === 'object' ? safeState.assets : {};
+        const rawFolders = safeState.folders && typeof safeState.folders === 'object' ? safeState.folders : {};
+
+        const assets: Record<string, MediaAsset> = {};
+        for (const [key, value] of Object.entries(rawAssets)) {
+          const a: any = value || {};
+          const mimeType = typeof a.mimeType === 'string' ? a.mimeType : '';
+          const detectedType = getMediaType(mimeType);
+          const finalType: MediaType = a.type && a.type !== 'other' ? a.type : detectedType;
+
+          assets[key] = {
+            id: a.id || key,
+            name: a.name || key,
+            type: finalType,
+            url: a.url || '',
+            size: typeof a.size === 'number' ? a.size : 0,
+            mimeType,
+            altText: typeof a.altText === 'string' ? a.altText : '',
+            addedAt: typeof a.addedAt === 'number' ? a.addedAt : Date.now(),
+            folderId: a.folderId ?? null,
+            width: typeof a.width === 'number' ? a.width : undefined,
+            height: typeof a.height === 'number' ? a.height : undefined,
+            duration: typeof a.duration === 'number' ? a.duration : undefined,
+            compressed: typeof a.compressed === 'boolean' ? a.compressed : undefined,
+          };
+        }
+
+        const folders: Record<string, MediaFolder> = {};
+        for (const [key, value] of Object.entries(rawFolders)) {
+          const f: any = value || {};
+          folders[key] = {
+            id: f.id || key,
+            name: f.name || 'Folder',
+            parentId: f.parentId ?? null,
+            createdAt: typeof f.createdAt === 'number' ? f.createdAt : Date.now(),
+          };
+        }
+
+        return {
+          assets,
+          folders,
+          selectedIds: Array.isArray(safeState.selectedIds) ? safeState.selectedIds : [],
+          currentFolderId: safeState.currentFolderId ?? null,
+          searchQuery: typeof safeState.searchQuery === 'string' ? safeState.searchQuery : '',
+          filterType: safeState.filterType || 'all',
+          sortField: safeState.sortField || 'addedAt',
+          sortOrder: safeState.sortOrder || 'desc',
+          autoCompress: typeof safeState.autoCompress === 'boolean' ? safeState.autoCompress : true,
+        };
+      },
     }
   )
 );
