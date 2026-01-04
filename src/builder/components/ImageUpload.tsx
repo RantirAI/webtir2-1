@@ -1,12 +1,12 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { Upload, X, Check, Loader2, Image as ImageIcon, FolderOpen } from 'lucide-react';
+import { Upload, X, Check, Loader2, Image as ImageIcon, FolderOpen, ChevronLeft, Folder } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from '@/hooks/use-toast';
-import { useMediaStore, MediaAsset, formatFileSize } from '../store/useMediaStore';
+import { useMediaStore, MediaAsset, MediaFolder } from '../store/useMediaStore';
 
 interface ImageUploadProps {
   currentValue: string;
@@ -28,11 +28,18 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
   const [previewUrl, setPreviewUrl] = useState(currentValue);
   const [urlInput, setUrlInput] = useState(currentValue);
   const [showMediaLibrary, setShowMediaLibrary] = useState(false);
+  const [libraryFolderId, setLibraryFolderId] = useState<string | null>(null);
   
-  // Subscribe to assets directly to ensure re-render on changes
+  // Subscribe to assets and folders directly to ensure re-render on changes
   const assets = useMediaStore((state) => state.assets);
+  const folders = useMediaStore((state) => state.folders);
   const addAsset = useMediaStore((state) => state.addAsset);
-  const imageAssets = Object.values(assets).filter(a => a.type === 'image');
+  const getFoldersInParent = useMediaStore((state) => state.getFoldersInParent);
+  const getAssetsInFolder = useMediaStore((state) => state.getAssetsInFolder);
+  
+  const imageAssets = getAssetsInFolder(libraryFolderId).filter(a => a.type === 'image');
+  const libraryFolders = getFoldersInParent(libraryFolderId);
+  const currentLibraryFolder = libraryFolderId ? folders[libraryFolderId] : null;
 
   // Sync internal state when currentValue prop changes
   useEffect(() => {
@@ -136,10 +143,15 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
     setUrlInput(asset.url);
     onImageChange(asset.url);
     setShowMediaLibrary(false);
+    setLibraryFolderId(null);
     toast({
       title: 'Image applied',
       description: asset.name,
     });
+  };
+  
+  const navigateToFolder = (folderId: string | null) => {
+    setLibraryFolderId(folderId);
   };
 
   // Compact mode - small button that opens a popover
@@ -219,9 +231,33 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
               {/* Media Library Selector */}
               {showMediaLibrary && (
                 <div className="border rounded p-1.5 bg-muted/30">
-                  <p className="text-[9px] text-muted-foreground mb-1">Select from assets</p>
+                  <div className="flex items-center gap-1 mb-1">
+                    {libraryFolderId && (
+                      <button 
+                        onClick={() => navigateToFolder(currentLibraryFolder?.parentId || null)}
+                        className="p-0.5 rounded hover:bg-muted"
+                      >
+                        <ChevronLeft className="w-3 h-3" />
+                      </button>
+                    )}
+                    <p className="text-[9px] text-muted-foreground flex-1">
+                      {libraryFolderId ? currentLibraryFolder?.name : 'Select from assets'}
+                    </p>
+                  </div>
                   <ScrollArea className="h-24">
                     <div className="grid grid-cols-4 gap-1">
+                      {/* Folders */}
+                      {libraryFolders.map(folder => (
+                        <button
+                          key={folder.id}
+                          className="aspect-square rounded border border-border overflow-hidden hover:border-primary transition-colors flex flex-col items-center justify-center bg-muted"
+                          onClick={() => navigateToFolder(folder.id)}
+                        >
+                          <Folder className="w-4 h-4 text-amber-500" />
+                          <span className="text-[7px] truncate w-full px-0.5 text-center">{folder.name}</span>
+                        </button>
+                      ))}
+                      {/* Images */}
                       {imageAssets.map(asset => (
                         <button
                           key={asset.id}
@@ -231,8 +267,8 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
                           <img src={asset.url} alt={asset.name} className="w-full h-full object-cover" />
                         </button>
                       ))}
-                      {imageAssets.length === 0 && (
-                        <p className="col-span-4 text-[9px] text-muted-foreground text-center py-2">No images in library</p>
+                      {imageAssets.length === 0 && libraryFolders.length === 0 && (
+                        <p className="col-span-4 text-[9px] text-muted-foreground text-center py-2">No images in {libraryFolderId ? 'folder' : 'library'}</p>
                       )}
                     </div>
                   </ScrollArea>
@@ -384,9 +420,34 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
       {/* Media Library Selector */}
       {showMediaLibrary && (
         <div className="border rounded p-2 bg-muted/30">
-          <p className="text-[10px] text-muted-foreground mb-1.5">Select from assets</p>
+          <div className="flex items-center gap-1 mb-1.5">
+            {libraryFolderId && (
+              <button 
+                onClick={() => navigateToFolder(currentLibraryFolder?.parentId || null)}
+                className="p-1 rounded hover:bg-muted"
+              >
+                <ChevronLeft className="w-3 h-3" />
+              </button>
+            )}
+            <p className="text-[10px] text-muted-foreground flex-1">
+              {libraryFolderId ? currentLibraryFolder?.name : 'Select from assets'}
+            </p>
+          </div>
           <ScrollArea className="h-28">
             <div className="grid grid-cols-4 gap-1.5">
+              {/* Folders */}
+              {libraryFolders.map(folder => (
+                <button
+                  key={folder.id}
+                  className="aspect-square rounded border border-border overflow-hidden hover:border-primary transition-colors flex flex-col items-center justify-center bg-muted group"
+                  onClick={() => navigateToFolder(folder.id)}
+                  title={folder.name}
+                >
+                  <Folder className="w-5 h-5 text-amber-500" />
+                  <span className="text-[8px] truncate w-full px-0.5 text-center mt-0.5">{folder.name}</span>
+                </button>
+              ))}
+              {/* Images */}
               {imageAssets.map(asset => (
                 <button
                   key={asset.id}
@@ -400,8 +461,8 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
                   </div>
                 </button>
               ))}
-              {imageAssets.length === 0 && (
-                <p className="col-span-4 text-[10px] text-muted-foreground text-center py-4">No images in library</p>
+              {imageAssets.length === 0 && libraryFolders.length === 0 && (
+                <p className="col-span-4 text-[10px] text-muted-foreground text-center py-4">No images in {libraryFolderId ? 'folder' : 'library'}</p>
               )}
             </div>
           </ScrollArea>

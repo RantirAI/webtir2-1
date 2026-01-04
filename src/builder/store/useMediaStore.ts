@@ -3,6 +3,13 @@ import { persist } from 'zustand/middleware';
 
 export type MediaType = 'image' | 'video' | 'audio' | 'document' | 'archive' | 'font' | 'code' | 'other';
 
+export interface MediaFolder {
+  id: string;
+  name: string;
+  parentId: string | null; // null means root level
+  createdAt: number;
+}
+
 export interface MediaAsset {
   id: string;
   name: string;
@@ -12,6 +19,7 @@ export interface MediaAsset {
   mimeType: string;
   altText: string;
   addedAt: number;
+  folderId: string | null; // null means root level
   width?: number;
   height?: number;
   duration?: number;
@@ -24,22 +32,32 @@ export type FilterType = 'all' | MediaType;
 
 interface MediaStore {
   assets: Record<string, MediaAsset>;
+  folders: Record<string, MediaFolder>;
   selectedIds: string[];
+  currentFolderId: string | null; // null means root
   searchQuery: string;
   filterType: FilterType;
   sortField: SortField;
   sortOrder: SortOrder;
   autoCompress: boolean;
   
-  // Actions
-  addAsset: (asset: Omit<MediaAsset, 'id' | 'addedAt'>) => string;
-  addAssets: (assets: Omit<MediaAsset, 'id' | 'addedAt'>[]) => string[];
+  // Asset Actions
+  addAsset: (asset: Omit<MediaAsset, 'id' | 'addedAt' | 'folderId'> & { folderId?: string | null }) => string;
+  addAssets: (assets: (Omit<MediaAsset, 'id' | 'addedAt' | 'folderId'> & { folderId?: string | null })[]) => string[];
   removeAsset: (id: string) => void;
   removeAssets: (ids: string[]) => void;
   updateAsset: (id: string, updates: Partial<MediaAsset>) => void;
   getAsset: (id: string) => MediaAsset | null;
   getAllAssets: () => MediaAsset[];
   getFilteredAssets: () => MediaAsset[];
+  getAssetsInFolder: (folderId: string | null) => MediaAsset[];
+  
+  // Folder Actions
+  addFolder: (name: string, parentId?: string | null) => string;
+  removeFolder: (id: string) => void;
+  renameFolder: (id: string, name: string) => void;
+  getFoldersInParent: (parentId: string | null) => MediaFolder[];
+  setCurrentFolder: (folderId: string | null) => void;
   
   // Selection
   selectAsset: (id: string) => void;
@@ -71,7 +89,9 @@ export const useMediaStore = create<MediaStore>()(
   persist(
     (set, get) => ({
       assets: {},
+      folders: {},
       selectedIds: [],
+      currentFolderId: null,
       searchQuery: '',
       filterType: 'all',
       sortField: 'addedAt',
@@ -80,10 +100,12 @@ export const useMediaStore = create<MediaStore>()(
       
       addAsset: (asset) => {
         const id = `asset-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        const state = get();
         const newAsset: MediaAsset = {
           ...asset,
           id,
           addedAt: Date.now(),
+          folderId: asset.folderId !== undefined ? asset.folderId : state.currentFolderId,
           type: asset.type || getMediaType(asset.mimeType),
         };
         
@@ -99,6 +121,7 @@ export const useMediaStore = create<MediaStore>()(
       
       addAssets: (assets) => {
         const ids: string[] = [];
+        const state = get();
         const newAssets: Record<string, MediaAsset> = {};
         
         assets.forEach((asset) => {
@@ -108,6 +131,7 @@ export const useMediaStore = create<MediaStore>()(
             ...asset,
             id,
             addedAt: Date.now(),
+            folderId: asset.folderId !== undefined ? asset.folderId : state.currentFolderId,
             type: asset.type || getMediaType(asset.mimeType),
           };
         });
@@ -164,6 +188,9 @@ export const useMediaStore = create<MediaStore>()(
         const state = get();
         let assets = Object.values(state.assets);
         
+        // Filter by current folder
+        assets = assets.filter(a => a.folderId === state.currentFolderId);
+        
         // Filter by type
         if (state.filterType !== 'all') {
           assets = assets.filter(a => a.type === state.filterType);
@@ -196,6 +223,79 @@ export const useMediaStore = create<MediaStore>()(
         });
         
         return assets;
+      },
+      
+      getAssetsInFolder: (folderId) => {
+        const state = get();
+        return Object.values(state.assets).filter(a => a.folderId === folderId);
+      },
+      
+      // Folder Actions
+      addFolder: (name, parentId = null) => {
+        const id = `folder-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        const state = get();
+        const newFolder: MediaFolder = {
+          id,
+          name,
+          parentId: parentId !== undefined ? parentId : state.currentFolderId,
+          createdAt: Date.now(),
+        };
+        
+        set((state) => ({
+          folders: {
+            ...state.folders,
+            [id]: newFolder,
+          },
+        }));
+        
+        return id;
+      },
+      
+      removeFolder: (id) => {
+        set((state) => {
+          const newFolders = { ...state.folders };
+          delete newFolders[id];
+          
+          // Also remove all assets in this folder and move them to parent
+          const folder = state.folders[id];
+          const updatedAssets = { ...state.assets };
+          Object.values(updatedAssets).forEach(asset => {
+            if (asset.folderId === id) {
+              updatedAssets[asset.id] = { ...asset, folderId: folder?.parentId || null };
+            }
+          });
+          
+          // Remove subfolders recursively
+          Object.values(newFolders).forEach(f => {
+            if (f.parentId === id) {
+              delete newFolders[f.id];
+            }
+          });
+          
+          return { 
+            folders: newFolders,
+            assets: updatedAssets,
+            currentFolderId: state.currentFolderId === id ? folder?.parentId || null : state.currentFolderId,
+          };
+        });
+      },
+      
+      renameFolder: (id, name) => {
+        set((state) => ({
+          folders: {
+            ...state.folders,
+            [id]: { ...state.folders[id], name },
+          },
+        }));
+      },
+      
+      getFoldersInParent: (parentId) => {
+        const state = get();
+        return Object.values(state.folders).filter(f => f.parentId === parentId);
+      },
+      
+      setCurrentFolder: (folderId) => {
+        set({ currentFolderId: folderId, selectedIds: [] });
       },
       
       selectAsset: (id) => {
