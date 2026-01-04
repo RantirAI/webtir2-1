@@ -214,7 +214,7 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
               <ChevronDown className="w-2 h-2" />
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" side="top" className="bg-background border border-border shadow-md min-w-[100px] p-1 rounded-md">
+          <DropdownMenuContent align="start" side="top" className="z-[9999] bg-background border border-border shadow-md min-w-[100px] p-1 rounded-md">
             <DropdownMenuItem 
               onClick={() => setRole('developer')} 
               className="gap-1.5 text-[11px] py-1 px-2 cursor-pointer"
@@ -353,7 +353,7 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
             <ChevronDown className="w-3 h-3" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" side="top" className="w-40 bg-popover p-1">
+        <DropdownMenuContent align="start" side="top" className="z-[9999] w-40 bg-popover p-1">
           {safePages.map((page) => (
             <DropdownMenuItem key={page} onClick={() => onPageChange(page)} className="text-[11px] py-1 px-2">
               {page}
@@ -383,7 +383,7 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
                 <ChevronDown className="w-2.5 h-2.5" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" side="top" className="bg-popover p-1">
+            <DropdownMenuContent align="start" side="top" className="z-[9999] bg-popover p-1">
               {breakpoints.map((bp) => {
                 const Icon = bp.icon;
                 return (
@@ -417,7 +417,7 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
             Export
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" side="top" className="w-44 p-1">
+        <DropdownMenuContent align="end" side="top" className="z-[9999] w-44 p-1 bg-popover">
           <DropdownMenuItem onClick={handleExportReact} className="gap-1.5 text-[11px] py-1 px-2">
             <FileCode className="w-3 h-3" />
             Export React (.jsx)
