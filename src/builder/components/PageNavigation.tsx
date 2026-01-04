@@ -208,7 +208,7 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
               <ChevronDown className="w-2 h-2" />
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" side="top" className="bg-popover min-w-[100px] p-1">
+          <DropdownMenuContent align="start" side="top" className="bg-background border border-border shadow-md min-w-[100px] p-1 rounded-md">
             <DropdownMenuItem 
               onClick={() => setRole('developer')} 
               className="gap-1.5 text-[11px] py-1 px-2 cursor-pointer"
