@@ -51,10 +51,13 @@ export const PageFooter = () => {
             <DialogHeader>
               <DialogTitle className="text-xl">Webtir is under a Fair-Use license below</DialogTitle>
               <DialogDescription className="text-base pt-2">
-                For MIT for embedding the editor, white-labeling it, or changing the source code, you need an MIT-version of this license
+                Purchase an Extended License for Commercial Use
               </DialogDescription>
             </DialogHeader>
-            <ScrollArea className="h-[50vh] pr-4">
+            <div className="bg-amber-500/10 border border-amber-500/30 rounded-md p-3 text-xs text-amber-700 dark:text-amber-400 leading-relaxed">
+              <span className="font-semibold">⚠️ Important:</span> While our source code is open our license is not. Forking and using Webtir's builder is free and available only for educational, personal and small business usages as a single installation per company. For reseller, SaaS-integration or installing it for multiple end users or clients you will need an extended license.
+            </div>
+            <ScrollArea className="h-[45vh] pr-4">
               <div className="text-xs space-y-4 leading-relaxed">
                 <p className="font-semibold">Webtir by Rantir (or Rantir Studio) Fair-Use License</p>
                 <p>Version 1.0 — Effective 2025<br/>Copyright © 2025–present<br/>Rantir, Inc. (DBA HexigonAI, Inc.)</p>
@@ -214,16 +217,21 @@ export const PageFooter = () => {
                 </div>
               </div>
             </ScrollArea>
-            <div className="flex items-center justify-between pt-4 border-t">
-              <a 
-                href="https://github.com/RantirAI/webtir2-1" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-sm text-primary hover:underline"
-              >
-                View on GitHub →
-              </a>
-              <Button onClick={() => setLicenseOpen(false)}>Close</Button>
+            <div className="flex flex-col gap-3 pt-4 border-t">
+              <div className="flex items-center justify-between">
+                <a 
+                  href="https://github.com/RantirAI/webtir2-1" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-sm text-primary hover:underline"
+                >
+                  View on GitHub →
+                </a>
+                <Button onClick={() => setLicenseOpen(false)}>Get an Extended License</Button>
+              </div>
+              <p className="text-[10px] text-muted-foreground text-center">
+                Rantir reserves the right to deny an Extended Usage license at any time to any company.
+              </p>
             </div>
           </DialogContent>
         </Dialog>
