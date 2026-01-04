@@ -1,12 +1,5 @@
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { LayoutDashboard, ShieldCheck, Braces, Palette, Grid3x3, Database, Sparkles, Code, Share2, Moon, Sun } from "lucide-react";
 import webtirLogo from "@/assets/webtir-logo.svg";
@@ -21,29 +14,26 @@ import cursorPurple from "@/assets/cursor-purple.svg";
 import cursorBlueAlt from "@/assets/cursor-blue-alt.svg";
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-
 const Index = () => {
   const [licenseOpen, setLicenseOpen] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
-
   useEffect(() => {
     // Check initial theme
     const isDark = document.documentElement.classList.contains('dark');
     setTheme(isDark ? 'dark' : 'light');
   }, []);
-
   const toggleTheme = () => {
     const newTheme = theme === 'light' ? 'dark' : 'light';
     setTheme(newTheme);
     document.documentElement.classList.toggle('dark');
   };
-
-  return (
-    <div className="min-h-screen bg-background">
+  return <div className="min-h-screen bg-background">
       {/* Top Navigation Bar */}
       <nav className="border-b border-border/40 bg-background/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-[720px] mx-auto px-6 py-4 flex items-center justify-between">
-          <img src={webtirLogo} alt="Webtir" className="h-6 text-foreground" style={{ maxWidth: '64px' }} />
+          <img src={webtirLogo} alt="Webtir" className="h-6 text-foreground" style={{
+          maxWidth: '64px'
+        }} />
           <div className="flex items-center gap-6">
             <Dialog open={licenseOpen} onOpenChange={setLicenseOpen}>
             <DialogTrigger asChild>
@@ -61,7 +51,7 @@ const Index = () => {
               <ScrollArea className="h-[50vh] pr-4">
                 <div className="text-xs space-y-4 leading-relaxed">
                   <p className="font-semibold">Webtir by Rantir (or Rantir Studio) Fair-Use License</p>
-                  <p>Version 1.0 — Effective 2025<br/>Copyright © 2025–present<br/>Rantir, Inc. (DBA HexigonAI, Inc.)</p>
+                  <p>Version 1.0 — Effective 2025<br />Copyright © 2025–present<br />Rantir, Inc. (DBA HexigonAI, Inc.)</p>
                   
                   <div>
                     <p className="font-semibold">0. OVERVIEW</p>
@@ -219,32 +209,17 @@ const Index = () => {
                 </div>
               </ScrollArea>
               <div className="flex items-center justify-between pt-4 border-t">
-                <a 
-                  href="https://github.com/RantirAI/webtir2-1" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-sm text-primary hover:underline"
-                >
+                <a href="https://github.com/RantirAI/webtir2-1" target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline">
                   View on GitHub →
                 </a>
                 <Button onClick={() => setLicenseOpen(false)}>Close</Button>
               </div>
             </DialogContent>
           </Dialog>
-          <a 
-            href="https://calendly.com/rantir/30min" 
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
+          <a href="https://calendly.com/rantir/30min" target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
             Contact
             </a>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={toggleTheme}
-              className="rounded-full"
-            >
+            <Button variant="ghost" size="sm" onClick={toggleTheme} className="rounded-full">
               {theme === 'light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
             </Button>
             <Button variant="outline" size="sm" className="rounded-full px-4" asChild>
@@ -255,75 +230,53 @@ const Index = () => {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden h-[440px] flex items-center justify-center" style={{ maxWidth: '1400px', margin: '0 auto' }}>
+      <section className="relative overflow-hidden h-[440px] flex items-center justify-center" style={{
+      maxWidth: '1400px',
+      margin: '0 auto'
+    }}>
         {/* Subtle dot pattern background - light mode */}
-        <div 
-          className="absolute inset-0 pointer-events-none dark:hidden" 
-          style={{
-            backgroundImage: 'radial-gradient(circle, rgba(0, 0, 0, 0.12) 1.5px, transparent 1.5px)',
-            backgroundSize: '16px 16px',
-            zIndex: 0
-          }}
-        ></div>
+        <div className="absolute inset-0 pointer-events-none dark:hidden" style={{
+        backgroundImage: 'radial-gradient(circle, rgba(0, 0, 0, 0.12) 1.5px, transparent 1.5px)',
+        backgroundSize: '16px 16px',
+        zIndex: 0
+      }}></div>
         {/* Subtle dot pattern background - dark mode */}
-        <div 
-          className="absolute inset-0 pointer-events-none hidden dark:block" 
-          style={{
-            backgroundImage: 'radial-gradient(circle, rgba(255, 255, 255, 0.12) 1.5px, transparent 1.5px)',
-            backgroundSize: '16px 16px',
-            zIndex: 0
-          }}
-        ></div>
+        <div className="absolute inset-0 pointer-events-none hidden dark:block" style={{
+        backgroundImage: 'radial-gradient(circle, rgba(255, 255, 255, 0.12) 1.5px, transparent 1.5px)',
+        backgroundSize: '16px 16px',
+        zIndex: 0
+      }}></div>
 
         {/* Radial gradient overlay - light mode */}
-        <div 
-          className="absolute inset-0 pointer-events-none dark:hidden" 
-          style={{
-            background: 'radial-gradient(circle at center, transparent 0%, transparent 30%, rgba(255, 255, 255, 0.7) 70%, rgba(255, 255, 255, 0.95) 100%)',
-            zIndex: 0
-          }}
-        ></div>
+        <div className="absolute inset-0 pointer-events-none dark:hidden" style={{
+        background: 'radial-gradient(circle at center, transparent 0%, transparent 30%, rgba(255, 255, 255, 0.7) 70%, rgba(255, 255, 255, 0.95) 100%)',
+        zIndex: 0
+      }}></div>
         {/* Radial gradient overlay - dark mode */}
-        <div 
-          className="absolute inset-0 pointer-events-none hidden dark:block" 
-          style={{
-            background: 'radial-gradient(circle at center, transparent 0%, transparent 30%, rgba(0, 0, 0, 0.7) 70%, rgba(0, 0, 0, 0.95) 100%)',
-            zIndex: 0
-          }}
-        ></div>
+        <div className="absolute inset-0 pointer-events-none hidden dark:block" style={{
+        background: 'radial-gradient(circle at center, transparent 0%, transparent 30%, rgba(0, 0, 0, 0.7) 70%, rgba(0, 0, 0, 0.95) 100%)',
+        zIndex: 0
+      }}></div>
         
         {/* Animated cursors */}
-        <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 1 }}>
-          <img 
-            src={cursorBlue} 
-            alt="" 
-            className="absolute w-16 opacity-90"
-            style={{
-              top: '15%',
-              left: '10%',
-              animation: 'float-1 15s ease-in-out infinite'
-            }}
-          />
-          <img 
-            src={cursorPurple} 
-            alt="" 
-            className="absolute w-16 opacity-90"
-            style={{
-              top: '50%',
-              right: '10%',
-              animation: 'float-2 18s ease-in-out infinite'
-            }}
-          />
-          <img 
-            src={cursorBlueAlt} 
-            alt="" 
-            className="absolute w-16 opacity-90"
-            style={{
-              bottom: '15%',
-              left: '15%',
-              animation: 'float-3 20s ease-in-out infinite'
-            }}
-          />
+        <div className="absolute inset-0 pointer-events-none" style={{
+        zIndex: 1
+      }}>
+          <img src={cursorBlue} alt="" className="absolute w-16 opacity-90" style={{
+          top: '15%',
+          left: '10%',
+          animation: 'float-1 15s ease-in-out infinite'
+        }} />
+          <img src={cursorPurple} alt="" className="absolute w-16 opacity-90" style={{
+          top: '50%',
+          right: '10%',
+          animation: 'float-2 18s ease-in-out infinite'
+        }} />
+          <img src={cursorBlueAlt} alt="" className="absolute w-16 opacity-90" style={{
+          bottom: '15%',
+          left: '15%',
+          animation: 'float-3 20s ease-in-out infinite'
+        }} />
         </div>
 
         <style>{`
@@ -346,16 +299,14 @@ const Index = () => {
         `}</style>
 
         <div className="relative z-10 w-full px-6">
-          <div className="mx-auto text-center space-y-6" style={{ maxWidth: '720px' }}>
+          <div className="mx-auto text-center space-y-6" style={{
+          maxWidth: '720px'
+        }}>
             <div className="flex justify-center mb-6">
               <img src={rantirLogo} alt="Rantir Studio" className="h-8 text-foreground" />
             </div>
-            <h1 className="text-4xl font-bold text-foreground">
-              Own your own web visual editor
-            </h1>
-            <p className="text-lg text-muted-foreground">
-              Webtir makes it possible to embedded and customize your own drag-n-drop editors for anything your working on. Now with AI
-            </p>
+            <h1 className="text-4xl font-bold text-foreground">Own Your Website Builder</h1>
+            <p className="text-lg text-muted-foreground">Webtir makes it possible to embedded and customize your own drag-n-drop editors for anything your working on. Now with AI gen mode.</p>
             <div className="flex gap-4 justify-center">
               <Button size="lg" className="rounded-full" asChild>
                 <a href="https://calendly.com/rantir/30min" target="_blank" rel="noopener noreferrer">
@@ -373,13 +324,7 @@ const Index = () => {
       {/* Video Section - Overlapping Hero */}
       <section className="max-w-[720px] mx-auto px-6 -mt-12 relative z-10">
         <div className="rounded-2xl overflow-hidden shadow-2xl border border-border">
-          <video 
-            autoPlay 
-            loop 
-            muted 
-            playsInline
-            className="w-full h-auto"
-          >
+          <video autoPlay loop muted playsInline className="w-full h-auto">
             <source src="/webtir-promo.mp4" type="video/mp4" />
             Your browser does not support the video tag.
           </video>
@@ -391,7 +336,7 @@ const Index = () => {
         <div className="grid grid-cols-2 gap-4">
           {/* Blue Card - Interactive Experiences */}
           <div className="rounded-2xl bg-blue-50 dark:bg-blue-950/20 p-6 space-y-4">
-            <h3 className="text-lg font-semibold text-foreground">Interactive Experiences</h3>
+            <h3 className="text-lg font-semibold text-foreground">Drag-n-Drop Components, Blocks and Elements </h3>
             <p className="text-sm text-muted-foreground">
               Turn static ideas into live, interactive builders. Give your users the power to click, edit, preview, and configure instantly. Drop Webtir into your product and unlock highly intuitive user-driven editing without months of custom interface work.
             </p>
@@ -402,7 +347,7 @@ const Index = () => {
 
           {/* Green Card - Lightweight, Smart, and Extensible */}
           <div className="rounded-2xl bg-green-50 dark:bg-green-950/20 p-6 space-y-4">
-            <h3 className="text-lg font-semibold text-foreground">Lightweight, Smart & Extensible</h3>
+            <h3 className="text-lg font-semibold text-foreground">Style Editor that feels familiar with custom attributes & data</h3>
             <p className="text-sm text-muted-foreground">
               A flexible editor that scales with your stack. Variable-driven styling, class-based controls, responsive layout tools, and optional AI-powered assistive inputs. Keep it minimal or extend it into a full design system editor.
             </p>
@@ -413,7 +358,7 @@ const Index = () => {
 
           {/* Yellow/Orange Card - Integrates With Your Logic */}
           <div className="rounded-2xl bg-orange-50 dark:bg-orange-950/20 p-6 space-y-4">
-            <h3 className="text-lg font-semibold text-foreground">Integrates With Your Logic</h3>
+            <h3 className="text-lg font-semibold text-foreground">Integrates With Your Backend</h3>
             <p className="text-sm text-muted-foreground">
               Connect your UI to real data and real components. Map your React/Vue/Svelte components, bind props, connect APIs, or drop in your own backend actions. Webtir sits on top of your existing logic—letting it drive the editor effortlessly.
             </p>
@@ -424,7 +369,7 @@ const Index = () => {
 
           {/* Purple Card - Theme It to Match Your Brand */}
           <div className="rounded-2xl bg-purple-50 dark:bg-purple-950/20 p-6 space-y-4">
-            <h3 className="text-lg font-semibold text-foreground">Theme It to Match Your Brand</h3>
+            <h3 className="text-lg font-semibold text-foreground">Add your AI LLM for generation</h3>
             <p className="text-sm text-muted-foreground">
               Make the editor feel like it belongs to your product. Customizable colors, shadows, borders, typography, tokens, and branded component presets. Align your editor with your design system so it feels fully yours.
             </p>
@@ -519,7 +464,9 @@ const Index = () => {
       <section className="max-w-[720px] mx-auto px-6 py-12">
         <div className="rounded-2xl border border-border bg-card p-8 space-y-6">
           <div className="mb-6 text-left">
-            <img src={pricingBadge} alt="Pricing License" style={{ maxWidth: '100px' }} />
+            <img src={pricingBadge} alt="Pricing License" style={{
+            maxWidth: '100px'
+          }} />
           </div>
           <div className="space-y-4">
             <h2 className="text-2xl font-bold text-foreground">Free for forking, with an Extended MIT-License available</h2>
@@ -554,19 +501,10 @@ const Index = () => {
               </ul>
             </div>
             <div className="flex items-center gap-4">
-              <a 
-                href="https://calendly.com/rantir/30min" 
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex text-sm text-primary hover:underline"
-              >
+              <a href="https://calendly.com/rantir/30min" target="_blank" rel="noopener noreferrer" className="inline-flex text-sm text-primary hover:underline">
                 View pricing details →
               </a>
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => setLicenseOpen(true)}
-              >
+              <Button variant="outline" size="sm" onClick={() => setLicenseOpen(true)}>
                 See license
               </Button>
             </div>
@@ -601,8 +539,6 @@ const Index = () => {
           <p>© 2025 Webtir. MIT Licensed.</p>
         </div>
       </footer>
-    </div>
-  );
+    </div>;
 };
-
 export default Index;
