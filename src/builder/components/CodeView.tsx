@@ -7,6 +7,7 @@ import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/componen
 import { exportHTML, exportCSS, exportJS, exportAstro } from '../utils/codeExport';
 import { discoverComponents, getComponentCode, flattenComponents } from '../utils/componentCodeExport';
 import { parseHTMLToInstance, parseHTMLPreservingLinks } from '../utils/codeImport';
+import { parseCSSToStyleStore, validateCSS } from '../utils/cssImport';
 import { Copy, Check, Monitor, Tablet, Smartphone, Upload } from 'lucide-react';
 import { ImportModal } from './ImportModal';
 import { FileTree } from './FileTree';
@@ -170,13 +171,32 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
             description: 'HTML changes have been applied to the canvas. Component links preserved.',
           });
         }
+      } else if (activeTab === 'css') {
+        // Validate CSS first
+        const validation = validateCSS(cssCode);
+        if (!validation.valid) {
+          toast({
+            title: 'CSS Validation Error',
+            description: validation.errors.slice(0, 3).join('. '),
+            variant: 'destructive',
+          });
+          return;
+        }
+        
+        // Parse and apply CSS to style store
+        const result = parseCSSToStyleStore(cssCode);
+        
+        toast({
+          title: 'CSS applied',
+          description: `Updated ${result.classesUpdated} classes, created ${result.classesCreated} new classes, set ${result.propertiesSet} properties.`,
+        });
       }
       
       setIsCodeEdited(false);
     } catch (error) {
       toast({
         title: 'Error applying code',
-        description: 'Failed to parse HTML. Please check for syntax errors.',
+        description: `Failed to parse ${activeTab.toUpperCase()}. Please check for syntax errors.`,
         variant: 'destructive',
       });
     }
@@ -223,7 +243,7 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
         </Tabs>
         
         <div className="flex items-center gap-2">
-          {isCodeEdited && activeTab === 'html' && (
+          {isCodeEdited && (activeTab === 'html' || activeTab === 'css') && (
             <Button
               variant="default"
               size="sm"
