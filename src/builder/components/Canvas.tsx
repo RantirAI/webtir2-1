@@ -1589,11 +1589,11 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
         })}
       </div>
       
-      {/* Hover/Selection Overlays and Context Menu disabled in Preview */}
-      {!isPreviewMode && hoveredElement && (
+      {/* Hover/Selection Overlays and Context Menu disabled in Preview and Code View */}
+      {!isPreviewMode && !isCodeViewOpen && hoveredElement && (
         <HoverOverlay element={hoveredElement} instanceId={hoveredInstanceId || undefined} />
       )}
-      {!isPreviewMode && selectedElement && selectedInstance && (
+      {!isPreviewMode && !isCodeViewOpen && selectedElement && selectedInstance && (
         <SelectionOverlay 
           instance={selectedInstance} 
           element={selectedElement}
