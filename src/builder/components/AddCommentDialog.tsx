@@ -60,15 +60,23 @@ export const AddCommentDialog: React.FC<AddCommentDialogProps> = ({
 
   return (
     <div
-      className="absolute z-[100] flex flex-col items-center"
+      className="absolute z-[100]"
       style={{
         left: `${position.x}%`,
         top: `${position.y}px`,
-        transform: 'translate(-50%, -100%)',
+        transform: 'translate(-50%, -50%)',
       }}
     >
-      {/* Comment input card */}
-      <div className="bg-background border border-border rounded-lg shadow-lg p-2 mb-2 w-56">
+      {/* Marker at click position */}
+      <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold shadow-lg">
+        +
+      </div>
+      
+      {/* Comment input card - positioned to the right of marker */}
+      <div 
+        className="absolute left-8 top-1/2 -translate-y-1/2 bg-background border border-border rounded-lg shadow-lg p-2 w-56"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="flex items-center justify-between mb-1.5">
           <span className="text-[10px] font-medium text-foreground">Add Comment</span>
           <button
@@ -94,11 +102,6 @@ export const AddCommentDialog: React.FC<AddCommentDialogProps> = ({
             Add
           </Button>
         </div>
-      </div>
-      
-      {/* Marker preview */}
-      <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold shadow-lg">
-        +
       </div>
     </div>
   );
