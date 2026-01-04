@@ -7,7 +7,7 @@ import { X } from 'lucide-react';
 interface AddCommentDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  position: { x: number; y: number } | null;
+  position: { x: number; y: number; screenX: number; screenY: number } | null;
   pageId: string;
   canvasRef?: HTMLElement | null;
 }
@@ -60,12 +60,15 @@ export const AddCommentDialog: React.FC<AddCommentDialogProps> = ({
 
   return (
     <div
-      className="absolute z-[100]"
+      className="add-comment-dialog fixed z-[9999]"
       style={{
-        left: `${position.x}%`,
-        top: `${position.y}px`,
+        left: position.screenX,
+        top: position.screenY,
         transform: 'translate(-50%, -50%)',
+        pointerEvents: 'auto',
       }}
+      onClick={(e) => e.stopPropagation()}
+      onMouseDown={(e) => e.stopPropagation()}
     >
       {/* Marker at click position */}
       <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold shadow-lg">
@@ -74,8 +77,7 @@ export const AddCommentDialog: React.FC<AddCommentDialogProps> = ({
       
       {/* Comment input card - positioned to the right of marker */}
       <div 
-        className="absolute left-8 top-1/2 -translate-y-1/2 bg-background border border-border rounded-lg shadow-lg p-2 w-56"
-        onClick={(e) => e.stopPropagation()}
+        className="absolute left-8 top-1/2 -translate-y-1/2 bg-background border border-border rounded-lg shadow-xl p-2 w-56"
       >
         <div className="flex items-center justify-between mb-1.5">
           <span className="text-[10px] font-medium text-foreground">Add Comment</span>
