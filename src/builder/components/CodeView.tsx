@@ -272,7 +272,17 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
               <h3 className="text-xs font-semibold text-muted-foreground uppercase">Files</h3>
             </div>
             <FileTree 
-              onFileSelect={setSelectedFile}
+              onFileSelect={(path) => {
+                setSelectedFile(path);
+                // Sync tab based on file type
+                if (path === '/styles.css') {
+                  setActiveTab('css');
+                } else if (path === '/script.js') {
+                  setActiveTab('react');
+                } else if (path.endsWith('.html')) {
+                  setActiveTab('html');
+                }
+              }}
               selectedFile={selectedFile}
               pages={pages}
               onAddComponent={() => setShowCreateComponentDialog(true)}
