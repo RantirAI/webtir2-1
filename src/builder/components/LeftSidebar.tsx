@@ -2,10 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Navigator } from './Navigator';
 import { ComponentsPanel } from './ComponentsPanel';
-import { MediaPanel } from './MediaPanel';
 import { AIChat } from './AIChat';
 import { CommentsSidebar } from './CommentsSidebar';
-import { Layers, Plus, FileText, ChevronRight, Home, Box, Sparkles, MessageCircle, Image as ImageIcon } from 'lucide-react';
+import { Layers, Plus, FileText, ChevronRight, Home, Box, Sparkles, MessageCircle } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -67,13 +66,6 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({ isRulersView = false }
             <span>Elements</span>
           </TabsTrigger>
           <TabsTrigger 
-            value="media" 
-            className="text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none flex items-center gap-1 whitespace-nowrap flex-shrink-0"
-          >
-            <ImageIcon className="w-3 h-3" />
-            <span>Assets</span>
-          </TabsTrigger>
-          <TabsTrigger 
             value="navigator" 
             className="text-xs h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none flex items-center gap-1 whitespace-nowrap flex-shrink-0"
           >
@@ -91,10 +83,6 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({ isRulersView = false }
 
         <TabsContent value="components" className="flex-1 m-0">
           <ComponentsPanel />
-        </TabsContent>
-
-        <TabsContent value="media" className="flex-1 m-0 overflow-hidden">
-          <MediaPanel />
         </TabsContent>
 
         <TabsContent value="navigator" className="flex-1 m-0">
