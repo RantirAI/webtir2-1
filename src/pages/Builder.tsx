@@ -183,14 +183,26 @@ const Builder: React.FC = () => {
           parentId = (over as any).data.current?.instanceId || 'root';
         } else if (over.id === 'canvas-drop-zone') {
           const selectedType = useBuilderStore.getState().getSelectedInstance()?.type;
-          if (selectedInstanceId && (selectedType === 'Div' || selectedType === 'Container' || selectedType === 'Section')) {
+          if (selectedInstanceId && (selectedType === 'Div' || selectedType === 'Container' || selectedType === 'Section' || selectedType === 'Box')) {
             parentId = selectedInstanceId;
           }
         } else {
           const overInstance = findInstance(overId);
           if (overInstance) {
-            if (overInstance.type === 'Div' || overInstance.type === 'Container' || overInstance.type === 'Section') {
+            if (overInstance.type === 'Div' || overInstance.type === 'Container' || overInstance.type === 'Section' || overInstance.type === 'Box') {
               parentId = overId;
+            } else {
+              // If dropping on a non-container, find its parent
+              const findParent = (tree: ComponentInstance, childId: string): ComponentInstance | null => {
+                if (tree.children.some(c => c.id === childId)) return tree;
+                for (const child of tree.children) {
+                  const result = findParent(child, childId);
+                  if (result) return result;
+                }
+                return null;
+              };
+              const parent = findParent(rootInstance, overId);
+              if (parent) parentId = parent.id;
             }
           }
         }
