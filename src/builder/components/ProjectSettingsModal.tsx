@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
-import { Upload, Code, Settings, Palette, Library, Github, Trash2, Plus, Check } from 'lucide-react';
+import { Upload, Settings, Palette, Library, Github, Trash2, Plus, Check } from 'lucide-react';
 import { usePageStore } from '@/builder/store/usePageStore';
 import { useProjectSettingsStore, themeColors, BuilderTheme, builderFonts, BuilderFont } from '@/builder/store/useProjectSettingsStore';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -72,22 +72,27 @@ export const ProjectSettingsModal: React.FC<ProjectSettingsModalProps> = ({
         </DialogHeader>
         
         <Tabs defaultValue="general" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 h-8">
-            <TabsTrigger value="general" className="gap-1 text-[10px] px-2 h-7">
+          <TabsList className="w-full flex rounded-none border-b bg-transparent h-10 p-1 justify-start">
+            <TabsTrigger 
+              value="general" 
+              className="text-[10px] h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none flex items-center gap-1"
+            >
               <Settings className="w-3 h-3" />
               General
             </TabsTrigger>
-            <TabsTrigger value="theme" className="gap-1 text-[10px] px-2 h-7">
+            <TabsTrigger 
+              value="theme" 
+              className="text-[10px] h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none flex items-center gap-1"
+            >
               <Palette className="w-3 h-3" />
               Theme
             </TabsTrigger>
-            <TabsTrigger value="library" className="gap-1 text-[10px] px-2 h-7">
+            <TabsTrigger 
+              value="library" 
+              className="text-[10px] h-full rounded-md data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none flex items-center gap-1"
+            >
               <Library className="w-3 h-3" />
               Library
-            </TabsTrigger>
-            <TabsTrigger value="custom-code" className="gap-1 text-[10px] px-2 h-7">
-              <Code className="w-3 h-3" />
-              Code
             </TabsTrigger>
           </TabsList>
           
@@ -279,53 +284,6 @@ export const ProjectSettingsModal: React.FC<ProjectSettingsModalProps> = ({
             </div>
           </TabsContent>
           
-          <TabsContent value="custom-code" className="space-y-3 py-3">
-            <p className="text-[10px] text-muted-foreground">
-              Add custom code for <strong>all pages</strong>. Use Page Settings for page-specific code.
-            </p>
-            
-            <div className="space-y-1">
-              <Label htmlFor="project-header-code" className="flex items-center gap-1.5 text-[11px]">
-                <span className="text-[9px] font-mono bg-muted px-1.5 py-0.5 rounded">&lt;head&gt;</span>
-                Header Code
-              </Label>
-              <Textarea
-                id="project-header-code"
-                value={projectCode.header}
-                onChange={(e) => updateProjectCustomCode('header', e.target.value)}
-                placeholder="<!-- Meta tags, scripts, stylesheets -->"
-                className="font-mono text-[10px] min-h-[70px] resize-none"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <Label htmlFor="project-body-code" className="flex items-center gap-1.5 text-[11px]">
-                <span className="text-[9px] font-mono bg-muted px-1.5 py-0.5 rounded">&lt;body&gt;</span>
-                Body Start
-              </Label>
-              <Textarea
-                id="project-body-code"
-                value={projectCode.body}
-                onChange={(e) => updateProjectCustomCode('body', e.target.value)}
-                placeholder="<!-- Code at body start -->"
-                className="font-mono text-[10px] min-h-[70px] resize-none"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <Label htmlFor="project-footer-code" className="flex items-center gap-1.5 text-[11px]">
-                <span className="text-[9px] font-mono bg-muted px-1.5 py-0.5 rounded">&lt;/body&gt;</span>
-                Footer Code
-              </Label>
-              <Textarea
-                id="project-footer-code"
-                value={projectCode.footer}
-                onChange={(e) => updateProjectCustomCode('footer', e.target.value)}
-                placeholder="<!-- Code before closing body -->"
-                className="font-mono text-[10px] min-h-[70px] resize-none"
-              />
-            </div>
-          </TabsContent>
         </Tabs>
       </DialogContent>
     </Dialog>
