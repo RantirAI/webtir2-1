@@ -96,6 +96,8 @@ export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ inst
           type: 'image',
           url: dataUrl,
           size: file.size,
+          mimeType: file.type || 'image/png',
+          altText: '',
         });
         // Update instance
         updateInstance(instance.id, {

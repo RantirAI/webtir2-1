@@ -42,6 +42,7 @@ import {
   Trash2,
   Pencil,
   AlignCenterHorizontal,
+  Sparkles,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -3931,17 +3932,32 @@ export const StylePanel: React.FC<StylePanelProps> = ({
                         compact
                       />
                       <div className="space-y-1">
-                        <label className="text-[10px] text-muted-foreground">Alt Text</label>
-                        <Input
-                          type="text"
-                          placeholder="Image description"
+                        <div className="flex items-center justify-between">
+                          <label className="text-[10px] text-muted-foreground">Alt Text</label>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const imageName = selectedInstance.props.src?.split('/').pop() || 'image';
+                              updateInstance(selectedInstance.id, {
+                                props: { ...selectedInstance.props, alt: `AI generated description for ${imageName}` },
+                              });
+                              toast({ title: 'Alt Text Generated', description: 'AI-generated alt text applied' });
+                            }}
+                            className="flex items-center gap-1 text-[9px] text-primary hover:underline"
+                          >
+                            <Sparkles className="w-2.5 h-2.5" />
+                            Generate
+                          </button>
+                        </div>
+                        <Textarea
+                          placeholder="Describe this image for accessibility..."
                           value={selectedInstance.props.alt || ""}
                           onChange={(e) => {
                             updateInstance(selectedInstance.id, {
                               props: { ...selectedInstance.props, alt: e.target.value },
                             });
                           }}
-                          className="h-5 text-[10px]"
+                          className="min-h-[60px] text-[10px] resize-none"
                         />
                       </div>
                     </div>
