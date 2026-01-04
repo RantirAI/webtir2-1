@@ -131,7 +131,7 @@ export const AIChat: React.FC = () => {
 
         <TabsContent value="chat" className="flex-1 flex flex-col m-0 min-h-0">
           {/* Messages Area */}
-          <ScrollArea className="flex-1 p-2">
+          <ScrollArea className="flex-1 p-2 [&_[data-radix-scroll-area-scrollbar]]:opacity-0 [&:hover_[data-radix-scroll-area-scrollbar]]:opacity-100 [&_[data-radix-scroll-area-scrollbar]]:transition-opacity">
             <div className="space-y-2">
               {messages.length === 0 ? (
                 <div className="text-[10px] text-muted-foreground text-center py-8">
@@ -191,11 +191,34 @@ export const AIChat: React.FC = () => {
               {/* Bottom Controls */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1">
+                  {/* Chat Mode Toggle */}
+                  <button
+                    onClick={() => setChatMode(chatMode === 'build' ? 'discuss' : 'build')}
+                    className={`flex items-center gap-1 px-2 py-1 rounded-full text-[10px] border transition-colors ${
+                      chatMode === 'build'
+                        ? 'bg-primary/10 text-primary border-primary/30'
+                        : 'bg-blue-500/10 text-blue-500 border-blue-500/30'
+                    }`}
+                    title={chatMode === 'build' ? 'Build Mode - AI makes changes to canvas' : 'Chat Mode - Discuss features'}
+                  >
+                    {chatMode === 'build' ? (
+                      <>
+                        <Wrench className="w-3 h-3" />
+                        <span>Build</span>
+                      </>
+                    ) : (
+                      <>
+                        <MessageSquare className="w-3 h-3" />
+                        <span>Chat</span>
+                      </>
+                    )}
+                  </button>
+
                   {/* Plus button for imports */}
                   <Popover>
                     <PopoverTrigger asChild>
                       <button
-                        className="p-1.5 rounded-full hover:bg-background transition-colors text-muted-foreground hover:text-foreground"
+                        className="p-1.5 rounded-full border border-border hover:bg-background transition-colors text-muted-foreground hover:text-foreground"
                         title="Import"
                       >
                         <Plus className="w-3.5 h-3.5" />
@@ -221,28 +244,6 @@ export const AIChat: React.FC = () => {
                     </PopoverContent>
                   </Popover>
 
-                  {/* Chat Mode Toggle */}
-                  <button
-                    onClick={() => setChatMode(chatMode === 'build' ? 'discuss' : 'build')}
-                    className={`flex items-center gap-1 px-2 py-1 rounded-full text-[10px] border transition-colors ${
-                      chatMode === 'build'
-                        ? 'bg-primary/10 text-primary border-primary/30'
-                        : 'bg-blue-500/10 text-blue-500 border-blue-500/30'
-                    }`}
-                    title={chatMode === 'build' ? 'Build Mode - AI makes changes to canvas' : 'Chat Mode - Discuss features'}
-                  >
-                    {chatMode === 'build' ? (
-                      <>
-                        <Wrench className="w-3 h-3" />
-                        <span>Build</span>
-                      </>
-                    ) : (
-                      <>
-                        <MessageSquare className="w-3 h-3" />
-                        <span>Chat</span>
-                      </>
-                    )}
-                  </button>
                 </div>
 
                 {/* Send Button */}
@@ -263,7 +264,7 @@ export const AIChat: React.FC = () => {
         </TabsContent>
 
         <TabsContent value="history" className="flex-1 m-0 overflow-y-auto">
-          <ScrollArea className="h-full p-2">
+          <ScrollArea className="h-full p-2 [&_[data-radix-scroll-area-scrollbar]]:opacity-0 [&:hover_[data-radix-scroll-area-scrollbar]]:opacity-100 [&_[data-radix-scroll-area-scrollbar]]:transition-opacity">
             {messages.length === 0 ? (
               <div className="text-[10px] text-muted-foreground text-center py-6">
                 <History className="w-6 h-6 mx-auto mb-2 text-muted-foreground/50" />
