@@ -148,18 +148,18 @@ export const AIChat: React.FC = () => {
                 <Plus className="w-3.5 h-3.5" />
               </button>
             </PopoverTrigger>
-            <PopoverContent side="top" align="start" className="w-40 p-1">
+            <PopoverContent side="top" align="start" sideOffset={8} className="w-44 p-1.5 bg-popover border border-border shadow-lg z-50">
               <div className="space-y-0.5">
-                <p className="text-[9px] text-muted-foreground px-2 py-1 font-medium">Import from</p>
+                <p className="text-[9px] text-muted-foreground px-2 py-1 font-medium uppercase tracking-wider">Import from</p>
                 {importOptions.map((option) => {
                   const Icon = option.icon;
                   return (
                     <button
                       key={option.id}
                       onClick={() => handleFileUpload(option.id)}
-                      className="w-full flex items-center gap-2 px-2 py-1.5 rounded text-[10px] text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                      className="w-full flex items-center gap-2.5 px-2 py-2 rounded text-[11px] text-foreground hover:bg-accent transition-colors"
                     >
-                      <Icon className="w-3 h-3" />
+                      <Icon className="w-4 h-4 text-muted-foreground" />
                       <span>{option.label}</span>
                     </button>
                   );
