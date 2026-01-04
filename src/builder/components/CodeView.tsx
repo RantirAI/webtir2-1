@@ -172,23 +172,21 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
           });
         }
       } else if (activeTab === 'css') {
-        // Validate CSS first
+        // Validate CSS - warn but don't block
         const validation = validateCSS(cssCode);
         if (!validation.valid) {
-          toast({
-            title: 'CSS Validation Error',
-            description: validation.errors.slice(0, 3).join('. '),
-            variant: 'destructive',
-          });
-          return;
+          console.warn('CSS validation warnings:', validation.errors);
         }
         
         // Parse and apply CSS to style store
         const result = parseCSSToStyleStore(cssCode);
         
+        const description = `Updated ${result.classesUpdated} classes, created ${result.classesCreated} new classes, set ${result.propertiesSet} properties.`;
         toast({
           title: 'CSS applied',
-          description: `Updated ${result.classesUpdated} classes, created ${result.classesCreated} new classes, set ${result.propertiesSet} properties.`,
+          description: !validation.valid 
+            ? `${description} (Some rules may have been skipped)`
+            : description,
         });
       }
       
