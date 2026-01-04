@@ -8,7 +8,7 @@ import { generateId } from '../utils/instance';
 import * as Icons from 'lucide-react';
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
-import { Search, ChevronDown, Trash2, Package, Link2, Link2Off, Plus, Image as ImageIcon } from 'lucide-react';
+import { Search, ChevronDown, Trash2, Package, Link2, Link2Off, Plus } from 'lucide-react';
 import { useDebounce } from '@/hooks/useDebounce';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -850,8 +850,7 @@ export const ComponentsPanel: React.FC = () => {
           <TabsList className="w-full grid grid-cols-3 h-8 bg-muted/30">
             <TabsTrigger value="elements" className="text-xs">Elements</TabsTrigger>
             <TabsTrigger value="blocks" className="text-xs">Components</TabsTrigger>
-            <TabsTrigger value="assets" className="text-xs gap-1">
-              <ImageIcon className="w-3 h-3" />
+            <TabsTrigger value="assets" className="text-xs">
               Assets
             </TabsTrigger>
           </TabsList>

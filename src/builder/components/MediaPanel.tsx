@@ -6,6 +6,8 @@ import {
   SortField, 
   formatFileSize 
 } from '../store/useMediaStore';
+import { useDraggable } from '@dnd-kit/core';
+import { CSS } from '@dnd-kit/utilities';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -46,10 +48,12 @@ import {
   Sparkles,
   Shrink,
   Link,
-  X,
   Filter,
   ArrowUpDown,
   Type,
+  FileSpreadsheet,
+  FileArchive,
+  Folder,
 } from 'lucide-react';
 
 const typeIcons: Record<string, React.ElementType> = {
@@ -57,10 +61,20 @@ const typeIcons: Record<string, React.ElementType> = {
   video: Video,
   audio: Music,
   document: FileText,
-  archive: Archive,
+  archive: FileArchive,
   font: Type,
   code: Code,
   other: File,
+};
+
+// Document-specific icons based on file extension
+const getDocumentIcon = (name: string): React.ElementType => {
+  const ext = name.split('.').pop()?.toLowerCase();
+  if (ext === 'pdf') return FileText;
+  if (ext === 'zip' || ext === 'rar' || ext === '7z') return FileArchive;
+  if (ext === 'xlsx' || ext === 'xls') return FileSpreadsheet;
+  if (ext === 'docx' || ext === 'doc') return FileText;
+  return FileText;
 };
 
 const filterLabels: Record<FilterType, string> = {
@@ -89,7 +103,19 @@ interface MediaItemProps {
 }
 
 const MediaItem: React.FC<MediaItemProps> = ({ asset, isSelected, onSelect, onClick }) => {
-  const Icon = typeIcons[asset.type] || File;
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+    id: `media-${asset.id}`,
+    data: { 
+      type: 'MediaAsset',
+      asset: asset,
+      isMediaAsset: true,
+    },
+  });
+
+  const style = {
+    transform: CSS.Translate.toString(transform),
+    opacity: isDragging ? 0.5 : 1,
+  };
   
   const renderPreview = () => {
     if (asset.type === 'image') {
@@ -110,16 +136,37 @@ const MediaItem: React.FC<MediaItemProps> = ({ asset, isSelected, onSelect, onCl
         />
       );
     }
+    
+    // Get specific icon for document types
+    let Icon = typeIcons[asset.type] || File;
+    if (asset.type === 'document' || asset.type === 'archive') {
+      Icon = getDocumentIcon(asset.name);
+    }
+    
+    // Color coding for different file types
+    const iconColors: Record<string, string> = {
+      document: 'text-red-500',
+      archive: 'text-amber-500',
+      audio: 'text-purple-500',
+      font: 'text-blue-500',
+      code: 'text-green-500',
+      other: 'text-muted-foreground',
+    };
+    
     return (
       <div className="w-full h-full flex items-center justify-center bg-muted">
-        <Icon className="w-6 h-6 text-muted-foreground" />
+        <Icon className={`w-6 h-6 ${iconColors[asset.type] || 'text-muted-foreground'}`} />
       </div>
     );
   };
   
   return (
     <div 
-      className={`relative group rounded-md border overflow-hidden cursor-pointer transition-all ${
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      className={`relative group rounded-md border overflow-hidden cursor-grab active:cursor-grabbing transition-all ${
         isSelected ? 'ring-2 ring-primary border-primary' : 'border-border hover:border-primary/50'
       }`}
       onClick={onClick}
@@ -144,15 +191,15 @@ const MediaItem: React.FC<MediaItemProps> = ({ asset, isSelected, onSelect, onCl
       </div>
       
       {/* Label */}
-      <div className="p-1.5 bg-background">
-        <p className="text-[10px] truncate text-foreground">{asset.name}</p>
-        <p className="text-[9px] text-muted-foreground">{formatFileSize(asset.size)}</p>
+      <div className="p-1 bg-background">
+        <p className="text-[9px] truncate text-foreground">{asset.name}</p>
+        <p className="text-[8px] text-muted-foreground">{formatFileSize(asset.size)}</p>
       </div>
       
       {/* Compressed badge */}
       {asset.compressed && (
         <div className="absolute top-1 right-1 bg-green-500 text-white text-[8px] px-1 rounded">
-          Compressed
+          Opt
         </div>
       )}
     </div>
