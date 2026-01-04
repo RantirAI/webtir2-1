@@ -335,16 +335,18 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
         )}
       </Button>
 
-      {/* Code View Toggle */}
-      <Button
-        variant="ghost"
-        size="sm"
-        className={`h-7 w-7 p-0 ${isCodeViewOpen ? 'bg-muted' : ''}`}
-        onClick={onCodeViewToggle}
-        title={isCodeViewOpen ? "Close Code View" : "Open Code View"}
-      >
-        {isCodeViewOpen ? <X className="w-3.5 h-3.5" /> : <FileCode className="w-3.5 h-3.5" />}
-      </Button>
+      {/* Code View Toggle - hidden for clients */}
+      {!isClient() && (
+        <Button
+          variant="ghost"
+          size="sm"
+          className={`h-7 w-7 p-0 ${isCodeViewOpen ? 'bg-muted' : ''}`}
+          onClick={onCodeViewToggle}
+          title={isCodeViewOpen ? "Close Code View" : "Open Code View"}
+        >
+          {isCodeViewOpen ? <X className="w-3.5 h-3.5" /> : <FileCode className="w-3.5 h-3.5" />}
+        </Button>
+      )}
 
       {/* Rulers View Toggle */}
       {!isCodeViewOpen && onRulersViewToggle && (
