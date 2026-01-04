@@ -363,15 +363,6 @@ export const Navigator: React.FC = () => {
 
   return (
     <>
-      <div className="p-2 border-b border-border">
-        <button
-          onClick={() => setIsCreateDialogOpen(true)}
-          className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg border border-dashed border-border hover:border-primary hover:bg-accent/50 transition-all text-xs text-muted-foreground hover:text-foreground"
-        >
-          <Plus className="w-3.5 h-3.5" />
-          <span>Create Component</span>
-        </button>
-      </div>
       
       <ScrollArea className="flex-1">
         <div className="p-2 space-y-0.5">
