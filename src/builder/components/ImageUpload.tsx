@@ -29,7 +29,9 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
   const [urlInput, setUrlInput] = useState(currentValue);
   const [showMediaLibrary, setShowMediaLibrary] = useState(false);
   
-  const { assets, addAsset } = useMediaStore();
+  // Subscribe to assets directly to ensure re-render on changes
+  const assets = useMediaStore((state) => state.assets);
+  const addAsset = useMediaStore((state) => state.addAsset);
   const imageAssets = Object.values(assets).filter(a => a.type === 'image');
 
   // Sync internal state when currentValue prop changes

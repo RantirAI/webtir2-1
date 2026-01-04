@@ -1,8 +1,9 @@
 import React, { useState, useMemo } from 'react';
-import { ChevronRight, ChevronDown, FileCode, FolderOpen, Folder, Component, Plus } from 'lucide-react';
+import { ChevronRight, ChevronDown, FileCode, FolderOpen, Folder, Component, Plus, Image, Video, Music, File } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useBuilderStore } from '../store/useBuilderStore';
 import { discoverComponents, ComponentCodeEntry } from '../utils/componentCodeExport';
+import { useMediaStore, MediaAsset } from '../store/useMediaStore';
 
 interface FileNode {
   name: string;
@@ -11,6 +12,8 @@ interface FileNode {
   path: string;
   isComponent?: boolean;
   isLinked?: boolean;
+  isMedia?: boolean;
+  mediaAsset?: MediaAsset;
 }
 
 interface FileTreeProps {
@@ -24,6 +27,7 @@ interface FileTreeProps {
 
 export const FileTree: React.FC<FileTreeProps> = ({ onFileSelect, selectedFile, pages, onAddComponent, onAddPage, onAddMedia }) => {
   const rootInstance = useBuilderStore((state) => state.rootInstance);
+  const { assets } = useMediaStore();
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set(['/', '/pages', '/components', '/media']));
 
   // Discover components from canvas
@@ -45,6 +49,18 @@ export const FileTree: React.FC<FileTreeProps> = ({ onFileSelect, selectedFile, 
         : undefined,
     }));
   };
+
+  // Convert media assets to file nodes
+  const mediaAssets = Object.values(assets);
+  const mediaFileNodes: FileNode[] = useMemo(() => {
+    return mediaAssets.map(asset => ({
+      name: asset.name,
+      type: 'file' as const,
+      path: `/media/${asset.name}`,
+      isMedia: true,
+      mediaAsset: asset,
+    }));
+  }, [mediaAssets]);
 
   const fileStructure: FileNode[] = useMemo(() => {
     const structure: FileNode[] = [];
@@ -72,16 +88,12 @@ export const FileTree: React.FC<FileTreeProps> = ({ onFileSelect, selectedFile, 
       children: componentNodes,
     });
     
-    // Media folder
+    // Media folder - consolidated with all assets
     structure.push({
       name: 'media',
       type: 'folder',
       path: '/media',
-      children: [
-        { name: 'images', type: 'folder' as const, path: '/media/images', children: [] },
-        { name: 'videos', type: 'folder' as const, path: '/media/videos', children: [] },
-        { name: 'lottie', type: 'folder' as const, path: '/media/lottie', children: [] },
-      ],
+      children: mediaFileNodes,
     });
     
     // Global files
@@ -89,7 +101,7 @@ export const FileTree: React.FC<FileTreeProps> = ({ onFileSelect, selectedFile, 
     structure.push({ name: 'script.js', type: 'file', path: '/script.js' });
     
     return structure;
-  }, [pages, componentEntries]);
+  }, [pages, componentEntries, mediaFileNodes]);
 
   const toggleFolder = (path: string) => {
     const newExpanded = new Set(expandedFolders);
@@ -116,6 +128,7 @@ export const FileTree: React.FC<FileTreeProps> = ({ onFileSelect, selectedFile, 
     if (node.type === 'folder') {
       const hasChildren = node.children && node.children.length > 0;
       const addHandler = getAddHandler(node.path);
+      const isMediaFolder = node.path === '/media';
       
       return (
         <div key={node.path}>
@@ -124,7 +137,13 @@ export const FileTree: React.FC<FileTreeProps> = ({ onFileSelect, selectedFile, 
               isSelected ? 'bg-muted' : ''
             }`}
             style={{ paddingLeft: `${depth * 12 + 8}px` }}
-            onClick={() => toggleFolder(node.path)}
+            onClick={() => {
+              toggleFolder(node.path);
+              // Also select folder path for media folder
+              if (isMediaFolder) {
+                onFileSelect(node.path);
+              }
+            }}
           >
             {isExpanded ? (
               <ChevronDown className="w-3 h-3 flex-shrink-0" />
@@ -152,7 +171,7 @@ export const FileTree: React.FC<FileTreeProps> = ({ onFileSelect, selectedFile, 
               </button>
             )}
             
-            {node.path === '/components' && hasChildren && (
+            {(node.path === '/components' || node.path === '/media') && hasChildren && (
               <span className="text-[10px] text-muted-foreground">
                 {node.children?.length}
               </span>
@@ -169,6 +188,20 @@ export const FileTree: React.FC<FileTreeProps> = ({ onFileSelect, selectedFile, 
 
     // File node
     const isComponentFile = node.isComponent;
+    const isMediaFile = node.isMedia;
+    
+    // Get icon for media files
+    const getMediaIcon = (asset?: MediaAsset) => {
+      if (!asset) return File;
+      switch (asset.type) {
+        case 'image': return Image;
+        case 'video': return Video;
+        case 'audio': return Music;
+        default: return File;
+      }
+    };
+    
+    const MediaIcon = isMediaFile ? getMediaIcon(node.mediaAsset) : null;
     
     return (
       <div
@@ -181,6 +214,8 @@ export const FileTree: React.FC<FileTreeProps> = ({ onFileSelect, selectedFile, 
       >
         {isComponentFile ? (
           <Component className={`w-3 h-3 flex-shrink-0 ${node.isLinked ? 'text-green-500' : 'text-purple-500'}`} />
+        ) : isMediaFile && MediaIcon ? (
+          <MediaIcon className="w-3 h-3 flex-shrink-0 text-amber-500" />
         ) : (
           <FileCode className="w-3 h-3 flex-shrink-0 text-muted-foreground" />
         )}
