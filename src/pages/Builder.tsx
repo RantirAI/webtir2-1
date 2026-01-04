@@ -886,7 +886,7 @@ const Builder: React.FC = () => {
       onDragEnd={handleDragEnd}
       collisionDetection={deepestContainerCollision}
     >
-      <div className="h-screen flex flex-col overflow-hidden bg-white">
+      <div className="h-screen flex flex-col overflow-hidden bg-white" style={{ fontFamily: 'var(--builder-font)' }}>
         {/* Global stylesheet for builder classes */}
         <StyleSheetInjector />
         {/* Main content - Full screen canvas */}

@@ -39,8 +39,8 @@ All colors MUST be HSL.
     --ring: 240 5.9% 10%;
 
     --radius: 0.5rem;
-
-    --sidebar-background: 0 0% 98%;
+    
+    --builder-font: "Instrument Sans", sans-serif;
 
     --sidebar-foreground: 240 5.3% 26.1%;
 

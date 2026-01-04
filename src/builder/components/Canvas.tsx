@@ -1511,6 +1511,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
               overflow: isPreviewMode ? 'visible' : 'auto',
               flexShrink: 0,
               cursor: isAddingComment && isCurrentPage ? 'crosshair' : (isCurrentPage ? 'default' : 'pointer'),
+              fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', // Reset to system font for canvas content
             }}
             onClickCapture={(e) => {
               // Handle adding comment on canvas click - use capture to intercept before children
