@@ -1,12 +1,11 @@
 import React, { useState, useRef } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { Send, MessageSquare, Upload, Settings, FileCode, FileText, Image, Figma, History } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { ArrowUp, Plus, Sparkles, MessageSquare, Settings, FileCode, FileText, Image, Figma, BarChart3 } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 interface Message {
   id: string;
@@ -19,11 +18,11 @@ export const AIChat: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [activeMode, setActiveMode] = useState<'chat' | 'import'>('chat');
   const [showSettingsDialog, setShowSettingsDialog] = useState(false);
   const [apiKey, setApiKey] = useState('');
   const [selectedProvider, setSelectedProvider] = useState('openai');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const handleSend = async () => {
     if (!input.trim()) return;
@@ -94,41 +93,6 @@ export const AIChat: React.FC = () => {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Mode Switcher + Settings */}
-      <div className="flex items-center justify-between px-2 py-1.5 border-b">
-        <div className="flex items-center gap-1">
-          <button
-            onClick={() => setActiveMode('chat')}
-            className={`flex items-center gap-1 px-2 py-1 rounded text-[10px] font-medium transition-colors ${
-              activeMode === 'chat' 
-                ? 'bg-primary text-primary-foreground' 
-                : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-            }`}
-          >
-            <MessageSquare className="w-2.5 h-2.5" />
-            Chat
-          </button>
-          <button
-            onClick={() => setActiveMode('import')}
-            className={`flex items-center gap-1 px-2 py-1 rounded text-[10px] font-medium transition-colors ${
-              activeMode === 'import' 
-                ? 'bg-primary text-primary-foreground' 
-                : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-            }`}
-          >
-            <Upload className="w-2.5 h-2.5" />
-            Import
-          </button>
-        </div>
-        <button
-          onClick={() => setShowSettingsDialog(true)}
-          className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-          title="AI Settings"
-        >
-          <Settings className="w-3 h-3" />
-        </button>
-      </div>
-
       <input
         ref={fileInputRef}
         type="file"
@@ -136,126 +100,125 @@ export const AIChat: React.FC = () => {
         onChange={handleFileChange}
       />
 
-      {activeMode === 'chat' ? (
-        <Tabs defaultValue="prompt" className="flex-1 flex flex-col">
-          <TabsList className="w-full grid grid-cols-2 rounded-none border-b bg-transparent h-8 p-0.5 gap-0.5 flex-shrink-0">
-            <TabsTrigger 
-              value="prompt"
-              className="text-[10px] h-full rounded data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none flex items-center gap-1"
-            >
-              <MessageSquare className="w-2.5 h-2.5" />
-              Prompt
-            </TabsTrigger>
-            <TabsTrigger 
-              value="history"
-              className="text-[10px] h-full rounded data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none flex items-center gap-1"
-            >
-              <History className="w-2.5 h-2.5" />
-              History
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="prompt" className="flex-1 flex flex-col m-0 min-h-0">
-            <ScrollArea className="flex-1 p-2">
-              <div className="space-y-2">
-                {messages.length === 0 ? (
-                  <div className="text-[10px] text-muted-foreground text-center py-6">
-                    <MessageSquare className="w-6 h-6 mx-auto mb-2 text-primary/50" />
-                    <p>Start a conversation with AI</p>
-                    <p className="mt-1">Ask me to create or modify components</p>
-                  </div>
-                ) : (
-                  messages.map((message) => (
-                    <div
-                      key={message.id}
-                      className={`text-[10px] p-1.5 rounded ${
-                        message.role === 'user'
-                          ? 'bg-primary/10 ml-3'
-                          : 'bg-muted mr-3'
-                      }`}
-                    >
-                      <p className="whitespace-pre-wrap">{message.content}</p>
-                    </div>
-                  ))
-                )}
-                {isLoading && (
-                  <div className="text-[10px] text-muted-foreground italic p-1.5">
-                    AI is thinking...
-                  </div>
-                )}
-              </div>
-            </ScrollArea>
-
-            <div className="p-2 border-t space-y-1.5 flex-shrink-0">
-              <Textarea
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Ask AI to create or modify components..."
-                className="text-[10px] resize-none min-h-[50px]"
-                disabled={isLoading}
-              />
-              <Button
-                onClick={handleSend}
-                disabled={!input.trim() || isLoading}
-                className="w-full h-6 text-[10px]"
-              >
-                <Send className="w-2.5 h-2.5 mr-1" />
-                Send
-              </Button>
+      {/* Messages Area */}
+      <ScrollArea className="flex-1 p-2">
+        <div className="space-y-2">
+          {messages.length === 0 ? (
+            <div className="text-[10px] text-muted-foreground text-center py-8">
+              <Sparkles className="w-6 h-6 mx-auto mb-2 text-primary/50" />
+              <p className="font-medium">Ask AI to build something</p>
+              <p className="mt-1 text-muted-foreground/70">Create or modify components</p>
             </div>
-          </TabsContent>
+          ) : (
+            messages.map((message) => (
+              <div
+                key={message.id}
+                className={`text-[10px] p-2 rounded-lg ${
+                  message.role === 'user'
+                    ? 'bg-primary text-primary-foreground ml-4'
+                    : 'bg-muted mr-4'
+                }`}
+              >
+                <p className="whitespace-pre-wrap">{message.content}</p>
+              </div>
+            ))
+          )}
+          {isLoading && (
+            <div className="text-[10px] text-muted-foreground italic p-2 bg-muted rounded-lg mr-4">
+              <span className="inline-flex items-center gap-1">
+                <span className="animate-pulse">●</span>
+                <span className="animate-pulse animation-delay-100">●</span>
+                <span className="animate-pulse animation-delay-200">●</span>
+              </span>
+            </div>
+          )}
+        </div>
+      </ScrollArea>
 
-          <TabsContent value="history" className="flex-1 m-0 overflow-y-auto">
-            <ScrollArea className="h-full p-2">
-              {messages.length === 0 ? (
-                <div className="text-[10px] text-muted-foreground text-center py-6">
-                  <History className="w-6 h-6 mx-auto mb-2 text-muted-foreground/50" />
-                  <p>No conversation history yet</p>
-                </div>
-              ) : (
-                <div className="space-y-1.5">
-                  {messages.map((message) => (
-                    <div
-                      key={message.id}
-                      className="text-[10px] p-1.5 rounded bg-muted hover:bg-muted/80 cursor-pointer"
+      {/* Bottom Input Bar - Lovable Style */}
+      <div className="p-2 border-t flex-shrink-0">
+        <div className="flex items-center gap-1 bg-muted/50 rounded-full px-1 py-0.5 border border-border">
+          {/* Plus button for imports */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <button
+                className="p-1.5 rounded-full hover:bg-background transition-colors text-muted-foreground hover:text-foreground"
+                title="Import"
+              >
+                <Plus className="w-3.5 h-3.5" />
+              </button>
+            </PopoverTrigger>
+            <PopoverContent side="top" align="start" className="w-40 p-1">
+              <div className="space-y-0.5">
+                <p className="text-[9px] text-muted-foreground px-2 py-1 font-medium">Import from</p>
+                {importOptions.map((option) => {
+                  const Icon = option.icon;
+                  return (
+                    <button
+                      key={option.id}
+                      onClick={() => handleFileUpload(option.id)}
+                      className="w-full flex items-center gap-2 px-2 py-1.5 rounded text-[10px] text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
                     >
-                      <div className="flex items-center justify-between mb-0.5">
-                        <span className="font-medium text-[9px] text-muted-foreground">
-                          {message.role === 'user' ? 'You' : 'AI'}
-                        </span>
-                        <span className="text-[9px] text-muted-foreground">
-                          {message.timestamp.toLocaleTimeString()}
-                        </span>
-                      </div>
-                      <p className="line-clamp-2">{message.content}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </ScrollArea>
-          </TabsContent>
-        </Tabs>
-      ) : (
-        <ScrollArea className="flex-1">
-          <div className="p-2 space-y-1.5">
-            <p className="text-[10px] text-muted-foreground mb-2">Import from external sources</p>
-            {importOptions.map((option) => {
-              const Icon = option.icon;
-              return (
-                <button
-                  key={option.id}
-                  onClick={() => handleFileUpload(option.id)}
-                  className="w-full flex items-center gap-2 p-2 rounded border border-dashed border-border hover:border-primary hover:bg-accent/50 transition-all text-[10px] text-muted-foreground hover:text-foreground"
-                >
-                  <Icon className="w-3 h-3" />
-                  <span>{option.label}</span>
-                </button>
-              );
-            })}
-          </div>
-        </ScrollArea>
-      )}
+                      <Icon className="w-3 h-3" />
+                      <span>{option.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </PopoverContent>
+          </Popover>
+
+          {/* Visual Edits Button */}
+          <button
+            className="flex items-center gap-1 px-2 py-1 rounded-full text-[10px] text-muted-foreground hover:text-foreground hover:bg-background transition-colors"
+          >
+            <Sparkles className="w-3 h-3" />
+            <span>Visual edits</span>
+          </button>
+
+          {/* Chat Mode Indicator */}
+          <button
+            className="flex items-center gap-1 px-2 py-1 rounded-full bg-background text-[10px] text-foreground border border-border/50"
+          >
+            <MessageSquare className="w-3 h-3" />
+            <span>Chat</span>
+          </button>
+
+          {/* Settings Button */}
+          <button
+            onClick={() => setShowSettingsDialog(true)}
+            className="p-1.5 rounded-full hover:bg-background transition-colors text-muted-foreground hover:text-foreground"
+            title="AI Settings"
+          >
+            <BarChart3 className="w-3 h-3" />
+          </button>
+
+          {/* Text Input */}
+          <input
+            ref={inputRef}
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Ask AI..."
+            className="flex-1 bg-transparent border-none outline-none text-[10px] px-2 min-w-0"
+            disabled={isLoading}
+          />
+
+          {/* Send Button */}
+          <button
+            onClick={handleSend}
+            disabled={!input.trim() || isLoading}
+            className={`p-1.5 rounded-full transition-colors ${
+              input.trim() && !isLoading
+                ? 'bg-foreground text-background hover:bg-foreground/90'
+                : 'bg-muted text-muted-foreground cursor-not-allowed'
+            }`}
+          >
+            <ArrowUp className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      </div>
 
       {/* AI Settings Dialog */}
       <Dialog open={showSettingsDialog} onOpenChange={setShowSettingsDialog}>
