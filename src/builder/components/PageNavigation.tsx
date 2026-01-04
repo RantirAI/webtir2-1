@@ -196,8 +196,8 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
             <button
               className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium cursor-pointer transition-colors ${
                 currentRole === 'developer' 
-                  ? 'bg-primary text-primary-foreground hover:bg-primary/90' 
-                  : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                  ? 'bg-primary text-primary-foreground hover:bg-primary/90 dark:bg-white dark:text-black dark:hover:bg-white/90' 
+                  : 'bg-secondary text-secondary-foreground hover:bg-secondary/80 dark:bg-zinc-700 dark:text-white'
               }`}
             >
               {currentRole === 'developer' ? (
@@ -412,7 +412,7 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="default" size="sm" className="h-8 px-3 gap-2">
+          <Button variant="default" size="sm" className="h-8 px-3 gap-2 dark:bg-white dark:text-black dark:hover:bg-white/90">
             <Download className="w-4 h-4" />
             Export
           </Button>
