@@ -227,7 +227,9 @@ export const PageFooter = () => {
                 >
                   View on GitHub →
                 </a>
-                <Button onClick={() => setLicenseOpen(false)}>Get an Extended License</Button>
+                <Button asChild>
+                  <a href="https://calendly.com/rantir/30min" target="_blank" rel="noopener noreferrer">Get an Extended License</a>
+                </Button>
               </div>
               <p className="text-[10px] text-muted-foreground text-center">
                 Rantir reserves the right to deny an Extended Usage license at any time to any company.
