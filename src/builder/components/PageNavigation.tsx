@@ -452,34 +452,30 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
 
       {/* Publish Dialog */}
       <Dialog open={showPublishDialog} onOpenChange={setShowPublishDialog}>
-        <DialogContent className="sm:max-w-[400px] p-0 gap-0">
-          <DialogHeader className="p-3 pb-2 border-b flex flex-row items-center justify-between">
+        <DialogContent className="sm:max-w-[400px] p-0 gap-0 [&>button]:hidden">
+          <DialogHeader className="p-3 pb-1">
             <DialogTitle className="text-sm font-semibold">Publish</DialogTitle>
-            <button
-              onClick={() => setShowPublishDialog(false)}
-              className="p-1 rounded hover:bg-muted"
-            >
-              <X className="w-4 h-4" />
-            </button>
           </DialogHeader>
           
           <Tabs value={publishTab} onValueChange={(v) => setPublishTab(v as 'publish' | 'export')} className="w-full">
-            <TabsList className="w-full grid grid-cols-2 rounded-none border-b bg-transparent h-9 p-0">
-              <TabsTrigger 
-                value="publish" 
-                className="text-xs rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none"
-              >
-                <Rocket className="w-3 h-3 mr-1" />
-                Publish
-              </TabsTrigger>
-              <TabsTrigger 
-                value="export" 
-                className="text-xs rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none"
-              >
-                <Download className="w-3 h-3 mr-1" />
-                Export
-              </TabsTrigger>
-            </TabsList>
+            <div className="px-3">
+              <TabsList className="w-full flex rounded-none bg-transparent h-8 p-0 justify-start gap-1">
+                <TabsTrigger 
+                  value="publish" 
+                  className="text-[10px] h-7 rounded-md px-2 data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none flex items-center gap-1"
+                >
+                  <Rocket className="w-3 h-3" />
+                  Publish
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="export" 
+                  className="text-[10px] h-7 rounded-md px-2 data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none flex items-center gap-1"
+                >
+                  <Download className="w-3 h-3" />
+                  Export
+                </TabsTrigger>
+              </TabsList>
+            </div>
 
             <TabsContent value="publish" className="p-3 pt-2 m-0 space-y-3">
               {/* Staging URL */}
