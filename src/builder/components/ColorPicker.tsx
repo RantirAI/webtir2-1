@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { parseColorValue, rgbToHex, rgbToHsl, hslToRgb } from '../utils/normalization';
+import { parseColorValue, rgbToHex, rgbToHsv, hsvToRgb } from '../utils/normalization';
 
 interface ColorPickerProps {
   value: string;
@@ -17,14 +17,14 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange, class
   // Original color stored when modal opens
   const [originalColor, setOriginalColor] = useState(value);
   
-  // Working state - only used while modal is open
+  // Working state using HSV (better for 2D picker)
   const [workingR, setWorkingR] = useState(0);
   const [workingG, setWorkingG] = useState(0);
   const [workingB, setWorkingB] = useState(0);
   const [workingAlpha, setWorkingAlpha] = useState(100);
   const [workingH, setWorkingH] = useState(0);
   const [workingS, setWorkingS] = useState(0);
-  const [workingL, setWorkingL] = useState(0);
+  const [workingV, setWorkingV] = useState(100);
   
   const [isDraggingPicker, setIsDraggingPicker] = useState(false);
   const [isDraggingHue, setIsDraggingHue] = useState(false);
@@ -40,31 +40,27 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange, class
         setWorkingG(parsed.g);
         setWorkingB(parsed.b);
         setWorkingAlpha(parsed.a * 100);
-        const hsl = rgbToHsl(parsed.r, parsed.g, parsed.b);
-        setWorkingH(hsl.h);
-        setWorkingS(hsl.s);
-        setWorkingL(hsl.l);
+        const hsv = rgbToHsv(parsed.r, parsed.g, parsed.b);
+        setWorkingH(hsv.h);
+        setWorkingS(hsv.s);
+        setWorkingV(hsv.v);
       }
     }
     setOpen(isOpen);
   };
   
   const handleConfirm = () => {
-    // Only update parent on confirm
     // Output pure color (hex) when alpha is 100%, otherwise rgba
     const a = workingAlpha / 100;
     if (a >= 1) {
-      // Full opacity - output pure hex color (no alpha)
       onChange(rgbToHex(workingR, workingG, workingB));
     } else {
-      // Partial opacity - output rgba
       onChange(`rgba(${workingR}, ${workingG}, ${workingB}, ${a.toFixed(2)})`);
     }
     setOpen(false);
   };
   
   const handleCancel = () => {
-    // Don't change anything, just close
     setOpen(false);
   };
   
@@ -75,19 +71,20 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange, class
         const rect = pickerRef.current.getBoundingClientRect();
         const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
         const y = Math.max(0, Math.min(e.clientY - rect.top, rect.height));
+        // X = Saturation (0-100), Y = Value (100-0, inverted)
         const newS = (x / rect.width) * 100;
-        const newL = 100 - (y / rect.height) * 100;
-        updateFromHsl(workingH, newS, newL, workingAlpha);
+        const newV = 100 - (y / rect.height) * 100;
+        updateFromHsv(workingH, newS, newV, workingAlpha);
       } else if (isDraggingHue && hueRef.current) {
         const rect = hueRef.current.getBoundingClientRect();
         const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
         const newH = (x / rect.width) * 360;
-        updateFromHsl(newH, workingS, workingL, workingAlpha);
+        updateFromHsv(newH, workingS, workingV, workingAlpha);
       } else if (isDraggingAlpha && alphaRef.current) {
         const rect = alphaRef.current.getBoundingClientRect();
         const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
         const newAlpha = (x / rect.width) * 100;
-        updateFromHsl(workingH, workingS, workingL, newAlpha);
+        updateFromHsv(workingH, workingS, workingV, newAlpha);
       }
     };
     
@@ -105,7 +102,7 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange, class
         document.removeEventListener('mouseup', handleMouseUp);
       };
     }
-  }, [isDraggingPicker, isDraggingHue, isDraggingAlpha, workingH, workingS, workingL, workingAlpha]);
+  }, [isDraggingPicker, isDraggingHue, isDraggingAlpha, workingH, workingS, workingV, workingAlpha]);
   
   const updateFromRgb = (newR: number, newG: number, newB: number, newAlpha: number) => {
     setWorkingR(newR);
@@ -113,19 +110,19 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange, class
     setWorkingB(newB);
     setWorkingAlpha(newAlpha);
     
-    const hsl = rgbToHsl(newR, newG, newB);
-    setWorkingH(hsl.h);
-    setWorkingS(hsl.s);
-    setWorkingL(hsl.l);
+    const hsv = rgbToHsv(newR, newG, newB);
+    setWorkingH(hsv.h);
+    setWorkingS(hsv.s);
+    setWorkingV(hsv.v);
   };
   
-  const updateFromHsl = (newH: number, newS: number, newL: number, newAlpha: number) => {
+  const updateFromHsv = (newH: number, newS: number, newV: number, newAlpha: number) => {
     setWorkingH(newH);
     setWorkingS(newS);
-    setWorkingL(newL);
+    setWorkingV(newV);
     setWorkingAlpha(newAlpha);
     
-    const rgb = hslToRgb(newH, newS, newL);
+    const rgb = hsvToRgb(newH, newS, newV);
     setWorkingR(rgb.r);
     setWorkingG(rgb.g);
     setWorkingB(rgb.b);
@@ -156,9 +153,7 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange, class
   
   const handleHexInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
-    // Allow typing incomplete hex values
     if (/^#[0-9A-Fa-f]{0,6}$/.test(val)) {
-      // Only parse when complete
       if (val.length === 7) {
         const parsed = parseColorValue(val);
         if (parsed) {
@@ -170,12 +165,11 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange, class
   
   const handleAlphaInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
-    // Allow empty or partial input
     if (val === '') return;
     const numVal = parseInt(val);
     if (!isNaN(numVal)) {
       const clampedVal = Math.max(0, Math.min(100, numVal));
-      updateFromHsl(workingH, workingS, workingL, clampedVal);
+      updateFromHsv(workingH, workingS, workingV, clampedVal);
     }
   };
   
@@ -210,20 +204,18 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange, class
         onOpenAutoFocus={(e) => e.preventDefault()}
         onCloseAutoFocus={(e) => e.preventDefault()}
         onPointerDownOutside={(e) => {
-          // Only close if not dragging and not clicking inside inputs
           if (isDraggingPicker || isDraggingHue || isDraggingAlpha) {
             e.preventDefault();
           }
         }}
         onInteractOutside={(e) => {
-          // Prevent accidental closure during interactions
           if (isDraggingPicker || isDraggingHue || isDraggingAlpha) {
             e.preventDefault();
           }
         }}
         onEscapeKeyDown={handleCancel}
       >
-        {/* 2D Color Picker */}
+        {/* 2D Color Picker - HSV model: X=Saturation, Y=Value */}
         <div
           ref={pickerRef}
           className="relative w-full h-40 rounded border border-border cursor-crosshair mb-3 select-none"
@@ -241,8 +233,8 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange, class
               const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
               const y = Math.max(0, Math.min(e.clientY - rect.top, rect.height));
               const newS = (x / rect.width) * 100;
-              const newL = 100 - (y / rect.height) * 100;
-              updateFromHsl(workingH, newS, newL, workingAlpha);
+              const newV = 100 - (y / rect.height) * 100;
+              updateFromHsv(workingH, newS, newV, workingAlpha);
             }
             setIsDraggingPicker(true);
           }}
@@ -252,7 +244,7 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange, class
             className="absolute w-4 h-4 border-2 border-white rounded-full shadow-lg pointer-events-none"
             style={{
               left: `${workingS}%`,
-              top: `${100 - workingL}%`,
+              top: `${100 - workingV}%`,
               transform: 'translate(-50%, -50%)',
               boxShadow: '0 0 0 1px rgba(0,0,0,0.3), inset 0 0 0 1px rgba(0,0,0,0.3)',
             }}
@@ -274,12 +266,11 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange, class
               if (rect) {
                 const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
                 const newH = (x / rect.width) * 360;
-                updateFromHsl(newH, workingS, workingL, workingAlpha);
+                updateFromHsv(newH, workingS, workingV, workingAlpha);
               }
               setIsDraggingHue(true);
             }}
           >
-            {/* Hue cursor */}
             <div
               className="absolute w-3 h-5 border-2 border-white rounded shadow-lg pointer-events-none"
               style={{
@@ -315,12 +306,11 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange, class
               if (rect) {
                 const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
                 const newAlpha = (x / rect.width) * 100;
-                updateFromHsl(workingH, workingS, workingL, newAlpha);
+                updateFromHsv(workingH, workingS, workingV, newAlpha);
               }
               setIsDraggingAlpha(true);
             }}
           >
-            {/* Alpha cursor */}
             <div
               className="absolute w-3 h-5 border-2 border-white rounded shadow-lg pointer-events-none"
               style={{

@@ -57,6 +57,7 @@ import { toast } from "@/hooks/use-toast";
 import { componentRegistry } from "../primitives/registry";
 import { UnitInput } from "./UnitInput";
 import { ColorPicker } from "./ColorPicker";
+import { GradientPicker } from "./GradientPicker";
 import { SpacingControl } from "./SpacingControl";
 import { FontPicker } from "./FontPicker";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -2452,65 +2453,44 @@ export const StylePanel: React.FC<StylePanelProps> = ({
                 ]}
               >
                 <div className="Col" style={{ gap: "8px" }}>
-                  {/* Background Color */}
-                  <div style={{ display: "grid", gridTemplateColumns: "50px 1fr", gap: "4px", alignItems: "center" }}>
-                    <label className={`Label ${getPropertyColorClass("backgroundColor")}`}>
-                      Fill Color
-                      <PropertyIndicator property="backgroundColor" />
-                    </label>
-                    <div className="flex items-center gap-2">
-                      <ColorPicker
-                        value={computedStyles.backgroundColor || "transparent"}
-                        onChange={(val) => updateStyle("backgroundColor", val)}
-                      />
-                      <span className="text-[9px] text-muted-foreground truncate">
-                        {computedStyles.backgroundColor || "transparent"}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Gradient - only for layout components like Section */}
-                  {showBackgroundImageControl(selectedInstance.type as ComponentType) && (
-                    <div style={{ display: "grid", gridTemplateColumns: "40px 1fr", gap: "4px", alignItems: "center" }}>
-                      <label className={`Label ${getPropertyColorClass("backgroundGradient")}`}>
-                        Gradient
-                        <PropertyIndicator property="backgroundGradient" />
+                  {/* Fill Color and Gradient side by side */}
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
+                    {/* Background Color */}
+                    <div>
+                      <label className={`Label ${getPropertyColorClass("backgroundColor")}`} style={{ marginBottom: "4px", display: "block" }}>
+                        Fill Color
+                        <PropertyIndicator property="backgroundColor" />
                       </label>
                       <div className="flex items-center gap-2">
-                        <input
-                          className="Input flex-1"
-                          type="text"
-                          value={computedStyles.backgroundGradient || ""}
-                          onChange={(e) => updateStyle("backgroundGradient", e.target.value)}
-                          placeholder="linear-gradient(90deg, #000, #fff)"
-                          style={{ fontSize: "10px" }}
+                        <ColorPicker
+                          value={computedStyles.backgroundColor || "transparent"}
+                          onChange={(val) => updateStyle("backgroundColor", val)}
                         />
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <button
-                                type="button"
-                                className="p-1 rounded hover:bg-accent"
-                                onClick={() => {
-                                  if (!computedStyles.backgroundGradient) {
-                                    updateStyle(
-                                      "backgroundGradient",
-                                      "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.5))",
-                                    );
-                                  }
-                                }}
-                              >
-                                <Zap className="w-3 h-3" />
-                              </button>
-                            </TooltipTrigger>
-                            <TooltipContent side="left">
-                              <p className="text-xs">Add default gradient</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
+                        <span className="text-[9px] text-muted-foreground truncate flex-1">
+                          {computedStyles.backgroundColor || "transparent"}
+                        </span>
                       </div>
                     </div>
-                  )}
+
+                    {/* Gradient */}
+                    {showBackgroundImageControl(selectedInstance.type as ComponentType) && (
+                      <div>
+                        <label className={`Label ${getPropertyColorClass("backgroundGradient")}`} style={{ marginBottom: "4px", display: "block" }}>
+                          Gradient
+                          <PropertyIndicator property="backgroundGradient" />
+                        </label>
+                        <div className="flex items-center gap-2">
+                          <GradientPicker
+                            value={computedStyles.backgroundGradient || ""}
+                            onChange={(val) => updateStyle("backgroundGradient", val)}
+                          />
+                          <span className="text-[9px] text-muted-foreground truncate flex-1">
+                            {computedStyles.backgroundGradient ? "Gradient" : "None"}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
 
                   {/* Background Image - only for components that support it */}
                   {showBackgroundImageControl(selectedInstance.type as ComponentType) && (
