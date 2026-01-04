@@ -151,10 +151,12 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
       <div className="flex items-center gap-1.5">
         <button 
           onClick={onProjectSettingsOpen}
-          className="w-7 h-7 bg-primary rounded flex items-center justify-center text-primary-foreground font-bold text-xs hover:opacity-80 overflow-hidden"
+          className={`w-7 h-7 rounded flex items-center justify-center font-bold text-xs hover:opacity-80 overflow-hidden ${
+            faviconUrl ? 'bg-white' : 'bg-primary text-primary-foreground'
+          }`}
         >
           {faviconUrl ? (
-            <img src={faviconUrl} alt="Project icon" className="w-full h-full object-cover" />
+            <img src={faviconUrl} alt="Project icon" className="w-5 h-5 object-contain" />
           ) : (
             projectName.charAt(0).toUpperCase()
           )}

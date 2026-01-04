@@ -39,6 +39,8 @@ export const ProjectSettingsModal: React.FC<ProjectSettingsModalProps> = ({
   const { getProjectCustomCode, updateProjectCustomCode } = usePageStore();
   const projectCode = getProjectCustomCode();
   const { 
+    faviconUrl: storedFaviconUrl,
+    setFaviconUrl,
     builderTheme, 
     setBuilderTheme,
     builderFont,
@@ -49,6 +51,14 @@ export const ProjectSettingsModal: React.FC<ProjectSettingsModalProps> = ({
     githubLibraryUrl,
     setGithubLibraryUrl
   } = useProjectSettingsStore();
+  
+  // Use stored favicon if the prop is empty, keep them in sync
+  const effectiveFaviconUrl = faviconUrl || storedFaviconUrl;
+  
+  const handleFaviconChange = (url: string) => {
+    onFaviconChange(url);
+    setFaviconUrl(url); // Also update the store so toolbar shows it
+  };
   
   const [newComponentName, setNewComponentName] = useState('');
   const [newComponentCode, setNewComponentCode] = useState('');
@@ -67,11 +77,11 @@ export const ProjectSettingsModal: React.FC<ProjectSettingsModalProps> = ({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[540px] max-h-[80vh] overflow-y-auto p-4">
-        <DialogHeader className="pb-2">
+        <DialogHeader className="pb-0">
           <DialogTitle className="text-sm font-semibold">Project Settings</DialogTitle>
         </DialogHeader>
         
-        <Tabs defaultValue="general" className="w-full">
+        <Tabs defaultValue="general" className="w-full mt-2">
           <TabsList className="w-full flex rounded-none border-b bg-transparent h-10 p-1 justify-start">
             <TabsTrigger 
               value="general" 
@@ -113,8 +123,8 @@ export const ProjectSettingsModal: React.FC<ProjectSettingsModalProps> = ({
               <div className="flex gap-1.5">
                 <Input
                   id="favicon"
-                  value={faviconUrl}
-                  onChange={(e) => onFaviconChange(e.target.value)}
+                  value={effectiveFaviconUrl}
+                  onChange={(e) => handleFaviconChange(e.target.value)}
                   placeholder="https://example.com/favicon.ico"
                   className="h-8 text-xs"
                 />
@@ -122,9 +132,9 @@ export const ProjectSettingsModal: React.FC<ProjectSettingsModalProps> = ({
                   <Upload className="w-3 h-3" />
                 </Button>
               </div>
-              {faviconUrl && (
+              {effectiveFaviconUrl && (
                 <div className="mt-1.5">
-                  <img src={faviconUrl} alt="Favicon preview" className="w-6 h-6 border rounded" />
+                  <img src={effectiveFaviconUrl} alt="Favicon preview" className="w-6 h-6 border rounded" />
                 </div>
               )}
             </div>
