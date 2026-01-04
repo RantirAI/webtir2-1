@@ -3,7 +3,7 @@ import { ChevronRight, ChevronDown, FileCode, FolderOpen, Folder, Component, Plu
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useBuilderStore } from '../store/useBuilderStore';
 import { discoverComponents, ComponentCodeEntry } from '../utils/componentCodeExport';
-import { useMediaStore, MediaAsset } from '../store/useMediaStore';
+import { useMediaStore, MediaAsset, MediaFolder } from '../store/useMediaStore';
 
 interface FileNode {
   name: string;
@@ -13,7 +13,9 @@ interface FileNode {
   isComponent?: boolean;
   isLinked?: boolean;
   isMedia?: boolean;
+  isMediaFolder?: boolean;
   mediaAsset?: MediaAsset;
+  mediaFolder?: MediaFolder;
 }
 
 interface FileTreeProps {
@@ -27,7 +29,7 @@ interface FileTreeProps {
 
 export const FileTree: React.FC<FileTreeProps> = ({ onFileSelect, selectedFile, pages, onAddComponent, onAddPage, onAddMedia }) => {
   const rootInstance = useBuilderStore((state) => state.rootInstance);
-  const { assets } = useMediaStore();
+  const { assets, folders, getFoldersInParent, getAssetsInFolder } = useMediaStore();
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set(['/', '/pages', '/components', '/media']));
 
   // Discover components from canvas
@@ -50,17 +52,38 @@ export const FileTree: React.FC<FileTreeProps> = ({ onFileSelect, selectedFile, 
     }));
   };
 
-  // Convert media assets to file nodes
-  const mediaAssets = Object.values(assets);
-  const mediaFileNodes: FileNode[] = useMemo(() => {
-    return mediaAssets.map(asset => ({
-      name: asset.name,
-      type: 'file' as const,
-      path: `/media/${asset.name}`,
-      isMedia: true,
-      mediaAsset: asset,
-    }));
-  }, [mediaAssets]);
+  // Build media folder tree recursively
+  const buildMediaFolderTree = (parentId: string | null, basePath: string): FileNode[] => {
+    const nodes: FileNode[] = [];
+    
+    // Get folders in this parent
+    const childFolders = getFoldersInParent(parentId);
+    childFolders.forEach(folder => {
+      const folderPath = `${basePath}/${folder.name}`;
+      nodes.push({
+        name: folder.name,
+        type: 'folder',
+        path: folderPath,
+        isMediaFolder: true,
+        mediaFolder: folder,
+        children: [
+          ...buildMediaFolderTree(folder.id, folderPath),
+          ...getAssetsInFolder(folder.id).map(asset => ({
+            name: asset.name,
+            type: 'file' as const,
+            path: `${folderPath}/${asset.name}`,
+            isMedia: true,
+            mediaAsset: asset,
+          })),
+        ],
+      });
+    });
+    
+    return nodes;
+  };
+
+  // Get root level assets
+  const rootAssets = getAssetsInFolder(null);
 
   const fileStructure: FileNode[] = useMemo(() => {
     const structure: FileNode[] = [];
@@ -88,12 +111,23 @@ export const FileTree: React.FC<FileTreeProps> = ({ onFileSelect, selectedFile, 
       children: componentNodes,
     });
     
-    // Media folder - consolidated with all assets
+    // Media folder - with nested folders and assets
+    const mediaChildren: FileNode[] = [
+      ...buildMediaFolderTree(null, '/media'),
+      ...rootAssets.map(asset => ({
+        name: asset.name,
+        type: 'file' as const,
+        path: `/media/${asset.name}`,
+        isMedia: true,
+        mediaAsset: asset,
+      })),
+    ];
+    
     structure.push({
       name: 'media',
       type: 'folder',
       path: '/media',
-      children: mediaFileNodes,
+      children: mediaChildren,
     });
     
     // Global files
@@ -101,7 +135,7 @@ export const FileTree: React.FC<FileTreeProps> = ({ onFileSelect, selectedFile, 
     structure.push({ name: 'script.js', type: 'file', path: '/script.js' });
     
     return structure;
-  }, [pages, componentEntries, mediaFileNodes]);
+  }, [pages, componentEntries, folders, assets]);
 
   const toggleFolder = (path: string) => {
     const newExpanded = new Set(expandedFolders);
@@ -128,7 +162,7 @@ export const FileTree: React.FC<FileTreeProps> = ({ onFileSelect, selectedFile, 
     if (node.type === 'folder') {
       const hasChildren = node.children && node.children.length > 0;
       const addHandler = getAddHandler(node.path);
-      const isMediaFolder = node.path === '/media';
+      const isMediaFolder = node.path === '/media' || node.isMediaFolder;
       
       return (
         <div key={node.path}>

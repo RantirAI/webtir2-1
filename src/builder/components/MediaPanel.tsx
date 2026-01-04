@@ -54,6 +54,11 @@ import {
   FileSpreadsheet,
   FileArchive,
   Folder,
+  FolderOpen,
+  FolderPlus,
+  ChevronLeft,
+  Pencil,
+  X,
 } from 'lucide-react';
 
 const typeIcons: Record<string, React.ElementType> = {
@@ -219,16 +224,23 @@ export const MediaPanel: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const {
     assets,
+    folders,
     selectedIds,
+    currentFolderId,
     searchQuery,
     filterType,
     sortField,
     sortOrder,
     autoCompress,
     addAsset,
+    addFolder,
+    removeFolder,
+    renameFolder,
     removeAssets,
     updateAsset,
     getFilteredAssets,
+    getFoldersInParent,
+    setCurrentFolder,
     toggleAssetSelection,
     selectAll,
     clearSelection,
@@ -241,8 +253,15 @@ export const MediaPanel: React.FC = () => {
   
   const [detailAsset, setDetailAsset] = useState<MediaAsset | null>(null);
   const [altTextInput, setAltTextInput] = useState('');
+  const [showNewFolderInput, setShowNewFolderInput] = useState(false);
+  const [newFolderName, setNewFolderName] = useState('');
+  const [editingFolderId, setEditingFolderId] = useState<string | null>(null);
+  const [editingFolderName, setEditingFolderName] = useState('');
   
   const filteredAssets = getFilteredAssets();
+  const currentFolders = getFoldersInParent(currentFolderId);
+  const currentFolder = currentFolderId ? folders[currentFolderId] : null;
+  
   const assetCounts = Object.values(assets).reduce((acc, asset) => {
     acc[asset.type] = (acc[asset.type] || 0) + 1;
     acc.all = (acc.all || 0) + 1;
@@ -336,8 +355,45 @@ export const MediaPanel: React.FC = () => {
     }
   };
   
+  const handleCreateFolder = () => {
+    if (newFolderName.trim()) {
+      addFolder(newFolderName.trim());
+      setNewFolderName('');
+      setShowNewFolderInput(false);
+      toast({ title: 'Folder Created', description: newFolderName });
+    }
+  };
+  
+  const handleRenameFolder = (id: string) => {
+    if (editingFolderName.trim()) {
+      renameFolder(id, editingFolderName.trim());
+      setEditingFolderId(null);
+      setEditingFolderName('');
+    }
+  };
+  
+  const handleDeleteFolder = (id: string, name: string) => {
+    removeFolder(id);
+    toast({ title: 'Folder Deleted', description: name });
+  };
+  
   return (
     <div className="flex flex-col h-full">
+      {/* Folder Breadcrumb */}
+      {currentFolderId && (
+        <div className="px-2 py-1.5 border-b flex items-center gap-1 text-xs">
+          <button
+            onClick={() => setCurrentFolder(currentFolder?.parentId || null)}
+            className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ChevronLeft className="w-3 h-3" />
+            Back
+          </button>
+          <span className="text-muted-foreground">/</span>
+          <span className="font-medium truncate">{currentFolder?.name}</span>
+        </div>
+      )}
+      
       {/* Header Actions */}
       <div className="p-2 border-b space-y-2">
         {/* Search */}
@@ -430,11 +486,20 @@ export const MediaPanel: React.FC = () => {
           <Button 
             variant="outline" 
             size="sm" 
-            className="h-6 text-[10px] gap-1 flex-1"
+            className="h-6 text-[10px] gap-1"
             onClick={() => fileInputRef.current?.click()}
           >
             <Plus className="w-3 h-3" />
-            Add Files
+            Files
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="h-6 text-[10px] gap-1"
+            onClick={() => setShowNewFolderInput(true)}
+          >
+            <FolderPlus className="w-3 h-3" />
+            Folder
           </Button>
           
           {selectedIds.length > 0 && (
@@ -493,9 +558,95 @@ export const MediaPanel: React.FC = () => {
         </div>
       </div>
       
+      {/* New Folder Input */}
+      {showNewFolderInput && (
+        <div className="px-2 py-1.5 border-b flex items-center gap-1">
+          <FolderPlus className="w-3 h-3 text-muted-foreground" />
+          <Input
+            value={newFolderName}
+            onChange={(e) => setNewFolderName(e.target.value)}
+            placeholder="Folder name..."
+            className="h-6 text-xs flex-1"
+            autoFocus
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') handleCreateFolder();
+              if (e.key === 'Escape') setShowNewFolderInput(false);
+            }}
+          />
+          <Button size="sm" className="h-6 w-6 p-0" onClick={handleCreateFolder}>
+            <Check className="w-3 h-3" />
+          </Button>
+          <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => setShowNewFolderInput(false)}>
+            <X className="w-3 h-3" />
+          </Button>
+        </div>
+      )}
+      
       {/* Assets Grid */}
       <ScrollArea className="flex-1 [&_[data-radix-scroll-area-scrollbar]]:opacity-0 [&:hover_[data-radix-scroll-area-scrollbar]]:opacity-100 [&_[data-radix-scroll-area-scrollbar]]:transition-opacity">
         <div className="p-2 grid grid-cols-3 gap-2">
+          {/* Folders */}
+          {currentFolders.map(folder => (
+            <div
+              key={folder.id}
+              className="relative group rounded-md border border-border overflow-hidden cursor-pointer hover:border-primary/50 transition-all"
+              onClick={() => editingFolderId !== folder.id && setCurrentFolder(folder.id)}
+            >
+              <div className="aspect-square bg-muted flex items-center justify-center">
+                <FolderOpen className="w-8 h-8 text-amber-500" />
+              </div>
+              <div className="p-1 bg-background">
+                {editingFolderId === folder.id ? (
+                  <div className="flex items-center gap-0.5">
+                    <Input
+                      value={editingFolderName}
+                      onChange={(e) => setEditingFolderName(e.target.value)}
+                      className="h-5 text-[9px] px-1"
+                      autoFocus
+                      onClick={(e) => e.stopPropagation()}
+                      onKeyDown={(e) => {
+                        e.stopPropagation();
+                        if (e.key === 'Enter') handleRenameFolder(folder.id);
+                        if (e.key === 'Escape') setEditingFolderId(null);
+                      }}
+                    />
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); handleRenameFolder(folder.id); }}
+                      className="p-0.5"
+                    >
+                      <Check className="w-2.5 h-2.5" />
+                    </button>
+                  </div>
+                ) : (
+                  <p className="text-[9px] truncate text-foreground">{folder.name}</p>
+                )}
+              </div>
+              {/* Folder actions */}
+              <div className="absolute top-1 right-1 flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setEditingFolderId(folder.id);
+                    setEditingFolderName(folder.name);
+                  }}
+                  className="p-1 rounded bg-background/80 hover:bg-background"
+                >
+                  <Pencil className="w-2.5 h-2.5" />
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteFolder(folder.id, folder.name);
+                  }}
+                  className="p-1 rounded bg-background/80 hover:bg-destructive hover:text-destructive-foreground"
+                >
+                  <Trash2 className="w-2.5 h-2.5" />
+                </button>
+              </div>
+            </div>
+          ))}
+          
+          {/* Assets */}
           {filteredAssets.map(asset => (
             <MediaItem
               key={asset.id}
@@ -506,11 +657,11 @@ export const MediaPanel: React.FC = () => {
             />
           ))}
           
-          {filteredAssets.length === 0 && (
+          {filteredAssets.length === 0 && currentFolders.length === 0 && (
             <div className="col-span-3 text-center py-8 text-muted-foreground">
               <File className="w-8 h-8 mx-auto mb-2 opacity-50" />
               <p className="text-xs">No assets found</p>
-              <p className="text-[10px] mt-1">Click "Add Files" to upload</p>
+              <p className="text-[10px] mt-1">Click "Files" to upload or "Folder" to organize</p>
             </div>
           )}
         </div>

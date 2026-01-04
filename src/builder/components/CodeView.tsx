@@ -12,6 +12,7 @@ import { Copy, Check, Monitor, Tablet, Smartphone, Upload } from 'lucide-react';
 import { ImportModal } from './ImportModal';
 import { FileTree } from './FileTree';
 import { CreateComponentDialog } from './CreateComponentDialog';
+import { CodeViewMediaPanel } from './CodeViewMediaPanel';
 import { toast } from '@/hooks/use-toast';
 import Prism from 'prismjs';
 import 'prismjs/themes/prism-tomorrow.css';
@@ -60,9 +61,10 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
     return discoverComponents(rootInstance);
   }, [rootInstance]);
 
-  // Check if selected file is a component file or page file
+  // Check if selected file is a component file, page file, or media
   const isComponentFile = selectedFile.startsWith('/components/');
   const isPageFile = selectedFile.startsWith('/pages/');
+  const isMediaFile = selectedFile.startsWith('/media');
   
   const componentCode = useMemo(() => {
     if (!isComponentFile) return null;
@@ -333,28 +335,32 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
 
         <ResizableHandle withHandle />
 
-        {/* Code Editor - Center */}
+        {/* Code Editor or Media Panel - Center */}
         <ResizablePanel defaultSize={44} minSize={30}>
-          <div className="h-full border-r border-border overflow-hidden">
-          <div className="h-10 border-b border-border flex items-center px-3 bg-muted/20">
-              <span className="text-xs font-mono text-muted-foreground">{selectedFile}</span>
+          {isMediaFile ? (
+            <CodeViewMediaPanel selectedPath={selectedFile} />
+          ) : (
+            <div className="h-full border-r border-border overflow-hidden">
+              <div className="h-10 border-b border-border flex items-center px-3 bg-muted/20">
+                <span className="text-xs font-mono text-muted-foreground">{selectedFile}</span>
+              </div>
+              <CodeEditor 
+                code={getCode(activeTab)} 
+                language={activeTab === 'astro' || activeTab === 'html' ? 'html' : activeTab === 'react' ? 'jsx' : activeTab}
+                onChange={(newCode) => {
+                  setIsCodeEdited(true);
+                  // Mark this tab as edited so it won't be overwritten
+                  setEditedTabs(prev => ({ ...prev, [activeTab]: true }));
+                  switch (activeTab) {
+                    case 'html': setHtmlCode(newCode); break;
+                    case 'css': setCssCode(newCode); break;
+                    case 'react': setJsCode(newCode); break;
+                    case 'astro': setAstroCode(newCode); break;
+                  }
+                }}
+              />
             </div>
-            <CodeEditor 
-              code={getCode(activeTab)} 
-              language={activeTab === 'astro' || activeTab === 'html' ? 'html' : activeTab === 'react' ? 'jsx' : activeTab}
-              onChange={(newCode) => {
-                setIsCodeEdited(true);
-                // Mark this tab as edited so it won't be overwritten
-                setEditedTabs(prev => ({ ...prev, [activeTab]: true }));
-                switch (activeTab) {
-                  case 'html': setHtmlCode(newCode); break;
-                  case 'css': setCssCode(newCode); break;
-                  case 'react': setJsCode(newCode); break;
-                  case 'astro': setAstroCode(newCode); break;
-                }
-              }}
-            />
-          </div>
+          )}
         </ResizablePanel>
 
         <ResizableHandle withHandle />
