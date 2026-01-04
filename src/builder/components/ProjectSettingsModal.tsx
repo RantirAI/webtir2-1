@@ -7,7 +7,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { Upload, Code, Settings, Palette, Library, Github, Trash2, Plus, Check } from 'lucide-react';
 import { usePageStore } from '@/builder/store/usePageStore';
-import { useProjectSettingsStore, themeColors, BuilderTheme } from '@/builder/store/useProjectSettingsStore';
+import { useProjectSettingsStore, themeColors, BuilderTheme, builderFonts, BuilderFont } from '@/builder/store/useProjectSettingsStore';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface ProjectSettingsModalProps {
   open: boolean;
@@ -40,6 +41,8 @@ export const ProjectSettingsModal: React.FC<ProjectSettingsModalProps> = ({
   const { 
     builderTheme, 
     setBuilderTheme,
+    builderFont,
+    setBuilderFont,
     customComponents,
     addCustomComponent,
     removeCustomComponent,
@@ -148,10 +151,10 @@ export const ProjectSettingsModal: React.FC<ProjectSettingsModalProps> = ({
             </div>
           </TabsContent>
           
-          <TabsContent value="theme" className="space-y-3 py-3">
+          <TabsContent value="theme" className="space-y-4 py-3">
             <div className="space-y-1.5">
-              <Label className="text-[11px]">Builder Theme</Label>
-              <p className="text-[10px] text-muted-foreground">Choose a primary color for the builder interface</p>
+              <Label className="text-[11px]">Builder Color</Label>
+              <p className="text-[10px] text-muted-foreground">Primary color for the builder interface</p>
             </div>
             
             <div className="grid grid-cols-3 gap-2">
@@ -166,16 +169,43 @@ export const ProjectSettingsModal: React.FC<ProjectSettingsModalProps> = ({
                   }`}
                 >
                   <div 
-                    className="w-5 h-5 rounded-full shrink-0"
+                    className="w-4 h-4 rounded-full shrink-0"
                     style={{ backgroundColor: `hsl(${themeColors[theme].primary})` }}
                   />
-                  <span className="text-[11px] font-medium">{themeColors[theme].name}</span>
+                  <span className="text-[10px] font-medium">{themeColors[theme].name}</span>
                   {builderTheme === theme && (
                     <Check className="w-3 h-3 ml-auto text-primary" />
                   )}
                 </button>
               ))}
             </div>
+            
+            <div className="space-y-1.5 pt-2 border-t border-border">
+              <Label className="text-[11px]">Builder Font</Label>
+              <p className="text-[10px] text-muted-foreground">Font for the builder UI (sidebars, toolbars, buttons)</p>
+            </div>
+            
+            <ScrollArea className="h-[200px] pr-3">
+              <div className="grid grid-cols-2 gap-1.5">
+                {(Object.keys(builderFonts) as BuilderFont[]).map((font) => (
+                  <button
+                    key={font}
+                    onClick={() => setBuilderFont(font)}
+                    className={`flex items-center justify-between p-2 rounded-md border transition-all text-left ${
+                      builderFont === font 
+                        ? 'border-primary ring-1 ring-primary bg-primary/5' 
+                        : 'border-border hover:border-primary/50'
+                    }`}
+                    style={{ fontFamily: builderFonts[font].family }}
+                  >
+                    <span className="text-[10px] font-medium truncate">{builderFonts[font].name}</span>
+                    {builderFont === font && (
+                      <Check className="w-3 h-3 shrink-0 text-primary" />
+                    )}
+                  </button>
+                ))}
+              </div>
+            </ScrollArea>
           </TabsContent>
           
           <TabsContent value="library" className="space-y-3 py-3">
