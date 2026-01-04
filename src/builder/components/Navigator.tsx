@@ -364,7 +364,7 @@ export const Navigator: React.FC = () => {
   return (
     <>
       
-      <ScrollArea className="flex-1">
+      <ScrollArea className="flex-1 [&_[data-radix-scroll-area-scrollbar]]:opacity-0 [&:hover_[data-radix-scroll-area-scrollbar]]:opacity-100 [&_[data-radix-scroll-area-scrollbar]]:transition-opacity">
         <div className="p-2 space-y-0.5">
           {rootInstance && <TreeNode instance={rootInstance} level={0} />}
         </div>
