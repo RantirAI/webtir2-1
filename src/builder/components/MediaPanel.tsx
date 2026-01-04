@@ -123,7 +123,10 @@ const MediaItem: React.FC<MediaItemProps> = ({ asset, isSelected, onSelect, onCl
   };
   
   const renderPreview = () => {
-    if (asset.type === 'image' && asset.url) {
+    const isImage = asset.type === 'image' || asset.mimeType?.startsWith('image/');
+    const isVideo = asset.type === 'video' || asset.mimeType?.startsWith('video/');
+
+    if (isImage && asset.url) {
       return (
         <img 
           src={asset.url} 
@@ -137,7 +140,7 @@ const MediaItem: React.FC<MediaItemProps> = ({ asset, isSelected, onSelect, onCl
         />
       );
     }
-    if (asset.type === 'video' && asset.url) {
+    if (isVideo && asset.url) {
       return (
         <video 
           src={asset.url} 
@@ -356,12 +359,15 @@ export const MediaPanel: React.FC = () => {
   };
   
   const handleCreateFolder = () => {
-    if (newFolderName.trim()) {
-      addFolder(newFolderName.trim());
-      setNewFolderName('');
-      setShowNewFolderInput(false);
-      toast({ title: 'Folder Created', description: newFolderName });
-    }
+    const name = newFolderName.trim();
+    if (!name) return;
+
+    // close immediately so the input never “sticks” visually
+    setShowNewFolderInput(false);
+    setNewFolderName('');
+
+    addFolder(name);
+    toast({ title: 'Folder Created', description: name });
   };
   
   const handleRenameFolder = (id: string) => {
@@ -379,21 +385,6 @@ export const MediaPanel: React.FC = () => {
   
   return (
     <div className="flex flex-col h-full">
-      {/* Folder Breadcrumb */}
-      {currentFolderId && (
-        <div className="px-2 py-1.5 border-b flex items-center gap-1 text-xs">
-          <button
-            onClick={() => setCurrentFolder(currentFolder?.parentId || null)}
-            className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <ChevronLeft className="w-3 h-3" />
-            Back
-          </button>
-          <span className="text-muted-foreground">/</span>
-          <span className="font-medium truncate">{currentFolder?.name}</span>
-        </div>
-      )}
-      
       {/* Header Actions */}
       <div className="p-2 border-b space-y-2">
         {/* Search */}
@@ -556,8 +547,32 @@ export const MediaPanel: React.FC = () => {
             />
           </div>
         </div>
+
+        {/* Folder navigation (moved here) */}
+        {currentFolderId && (
+          <div className="pt-1 flex items-center justify-between text-[10px]">
+            <div className="flex items-center gap-1 min-w-0">
+              <button
+                onClick={() => setCurrentFolder(null)}
+                className="text-muted-foreground hover:text-foreground hover:underline"
+              >
+                All files
+              </button>
+              <span className="text-muted-foreground">/</span>
+              <span className="font-medium truncate">{currentFolder?.name}</span>
+            </div>
+            <button
+              onClick={() => setCurrentFolder(currentFolder?.parentId || null)}
+              className="flex items-center gap-1 text-muted-foreground hover:text-foreground"
+              title="Up one folder"
+            >
+              <ChevronLeft className="w-3 h-3" />
+              Up
+            </button>
+          </div>
+        )}
       </div>
-      
+
       {/* New Folder Input */}
       {showNewFolderInput && (
         <div className="px-2 py-1.5 border-b flex items-center gap-1">
