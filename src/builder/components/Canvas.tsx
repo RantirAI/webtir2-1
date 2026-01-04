@@ -325,10 +325,10 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
       instance,
       isSelected,
       isHovered,
-      onSelect: isPreviewMode ? undefined : () => setSelectedInstanceId(instance.id),
-      onHover: isPreviewMode ? undefined : () => setHoveredInstanceId(instance.id),
-      onHoverEnd: isPreviewMode ? undefined : () => setHoveredInstanceId(null),
-      onContextMenu: isPreviewMode ? undefined : (e: React.MouseEvent) => handleContextMenu(e, instance),
+      onSelect: isPreviewMode || isAddingComment ? undefined : () => setSelectedInstanceId(instance.id),
+      onHover: isPreviewMode || isAddingComment ? undefined : () => setHoveredInstanceId(instance.id),
+      onHoverEnd: isPreviewMode || isAddingComment ? undefined : () => setHoveredInstanceId(null),
+      onContextMenu: isPreviewMode || isAddingComment ? undefined : (e: React.MouseEvent) => handleContextMenu(e, instance),
       isPreviewMode,
       dataBindingProps, // Pass data binding props to primitives
     } as any;
@@ -1512,10 +1512,11 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
               flexShrink: 0,
               cursor: isAddingComment && isCurrentPage ? 'crosshair' : (isCurrentPage ? 'default' : 'pointer'),
             }}
-            onClick={(e) => {
-              // Handle adding comment on canvas click
+            onClickCapture={(e) => {
+              // Handle adding comment on canvas click - use capture to intercept before children
               if (isAddingComment && isCurrentPage) {
                 e.stopPropagation();
+                e.preventDefault();
                 const rect = e.currentTarget.getBoundingClientRect();
                 const scrollTop = e.currentTarget.scrollTop || 0;
                 const x = ((e.clientX - rect.left) / rect.width) * 100;
@@ -1523,7 +1524,8 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
                 setAddCommentPosition({ x, y });
                 return;
               }
-              
+            }}
+            onClick={(e) => {
               if (!isCurrentPage && e.target === e.currentTarget) {
                 onPageChange?.(pageId);
               }
@@ -1563,8 +1565,8 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
               />
             )}
 
-            {/* Comment Markers */}
-            {commentsVisible && isCurrentPage && pageComments.map((comment, index) => (
+            {/* Comment Markers - Only show when comment mode is active */}
+            {isAddingComment && isCurrentPage && pageComments.map((comment, index) => (
               <CommentMarker
                 key={comment.id}
                 comment={comment}
