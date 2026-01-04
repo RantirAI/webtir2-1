@@ -40,7 +40,7 @@ export const CommentMarker: React.FC<CommentMarkerProps> = ({ comment, index }) 
           }`}
           style={{
             left: `${comment.x}%`,
-            top: `${comment.y}%`,
+            top: `${comment.y}px`,
             transform: 'translate(-50%, -50%)',
           }}
         >
