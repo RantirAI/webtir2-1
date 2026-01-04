@@ -1572,6 +1572,20 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
               />
             ))}
 
+            {/* Add Comment Dialog - Positioned inside page */}
+            {isCurrentPage && (
+              <AddCommentDialog
+                open={addCommentPosition !== null}
+                onOpenChange={(open) => {
+                  if (!open) {
+                    setAddCommentPosition(null);
+                  }
+                }}
+                position={addCommentPosition}
+                pageId={currentPage}
+              />
+            )}
+
             {pageRootInstance && renderInstance(pageRootInstance)}
           </div>
           );
@@ -1634,18 +1648,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
         instance={prebuiltDialog.instance}
       />
       
-      {/* Add Comment Dialog */}
-      <AddCommentDialog
-        open={addCommentPosition !== null}
-        onOpenChange={(open) => {
-          if (!open) {
-            setAddCommentPosition(null);
-            setIsAddingComment(false);
-          }
-        }}
-        position={addCommentPosition}
-        pageId={currentPage}
-      />
+      {/* Add Comment Dialog - Rendered inside the page container */}
     </div>
   );
 };

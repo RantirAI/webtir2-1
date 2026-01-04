@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useCommentStore } from '../store/useCommentStore';
+import { X } from 'lucide-react';
 
 interface AddCommentDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  position: { x: number; y: number };
+  position: { x: number; y: number } | null;
   pageId: string;
+  canvasRef?: HTMLElement | null;
 }
 
 export const AddCommentDialog: React.FC<AddCommentDialogProps> = ({
@@ -16,12 +17,13 @@ export const AddCommentDialog: React.FC<AddCommentDialogProps> = ({
   onOpenChange,
   position,
   pageId,
+  canvasRef,
 }) => {
   const [content, setContent] = useState('');
-  const { addComment, setIsAddingComment } = useCommentStore();
+  const { addComment } = useCommentStore();
 
   const handleSubmit = () => {
-    if (content.trim()) {
+    if (content.trim() && position) {
       addComment({
         pageId,
         x: position.x,
@@ -34,38 +36,70 @@ export const AddCommentDialog: React.FC<AddCommentDialogProps> = ({
       });
       setContent('');
       onOpenChange(false);
-      setIsAddingComment(false);
+      // Don't call setIsAddingComment(false) - keep comment mode active
     }
   };
 
   const handleClose = () => {
     setContent('');
     onOpenChange(false);
-    setIsAddingComment(false);
+    // Don't call setIsAddingComment(false) - keep comment mode active
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit();
+    }
+    if (e.key === 'Escape') {
+      handleClose();
+    }
+  };
+
+  if (!open || !position) return null;
+
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[280px] p-3 gap-2">
-        <DialogHeader className="pb-0">
-          <DialogTitle className="text-xs font-medium">Add Comment</DialogTitle>
-        </DialogHeader>
+    <div
+      className="absolute z-[100] flex flex-col items-center"
+      style={{
+        left: `${position.x}%`,
+        top: `${position.y}px`,
+        transform: 'translate(-50%, -100%)',
+      }}
+    >
+      {/* Comment input card */}
+      <div className="bg-background border border-border rounded-lg shadow-lg p-2 mb-2 w-56">
+        <div className="flex items-center justify-between mb-1.5">
+          <span className="text-[10px] font-medium text-foreground">Add Comment</span>
+          <button
+            onClick={handleClose}
+            className="p-0.5 hover:bg-muted rounded text-muted-foreground hover:text-foreground"
+          >
+            <X className="w-3 h-3" />
+          </button>
+        </div>
         <Textarea
           value={content}
           onChange={(e) => setContent(e.target.value)}
+          onKeyDown={handleKeyDown}
           placeholder="Write your comment..."
-          className="min-h-[60px] text-xs resize-none"
+          className="min-h-[50px] text-[11px] resize-none mb-1.5"
           autoFocus
         />
-        <DialogFooter className="gap-1.5 sm:gap-1.5">
-          <Button variant="ghost" size="sm" onClick={handleClose} className="h-6 px-2 text-xs">
+        <div className="flex justify-end gap-1">
+          <Button variant="ghost" size="sm" onClick={handleClose} className="h-5 px-2 text-[10px]">
             Cancel
           </Button>
-          <Button size="sm" onClick={handleSubmit} disabled={!content.trim()} className="h-6 px-2 text-xs">
+          <Button size="sm" onClick={handleSubmit} disabled={!content.trim()} className="h-5 px-2 text-[10px]">
             Add
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </div>
+      </div>
+      
+      {/* Marker preview */}
+      <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold shadow-lg">
+        +
+      </div>
+    </div>
   );
 };
