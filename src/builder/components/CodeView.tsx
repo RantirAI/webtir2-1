@@ -522,21 +522,39 @@ const PreviewFrame: React.FC<PreviewFrameProps> = ({ htmlCode, cssCode, jsCode }
       if (doc) {
         // Extract body content from full HTML
         const bodyMatch = htmlCode.match(/<body[^>]*>([\s\S]*)<\/body>/i);
-        const bodyContent = bodyMatch ? bodyMatch[1] : htmlCode;
+        let bodyContent = bodyMatch ? bodyMatch[1] : htmlCode;
+        
+        // Remove external script and link tags (we inject CSS/JS inline)
+        bodyContent = bodyContent
+          .replace(/<script[^>]*src=[^>]*><\/script>/gi, '')
+          .replace(/<link[^>]*rel=["']stylesheet["'][^>]*>/gi, '');
+        
+        // Build the complete preview HTML
+        const previewHTML = `<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body { font-family: system-ui, -apple-system, sans-serif; }
+      ${cssCode}
+    </style>
+  </head>
+  <body>
+    ${bodyContent}
+    <script>
+      try {
+        ${jsCode}
+      } catch(e) {
+        console.error('Preview script error:', e);
+      }
+    </script>
+  </body>
+</html>`;
         
         doc.open();
-        doc.write(`
-          <!DOCTYPE html>
-          <html>
-            <head>
-              <style>${cssCode}</style>
-            </head>
-            <body>
-              ${bodyContent}
-              <script>${jsCode}</script>
-            </body>
-          </html>
-        `);
+        doc.write(previewHTML);
         doc.close();
       }
     }
@@ -545,9 +563,9 @@ const PreviewFrame: React.FC<PreviewFrameProps> = ({ htmlCode, cssCode, jsCode }
   return (
     <iframe
       ref={iframeRef}
-      className="w-full h-full min-h-screen border-0"
+      className="w-full h-full min-h-screen border-0 bg-white"
       title="Preview"
-      sandbox="allow-scripts"
+      sandbox="allow-scripts allow-same-origin"
     />
   );
 };
