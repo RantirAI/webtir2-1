@@ -48,6 +48,57 @@ import { DraggableInstance } from './DraggableInstance';
 import { Accordion as ShadcnAccordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
 import { CarouselPreview } from './CarouselPreview';
 
+// TabsComponent for interactive tab switching in preview mode
+const TabsComponent: React.FC<{
+  instance: ComponentInstance;
+  tabs: any[];
+  defaultTab: string;
+  isPreviewMode: boolean;
+  getComputedStyles: (styleSourceIds: string[], breakpointId?: string, state?: any) => Record<string, any>;
+  setSelectedInstanceId: (id: string | null) => void;
+  setHoveredInstanceId: (id: string | null) => void;
+  handleContextMenu: (e: React.MouseEvent, instance: ComponentInstance) => void;
+}> = ({ instance, tabs, defaultTab, isPreviewMode, getComputedStyles, setSelectedInstanceId, setHoveredInstanceId, handleContextMenu }) => {
+  const [activeTab, setActiveTab] = useState(defaultTab);
+
+  // Reset active tab when defaultTab changes
+  useEffect(() => {
+    setActiveTab(defaultTab);
+  }, [defaultTab]);
+
+  return (
+    <div
+      data-instance-id={instance.id}
+      className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
+      style={getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties}
+      onClick={isPreviewMode ? undefined : (e) => { e.stopPropagation(); setSelectedInstanceId(instance.id); }}
+      onMouseEnter={isPreviewMode ? undefined : () => setHoveredInstanceId(instance.id)}
+      onMouseLeave={isPreviewMode ? undefined : () => setHoveredInstanceId(null)}
+      onContextMenu={isPreviewMode ? undefined : (e) => handleContextMenu(e, instance)}
+    >
+      <div className="flex gap-1 border-b border-border mb-4">
+        {tabs.map((tab: any) => (
+          <button
+            key={tab.id}
+            onClick={(e) => { e.stopPropagation(); setActiveTab(tab.id); }}
+            className={`px-4 py-2 text-sm font-medium transition-colors ${tab.id === activeTab ? 'border-b-2 border-primary text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+      <div className="text-sm text-muted-foreground">
+        {tabs.find((t: any) => t.id === activeTab)?.content || 'Tab content'}
+      </div>
+      {tabs.length === 0 && (
+        <div className="py-4 text-sm text-muted-foreground italic">
+          No tabs. Add tabs in the Data tab.
+        </div>
+      )}
+    </div>
+  );
+};
+
 interface CanvasProps {
   zoom: number;
   onZoomChange?: (zoom: number) => void;
@@ -862,34 +913,17 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
         const tabs = instance.props?.tabs || [];
         const defaultTab = instance.props?.defaultTab || tabs[0]?.id;
         const content = (
-          <div
-            data-instance-id={instance.id}
-            className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
-            style={getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties}
-            onClick={isPreviewMode ? undefined : () => setSelectedInstanceId(instance.id)}
-            onMouseEnter={isPreviewMode ? undefined : () => setHoveredInstanceId(instance.id)}
-            onMouseLeave={isPreviewMode ? undefined : () => setHoveredInstanceId(null)}
-            onContextMenu={isPreviewMode ? undefined : (e) => handleContextMenu(e, instance)}
-          >
-            <div className="flex gap-1 border-b border-border mb-4">
-              {tabs.map((tab: any) => (
-                <button
-                  key={tab.id}
-                  className={`px-4 py-2 text-sm font-medium ${tab.id === defaultTab ? 'border-b-2 border-primary text-foreground' : 'text-muted-foreground'}`}
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </div>
-            <div className="text-sm text-muted-foreground">
-              {tabs.find((t: any) => t.id === defaultTab)?.content || 'Tab content'}
-            </div>
-            {tabs.length === 0 && (
-              <div className="py-4 text-sm text-muted-foreground italic">
-                No tabs. Add tabs in the Data tab.
-              </div>
-            )}
-          </div>
+          <TabsComponent
+            key={instance.id}
+            instance={instance}
+            tabs={tabs}
+            defaultTab={defaultTab}
+            isPreviewMode={isPreviewMode}
+            getComputedStyles={getComputedStyles}
+            setSelectedInstanceId={setSelectedInstanceId}
+            setHoveredInstanceId={setHoveredInstanceId}
+            handleContextMenu={handleContextMenu}
+          />
         );
         return wrapWithDraggable(content);
       }
