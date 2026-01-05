@@ -66,30 +66,126 @@ const TabsComponent: React.FC<{
     setActiveTab(defaultTab);
   }, [defaultTab]);
 
+  // Get tabsStyles from instance props
+  const tabsStyles = instance.props?.tabsStyles || {
+    listPosition: 'top',
+    listBackground: 'transparent',
+    listBorderRadius: '0',
+    listPadding: '0',
+    listGap: '4',
+    triggerBackground: 'transparent',
+    triggerHoverBackground: 'hsl(var(--muted))',
+    triggerActiveBackground: 'transparent',
+    triggerTextColor: 'hsl(var(--muted-foreground))',
+    triggerActiveTextColor: 'hsl(var(--foreground))',
+    triggerPadding: '8',
+    triggerBorderRadius: '0',
+    triggerFontSize: '14',
+    triggerFontWeight: '500',
+    indicatorStyle: 'underline',
+    indicatorColor: 'hsl(var(--primary))',
+    indicatorHeight: '2',
+    contentBackground: 'transparent',
+    contentPadding: '16',
+    contentBorderRadius: '0',
+  };
+
+  const isVertical = tabsStyles.listPosition === 'left' || tabsStyles.listPosition === 'right';
+  const isReversed = tabsStyles.listPosition === 'bottom' || tabsStyles.listPosition === 'right';
+
+  // Build indicator styles based on indicator type
+  const getIndicatorStyles = (isActive: boolean) => {
+    if (!isActive || tabsStyles.indicatorStyle === 'none') return {};
+    
+    switch (tabsStyles.indicatorStyle) {
+      case 'underline':
+        return isVertical 
+          ? { borderLeftWidth: `${tabsStyles.indicatorHeight}px`, borderLeftColor: tabsStyles.indicatorColor, borderLeftStyle: 'solid' as const }
+          : { borderBottomWidth: `${tabsStyles.indicatorHeight}px`, borderBottomColor: tabsStyles.indicatorColor, borderBottomStyle: 'solid' as const };
+      case 'pill':
+        return { backgroundColor: tabsStyles.indicatorColor, color: 'white' };
+      case 'boxed':
+        return { backgroundColor: tabsStyles.triggerActiveBackground, boxShadow: '0 1px 3px rgba(0,0,0,0.1)' };
+      default:
+        return {};
+    }
+  };
+
   return (
     <div
       data-instance-id={instance.id}
       className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
-      style={getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties}
+      style={{
+        ...getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties,
+        display: 'flex',
+        flexDirection: isVertical 
+          ? (isReversed ? 'row-reverse' : 'row') 
+          : (isReversed ? 'column-reverse' : 'column'),
+      }}
       onClick={isPreviewMode ? undefined : (e) => { e.stopPropagation(); setSelectedInstanceId(instance.id); }}
       onMouseEnter={isPreviewMode ? undefined : () => setHoveredInstanceId(instance.id)}
       onMouseLeave={isPreviewMode ? undefined : () => setHoveredInstanceId(null)}
       onContextMenu={isPreviewMode ? undefined : (e) => handleContextMenu(e, instance)}
     >
-      <div className="flex gap-1 border-b border-border mb-4">
-        {tabs.map((tab: any) => (
-          <button
-            key={tab.id}
-            onClick={(e) => { e.stopPropagation(); setActiveTab(tab.id); }}
-            className={`px-4 py-2 text-sm font-medium transition-colors ${tab.id === activeTab ? 'border-b-2 border-primary text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
-          >
-            {tab.label}
-          </button>
-        ))}
+      {/* Tab List */}
+      <div 
+        style={{
+          display: 'flex',
+          flexDirection: isVertical ? 'column' : 'row',
+          gap: `${tabsStyles.listGap}px`,
+          padding: `${tabsStyles.listPadding}px`,
+          backgroundColor: tabsStyles.listBackground,
+          borderRadius: `${tabsStyles.listBorderRadius}px`,
+          borderBottom: !isVertical && !isReversed ? '1px solid hsl(var(--border))' : undefined,
+          borderTop: !isVertical && isReversed ? '1px solid hsl(var(--border))' : undefined,
+          borderRight: isVertical && !isReversed ? '1px solid hsl(var(--border))' : undefined,
+          borderLeft: isVertical && isReversed ? '1px solid hsl(var(--border))' : undefined,
+          marginBottom: !isVertical && !isReversed ? '16px' : undefined,
+          marginTop: !isVertical && isReversed ? '16px' : undefined,
+          marginRight: isVertical && !isReversed ? '16px' : undefined,
+          marginLeft: isVertical && isReversed ? '16px' : undefined,
+        }}
+      >
+        {tabs.map((tab: any) => {
+          const isActive = tab.id === activeTab;
+          return (
+            <button
+              key={tab.id}
+              onClick={(e) => { e.stopPropagation(); setActiveTab(tab.id); }}
+              style={{
+                padding: `${tabsStyles.triggerPadding}px`,
+                borderRadius: `${tabsStyles.triggerBorderRadius}px`,
+                fontSize: `${tabsStyles.triggerFontSize}px`,
+                fontWeight: tabsStyles.triggerFontWeight,
+                backgroundColor: isActive ? tabsStyles.triggerActiveBackground : tabsStyles.triggerBackground,
+                color: isActive ? tabsStyles.triggerActiveTextColor : tabsStyles.triggerTextColor,
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                whiteSpace: 'nowrap',
+                ...getIndicatorStyles(isActive),
+              }}
+            >
+              {tab.label}
+            </button>
+          );
+        })}
       </div>
-      <div className="text-sm text-muted-foreground">
+      
+      {/* Content Panel */}
+      <div 
+        style={{
+          flex: 1,
+          padding: `${tabsStyles.contentPadding}px`,
+          backgroundColor: tabsStyles.contentBackground,
+          borderRadius: `${tabsStyles.contentBorderRadius}px`,
+          fontSize: '14px',
+          color: 'hsl(var(--muted-foreground))',
+        }}
+      >
         {tabs.find((t: any) => t.id === activeTab)?.content || 'Tab content'}
       </div>
+      
       {tabs.length === 0 && (
         <div className="py-4 text-sm text-muted-foreground italic">
           No tabs. Add tabs in the Data tab.
