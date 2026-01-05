@@ -8,11 +8,13 @@ import { exportHTML, exportCSS, exportJS, exportAstro } from '../utils/codeExpor
 import { discoverComponents, getComponentCode, flattenComponents } from '../utils/componentCodeExport';
 import { parseHTMLToInstance, parseHTMLPreservingLinks } from '../utils/codeImport';
 import { parseCSSToStyleStore, validateCSS } from '../utils/cssImport';
-import { Copy, Check, Monitor, Tablet, Smartphone, Upload } from 'lucide-react';
+import { Copy, Check, Monitor, Tablet, Smartphone, Upload, Lock } from 'lucide-react';
 import { ImportModal } from './ImportModal';
 import { FileTree } from './FileTree';
 import { CreateComponentDialog } from './CreateComponentDialog';
 import { CodeViewMediaPanel } from './CodeViewMediaPanel';
+import { LockedCodeEditor } from './LockedCodeEditor';
+import { LockRegion } from '../primitives/core/types';
 import { toast } from '@/hooks/use-toast';
 import Prism from 'prismjs';
 import 'prismjs/themes/prism-tomorrow.css';
@@ -65,6 +67,7 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
   const isComponentFile = selectedFile.startsWith('/components/');
   const isPageFile = selectedFile.startsWith('/pages/');
   const isMediaFile = selectedFile.startsWith('/media');
+  const isCoreFile = selectedFile.includes('.core.') || selectedFile.includes('/core/');
   
   const componentCode = useMemo(() => {
     if (!isComponentFile) return null;
@@ -73,6 +76,15 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
 
   // Get list of component types that should be locked in page view
   const lockedComponentTypes = ['Section', 'Navigation', 'Header', 'Footer', 'Card', 'Accordion', 'Carousel', 'Tabs'];
+
+  // Handle attempts to edit locked code regions
+  const handleLockedEditAttempt = (region: LockRegion) => {
+    toast({
+      title: 'Protected Code Region',
+      description: `This ${region.type} region is locked to protect critical functionality. ${region.allowUnlock ? 'Use the unlock button for advanced editing.' : 'This region cannot be unlocked.'}`,
+      variant: 'destructive',
+    });
+  };
 
   // Generate HTML with custom code sections and component placeholders for page files
   const generatePageHTML = () => {
@@ -344,7 +356,7 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
               <div className="h-10 border-b border-border flex items-center px-3 bg-muted/20">
                 <span className="text-xs font-mono text-muted-foreground">{selectedFile}</span>
               </div>
-              <CodeEditor 
+              <LockedCodeEditor 
                 code={getCode(activeTab)} 
                 language={activeTab === 'astro' || activeTab === 'html' ? 'html' : activeTab === 'react' ? 'jsx' : activeTab}
                 onChange={(newCode) => {
@@ -358,6 +370,10 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
                     case 'astro': setAstroCode(newCode); break;
                   }
                 }}
+                enforceLocking={activeTab === 'react' || isComponentFile}
+                onLockedEditAttempt={handleLockedEditAttempt}
+                allowUnlock={true}
+                filePath={selectedFile}
               />
             </div>
           )}
