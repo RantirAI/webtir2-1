@@ -425,7 +425,12 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
                 }}
               >
                 <div className="w-full h-full overflow-auto">
-                  <PreviewFrame htmlCode={htmlCode} cssCode={cssCode} jsCode={jsCode} />
+                  {/* Always use full exported CSS for preview, not just current tab's CSS */}
+                  <PreviewFrame 
+                    htmlCode={htmlCode} 
+                    cssCode={exportCSS()} 
+                    jsCode={jsCode} 
+                  />
                 </div>
               </div>
             </div>
