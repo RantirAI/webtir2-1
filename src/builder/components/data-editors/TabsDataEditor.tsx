@@ -21,9 +21,9 @@ interface TabsDataEditorProps {
 export const TabsDataEditor: React.FC<TabsDataEditorProps> = ({ instance }) => {
   const { updateInstance } = useBuilderStore();
   const tabs: TabItem[] = instance.props?.tabs || [
-    { id: 'tab-1', label: 'Tab 1', content: 'Content for Tab 1' },
-    { id: 'tab-2', label: 'Tab 2', content: 'Content for Tab 2' },
-    { id: 'tab-3', label: 'Tab 3', content: 'Content for Tab 3' },
+    { id: 'overview', label: 'Overview', content: 'Get a quick summary of your account activity and recent updates.' },
+    { id: 'analytics', label: 'Analytics', content: 'View detailed metrics and performance insights for your data.' },
+    { id: 'settings', label: 'Settings', content: 'Manage your preferences and configuration options.' },
   ];
 
   const defaultTab = instance.props?.defaultTab || tabs[0]?.id;

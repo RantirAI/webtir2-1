@@ -103,6 +103,7 @@ import { BadgeStyleEditor } from "./style-editors/BadgeStyleEditor";
 import { BreadcrumbStyleEditor } from "./style-editors/BreadcrumbStyleEditor";
 import { CarouselStyleEditor } from "./style-editors/CarouselStyleEditor";
 import { TableStyleEditor } from "./style-editors/TableStyleEditor";
+import { TabsStyleEditor } from "./style-editors/TabsStyleEditor";
 import "../styles/style-panel.css";
 import "../styles/tokens.css";
 import { Code } from "lucide-react";
@@ -332,6 +333,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({
     breadcrumbStyles: true,
     carouselStyles: true,
     tableStyles: true,
+    tabsStyles: true,
     space: true,
     size: true,
     position: false,
@@ -1441,6 +1443,13 @@ export const StylePanel: React.FC<StylePanelProps> = ({
             {selectedInstance.type === "Carousel" && (
               <AccordionSection title="Carousel Styles" section="carouselStyles" properties={[]}>
                 <CarouselStyleEditor instance={selectedInstance} />
+              </AccordionSection>
+            )}
+
+            {/* Tabs-specific Style Controls */}
+            {selectedInstance.type === "Tabs" && (
+              <AccordionSection title="Tabs Styles" section="tabsStyles" properties={[]}>
+                <TabsStyleEditor instance={selectedInstance} />
               </AccordionSection>
             )}
 
