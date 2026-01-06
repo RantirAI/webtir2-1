@@ -7,6 +7,7 @@ import { PageFooter } from '@/builder/components/PageFooter';
 import { StyleSheetInjector } from '@/builder/components/StyleSheetInjector';
 import { ProjectSettingsModal } from '@/builder/components/ProjectSettingsModal';
 import { CodeView } from '@/builder/components/CodeView';
+import { IsolationModeBar } from '@/builder/components/IsolationModeBar';
 import { Toaster } from '@/components/ui/toaster';
 import { Button } from '@/components/ui/button';
 import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, DragOverEvent, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
@@ -1007,6 +1008,9 @@ const Builder: React.FC = () => {
             <Icons.EyeOff className="w-4 h-4 text-foreground" />
           </button>
         )}
+
+        {/* Isolation Mode Bar */}
+        <IsolationModeBar />
 
         {/* Floating Left Sidebar */}
         {!isPreviewMode && !isCodeViewOpen && !sidebarsHidden && !isRulersView && (

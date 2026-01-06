@@ -270,6 +270,9 @@ export interface BuilderState {
   selectedInstanceId: string | null;
   hoveredInstanceId: string | null;
   
+  // Isolation mode - for editing components in isolation
+  isolatedInstanceId: string | null;
+  
   // History
   history: ComponentInstance[];
   historyIndex: number;
@@ -301,7 +304,12 @@ export interface BuilderState {
   cutSelected: () => void;
   pasteClipboard: () => void;
   
+  // Isolation mode actions
+  enterIsolationMode: (instanceId: string) => void;
+  exitIsolationMode: () => void;
+  
   // Utilities
   findInstance: (id: string) => ComponentInstance | null;
   getSelectedInstance: () => ComponentInstance | null;
+  getIsolatedInstance: () => ComponentInstance | null;
 }

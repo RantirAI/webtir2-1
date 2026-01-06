@@ -219,8 +219,10 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
   const rootInstance = useBuilderStore((state) => state.rootInstance);
   const selectedInstanceId = useBuilderStore((state) => state.selectedInstanceId);
   const hoveredInstanceId = useBuilderStore((state) => state.hoveredInstanceId);
+  const isolatedInstanceId = useBuilderStore((state) => state.isolatedInstanceId);
   const setSelectedInstanceId = useBuilderStore((state) => state.setSelectedInstanceId);
   const setHoveredInstanceId = useBuilderStore((state) => state.setHoveredInstanceId);
+  const enterIsolationMode = useBuilderStore((state) => state.enterIsolationMode);
   const addInstance = useBuilderStore((state) => state.addInstance);
   const updateInstance = useBuilderStore((state) => state.updateInstance);
   const { findInstance } = useBuilderStore();
