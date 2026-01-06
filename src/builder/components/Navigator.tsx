@@ -23,9 +23,12 @@ interface ContextMenuState {
 export const Navigator: React.FC = () => {
   const rootInstance = useBuilderStore((state) => state.rootInstance);
   const selectedInstanceId = useBuilderStore((state) => state.selectedInstanceId);
+  const isolatedInstanceId = useBuilderStore((state) => state.isolatedInstanceId);
   const setSelectedInstanceId = useBuilderStore((state) => state.setSelectedInstanceId);
   const deleteInstance = useBuilderStore((state) => state.deleteInstance);
   const addInstance = useBuilderStore((state) => state.addInstance);
+  const findInstance = useBuilderStore((state) => state.findInstance);
+  const enterIsolationMode = useBuilderStore((state) => state.enterIsolationMode);
   const { getComputedStyles } = useStyleStore();
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set(['root']));
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);

@@ -76,6 +76,9 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
   selectedInstanceId: null,
   hoveredInstanceId: null,
   
+  // Isolation mode for editing components
+  isolatedInstanceId: null,
+  
   history: [],
   historyIndex: -1,
   clipboard: null,
@@ -294,6 +297,21 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
     const state = get();
     if (!state.selectedInstanceId) return null;
     return state.findInstance(state.selectedInstanceId);
+  },
+  
+  // Isolation mode actions
+  enterIsolationMode: (instanceId) => {
+    set({ isolatedInstanceId: instanceId, selectedInstanceId: instanceId });
+  },
+  
+  exitIsolationMode: () => {
+    set({ isolatedInstanceId: null });
+  },
+  
+  getIsolatedInstance: () => {
+    const state = get();
+    if (!state.isolatedInstanceId) return null;
+    return state.findInstance(state.isolatedInstanceId);
   },
 }));
 
