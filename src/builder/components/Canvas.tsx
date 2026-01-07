@@ -442,10 +442,14 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [richTextAddMenu]);
 
-  const renderInstance = (instance: ComponentInstance): React.ReactNode => {
+  const renderInstance = (instance: ComponentInstance, parentInstance?: ComponentInstance, childIndex?: number): React.ReactNode => {
     const isSelected = instance.id === selectedInstanceId;
     const isHovered = instance.id === hoveredInstanceId;
     const isContainer = ['Div', 'Container', 'Section', 'Navigation'].includes(instance.type);
+
+    // Check if this is the icon child of a Feature Card (first child of a Feature Card parent)
+    const isFeatureCardIcon = parentInstance?.props?.icon !== undefined && childIndex === 0 && instance.type === 'Div';
+    const featureCardIcon = isFeatureCardIcon ? (parentInstance?.props?.icon || 'Star') : undefined;
 
     // Build data binding props
     const dataBindingProps: Record<string, any> = {};
@@ -496,8 +500,8 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
       case 'Div':
       case 'Box': { // Backward compatibility for Box -> Div rename
         const content = (
-          <Div {...commonProps}>
-            {instance.children.map((child) => renderInstance(child))}
+          <Div {...commonProps} featureCardIcon={featureCardIcon}>
+            {instance.children.map((child, idx) => renderInstance(child, instance, idx))}
           </Div>
         );
         return isPreviewMode ? content : (
@@ -509,7 +513,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
       case 'Container': {
         const content = (
           <Container {...commonProps}>
-            {instance.children.map((child) => renderInstance(child))}
+            {instance.children.map((child, idx) => renderInstance(child, instance, idx))}
           </Container>
         );
         return isPreviewMode ? content : (
@@ -521,7 +525,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
       case 'Section': {
         const content = (
           <Section {...commonProps}>
-            {instance.children.map((child) => renderInstance(child))}
+            {instance.children.map((child, idx) => renderInstance(child, instance, idx))}
           </Section>
         );
         return isPreviewMode ? content : (
@@ -542,7 +546,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
             addMenuPosition={richTextAddMenu?.position}
             onCloseAddMenu={() => setRichTextAddMenu(null)}
           >
-            {instance.children.map((child) => renderInstance(child))}
+            {instance.children.map((child, idx) => renderInstance(child, instance, idx))}
           </RichText>
         );
         return isPreviewMode ? content : (
@@ -627,7 +631,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
         if (instance.children && instance.children.length > 0) {
           const content = (
             <Div {...commonProps}>
-              {instance.children.map((child) => renderInstance(child))}
+              {instance.children.map((child, idx) => renderInstance(child, instance, idx))}
             </Div>
           );
           return isPreviewMode ? content : (
@@ -743,7 +747,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
         // DropdownPrimitive now handles isOpen state from dropdownConfig internally
         const content = (
           <DropdownPrimitive {...commonProps}>
-            {instance.children.map((child) => renderInstance(child))}
+            {instance.children.map((child, idx) => renderInstance(child, instance, idx))}
           </DropdownPrimitive>
         );
         return isPreviewMode ? content : (
@@ -757,7 +761,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
         if (instance.children && instance.children.length > 0) {
           const content = (
             <Div {...commonProps}>
-              {instance.children.map((child) => renderInstance(child))}
+              {instance.children.map((child, idx) => renderInstance(child, instance, idx))}
             </Div>
           );
           return isPreviewMode ? content : (
@@ -795,7 +799,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
             className=""
             style={getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties}
           >
-            {instance.children.map((child) => renderInstance(child))}
+            {instance.children.map((child, idx) => renderInstance(child, instance, idx))}
           </NavigationPrimitive>
         );
         return isPreviewMode ? content : (

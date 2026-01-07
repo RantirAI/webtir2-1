@@ -1,6 +1,7 @@
 import React from 'react';
 import { ComponentInstance } from '../store/types';
 import { useStyleStore } from '../store/useStyleStore';
+import { icons } from 'lucide-react';
 
 interface DivProps {
   instance: ComponentInstance;
@@ -13,6 +14,7 @@ interface DivProps {
   onContextMenu?: (e: React.MouseEvent) => void;
   isPreviewMode?: boolean;
   dataBindingProps?: Record<string, any>;
+  featureCardIcon?: string; // Icon name from parent Feature Card
 }
 
 export const Div: React.FC<DivProps> = ({
@@ -26,6 +28,7 @@ export const Div: React.FC<DivProps> = ({
   onContextMenu,
   isPreviewMode,
   dataBindingProps = {},
+  featureCardIcon,
 }) => {
   const isRoot = instance.id === 'root';
 
@@ -33,6 +36,8 @@ export const Div: React.FC<DivProps> = ({
   // No default background color - divs should be transparent by default
   const defaultStyles: React.CSSProperties = {
     ...(dataBindingProps.style || {}), // Apply visibility and other data binding styles
+    // Add flex centering for icon containers
+    ...(featureCardIcon ? { display: 'flex', alignItems: 'center', justifyContent: 'center' } : {}),
   };
 
   const finalStyles = defaultStyles;
@@ -41,6 +46,22 @@ export const Div: React.FC<DivProps> = ({
   
   // Extract non-style dataBindingProps
   const { style: _style, ...restDataBindingProps } = dataBindingProps;
+
+  // Render Lucide icon if featureCardIcon is provided
+  const renderIcon = () => {
+    if (!featureCardIcon) return null;
+    const LucideIcon = icons[featureCardIcon as keyof typeof icons];
+    if (!LucideIcon) return null;
+    return (
+      <LucideIcon 
+        size={24} 
+        style={{ 
+          color: 'currentColor',
+          flexShrink: 0,
+        }} 
+      />
+    );
+  };
   
   return (
     <div
@@ -62,7 +83,7 @@ export const Div: React.FC<DivProps> = ({
       onContextMenu={isPreviewMode ? undefined : onContextMenu}
       {...restDataBindingProps}
     >
-      {children}
+      {featureCardIcon ? renderIcon() : children}
     </div>
   );
 };
