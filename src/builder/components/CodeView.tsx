@@ -8,8 +8,6 @@ import { exportHTML, exportCSS, exportJS, exportAstro } from '../utils/codeExpor
 import { discoverComponents, getComponentCode, flattenComponents } from '../utils/componentCodeExport';
 import { parseHTMLToInstance, parseHTMLPreservingLinks } from '../utils/codeImport';
 import { parseCSSToStyleStore, validateCSS } from '../utils/cssImport';
-import { extractZipContent, extractEmbeddedCSS, extractBodyContent, stripStyleTags } from '../utils/zipImport';
-import { cleanSourceHTML, cleanSourceCSS, ImportSource } from '../utils/sourceCleaners';
 import { Copy, Check, Monitor, Tablet, Smartphone, Upload, Lock } from 'lucide-react';
 import { ImportModal } from './ImportModal';
 import { FileTree } from './FileTree';
@@ -171,94 +169,10 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
     setTimeout(() => setCopiedTab(null), 2000);
   };
 
-  const handleImport = async (source: string, content: string | File) => {
-    try {
-      let htmlContent = '';
-      let cssContent = '';
-      const importSource = source as ImportSource;
-
-      if (content instanceof File) {
-        if (content.name.endsWith('.zip')) {
-          // Extract ZIP contents
-          const extracted = await extractZipContent(content);
-          htmlContent = extracted.html;
-          cssContent = extracted.css;
-        } else if (content.name.endsWith('.css')) {
-          // CSS-only import
-          cssContent = await content.text();
-        } else {
-          // HTML or other text file
-          htmlContent = await content.text();
-        }
-      } else {
-        // Pasted code
-        htmlContent = content;
-      }
-
-      // Extract embedded CSS from HTML if present
-      if (htmlContent) {
-        const embeddedCSS = extractEmbeddedCSS(htmlContent);
-        if (embeddedCSS) {
-          cssContent = embeddedCSS + '\n' + cssContent;
-        }
-        
-        // Strip style tags and get body content
-        htmlContent = stripStyleTags(htmlContent);
-        htmlContent = extractBodyContent(htmlContent);
-      }
-
-      // Clean based on source
-      if (htmlContent) {
-        htmlContent = cleanSourceHTML(importSource, htmlContent);
-      }
-      if (cssContent) {
-        cssContent = cleanSourceCSS(importSource, cssContent);
-      }
-
-      let elementsImported = 0;
-      let cssResult = { classesUpdated: 0, classesCreated: 0, propertiesSet: 0 };
-
-      // Parse and apply CSS first (so classes exist for HTML)
-      if (cssContent) {
-        cssResult = parseCSSToStyleStore(cssContent);
-      }
-
-      // Parse HTML and add to canvas
-      if (htmlContent && rootInstance) {
-        const newInstance = parseHTMLToInstance(htmlContent);
-        
-        if (newInstance && newInstance.children.length > 0) {
-          elementsImported = newInstance.children.length;
-          
-          // Add imported elements as children of root
-          updateInstance(rootInstance.id, {
-            children: [...(rootInstance.children || []), ...newInstance.children],
-          });
-        }
-      }
-
-      // Show success toast
-      const messages: string[] = [];
-      if (elementsImported > 0) {
-        messages.push(`${elementsImported} element${elementsImported > 1 ? 's' : ''} imported`);
-      }
-      if (cssResult.classesCreated > 0 || cssResult.classesUpdated > 0) {
-        messages.push(`${cssResult.classesCreated + cssResult.classesUpdated} classes processed`);
-      }
-
-      toast({
-        title: 'Import Successful',
-        description: messages.length > 0 ? messages.join(', ') : 'Content imported successfully.',
-      });
-      
-    } catch (error) {
-      console.error('Import error:', error);
-      toast({
-        title: 'Import Failed',
-        description: error instanceof Error ? error.message : 'Failed to parse the imported content.',
-        variant: 'destructive',
-      });
-    }
+  const handleImport = (source: string, content: string | File) => {
+    console.log('Importing from:', source, content);
+    // TODO: Implement actual import logic
+    // This would parse the content and update the builder store
   };
 
   // Apply code changes to builder
