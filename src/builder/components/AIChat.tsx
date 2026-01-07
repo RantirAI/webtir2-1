@@ -666,17 +666,17 @@ When updating this component, use targetId: "${styleSourceId}" in the update act
                   {messages.map((message) => (
                     <div
                       key={message.id}
-                      className={`text-[10px] p-2 rounded-lg ${message.role === 'user'
+                      className={`text-[10px] p-2 rounded-lg overflow-hidden ${message.role === 'user'
                         ? 'bg-primary text-primary-foreground ml-4'
                         : 'bg-muted mr-4'
                         }`}
                     >
-                      <p className="whitespace-pre-wrap">{message.content}</p>
+                      <p className="whitespace-pre-wrap break-words overflow-wrap-anywhere">{message.content}</p>
                     </div>
                   ))}
                   {streamingContent && (
-                    <div className="text-[10px] p-2 rounded-lg bg-muted mr-4">
-                      <p className="whitespace-pre-wrap">{streamingContent}</p>
+                    <div className="text-[10px] p-2 rounded-lg bg-muted mr-4 overflow-hidden">
+                      <p className="whitespace-pre-wrap break-words overflow-wrap-anywhere">{streamingContent}</p>
                     </div>
                   )}
                 </>
