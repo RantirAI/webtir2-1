@@ -1,12 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { ArrowUp, Plus, Sparkles, MessageSquare, FileCode, FileText, Image, Figma, History, Wrench, Settings, Trash2, Eye, EyeOff, X } from 'lucide-react';
+import { ArrowUp, Plus, Sparkles, MessageSquare, FileCode, FileText, Image, Figma, Wrench, Settings, Eye, EyeOff, X } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useAISettingsStore, AI_PROVIDERS, AIProvider } from '../store/useAISettingsStore';
@@ -240,34 +239,22 @@ export const AIChat: React.FC = () => {
       />
 
       {/* Top Tabs */}
-      <Tabs defaultValue="chat" className="flex-1 flex flex-col min-h-0">
-        <div className="flex items-center border-b">
-          <TabsList className="flex-1 grid grid-cols-2 rounded-none bg-transparent h-8 p-0.5 gap-0.5">
-            <TabsTrigger
-              value="chat"
-              className="text-[10px] h-full rounded data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none flex items-center gap-1"
-            >
-              <MessageSquare className="w-2.5 h-2.5" />
-              Chat
-            </TabsTrigger>
-            <TabsTrigger
-              value="history"
-              className="text-[10px] h-full rounded data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none flex items-center gap-1"
-            >
-              <History className="w-2.5 h-2.5" />
-              History
-            </TabsTrigger>
-          </TabsList>
-          <button
-            onClick={() => setShowSettingsDialog(true)}
-            className="p-1.5 mr-1 rounded hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
-            title="AI Settings"
-          >
-            <Settings className="w-3.5 h-3.5" />
-          </button>
+      <div className="flex items-center border-b h-8 px-2">
+        <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+          <MessageSquare className="w-2.5 h-2.5" />
+          Chat
         </div>
+        <div className="flex-1" />
+        <button
+          onClick={() => setShowSettingsDialog(true)}
+          className="p-1.5 rounded hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+          title="AI Settings"
+        >
+          <Settings className="w-3.5 h-3.5" />
+        </button>
+      </div>
 
-      <TabsContent value="chat" className="flex-1 flex flex-col m-0 min-h-0 overflow-hidden">
+      <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
           {/* Messages Area */}
           <ScrollArea className="flex-1 min-h-0 [&_[data-radix-scroll-area-scrollbar]]:opacity-0 [&:hover_[data-radix-scroll-area-scrollbar]]:opacity-100 [&_[data-radix-scroll-area-scrollbar]]:transition-opacity">
             <div ref={scrollRef} className="min-h-full flex flex-col justify-end space-y-2 p-2">
@@ -332,66 +319,7 @@ export const AIChat: React.FC = () => {
               )}
             </div>
           </ScrollArea>
-        </TabsContent>
-
-        <TabsContent value="history" className="flex-1 m-0 overflow-hidden flex flex-col justify-start">
-          <div className="p-2 border-b">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleNewChat}
-              className="w-full h-7 text-[10px]"
-            >
-              <Plus className="w-3 h-3 mr-1" />
-              New Chat
-            </Button>
-          </div>
-          <ScrollArea className="flex-1 [&_[data-radix-scroll-area-scrollbar]]:opacity-0 [&:hover_[data-radix-scroll-area-scrollbar]]:opacity-100 [&_[data-radix-scroll-area-scrollbar]]:transition-opacity">
-            <div className="p-2">
-            {sessions.length === 0 ? (
-              <div className="text-[10px] text-muted-foreground text-center py-6">
-                <History className="w-6 h-6 mx-auto mb-2 text-muted-foreground/50" />
-                <p>No conversation history yet</p>
-              </div>
-            ) : (
-              <div className="space-y-1">
-                {sessions.map((session) => (
-                  <div
-                    key={session.id}
-                    onClick={() => setCurrentSession(session.id)}
-                    className={`text-[10px] p-2 rounded cursor-pointer group flex items-start justify-between gap-2 ${session.id === currentSessionId
-                      ? 'bg-primary/10 border border-primary/20'
-                      : 'bg-muted hover:bg-muted/80'
-                      }`}
-                  >
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between mb-0.5">
-                        <span className="font-medium truncate">{session.title}</span>
-                      </div>
-                      <p className="text-muted-foreground truncate">
-                        {session.messages[session.messages.length - 1]?.content.slice(0, 50) || 'No messages'}
-                      </p>
-                      <span className="text-[9px] text-muted-foreground">
-                        {formatTimestamp(session.updatedAt)}
-                      </span>
-                    </div>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        deleteSession(session.id);
-                      }}
-                      className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-all"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-            </div>
-          </ScrollArea>
-        </TabsContent>
-      </Tabs>
+      </div>
 
       {/* Bottom Input Bar - Always visible */}
       <div className="p-2 border-t flex-shrink-0">
