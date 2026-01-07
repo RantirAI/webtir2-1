@@ -269,6 +269,91 @@ Use parent Div with:
 `;
 }
 
+// Generate CSS Properties Reference for AI
+export function generateCSSReference(): string {
+  return `## Complete CSS Properties Reference
+
+### Layout Properties
+| Property | Values | Example |
+|----------|--------|---------|
+| display | flex, grid, block, inline, none | "flex" |
+| flexDirection | row, column, row-reverse, column-reverse | "column" |
+| justifyContent | flex-start, center, flex-end, space-between, space-around | "center" |
+| alignItems | flex-start, center, flex-end, stretch, baseline | "center" |
+| flexWrap | wrap, nowrap, wrap-reverse | "wrap" |
+| gap | any length | "16px" |
+| gridTemplateColumns | repeat, fr, px values | "repeat(3, 1fr)" |
+
+### Sizing Properties
+| Property | Values | Example |
+|----------|--------|---------|
+| width | auto, %, px, vw | "100%" |
+| height | auto, %, px, vh | "100vh" |
+| minWidth/maxWidth | length values | "800px" |
+| minHeight/maxHeight | length values | "100vh" |
+
+### Spacing Properties
+| Property | Values | Example |
+|----------|--------|---------|
+| padding | shorthand or individual | "24px" or "16px 24px" |
+| paddingTop/Right/Bottom/Left | length values | "16px" |
+| margin | shorthand or individual | "0 auto" |
+| marginTop/Right/Bottom/Left | length values | "24px" |
+
+### Color Properties (always use CSS variables)
+| Property | Example |
+|----------|---------|
+| backgroundColor | "hsl(var(--primary))" |
+| color | "hsl(var(--foreground))" |
+| borderColor | "hsl(var(--border))" |
+| background | "linear-gradient(180deg, hsl(var(--background)), hsl(var(--muted)))" |
+
+### Typography Properties
+| Property | Values | Example |
+|----------|--------|---------|
+| fontSize | px, rem, em | "18px" |
+| fontWeight | 400, 500, 600, 700 | "600" |
+| fontFamily | font-stack | "system-ui, sans-serif" |
+| lineHeight | number or unit | "1.6" |
+| letterSpacing | length | "0.02em" |
+| textAlign | left, center, right, justify | "center" |
+| textTransform | uppercase, lowercase, capitalize | "uppercase" |
+| textDecoration | none, underline | "none" |
+
+### Border Properties
+| Property | Example |
+|----------|---------|
+| border | "1px solid hsl(var(--border))" |
+| borderWidth | "1px" |
+| borderStyle | "solid" |
+| borderRadius | "8px" or "50%" |
+| borderTop/Right/Bottom/Left | "1px solid hsl(var(--border))" |
+
+### Effect Properties
+| Property | Example |
+|----------|---------|
+| boxShadow | "0 4px 12px rgba(0,0,0,0.1)" |
+| opacity | "0.8" |
+| filter | "blur(4px)" |
+| backdropFilter | "blur(10px)" |
+| transform | "scale(1.05)" or "translateY(-2px)" |
+| transition | "all 0.2s ease" |
+
+### Position Properties
+| Property | Values | Example |
+|----------|--------|---------|
+| position | static, relative, absolute, fixed, sticky | "relative" |
+| top/right/bottom/left | length values | "0" |
+| zIndex | number | "10" |
+
+### Overflow Properties
+| Property | Values | Example |
+|----------|--------|---------|
+| overflow | visible, hidden, scroll, auto | "hidden" |
+| overflowX/overflowY | visible, hidden, scroll, auto | "auto" |
+`;
+}
+
 // Build complete AI context
 export function buildAIContext(): string {
   return [
@@ -277,6 +362,7 @@ export function buildAIContext(): string {
     generateSpacingGuidelines(),
     generateResponsiveGuidelines(),
     generateLayoutGuidelines(),
+    generateCSSReference(),
     generatePrebuiltExamples(),
   ].join('\n\n');
 }
