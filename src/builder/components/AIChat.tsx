@@ -334,7 +334,7 @@ export const AIChat: React.FC = () => {
           </ScrollArea>
         </TabsContent>
 
-        <TabsContent value="history" className="flex-1 m-0 overflow-hidden flex flex-col">
+        <TabsContent value="history" className="flex-1 m-0 overflow-hidden flex flex-col justify-start">
           <div className="p-2 border-b">
             <Button
               variant="outline"
