@@ -140,6 +140,11 @@ export const TestimonialDataEditor: React.FC<TestimonialDataEditorProps> = ({ in
             <SelectItem value="carousel" className="text-[10px]">Carousel (Multiple)</SelectItem>
           </SelectContent>
         </Select>
+        {displayMode === 'single' && (
+          <p className="text-[9px] text-muted-foreground bg-muted/50 p-2 rounded mt-2">
+            💡 Switch to Carousel mode to add multiple testimonials with auto-play, navigation, and carousel styling options.
+          </p>
+        )}
       </div>
 
       {displayMode === 'single' ? (
