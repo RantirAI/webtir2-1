@@ -202,10 +202,50 @@ export const AIChat: React.FC = () => {
     }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      console.log('File selected:', file.name);
+    if (!file) return;
+
+    const fileType = file.type;
+    const fileName = file.name.toLowerCase();
+
+    try {
+      // Handle images - add reference to input
+      if (fileType.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const base64 = event.target?.result as string;
+          setInput(prev => prev + `\n[Image attached: ${file.name}]`);
+          toast.success(`Image "${file.name}" attached`);
+        };
+        reader.readAsDataURL(file);
+      }
+      // Handle text files (TXT, HTML, CSS, JS)
+      else if (fileName.endsWith('.txt') || fileName.endsWith('.html') || 
+               fileName.endsWith('.htm') || fileName.endsWith('.css') || 
+               fileName.endsWith('.js')) {
+        const text = await file.text();
+        setInput(prev => {
+          const prefix = prev ? prev + '\n\n' : '';
+          return prefix + `[Content from ${file.name}]:\n\`\`\`\n${text}\n\`\`\``;
+        });
+        toast.success(`"${file.name}" content added to input`);
+      }
+      // Handle PDF
+      else if (fileName.endsWith('.pdf')) {
+        toast.info(`PDF import for "${file.name}" - paste the content or use a PDF-to-text converter`);
+      }
+      // Generic file
+      else {
+        toast.info(`File "${file.name}" selected - paste the code content manually`);
+      }
+    } catch (error) {
+      toast.error(`Failed to read file: ${file.name}`);
+    }
+
+    // Reset input to allow re-selecting same file
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
   };
 
