@@ -3,6 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { ArrowUp, Plus, Sparkles, MessageSquare, FileCode, FileText, Image, Figma, History, Wrench, Settings, Trash2, Eye, EyeOff, X } from 'lucide-react';
@@ -14,6 +15,7 @@ import { streamChat, AIMessage } from '../services/aiService';
 import { parseAIResponse, flattenInstances } from '../utils/aiComponentGenerator';
 import { useStyleStore } from '../store/useStyleStore';
 import { useBuilderStore } from '../store/useBuilderStore';
+import { toast } from 'sonner';
 
 type ChatMode = 'build' | 'discuss';
 
@@ -567,16 +569,38 @@ export const AIChat: React.FC = () => {
             </div>
           </div>
           <DialogFooter className="pt-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                useAISettingsStore.getState().clearSettings();
-              }}
-              className="h-7 text-[10px] text-destructive hover:text-destructive"
-            >
-              Clear Settings
-            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 text-[10px] text-destructive hover:text-destructive"
+                >
+                  Clear Settings
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle className="text-sm">Clear AI Settings?</AlertDialogTitle>
+                  <AlertDialogDescription className="text-xs">
+                    This will delete your API key and reset all AI settings. This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel className="h-7 text-[10px]">Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => {
+                      useAISettingsStore.getState().clearSettings();
+                      setShowSettingsDialog(false);
+                      toast.success('AI settings cleared');
+                    }}
+                    className="h-7 text-[10px] bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    Clear Settings
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
             <Button
               size="sm"
               onClick={() => setShowSettingsDialog(false)}
