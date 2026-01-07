@@ -260,25 +260,24 @@ export const AIChat: React.FC = () => {
 
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'chat' | 'history')} className="flex flex-col h-full min-h-0 overflow-hidden">
         {/* Tab Header */}
-        <TabsList className="flex items-center border-b h-8 px-2 bg-transparent rounded-none justify-start gap-0">
+        <TabsList className="flex items-center justify-between border-b h-8 px-3 bg-transparent rounded-none w-full">
           <TabsTrigger
             value="chat"
-            className="flex items-center gap-1 text-[10px] px-2 py-1 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:text-foreground text-muted-foreground bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none h-8"
+            className="flex items-center gap-1.5 text-[10px] px-0 py-1 rounded-none data-[state=active]:text-foreground text-muted-foreground bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none h-8"
           >
-            <MessageSquare className="w-2.5 h-2.5" />
+            <MessageSquare className="w-3 h-3" />
             Chat
           </TabsTrigger>
           <TabsTrigger
             value="history"
-            className="flex items-center gap-1 text-[10px] px-2 py-1 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:text-foreground text-muted-foreground bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none h-8"
+            className="flex items-center gap-1.5 text-[10px] px-0 py-1 rounded-none data-[state=active]:text-foreground text-muted-foreground bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none h-8"
           >
-            <History className="w-2.5 h-2.5" />
+            <History className="w-3 h-3" />
             History
           </TabsTrigger>
-          <div className="flex-1" />
           <button
             onClick={() => setShowSettingsDialog(true)}
-            className="p-1.5 rounded hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+            className="p-1 rounded hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
             title="AI Settings"
           >
             <Settings className="w-3.5 h-3.5" />
