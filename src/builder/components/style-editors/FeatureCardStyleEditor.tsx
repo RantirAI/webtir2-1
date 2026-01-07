@@ -200,8 +200,8 @@ export const FeatureCardStyleEditor: React.FC<FeatureCardStyleEditorProps> = ({ 
       <div className="space-y-1.5">
         <Label className="text-[10px] font-medium text-foreground">Card Variant</Label>
         <Select value={cardVariant} onValueChange={applyCardVariant}>
-          <SelectTrigger className="h-7 text-[10px]">
-            <SelectValue />
+          <SelectTrigger className="h-7 text-[10px] text-foreground bg-background">
+            <SelectValue className="text-foreground" />
           </SelectTrigger>
           <SelectContent>
             {cardVariants.map((variant) => (
@@ -219,8 +219,8 @@ export const FeatureCardStyleEditor: React.FC<FeatureCardStyleEditorProps> = ({ 
       <div className="space-y-1.5">
         <Label className="text-[10px] font-medium text-foreground">Icon Style</Label>
         <Select value={iconStyle} onValueChange={applyIconStyle}>
-          <SelectTrigger className="h-7 text-[10px]">
-            <SelectValue />
+          <SelectTrigger className="h-7 text-[10px] text-foreground bg-background">
+            <SelectValue className="text-foreground" />
           </SelectTrigger>
           <SelectContent>
             {iconStyles.map((style) => (
@@ -236,8 +236,8 @@ export const FeatureCardStyleEditor: React.FC<FeatureCardStyleEditorProps> = ({ 
       <div className="space-y-1.5">
         <Label className="text-[10px] font-medium text-foreground">Icon Color</Label>
         <Select value={iconColor} onValueChange={applyIconColor}>
-          <SelectTrigger className="h-7 text-[10px]">
-            <SelectValue />
+          <SelectTrigger className="h-7 text-[10px] text-foreground bg-background">
+            <SelectValue className="text-foreground" />
           </SelectTrigger>
           <SelectContent>
             {iconColors.map((color) => (
@@ -259,8 +259,8 @@ export const FeatureCardStyleEditor: React.FC<FeatureCardStyleEditorProps> = ({ 
       <div className="space-y-1.5">
         <Label className="text-[10px] font-medium text-foreground">Icon Size</Label>
         <Select value={iconSize} onValueChange={applyIconSize}>
-          <SelectTrigger className="h-7 text-[10px]">
-            <SelectValue />
+          <SelectTrigger className="h-7 text-[10px] text-foreground bg-background">
+            <SelectValue className="text-foreground" />
           </SelectTrigger>
           <SelectContent>
             {iconSizes.map((size) => (
@@ -276,8 +276,8 @@ export const FeatureCardStyleEditor: React.FC<FeatureCardStyleEditorProps> = ({ 
       <div className="space-y-1.5">
         <Label className="text-[10px] font-medium text-foreground">Card Padding</Label>
         <Select value={cardPadding} onValueChange={applyPadding}>
-          <SelectTrigger className="h-7 text-[10px]">
-            <SelectValue />
+          <SelectTrigger className="h-7 text-[10px] text-foreground bg-background">
+            <SelectValue className="text-foreground" />
           </SelectTrigger>
           <SelectContent>
             {paddingSizes.map((size) => (
@@ -293,8 +293,8 @@ export const FeatureCardStyleEditor: React.FC<FeatureCardStyleEditorProps> = ({ 
       <div className="space-y-1.5">
         <Label className="text-[10px] font-medium text-foreground">Border Radius</Label>
         <Select value={cardRadius} onValueChange={applyRadius}>
-          <SelectTrigger className="h-7 text-[10px]">
-            <SelectValue />
+          <SelectTrigger className="h-7 text-[10px] text-foreground bg-background">
+            <SelectValue className="text-foreground" />
           </SelectTrigger>
           <SelectContent>
             {borderRadii.map((radius) => (
@@ -310,8 +310,8 @@ export const FeatureCardStyleEditor: React.FC<FeatureCardStyleEditorProps> = ({ 
       <div className="space-y-1.5">
         <Label className="text-[10px] font-medium text-foreground">Alignment</Label>
         <Select value={alignment} onValueChange={applyAlignment}>
-          <SelectTrigger className="h-7 text-[10px]">
-            <SelectValue />
+          <SelectTrigger className="h-7 text-[10px] text-foreground bg-background">
+            <SelectValue className="text-foreground" />
           </SelectTrigger>
           <SelectContent>
             {alignments.map((align) => (
