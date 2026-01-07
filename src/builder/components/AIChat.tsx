@@ -267,7 +267,7 @@ export const AIChat: React.FC = () => {
           </button>
         </div>
 
-        <TabsContent value="chat" className="flex-1 flex flex-col m-0 min-h-0">
+      <TabsContent value="chat" className="flex-1 flex flex-col m-0 min-h-0">
           {/* Messages Area */}
           <ScrollArea className="flex-1 p-2 [&_[data-radix-scroll-area-scrollbar]]:opacity-0 [&:hover_[data-radix-scroll-area-scrollbar]]:opacity-100 [&_[data-radix-scroll-area-scrollbar]]:transition-opacity">
             <div ref={scrollRef} className="space-y-2">
@@ -332,85 +332,6 @@ export const AIChat: React.FC = () => {
               )}
             </div>
           </ScrollArea>
-
-          {/* Bottom Input Bar */}
-          <div className="p-2 border-t flex-shrink-0">
-            <div className="flex flex-col gap-2 bg-muted/50 rounded-xl px-3 py-2 border border-border">
-              <Textarea
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder={chatMode === 'build' ? 'Ask AI to build something...' : 'Discuss features and ideas...'}
-                className="min-h-[60px] max-h-[120px] resize-none bg-transparent border-none outline-none text-[11px] p-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-                disabled={isLoading}
-              />
-
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1">
-                  <button
-                    onClick={() => setChatMode(chatMode === 'build' ? 'discuss' : 'build')}
-                    className={`flex items-center gap-1 px-2 py-1 rounded-full text-[10px] border transition-colors ${chatMode === 'build'
-                      ? 'bg-primary/10 text-primary border-primary/30'
-                      : 'bg-blue-500/10 text-blue-500 border-blue-500/30'
-                      }`}
-                    title={chatMode === 'build' ? 'Build Mode - AI makes changes to canvas' : 'Chat Mode - Discuss features'}
-                  >
-                    {chatMode === 'build' ? (
-                      <>
-                        <Wrench className="w-3 h-3" />
-                        <span>Build</span>
-                      </>
-                    ) : (
-                      <>
-                        <MessageSquare className="w-3 h-3" />
-                        <span>Chat</span>
-                      </>
-                    )}
-                  </button>
-
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <button
-                        className="p-1.5 rounded-full border border-border hover:bg-background transition-colors text-muted-foreground hover:text-foreground"
-                        title="Import"
-                      >
-                        <Plus className="w-3.5 h-3.5" />
-                      </button>
-                    </PopoverTrigger>
-                    <PopoverContent side="top" align="start" sideOffset={8} className="w-44 p-1.5 bg-popover border border-border shadow-lg z-50">
-                      <div className="space-y-0.5">
-                        <p className="text-[9px] text-muted-foreground px-2 py-1 font-medium uppercase tracking-wider">Import from</p>
-                        {importOptions.map((option) => {
-                          const Icon = option.icon;
-                          return (
-                            <button
-                              key={option.id}
-                              onClick={() => handleFileUpload(option.id)}
-                              className="w-full flex items-center gap-2.5 px-2 py-2 rounded text-[11px] text-foreground hover:bg-accent transition-colors"
-                            >
-                              <Icon className="w-4 h-4 text-muted-foreground" />
-                              <span>{option.label}</span>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </PopoverContent>
-                  </Popover>
-                </div>
-
-                <button
-                  onClick={handleSend}
-                  disabled={!input.trim() || isLoading}
-                  className={`p-1.5 rounded-full transition-colors ${input.trim() && !isLoading
-                    ? 'bg-foreground text-background hover:bg-foreground/90'
-                    : 'bg-muted text-muted-foreground cursor-not-allowed'
-                    }`}
-                >
-                  <ArrowUp className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            </div>
-          </div>
         </TabsContent>
 
         <TabsContent value="history" className="flex-1 m-0 overflow-hidden flex flex-col">
@@ -469,6 +390,85 @@ export const AIChat: React.FC = () => {
           </ScrollArea>
         </TabsContent>
       </Tabs>
+
+      {/* Bottom Input Bar - Always visible */}
+      <div className="p-2 border-t flex-shrink-0">
+        <div className="flex flex-col gap-2 bg-muted/50 rounded-xl px-3 py-2 border border-border">
+          <Textarea
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder={chatMode === 'build' ? 'Ask AI to build something...' : 'Discuss features and ideas...'}
+            className="min-h-[60px] max-h-[120px] resize-none bg-transparent border-none outline-none text-[11px] p-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+            disabled={isLoading}
+          />
+
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setChatMode(chatMode === 'build' ? 'discuss' : 'build')}
+                className={`flex items-center gap-1 px-2 py-1 rounded-full text-[10px] border transition-colors ${chatMode === 'build'
+                  ? 'bg-primary/10 text-primary border-primary/30'
+                  : 'bg-blue-500/10 text-blue-500 border-blue-500/30'
+                  }`}
+                title={chatMode === 'build' ? 'Build Mode - AI makes changes to canvas' : 'Chat Mode - Discuss features'}
+              >
+                {chatMode === 'build' ? (
+                  <>
+                    <Wrench className="w-3 h-3" />
+                    <span>Build</span>
+                  </>
+                ) : (
+                  <>
+                    <MessageSquare className="w-3 h-3" />
+                    <span>Chat</span>
+                  </>
+                )}
+              </button>
+
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button
+                    className="p-1.5 rounded-full border border-border hover:bg-background transition-colors text-muted-foreground hover:text-foreground"
+                    title="Import"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent side="top" align="start" sideOffset={8} className="w-44 p-1.5 bg-popover border border-border shadow-lg z-50">
+                  <div className="space-y-0.5">
+                    <p className="text-[9px] text-muted-foreground px-2 py-1 font-medium uppercase tracking-wider">Import from</p>
+                    {importOptions.map((option) => {
+                      const Icon = option.icon;
+                      return (
+                        <button
+                          key={option.id}
+                          onClick={() => handleFileUpload(option.id)}
+                          className="w-full flex items-center gap-2.5 px-2 py-2 rounded text-[11px] text-foreground hover:bg-accent transition-colors"
+                        >
+                          <Icon className="w-4 h-4 text-muted-foreground" />
+                          <span>{option.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            <button
+              onClick={handleSend}
+              disabled={!input.trim() || isLoading}
+              className={`p-1.5 rounded-full transition-colors ${input.trim() && !isLoading
+                ? 'bg-foreground text-background hover:bg-foreground/90'
+                : 'bg-muted text-muted-foreground cursor-not-allowed'
+                }`}
+            >
+              <ArrowUp className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+      </div>
 
       {/* AI Settings Dialog */}
       <Dialog open={showSettingsDialog} onOpenChange={setShowSettingsDialog}>
