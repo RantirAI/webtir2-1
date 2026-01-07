@@ -179,20 +179,20 @@ export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ inst
   };
 
   return (
-    <div className="space-y-4">
-      {/* Template Selection */}
-      <div className="space-y-2">
-        <Label className="text-xs text-muted-foreground">Layout Template</Label>
+    <div className="space-y-3">
+      {/* Layout Template */}
+      <div className="space-y-1.5">
+        <Label className="text-[10px] font-medium text-foreground">Layout Template</Label>
         <Select value={template} onValueChange={handleTemplateChange}>
-          <SelectTrigger className="bg-muted text-foreground">
+          <SelectTrigger className="h-7 text-[10px] text-foreground bg-background">
             <SelectValue placeholder="Select template" />
           </SelectTrigger>
-          <SelectContent className="bg-popover border border-border z-50">
+          <SelectContent className="bg-popover">
             {NAVIGATION_TEMPLATES.map((t) => (
-              <SelectItem key={t.id} value={t.id}>
-                <div className="flex flex-col">
+              <SelectItem key={t.id} value={t.id} className="text-[10px]">
+                <div className="flex flex-col gap-0.5">
                   <span className="font-medium">{t.label}</span>
-                  <span className="text-xs text-muted-foreground">{t.description}</span>
+                  <span className="text-muted-foreground">{t.description}</span>
                 </div>
               </SelectItem>
             ))}
@@ -201,131 +201,153 @@ export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ inst
       </div>
 
       {/* Logo Section */}
-      <div className="space-y-2">
-        <Label className="text-xs text-muted-foreground">Logo</Label>
+      <div className="space-y-1.5">
+        <Label className="text-[10px] font-medium text-foreground">Logo</Label>
         
-        {/* Logo Image Upload */}
-        <div className="space-y-2">
-          {logoImage ? (
-            <div className="relative inline-block">
-              <img 
-                src={logoImage} 
-                alt="Logo preview" 
-                className="h-10 w-auto max-w-[160px] object-contain rounded border border-border"
-              />
-              <button
-                onClick={handleRemoveLogoImage}
-                className="absolute -top-2 -right-2 p-1 bg-destructive text-destructive-foreground rounded-full hover:opacity-90"
-              >
-                <X className="w-3 h-3" />
-              </button>
-            </div>
-          ) : (
-            <Button
-              variant="outline"
-              size="sm"
-              className="w-full"
-              onClick={() => fileInputRef.current?.click()}
+        {logoImage ? (
+          <div className="relative inline-block">
+            <img 
+              src={logoImage} 
+              alt="Logo preview" 
+              className="h-8 w-auto max-w-[120px] object-contain rounded border border-border"
+            />
+            <button
+              onClick={handleRemoveLogoImage}
+              className="absolute -top-1.5 -right-1.5 p-0.5 bg-destructive text-destructive-foreground rounded-full hover:opacity-90"
             >
-              <Upload className="w-4 h-4 mr-2" /> Upload Logo Image
-            </Button>
-          )}
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handleLogoImageUpload}
-            className="hidden"
-          />
-          <p className="text-[10px] text-muted-foreground">Max height: 40px. Image will be auto-fitted.</p>
-        </div>
+              <X className="w-2.5 h-2.5" />
+            </button>
+          </div>
+        ) : (
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full h-7 text-[10px] bg-background"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <Upload className="w-3 h-3 mr-1.5" /> Upload Logo Image
+          </Button>
+        )}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleLogoImageUpload}
+          className="hidden"
+        />
+        <p className="text-[9px] text-muted-foreground">Max height: 40px. Auto-fitted.</p>
 
-        {/* Logo Text (fallback) */}
         <Input
           value={logoText}
           onChange={(e) => handleLogoChange(e.target.value)}
-          placeholder="Logo text (if no image)"
-          className="bg-muted text-foreground"
+          placeholder="Logo text (fallback)"
+          className="h-7 text-[10px] text-foreground bg-background"
         />
       </div>
 
       {/* Menu Items */}
       {template !== 'minimal-logo' && (
-        <div className="space-y-2">
-          <Label className="text-xs text-muted-foreground">Menu Items</Label>
-          <div className="space-y-2">
+        <div className="space-y-1.5">
+          <Label className="text-[10px] font-medium text-foreground">Menu Items</Label>
+          <div className="space-y-1.5">
             {menuItems.map((item: any, index: number) => (
-              <div key={item.id} className="flex items-center gap-2 p-2 bg-muted/50 rounded-md">
-                <GripVertical className="w-4 h-4 text-muted-foreground cursor-move" />
+              <div key={item.id} className="flex items-start gap-1.5 p-1.5 bg-muted/30 rounded border border-border/50">
+                <GripVertical className="w-3 h-3 text-muted-foreground cursor-move mt-1.5 flex-shrink-0" />
                 <div className="flex-1 space-y-1">
                   <Input
                     value={item.text}
                     onChange={(e) => handleMenuItemChange(index, 'text', e.target.value)}
                     placeholder="Label"
-                    className="bg-muted text-foreground h-8 text-sm"
+                    className="h-6 text-[10px] text-foreground bg-background"
                   />
                   <Input
                     value={item.url}
                     onChange={(e) => handleMenuItemChange(index, 'url', e.target.value)}
                     placeholder="URL"
-                    className="bg-muted text-foreground h-8 text-sm"
+                    className="h-6 text-[10px] text-foreground bg-background font-mono"
                   />
                 </div>
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 text-destructive hover:text-destructive"
+                  className="h-6 w-6 text-destructive hover:text-destructive hover:bg-destructive/10 flex-shrink-0"
                   onClick={() => handleRemoveMenuItem(index)}
                 >
-                  <Trash2 className="w-4 h-4" />
+                  <Trash2 className="w-3 h-3" />
                 </Button>
               </div>
             ))}
             <Button
               variant="outline"
               size="sm"
-              className="w-full"
+              className="w-full h-7 text-[10px] bg-background"
               onClick={handleAddMenuItem}
             >
-              <Plus className="w-4 h-4 mr-2" /> Add Menu Item
+              <Plus className="w-3 h-3 mr-1" /> Add Item
             </Button>
           </div>
         </div>
       )}
 
-      {/* Hover & Active Styles */}
+      {/* CTA Button */}
+      <div className="space-y-1.5">
+        <div className="flex items-center justify-between">
+          <Label className="text-[10px] font-medium text-foreground">CTA Button</Label>
+          <Switch 
+            checked={showCTA} 
+            onCheckedChange={handleShowCTAChange}
+            className="scale-75 origin-right"
+          />
+        </div>
+        {showCTA && (
+          <div className="space-y-1.5 pl-2 border-l border-border">
+            <Input
+              value={ctaText}
+              onChange={(e) => handleCTATextChange(e.target.value)}
+              placeholder="Button text"
+              className="h-7 text-[10px] text-foreground bg-background"
+            />
+            <Input
+              value={ctaUrl}
+              onChange={(e) => handleCTAUrlChange(e.target.value)}
+              placeholder="URL"
+              className="h-7 text-[10px] text-foreground bg-background font-mono"
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Link Styles */}
       {template !== 'minimal-logo' && (
-        <Collapsible defaultOpen>
-          <CollapsibleTrigger className="flex items-center justify-between w-full py-2 text-sm font-medium">
+        <Collapsible>
+          <CollapsibleTrigger className="flex items-center justify-between w-full py-1 text-[10px] font-medium text-foreground hover:text-foreground/80">
             <span>Link Hover & Active Styles</span>
-            <ChevronDown className="w-4 h-4" />
+            <ChevronDown className="w-3 h-3 text-muted-foreground" />
           </CollapsibleTrigger>
-          <CollapsibleContent className="space-y-3 pt-2">
-            {/* Hover Preset */}
-            <div className="space-y-1">
-              <Label className="text-xs text-muted-foreground">Hover Effect</Label>
+          <CollapsibleContent className="space-y-2 pt-2">
+            <div className="space-y-1.5">
+              <Label className="text-[10px] font-medium text-foreground">Hover Effect</Label>
               <Select value={hoverPreset} onValueChange={handleHoverPresetChange}>
-                <SelectTrigger className="bg-muted text-foreground h-8">
+                <SelectTrigger className="h-7 text-[10px] text-foreground bg-background">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-popover border border-border z-50">
+                <SelectContent className="bg-popover">
                   {HOVER_PRESETS.map((p) => (
-                    <SelectItem key={p.id} value={p.id}>{p.label}</SelectItem>
+                    <SelectItem key={p.id} value={p.id} className="text-[10px]">{p.label}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
 
-            {/* Active Preset */}
-            <div className="space-y-1">
-              <Label className="text-xs text-muted-foreground">Active Page Style</Label>
+            <div className="space-y-1.5">
+              <Label className="text-[10px] font-medium text-foreground">Active Style</Label>
               <Select value={activePreset} onValueChange={handleActivePresetChange}>
-                <SelectTrigger className="bg-muted text-foreground h-8">
+                <SelectTrigger className="h-7 text-[10px] text-foreground bg-background">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-popover border border-border z-50">
+                <SelectContent className="bg-popover">
                   {ACTIVE_PRESETS.map((p) => (
-                    <SelectItem key={p.id} value={p.id}>{p.label}</SelectItem>
+                    <SelectItem key={p.id} value={p.id} className="text-[10px]">{p.label}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -333,56 +355,56 @@ export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ inst
 
             {/* Custom Colors */}
             <Collapsible>
-              <CollapsibleTrigger className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground">
-                <ChevronDown className="w-3 h-3" />
+              <CollapsibleTrigger className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground">
+                <ChevronDown className="w-2.5 h-2.5" />
                 Custom Colors
               </CollapsibleTrigger>
-              <CollapsibleContent className="space-y-2 pt-2 pl-2">
+              <CollapsibleContent className="space-y-2 pt-2 pl-2 border-l border-border/50">
                 <div className="grid grid-cols-2 gap-2">
                   <div className="space-y-1">
-                    <Label className="text-[10px] text-muted-foreground">Hover Color</Label>
+                    <Label className="text-[9px] text-muted-foreground">Hover Color</Label>
                     <Input
                       type="color"
                       value={hoverColor || '#3b82f6'}
                       onChange={(e) => handleStyleChange('hoverColor', e.target.value)}
-                      className="h-8 p-1 bg-muted"
+                      className="h-6 p-0.5 bg-background cursor-pointer"
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-[10px] text-muted-foreground">Hover BG</Label>
+                    <Label className="text-[9px] text-muted-foreground">Hover BG</Label>
                     <Input
                       type="color"
                       value={hoverBgColor || '#f3f4f6'}
                       onChange={(e) => handleStyleChange('hoverBgColor', e.target.value)}
-                      className="h-8 p-1 bg-muted"
+                      className="h-6 p-0.5 bg-background cursor-pointer"
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-[10px] text-muted-foreground">Active Color</Label>
+                    <Label className="text-[9px] text-muted-foreground">Active Color</Label>
                     <Input
                       type="color"
                       value={activeColor || '#3b82f6'}
                       onChange={(e) => handleStyleChange('activeColor', e.target.value)}
-                      className="h-8 p-1 bg-muted"
+                      className="h-6 p-0.5 bg-background cursor-pointer"
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-[10px] text-muted-foreground">Active BG</Label>
+                    <Label className="text-[9px] text-muted-foreground">Active BG</Label>
                     <Input
                       type="color"
                       value={activeBgColor || '#eff6ff'}
                       onChange={(e) => handleStyleChange('activeBgColor', e.target.value)}
-                      className="h-8 p-1 bg-muted"
+                      className="h-6 p-0.5 bg-background cursor-pointer"
                     />
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-[10px] text-muted-foreground">Animation Duration (ms)</Label>
+                  <Label className="text-[9px] text-muted-foreground">Animation (ms)</Label>
                   <Input
                     type="number"
                     value={animationDuration}
                     onChange={(e) => handleStyleChange('animationDuration', parseInt(e.target.value) || 200)}
-                    className="h-8 bg-muted text-foreground"
+                    className="h-6 text-[10px] bg-background text-foreground"
                     min={0}
                     max={1000}
                     step={50}
@@ -394,41 +416,17 @@ export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ inst
         </Collapsible>
       )}
 
-      {/* CTA Button */}
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <Label className="text-xs text-muted-foreground">Show CTA Button</Label>
-          <Switch checked={showCTA} onCheckedChange={handleShowCTAChange} />
-        </div>
-        {showCTA && (
-          <div className="space-y-2 pl-4 border-l-2 border-border">
-            <Input
-              value={ctaText}
-              onChange={(e) => handleCTATextChange(e.target.value)}
-              placeholder="Button text"
-              className="bg-muted text-foreground"
-            />
-            <Input
-              value={ctaUrl}
-              onChange={(e) => handleCTAUrlChange(e.target.value)}
-              placeholder="Button URL"
-              className="bg-muted text-foreground"
-            />
-          </div>
-        )}
-      </div>
-
       {/* Mobile Breakpoint */}
-      <div className="space-y-2">
-        <Label className="text-xs text-muted-foreground">Mobile Breakpoint (px)</Label>
+      <div className="space-y-1.5">
+        <Label className="text-[10px] font-medium text-foreground">Mobile Breakpoint</Label>
         <Select value={mobileBreakpoint.toString()} onValueChange={handleMobileBreakpointChange}>
-          <SelectTrigger className="bg-muted text-foreground">
+          <SelectTrigger className="h-7 text-[10px] text-foreground bg-background">
             <SelectValue />
           </SelectTrigger>
-          <SelectContent className="bg-popover border border-border z-50">
-            <SelectItem value="640">640px (Mobile Landscape)</SelectItem>
-            <SelectItem value="768">768px (Tablet)</SelectItem>
-            <SelectItem value="1024">1024px (Desktop)</SelectItem>
+          <SelectContent className="bg-popover">
+            <SelectItem value="640" className="text-[10px]">640px (Mobile)</SelectItem>
+            <SelectItem value="768" className="text-[10px]">768px (Tablet)</SelectItem>
+            <SelectItem value="1024" className="text-[10px]">1024px (Desktop)</SelectItem>
           </SelectContent>
         </Select>
       </div>
