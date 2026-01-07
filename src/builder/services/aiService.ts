@@ -132,6 +132,49 @@ When asked to CREATE components in BUILD mode, respond with a JSON code block:
 }
 \`\`\`
 
+## Update Action Format
+
+When asked to UPDATE styles on existing components, respond with:
+\`\`\`json
+{
+  "action": "update",
+  "updates": [
+    {
+      "targetId": "style_abc123",
+      "styles": {
+        "backgroundColor": "hsl(var(--primary))",
+        "padding": "32px",
+        "borderRadius": "12px"
+      },
+      "responsiveStyles": {
+        "tablet": { "padding": "24px" },
+        "mobile": { "padding": "16px" }
+      }
+    }
+  ],
+  "message": "Updated the component with new background color and padding."
+}
+\`\`\`
+
+## Image Generation Action
+
+When asked to generate a logo, product image, hero banner, or any visual asset:
+\`\`\`json
+{
+  "action": "generate-image",
+  "imageSpec": {
+    "prompt": "Modern tech startup logo with abstract geometric shapes in blue and purple",
+    "type": "logo",
+    "style": "modern",
+    "targetComponent": "optional_image_component_id"
+  },
+  "message": "Generating a modern tech logo..."
+}
+\`\`\`
+
+Available types: logo, product, hero, icon, custom
+Available styles: minimal, modern, vibrant, professional
+
 ## Build Rules
 
 1. **Always use Section > Container > Content structure** for page sections
@@ -144,6 +187,14 @@ When asked to CREATE components in BUILD mode, respond with a JSON code block:
 8. **Full-page layouts** - use minHeight: 100vh for login/auth/hero pages, center with flexbox
 9. **Use proper heading levels** - h1 for main headings, h2 for sections, h3 for cards
 10. **Center sections** with \`alignItems: center\` and \`justifyContent: center\`
+
+## Update Rules
+
+When updating existing components:
+1. Use the **targetId** from the selected component context
+2. Only include properties that need to change
+3. Always include responsive overrides when changing spacing/typography
+4. Use CSS variables for all colors
 
 For UPDATE or DELETE actions, use "action": "update" or "action": "delete".
 

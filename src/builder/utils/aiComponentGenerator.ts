@@ -13,9 +13,28 @@ export interface AIComponentSpec {
   children?: AIComponentSpec[];
 }
 
+export interface AIUpdateSpec {
+  targetId: string;
+  styles?: Record<string, string>;
+  responsiveStyles?: {
+    tablet?: Record<string, string>;
+    mobile?: Record<string, string>;
+  };
+  props?: Record<string, unknown>;
+}
+
+export interface AIImageSpec {
+  prompt: string;
+  type: 'logo' | 'product' | 'hero' | 'icon' | 'custom';
+  style?: 'minimal' | 'modern' | 'vibrant' | 'professional';
+  targetComponent?: string;
+}
+
 export interface AIResponse {
-  action: 'create' | 'update' | 'delete';
-  components: AIComponentSpec[];
+  action: 'create' | 'update' | 'delete' | 'generate-image';
+  components?: AIComponentSpec[];
+  updates?: AIUpdateSpec[];
+  imageSpec?: AIImageSpec;
   message: string;
 }
 
@@ -96,18 +115,44 @@ export function parseAIResponse(text: string): AIResponse | null {
   try {
     const parsed = JSON.parse(jsonStr);
     
-    if (!parsed.action || !Array.isArray(parsed.components)) {
+    if (!parsed.action) {
       return null;
     }
 
-    // Normalize all components
-    const normalizedComponents = parsed.components.map(normalizeComponentSpec);
+    // Handle different action types
+    if (parsed.action === 'create' && Array.isArray(parsed.components)) {
+      const normalizedComponents = parsed.components.map(normalizeComponentSpec);
+      return {
+        action: parsed.action,
+        components: normalizedComponents,
+        message: parsed.message || '',
+      };
+    }
 
-    return {
-      action: parsed.action,
-      components: normalizedComponents,
-      message: parsed.message || '',
-    };
+    if (parsed.action === 'update' && Array.isArray(parsed.updates)) {
+      return {
+        action: 'update',
+        updates: parsed.updates,
+        message: parsed.message || '',
+      };
+    }
+
+    if (parsed.action === 'generate-image' && parsed.imageSpec) {
+      return {
+        action: 'generate-image',
+        imageSpec: parsed.imageSpec,
+        message: parsed.message || '',
+      };
+    }
+
+    if (parsed.action === 'delete') {
+      return {
+        action: 'delete',
+        message: parsed.message || '',
+      };
+    }
+
+    return null;
   } catch {
     return null;
   }

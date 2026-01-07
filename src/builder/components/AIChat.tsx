@@ -12,9 +12,11 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { useAISettingsStore, AI_PROVIDERS, AIProvider } from '../store/useAISettingsStore';
 import { useChatStore } from '../store/useChatStore';
 import { streamChat, AIMessage } from '../services/aiService';
-import { parseAIResponse, flattenInstances } from '../utils/aiComponentGenerator';
+import { parseAIResponse, flattenInstances, AIUpdateSpec } from '../utils/aiComponentGenerator';
 import { useStyleStore } from '../store/useStyleStore';
 import { useBuilderStore } from '../store/useBuilderStore';
+import { useMediaStore } from '../store/useMediaStore';
+import { generateImage } from '../services/aiImageService';
 import { toast } from 'sonner';
 
 type ChatMode = 'build' | 'discuss';
@@ -59,14 +61,46 @@ export const AIChat: React.FC = () => {
   } = useChatStore();
 
   // Builder Store
-  const { addInstance, setSelectedInstanceId } = useBuilderStore();
+  const { addInstance, setSelectedInstanceId, findInstance, getSelectedInstance, updateInstance } = useBuilderStore();
 
   // Style Store
-  const { createStyleSource, setStyle } = useStyleStore();
+  const { createStyleSource, setStyle, getComputedStyles, styleSources } = useStyleStore();
+
+  // Media Store
+  const { addAsset } = useMediaStore();
 
   const [chatMode, setChatMode] = useState<ChatMode>(lastChatMode);
   const currentSession = sessions.find(s => s.id === currentSessionId) || null;
   const messages = currentSession?.messages || [];
+
+  // Build context about selected component for AI
+  const buildSelectedComponentContext = (): string => {
+    const selectedInstance = getSelectedInstance();
+    if (!selectedInstance || selectedInstance.id === 'root') return '';
+    
+    const computedStyles = getComputedStyles(selectedInstance.styleSourceIds);
+    const styleSourceId = selectedInstance.styleSourceIds[0] || '';
+    
+    return `
+## Currently Selected Component
+- Type: ${selectedInstance.type}
+- ID: ${selectedInstance.id}
+- Label: ${selectedInstance.label || selectedInstance.type}
+- Style Source ID: ${styleSourceId}
+
+### Current Styles (use these as reference for updates)
+\`\`\`json
+${JSON.stringify(computedStyles, null, 2)}
+\`\`\`
+
+### Current Props
+\`\`\`json
+${JSON.stringify(selectedInstance.props, null, 2)}
+\`\`\`
+
+When updating this component, use targetId: "${styleSourceId}" in the update action.
+`;
+  };
   // Sync chat mode to store
   useEffect(() => {
     setLastChatMode(chatMode);
@@ -100,12 +134,17 @@ export const AIChat: React.FC = () => {
       mode: chatMode,
     });
 
-    // Build messages array for AI
+    // Build messages array for AI - include component context in build mode
+    const componentContext = chatMode === 'build' ? buildSelectedComponentContext() : '';
+    const contextualMessage = componentContext 
+      ? `${componentContext}\n\nUser request: ${userMessageContent}`
+      : userMessageContent;
+
     const aiMessages: AIMessage[] = messages.map((m) => ({
       role: m.role,
       content: m.content,
     }));
-    aiMessages.push({ role: 'user', content: userMessageContent });
+    aiMessages.push({ role: 'user', content: contextualMessage });
 
     let fullResponse = '';
 
@@ -121,13 +160,15 @@ export const AIChat: React.FC = () => {
           fullResponse += text;
           setStreamingContent(fullResponse);
         },
-        onDone: () => {
+        onDone: async () => {
           let displayMessage = fullResponse;
 
-          // Handle build mode - parse and add components
+          // Handle build mode - parse and process actions
           if (chatMode === 'build') {
             const parsed = parseAIResponse(fullResponse);
-            if (parsed && parsed.action === 'create' && parsed.components.length > 0) {
+            
+            // Handle CREATE action
+            if (parsed && parsed.action === 'create' && parsed.components && parsed.components.length > 0) {
               for (const componentSpec of parsed.components) {
                 const { instances, styleSources: newStyleSources, rootInstanceId } = flattenInstances(componentSpec, 'root');
 
@@ -162,11 +203,101 @@ export const AIChat: React.FC = () => {
                   setSelectedInstanceId(rootInstanceId);
                 }
               }
-              // Use friendly message instead of raw JSON
               displayMessage = parsed.message || '✓ Components created successfully!';
-            } else if (parsed && parsed.action === 'update') {
-              displayMessage = parsed.message || '✓ Components updated successfully!';
-            } else if (parsed && parsed.action === 'delete') {
+            }
+            
+            // Handle UPDATE action
+            else if (parsed && parsed.action === 'update' && parsed.updates && parsed.updates.length > 0) {
+              for (const update of parsed.updates) {
+                const { targetId, styles, responsiveStyles, props } = update;
+                
+                // Check if style source exists, if not check if it's a component ID
+                let styleSourceId = targetId;
+                if (!styleSources[targetId]) {
+                  const instance = findInstance(targetId);
+                  if (instance && instance.styleSourceIds.length > 0) {
+                    styleSourceId = instance.styleSourceIds[0];
+                  }
+                }
+                
+                // Apply base styles
+                if (styles) {
+                  for (const [property, value] of Object.entries(styles)) {
+                    setStyle(styleSourceId, property, value, 'base', 'default');
+                  }
+                }
+                
+                // Apply tablet styles
+                if (responsiveStyles?.tablet) {
+                  for (const [property, value] of Object.entries(responsiveStyles.tablet)) {
+                    setStyle(styleSourceId, property, value, 'tablet', 'default');
+                  }
+                }
+                
+                // Apply mobile styles
+                if (responsiveStyles?.mobile) {
+                  for (const [property, value] of Object.entries(responsiveStyles.mobile)) {
+                    setStyle(styleSourceId, property, value, 'mobile', 'default');
+                  }
+                }
+                
+                // Update props if provided
+                if (props && targetId) {
+                  const instance = findInstance(targetId);
+                  if (instance) {
+                    updateInstance(targetId, { props: { ...instance.props, ...props } });
+                  }
+                }
+              }
+              displayMessage = parsed.message || '✓ Styles updated successfully!';
+              toast.success('Styles updated');
+            }
+            
+            // Handle IMAGE GENERATION action
+            else if (parsed && parsed.action === 'generate-image' && parsed.imageSpec) {
+              const { prompt, type, style, targetComponent } = parsed.imageSpec;
+              
+              displayMessage = parsed.message || 'Generating image...';
+              
+              // Generate image using AI
+              try {
+                const result = await generateImage(apiKey, { prompt, type, style });
+                
+                if (result.imageUrl) {
+                  // Add to media library
+                  addAsset({
+                    name: `AI Generated ${type}`,
+                    url: result.imageUrl,
+                    type: 'image',
+                    mimeType: 'image/png',
+                    size: 0,
+                    altText: prompt,
+                  });
+                  
+                  // Update target component if specified
+                  if (targetComponent) {
+                    const instance = findInstance(targetComponent);
+                    if (instance && instance.type === 'Image') {
+                      updateInstance(targetComponent, { 
+                        props: { ...instance.props, src: result.imageUrl } 
+                      });
+                    }
+                  }
+                  
+                  displayMessage = `✓ Image generated successfully! Added to media library.`;
+                  toast.success('Image generated and added to media library');
+                } else {
+                  displayMessage = `Failed to generate image: ${result.error || 'Unknown error'}`;
+                  toast.error('Image generation failed');
+                }
+              } catch (error) {
+                displayMessage = `Failed to generate image: ${error instanceof Error ? error.message : 'Unknown error'}`;
+                toast.error('Image generation failed');
+              }
+            }
+            
+            // Handle DELETE action
+            else if (parsed && parsed.action === 'delete') {
               displayMessage = parsed.message || '✓ Components deleted successfully!';
             }
           }
