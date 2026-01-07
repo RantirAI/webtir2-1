@@ -145,14 +145,46 @@ export const ImportModal: React.FC<ImportModalProps> = ({ open, onOpenChange, on
           {/* Source-specific instructions */}
           <div className="bg-muted/50 p-2.5 rounded-lg">
             <p className="text-[11px] text-muted-foreground leading-relaxed">
-              {activeSource === 'webflow' && '📝 Export your Webflow site code and paste the HTML here, or upload as a ZIP file.'}
-              {activeSource === 'figma' && '📝 Use a Figma-to-code plugin to export your design, then paste or upload the generated code.'}
-              {activeSource === 'framer' && '📝 Export your Framer project code and paste it here, or upload as files.'}
-              {activeSource === 'github' && '📝 Copy the raw HTML/CSS/JS from your GitHub repository and paste it here.'}
-              {activeSource === 'wordpress' && '📝 Copy your WordPress theme code or page source and paste it here.'}
-              {activeSource === 'shopify' && '📝 Export your Shopify theme code and paste or upload it.'}
-              {activeSource === 'zip' && '📝 Upload a ZIP file containing your HTML, CSS, and JavaScript files.'}
-              {activeSource === 'code' && '📝 Paste any HTML, CSS, or JavaScript code directly.'}
+              {activeSource === 'webflow' && (
+                <>
+                  <strong>Webflow:</strong> Go to Project Settings → Code Export → Download ZIP, then upload it here. Or copy the HTML from index.html and paste it.
+                </>
+              )}
+              {activeSource === 'figma' && (
+                <>
+                  <strong>Figma:</strong> Install a Figma-to-code plugin (Anima, Builder.io, or Figma to Code), select your frame, run the plugin, then copy and paste the generated HTML/CSS.
+                </>
+              )}
+              {activeSource === 'framer' && (
+                <>
+                  <strong>Framer:</strong> Right-click on your component → Copy as HTML, or use the export feature. Then paste the code here.
+                </>
+              )}
+              {activeSource === 'github' && (
+                <>
+                  <strong>GitHub:</strong> Copy the raw HTML/CSS/JS from your repository and paste it here, or download the repo as ZIP and upload.
+                </>
+              )}
+              {activeSource === 'wordpress' && (
+                <>
+                  <strong>WordPress:</strong> View your page source (Ctrl+U), copy the HTML content, and paste it here. Works with any WordPress theme.
+                </>
+              )}
+              {activeSource === 'shopify' && (
+                <>
+                  <strong>Shopify:</strong> Export your theme from Online Store → Themes → Actions → Download, then upload the ZIP file.
+                </>
+              )}
+              {activeSource === 'zip' && (
+                <>
+                  <strong>ZIP File:</strong> Upload a ZIP containing your HTML, CSS, and JS files. The importer will find index.html and combine all CSS files.
+                </>
+              )}
+              {activeSource === 'code' && (
+                <>
+                  <strong>HTML/CSS/JS:</strong> Paste any HTML code directly. Embedded &lt;style&gt; tags will be automatically extracted and applied.
+                </>
+              )}
             </p>
           </div>
 
