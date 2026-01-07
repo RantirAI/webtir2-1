@@ -20,6 +20,7 @@ export { SliderDataEditor } from './SliderDataEditor';
 export { SwitchDataEditor } from './SwitchDataEditor';
 export { TableDataEditor } from './TableDataEditor';
 export { TabsDataEditor } from './TabsDataEditor';
+export { TestimonialDataEditor } from './TestimonialDataEditor';
 export { ToggleDataEditor } from './ToggleDataEditor';
 export { ToggleGroupDataEditor } from './ToggleGroupDataEditor';
 export { TooltipDataEditor } from './TooltipDataEditor';
