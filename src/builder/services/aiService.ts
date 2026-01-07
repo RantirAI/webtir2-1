@@ -1,16 +1,20 @@
 import { AIProvider, AI_PROVIDERS } from '../store/useAISettingsStore';
-import { componentRegistry } from '../primitives/registry';
+import { buildAIContext } from '../utils/aiComponentDocs';
 
 export interface AIMessage {
   role: 'user' | 'assistant' | 'system';
   content: string;
 }
 
-const COMPONENT_TYPES = Object.keys(componentRegistry).join(', ');
+// Generate enhanced system prompt with full component context
+export const getBuilderSystemPrompt = (): string => {
+  const aiContext = buildAIContext();
+  
+  return `You are an expert UI component builder assistant. You create professional, well-structured web page sections using a visual component system.
 
-export const BUILDER_SYSTEM_PROMPT = `You are a UI component builder assistant. You help users create and modify web UI components.
+${aiContext}
 
-Available component types: ${COMPONENT_TYPES}
+## Response Format
 
 When asked to CREATE components in BUILD mode, respond with a JSON code block:
 \`\`\`json
@@ -21,22 +25,107 @@ When asked to CREATE components in BUILD mode, respond with a JSON code block:
       "type": "Section",
       "label": "Hero Section",
       "props": {},
-      "styles": { "padding": "48px" },
+      "styles": {
+        "display": "flex",
+        "flexDirection": "column",
+        "alignItems": "center",
+        "justifyContent": "center",
+        "padding": "80px 24px",
+        "minHeight": "600px",
+        "backgroundColor": "hsl(var(--background))"
+      },
       "children": [
-        { "type": "Heading", "props": { "children": "Welcome", "level": "h1" } },
-        { "type": "Button", "props": { "children": "Get Started" } }
+        {
+          "type": "Container",
+          "props": {},
+          "styles": {
+            "display": "flex",
+            "flexDirection": "column",
+            "alignItems": "center",
+            "textAlign": "center",
+            "maxWidth": "800px",
+            "gap": "24px"
+          },
+          "children": [
+            {
+              "type": "Heading",
+              "props": { "children": "Build Something Amazing", "level": "h1" },
+              "styles": {
+                "fontSize": "56px",
+                "fontWeight": "700",
+                "lineHeight": "1.1",
+                "color": "hsl(var(--foreground))"
+              }
+            },
+            {
+              "type": "Text",
+              "props": { "children": "Create beautiful websites with our visual builder." },
+              "styles": {
+                "fontSize": "20px",
+                "lineHeight": "1.6",
+                "color": "hsl(var(--muted-foreground))"
+              }
+            },
+            {
+              "type": "Div",
+              "props": {},
+              "styles": { "display": "flex", "gap": "16px", "marginTop": "16px" },
+              "children": [
+                {
+                  "type": "Button",
+                  "props": { "children": "Get Started" },
+                  "styles": {
+                    "padding": "12px 32px",
+                    "backgroundColor": "hsl(var(--primary))",
+                    "color": "hsl(var(--primary-foreground))",
+                    "borderRadius": "8px",
+                    "fontWeight": "600",
+                    "fontSize": "16px"
+                  }
+                },
+                {
+                  "type": "Button",
+                  "props": { "children": "Learn More" },
+                  "styles": {
+                    "padding": "12px 32px",
+                    "backgroundColor": "transparent",
+                    "color": "hsl(var(--foreground))",
+                    "border": "1px solid hsl(var(--border))",
+                    "borderRadius": "8px",
+                    "fontWeight": "600",
+                    "fontSize": "16px"
+                  }
+                }
+              ]
+            }
+          ]
+        }
       ]
     }
   ],
-  "message": "I've created a hero section with a heading and button."
+  "message": "I've created a hero section with heading, description, and CTA buttons."
 }
 \`\`\`
 
-For UPDATE or DELETE actions, use the same format with "action": "update" or "action": "delete".
+## Build Rules
 
-In DISCUSS mode, just have a normal conversation without JSON - help the user plan their UI.
+1. **Always use Section > Container > Content structure** for page sections
+2. **Use CSS variables** for all colors: \`hsl(var(--primary))\`, \`hsl(var(--foreground))\`, etc.
+3. **Use flex layouts** with gap for spacing - avoid margin between siblings
+4. **Include comprehensive styles** - don't leave components unstyled
+5. **Center sections** with \`alignItems: center\` and \`justifyContent: center\`
+6. **Use proper heading levels** - h1 for main headings, h2 for sections, h3 for cards
+7. **Add padding to sections** - typically 64px-80px vertical, 24px horizontal
 
-Always be helpful and concise.`;
+For UPDATE or DELETE actions, use "action": "update" or "action": "delete".
+
+In DISCUSS mode, have a normal conversation without JSON - help the user plan their UI.
+
+Be concise and focus on creating visually polished, professional components.`;
+};
+
+// Keep backward compatibility
+export const BUILDER_SYSTEM_PROMPT = getBuilderSystemPrompt();
 
 interface StreamChatOptions {
   provider: AIProvider;
@@ -61,7 +150,7 @@ export async function streamChat({
   onDone,
   onError,
 }: StreamChatOptions): Promise<void> {
-  const systemPrompt = mode === 'build' ? BUILDER_SYSTEM_PROMPT : 'You are a helpful UI design assistant. Help the user plan and discuss their UI ideas.';
+  const systemPrompt = mode === 'build' ? getBuilderSystemPrompt() : 'You are a helpful UI design assistant. Help the user plan and discuss their UI ideas.';
 
   const fullMessages: AIMessage[] = [
     { role: 'system', content: systemPrompt },

@@ -17,6 +17,63 @@ export interface AIResponse {
 
 const generateId = () => Math.random().toString(36).substring(2, 11);
 
+// Validate and normalize component spec from AI
+function normalizeComponentSpec(spec: AIComponentSpec): AIComponentSpec {
+  const type = spec.type || 'Div';
+  const meta = componentRegistry[type] || componentRegistry['Div'];
+  
+  // Ensure valid type
+  const validType = componentRegistry[type] ? type : 'Div';
+  
+  // Merge with defaults, AI props take precedence
+  const normalizedProps = {
+    ...meta.defaultProps,
+    ...spec.props,
+  };
+  
+  // Normalize styles - ensure CSS variables are properly formatted
+  const normalizedStyles = normalizeStyles({
+    ...meta.defaultStyles,
+    ...spec.styles,
+  });
+  
+  // Recursively normalize children
+  const normalizedChildren = (spec.children || []).map(normalizeComponentSpec);
+  
+  return {
+    type: validType,
+    label: spec.label || meta.label,
+    props: normalizedProps,
+    styles: normalizedStyles,
+    children: normalizedChildren,
+  };
+}
+
+// Normalize CSS styles
+function normalizeStyles(styles: Record<string, string>): Record<string, string> {
+  const normalized: Record<string, string> = {};
+  
+  for (const [key, value] of Object.entries(styles)) {
+    if (value === undefined || value === null) continue;
+    
+    // Convert string values
+    let normalizedValue = String(value);
+    
+    // Ensure color values use proper CSS variable syntax
+    if (normalizedValue.includes('var(--') && !normalizedValue.includes('hsl(')) {
+      // If it's just var(--something), wrap in hsl() for color properties
+      const colorProps = ['color', 'backgroundColor', 'borderColor', 'background'];
+      if (colorProps.some(p => key.toLowerCase().includes(p.toLowerCase()))) {
+        normalizedValue = `hsl(${normalizedValue})`;
+      }
+    }
+    
+    normalized[key] = normalizedValue;
+  }
+  
+  return normalized;
+}
+
 export function parseAIResponse(text: string): AIResponse | null {
   // Try to extract JSON from markdown code blocks
   const jsonBlockMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
@@ -29,9 +86,12 @@ export function parseAIResponse(text: string): AIResponse | null {
       return null;
     }
 
+    // Normalize all components
+    const normalizedComponents = parsed.components.map(normalizeComponentSpec);
+
     return {
       action: parsed.action,
-      components: parsed.components,
+      components: normalizedComponents,
       message: parsed.message || '',
     };
   } catch {
@@ -57,8 +117,9 @@ export function flattenInstances(
     const instanceId = generateId();
     const styleSourceId = `style_${instanceId}`;
 
-    const props = { ...meta.defaultProps, ...spec.props };
-    const styles = { ...meta.defaultStyles, ...spec.styles };
+    // Props and styles are already normalized from parseAIResponse
+    const props = spec.props || meta.defaultProps;
+    const styles = spec.styles || meta.defaultStyles;
 
     // Process children recursively - returns ComponentInstance[]
     const childInstances: ComponentInstance[] = [];
@@ -79,7 +140,7 @@ export function flattenInstances(
     };
 
     instances.push(instance);
-    styleSources[styleSourceId] = styles;
+    styleSources[styleSourceId] = styles as Record<string, string>;
 
     return instance;
   }
