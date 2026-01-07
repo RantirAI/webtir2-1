@@ -240,7 +240,7 @@ export const AIChat: React.FC = () => {
       />
 
       {/* Top Tabs */}
-      <Tabs defaultValue="chat" className="flex-1 flex flex-col">
+      <Tabs defaultValue="chat" className="flex-1 flex flex-col min-h-0">
         <div className="flex items-center border-b">
           <TabsList className="flex-1 grid grid-cols-2 rounded-none bg-transparent h-8 p-0.5 gap-0.5">
             <TabsTrigger

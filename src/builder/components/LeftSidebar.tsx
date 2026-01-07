@@ -89,7 +89,7 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({ isRulersView = false }
           <Navigator />
         </TabsContent>
 
-        <TabsContent value="ai" className="flex-1 m-0">
+        <TabsContent value="ai" className="flex-1 m-0 overflow-hidden">
           <AIChat />
         </TabsContent>
       </Tabs>
