@@ -346,7 +346,8 @@ export const AIChat: React.FC = () => {
               New Chat
             </Button>
           </div>
-          <ScrollArea className="flex-1 p-2 [&_[data-radix-scroll-area-scrollbar]]:opacity-0 [&:hover_[data-radix-scroll-area-scrollbar]]:opacity-100 [&_[data-radix-scroll-area-scrollbar]]:transition-opacity">
+          <ScrollArea className="flex-1 [&_[data-radix-scroll-area-scrollbar]]:opacity-0 [&:hover_[data-radix-scroll-area-scrollbar]]:opacity-100 [&_[data-radix-scroll-area-scrollbar]]:transition-opacity">
+            <div className="p-2">
             {sessions.length === 0 ? (
               <div className="text-[10px] text-muted-foreground text-center py-6">
                 <History className="w-6 h-6 mx-auto mb-2 text-muted-foreground/50" />
@@ -387,6 +388,7 @@ export const AIChat: React.FC = () => {
                 ))}
               </div>
             )}
+            </div>
           </ScrollArea>
         </TabsContent>
       </Tabs>
