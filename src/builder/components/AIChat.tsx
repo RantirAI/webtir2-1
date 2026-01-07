@@ -231,7 +231,7 @@ export const AIChat: React.FC = () => {
   ];
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full min-h-0 overflow-hidden">
       <input
         ref={fileInputRef}
         type="file"
