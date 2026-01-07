@@ -101,11 +101,6 @@ Use CSS variables for consistent theming:
 - \`hsl(var(--border))\` - Border colors
 - \`hsl(var(--destructive))\` - Error/danger color
 
-### Spacing Scale
-- Small: 8px, 12px, 16px
-- Medium: 24px, 32px
-- Large: 48px, 64px, 80px
-
 ### Border Radius
 - Subtle: 4px
 - Standard: 8px
@@ -122,6 +117,120 @@ Use CSS variables for consistent theming:
 - Medium: 500
 - Semibold: 600
 - Bold: 700
+`;
+}
+
+// Generate spacing best practices
+export function generateSpacingGuidelines(): string {
+  return `## Spacing Best Practices
+
+### Margin vs Padding vs Gap
+- **Padding**: Internal spacing within containers (cards, buttons, sections)
+- **Margin**: Use sparingly - prefer gap in flex/grid for sibling spacing
+- **Gap**: Always use gap for spacing between children in flex/grid containers
+
+### Spacing Scale (use consistently)
+| Token | Value | Use Case |
+|-------|-------|----------|
+| xs    | 4px   | Icon gaps, tight elements |
+| sm    | 8px   | Button icon gaps, form labels |
+| md    | 16px  | Card padding (compact), input padding |
+| lg    | 24px  | Card padding (default), section gaps |
+| xl    | 32px  | Between major elements |
+| 2xl   | 48px  | Section padding (compact) |
+| 3xl   | 64px  | Section padding (default) |
+| 4xl   | 80px  | Hero section padding |
+| 5xl   | 120px | Large hero sections |
+
+### Section Padding Patterns
+- Hero sections: padding: 80px 24px (desktop), 48px 16px (mobile)
+- Regular sections: padding: 64px 24px (desktop), 40px 16px (mobile)
+- Cards: padding: 24px (desktop), 16px (mobile)
+- Buttons: padding: 12px 24px (large), 8px 16px (default)
+
+### Gap Values
+- Inline buttons: gap: 12px
+- Card grids: gap: 24px (desktop), 16px (mobile)
+- Form fields: gap: 16px
+- Section content: gap: 24px-32px
+`;
+}
+
+// Generate responsive layout guidelines
+export function generateResponsiveGuidelines(): string {
+  return `## Responsive Layouts
+
+### Breakpoints
+- **base**: Desktop default (960px+)
+- **tablet**: 768px - 991px
+- **mobile**: Below 767px
+
+### Responsive Style Format
+When generating components, ALWAYS include responsive overrides:
+
+\`\`\`json
+{
+  "type": "Section",
+  "styles": {
+    "padding": "80px 24px",
+    "minHeight": "100vh"
+  },
+  "responsiveStyles": {
+    "tablet": {
+      "padding": "48px 20px"
+    },
+    "mobile": {
+      "padding": "40px 16px",
+      "minHeight": "auto"
+    }
+  },
+  "children": [...]
+}
+\`\`\`
+
+### Responsive Patterns
+
+**Typography Scaling:**
+- h1: 56px → tablet: 44px → mobile: 32px
+- h2: 40px → tablet: 32px → mobile: 26px
+- h3: 28px → tablet: 24px → mobile: 20px
+- Body large: 20px → mobile: 16px
+
+**Grid Columns:**
+- 4 columns → tablet: 2 columns → mobile: 1 column
+- 3 columns → tablet: 2 columns → mobile: 1 column
+- 2 columns → mobile: 1 column
+
+**Flex Direction:**
+- Row layouts: flexDirection: row → mobile: column
+- Always add: flexWrap: wrap for multi-item rows
+
+**Spacing Reduction:**
+- Desktop gap/padding × 0.6-0.75 for tablet
+- Desktop gap/padding × 0.5 for mobile
+
+**Container Max Widths:**
+- Desktop: maxWidth: 1200px
+- Tablet: maxWidth: 100%, padding: 20px
+- Mobile: maxWidth: 100%, padding: 16px
+
+### Page Layout Modes
+
+**Full-Page (Login, Auth, Landing Hero):**
+\`\`\`json
+{
+  "styles": {
+    "minHeight": "100vh",
+    "display": "flex",
+    "alignItems": "center",
+    "justifyContent": "center"
+  }
+}
+\`\`\`
+
+**Multi-Section Landing Page:**
+Generate sections in order: Hero → Features → Testimonials → CTA → Footer
+Each section should have appropriate padding and be full-width.
 `;
 }
 
@@ -165,6 +274,8 @@ export function buildAIContext(): string {
   return [
     generateComponentDocs(),
     generateDesignTokens(),
+    generateSpacingGuidelines(),
+    generateResponsiveGuidelines(),
     generateLayoutGuidelines(),
     generatePrebuiltExamples(),
   ].join('\n\n');
