@@ -24,6 +24,7 @@ type ChatMode = 'build' | 'discuss';
 export const AIChat: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const scrollAnchorRef = useRef<HTMLDivElement>(null);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showSettingsDialog, setShowSettingsDialog] = useState(false);
@@ -108,8 +109,8 @@ When updating this component, use targetId: "${styleSourceId}" in the update act
 
   // Auto-scroll on new messages
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    if (scrollAnchorRef.current) {
+      scrollAnchorRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages, streamingContent]);
 
@@ -597,6 +598,7 @@ When updating this component, use targetId: "${styleSourceId}" in the update act
                   </span>
                 </div>
               )}
+              <div ref={scrollAnchorRef} />
             </div>
           </ScrollArea>
 
