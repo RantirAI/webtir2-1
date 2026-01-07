@@ -4,6 +4,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ComponentInstance } from '../../store/types';
 import { useBuilderStore } from '../../store/useBuilderStore';
 import { useStyleStore } from '../../store/useStyleStore';
+import { ColorPicker } from '../ColorPicker';
 
 interface FeatureCardStyleEditorProps {
   instance: ComponentInstance;
@@ -50,13 +51,6 @@ const alignments = [
   { value: 'center', label: 'Center' },
 ];
 
-const iconColors = [
-  { value: 'primary', label: 'Primary', color: 'hsl(var(--primary))' },
-  { value: 'secondary', label: 'Secondary', color: 'hsl(var(--secondary))' },
-  { value: 'accent', label: 'Accent', color: 'hsl(var(--accent))' },
-  { value: 'muted', label: 'Muted', color: 'hsl(var(--muted))' },
-  { value: 'destructive', label: 'Destructive', color: 'hsl(var(--destructive))' },
-];
 
 export const FeatureCardStyleEditor: React.FC<FeatureCardStyleEditorProps> = ({ instance }) => {
   const { updateInstance } = useBuilderStore();
@@ -66,7 +60,7 @@ export const FeatureCardStyleEditor: React.FC<FeatureCardStyleEditorProps> = ({ 
   const cardVariant = instance.props?.cardVariant || 'default';
   const iconStyle = instance.props?.iconStyle || 'filled';
   const iconSize = instance.props?.iconSize || 'md';
-  const iconColor = instance.props?.iconColor || 'primary';
+  const iconColor = instance.props?.iconColor || '#3B82F6'; // Now a hex/rgb color value
   const cardPadding = instance.props?.cardPadding || 'default';
   const cardRadius = instance.props?.cardRadius || 'lg';
   const alignment = instance.props?.alignment || 'left';
@@ -119,16 +113,16 @@ export const FeatureCardStyleEditor: React.FC<FeatureCardStyleEditorProps> = ({ 
     }
   };
 
-  const applyIconStyle = (style: string) => {
+  const applyIconStyle = (style: string, colorOverride?: string) => {
     updateStyleProp('iconStyle', style);
     
     if (!iconStyleId) return;
     
-    const color = iconColors.find(c => c.value === iconColor)?.color || 'hsl(var(--primary))';
+    const color = colorOverride || iconColor;
     
     switch (style) {
       case 'filled':
-        setStyle(iconStyleId, 'backgroundColor', `${color.replace(')', ' / 0.1)')}`, 'base', 'default');
+        setStyle(iconStyleId, 'backgroundColor', color, 'base', 'default');
         setStyle(iconStyleId, 'border', 'none', 'base', 'default');
         break;
       case 'outlined':
@@ -136,7 +130,7 @@ export const FeatureCardStyleEditor: React.FC<FeatureCardStyleEditorProps> = ({ 
         setStyle(iconStyleId, 'border', `1px solid ${color}`, 'base', 'default');
         break;
       case 'gradient':
-        setStyle(iconStyleId, 'backgroundImage', `linear-gradient(135deg, ${color}, ${color.replace(')', ' / 0.6)')})`, 'base', 'default');
+        setStyle(iconStyleId, 'backgroundImage', `linear-gradient(135deg, ${color}, ${color})`, 'base', 'default');
         setStyle(iconStyleId, 'border', 'none', 'base', 'default');
         break;
       case 'none':
@@ -161,10 +155,8 @@ export const FeatureCardStyleEditor: React.FC<FeatureCardStyleEditorProps> = ({ 
     
     if (!iconStyleId) return;
     
-    const colorValue = iconColors.find(c => c.value === color)?.color || 'hsl(var(--primary))';
-    
     // Re-apply icon style with new color
-    applyIconStyle(iconStyle);
+    applyIconStyle(iconStyle, color);
   };
 
   const applyPadding = (padding: string) => {
@@ -235,24 +227,10 @@ export const FeatureCardStyleEditor: React.FC<FeatureCardStyleEditorProps> = ({ 
       {/* Icon Color */}
       <div className="space-y-1.5">
         <Label className="text-[10px] font-medium text-foreground">Icon Color</Label>
-        <Select value={iconColor} onValueChange={applyIconColor}>
-          <SelectTrigger className="h-7 text-[10px] text-foreground bg-background">
-            <SelectValue className="text-foreground" />
-          </SelectTrigger>
-          <SelectContent>
-            {iconColors.map((color) => (
-              <SelectItem key={color.value} value={color.value} className="text-[10px]">
-                <div className="flex items-center gap-2">
-                  <div 
-                    className="w-3 h-3 rounded-full border border-border" 
-                    style={{ backgroundColor: color.color }}
-                  />
-                  {color.label}
-                </div>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="flex items-center gap-2">
+          <ColorPicker value={iconColor} onChange={applyIconColor} />
+          <span className="text-[10px] text-muted-foreground font-mono">{iconColor}</span>
+        </div>
       </div>
 
       {/* Icon Size */}

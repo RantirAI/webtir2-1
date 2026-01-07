@@ -86,12 +86,12 @@ export const FeatureCardDataEditor: React.FC<FeatureCardDataEditorProps> = ({ in
     <div className="space-y-3">
       {/* Icon Selection */}
       <div className="space-y-1.5">
-        <Label className="text-[10px] font-medium">Icon</Label>
+        <Label className="text-[10px] font-medium text-foreground">Icon</Label>
         <Popover open={iconPickerOpen} onOpenChange={setIconPickerOpen}>
           <PopoverTrigger asChild>
             <Button
               variant="outline"
-              className="w-full h-8 justify-start gap-2 text-[10px]"
+              className="w-full h-8 justify-start gap-2 text-[10px] text-foreground bg-background"
             >
               <Icon name={currentIcon} size={16} />
               <span className="flex-1 text-left truncate">{currentIcon}</span>
@@ -136,35 +136,35 @@ export const FeatureCardDataEditor: React.FC<FeatureCardDataEditorProps> = ({ in
 
       {/* Title */}
       <div className="space-y-1.5">
-        <Label className="text-[10px] font-medium">Title</Label>
+        <Label className="text-[10px] font-medium text-foreground">Title</Label>
         <Input
           value={title}
           onChange={(e) => updateTitle(e.target.value)}
           placeholder="Feature title..."
-          className="h-7 text-[10px]"
+          className="h-7 text-[10px] text-foreground bg-background"
         />
       </div>
 
       {/* Description */}
       <div className="space-y-1.5">
-        <Label className="text-[10px] font-medium">Description</Label>
+        <Label className="text-[10px] font-medium text-foreground">Description</Label>
         <Textarea
           value={description}
           onChange={(e) => updateDescription(e.target.value)}
           placeholder="Describe your feature..."
-          className="text-[10px] min-h-[60px] resize-none"
+          className="text-[10px] min-h-[60px] resize-none text-foreground bg-background"
           rows={3}
         />
       </div>
 
       {/* Link Settings */}
       <div className="space-y-2 pt-2 border-t border-border">
-        <Label className="text-[10px] font-medium">Link (Optional)</Label>
+        <Label className="text-[10px] font-medium text-foreground">Link (Optional)</Label>
         <Input
           value={linkUrl}
           onChange={(e) => updateCardProp('linkUrl', e.target.value)}
           placeholder="https://..."
-          className="h-7 text-[10px]"
+          className="h-7 text-[10px] text-foreground bg-background"
         />
         <label className="flex items-center gap-2 text-[9px] text-muted-foreground">
           <Checkbox
