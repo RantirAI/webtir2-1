@@ -89,6 +89,27 @@ const starSizes = [
   { value: 'lg', label: 'Large', size: '24px' },
 ];
 
+const hoverEffects = [
+  { value: 'none', label: 'None' },
+  { value: 'scale', label: 'Scale Up' },
+  { value: 'lift', label: 'Lift (Shadow)' },
+  { value: 'glow', label: 'Glow' },
+  { value: 'tilt', label: 'Tilt' },
+];
+
+const carouselNavigationStyles = [
+  { value: 'arrows', label: 'Arrows' },
+  { value: 'dots', label: 'Dots' },
+  { value: 'both', label: 'Both' },
+  { value: 'none', label: 'None' },
+];
+
+const cardsPerViewOptions = [
+  { value: '1', label: '1 Card' },
+  { value: '2', label: '2 Cards' },
+  { value: '3', label: '3 Cards' },
+];
+
 export const TestimonialStyleEditor: React.FC<TestimonialStyleEditorProps> = ({ instance }) => {
   const { updateInstance } = useBuilderStore();
   const { setStyle } = useStyleStore();
@@ -123,6 +144,15 @@ export const TestimonialStyleEditor: React.FC<TestimonialStyleEditorProps> = ({ 
   // Rating styles
   const starColor = instance.props?.starColor || '#FBBF24';
   const starSize = instance.props?.starSize || 'md';
+
+  // Hover effect styles
+  const hoverEffect = instance.props?.hoverEffect || 'none';
+  const glowColor = instance.props?.glowColor || 'hsl(var(--primary))';
+
+  // Carousel styles
+  const displayMode = instance.props?.displayMode || 'single';
+  const navigationStyle = instance.props?.navigationStyle || 'arrows';
+  const cardsPerView = instance.props?.cardsPerView || '1';
 
   // Get style source IDs
   const cardStyleId = instance.styleSourceIds?.[0];
@@ -526,6 +556,78 @@ export const TestimonialStyleEditor: React.FC<TestimonialStyleEditorProps> = ({ 
           </Select>
         </div>
       </div>
+
+      {/* Hover Effects Section */}
+      <div className="space-y-3 pt-3 border-t border-border">
+        <Label className="text-[10px] font-semibold text-foreground uppercase tracking-wide">Hover Effects</Label>
+        
+        {/* Hover Effect Type */}
+        <div className="space-y-1.5">
+          <Label className="text-[10px] font-medium text-foreground">Effect Type</Label>
+          <Select value={hoverEffect} onValueChange={(val) => updateStyleProp('hoverEffect', val)}>
+            <SelectTrigger className="h-7 text-[10px] text-foreground bg-background">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {hoverEffects.map((effect) => (
+                <SelectItem key={effect.value} value={effect.value} className="text-[10px]">
+                  {effect.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {hoverEffect === 'glow' && (
+          <div className="space-y-1.5">
+            <Label className="text-[10px] font-medium text-foreground">Glow Color</Label>
+            <div className="flex items-center gap-2">
+              <ColorPicker value={glowColor} onChange={(val) => updateStyleProp('glowColor', val)} />
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Carousel Settings Section */}
+      {displayMode === 'carousel' && (
+        <div className="space-y-3 pt-3 border-t border-border">
+          <Label className="text-[10px] font-semibold text-foreground uppercase tracking-wide">Carousel Styles</Label>
+          
+          {/* Navigation Style */}
+          <div className="space-y-1.5">
+            <Label className="text-[10px] font-medium text-foreground">Navigation</Label>
+            <Select value={navigationStyle} onValueChange={(val) => updateStyleProp('navigationStyle', val)}>
+              <SelectTrigger className="h-7 text-[10px] text-foreground bg-background">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {carouselNavigationStyles.map((style) => (
+                  <SelectItem key={style.value} value={style.value} className="text-[10px]">
+                    {style.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Cards Per View */}
+          <div className="space-y-1.5">
+            <Label className="text-[10px] font-medium text-foreground">Cards Per View</Label>
+            <Select value={cardsPerView} onValueChange={(val) => updateStyleProp('cardsPerView', val)}>
+              <SelectTrigger className="h-7 text-[10px] text-foreground bg-background">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {cardsPerViewOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value} className="text-[10px]">
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
