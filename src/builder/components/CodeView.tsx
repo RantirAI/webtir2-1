@@ -8,12 +8,13 @@ import { exportHTML, exportCSS, exportJS, exportAstro } from '../utils/codeExpor
 import { discoverComponents, getComponentCode, flattenComponents } from '../utils/componentCodeExport';
 import { parseHTMLToInstance, parseHTMLPreservingLinks } from '../utils/codeImport';
 import { parseCSSToStyleStore, validateCSS } from '../utils/cssImport';
-import { Copy, Check, Monitor, Tablet, Smartphone, Upload, Lock } from 'lucide-react';
+import { Copy, Check, Monitor, Tablet, Smartphone, Upload, Lock, Sparkles } from 'lucide-react';
 import { ImportModal } from './ImportModal';
 import { FileTree } from './FileTree';
 import { CreateComponentDialog } from './CreateComponentDialog';
 import { CodeViewMediaPanel } from './CodeViewMediaPanel';
 import { LockedCodeEditor } from './LockedCodeEditor';
+import { AIChat } from './AIChat';
 import { LockRegion } from '../primitives/core/types';
 import { toast } from '@/hooks/use-toast';
 import Prism from 'prismjs';
@@ -42,6 +43,7 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
   const [showCreateComponentDialog, setShowCreateComponentDialog] = useState(false);
   const defaultFile = pages.length > 0 ? `/pages/${pages[0].toLowerCase().replace(/\s+/g, '-')}.html` : '/pages/page-1.html';
   const [selectedFile, setSelectedFile] = useState(defaultFile);
+  const [showAIChat, setShowAIChat] = useState(false);
   const [isCodeEdited, setIsCodeEdited] = useState(false);
   
   const [htmlCode, setHtmlCode] = useState('');
@@ -308,40 +310,57 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
 
       {/* Main Content */}
       <ResizablePanelGroup direction="horizontal" className="h-[calc(100vh-4rem)]">
-        {/* File Tree Sidebar */}
+        {/* File Tree Sidebar / AI Chat */}
         <ResizablePanel defaultSize={12} minSize={8} maxSize={25}>
-          <div className="h-full border-r border-border bg-muted/20">
-            <div className="h-10 border-b border-border flex items-center px-3">
-              <h3 className="text-xs font-semibold text-muted-foreground uppercase">Files</h3>
+          <div className="h-full border-r border-border bg-muted/20 flex flex-col">
+            <div className="h-10 border-b border-border flex items-center justify-between px-3">
+              <h3 className="text-xs font-semibold text-muted-foreground uppercase">
+                {showAIChat ? 'AI Chat' : 'Files'}
+              </h3>
+              <Button
+                variant={showAIChat ? 'secondary' : 'ghost'}
+                size="sm"
+                onClick={() => setShowAIChat(!showAIChat)}
+                className="h-6 w-6 p-0"
+                title={showAIChat ? 'Show Files' : 'Show AI Chat'}
+              >
+                <Sparkles className="h-3.5 w-3.5" />
+              </Button>
             </div>
-            <FileTree 
-              onFileSelect={(path) => {
-                setSelectedFile(path);
-                // Sync tab based on file type
-                if (path === '/styles.css') {
-                  setActiveTab('css');
-                } else if (path === '/script.js') {
-                  setActiveTab('react');
-                } else if (path.endsWith('.html')) {
-                  setActiveTab('html');
-                }
-              }}
-              selectedFile={selectedFile}
-              pages={pages}
-              onAddComponent={() => setShowCreateComponentDialog(true)}
-              onAddPage={() => {
-                toast({
-                  title: 'Add Page',
-                  description: 'Use the page navigation at the bottom to add new pages.',
-                });
-              }}
-              onAddMedia={() => {
-                toast({
-                  title: 'Add Media',
-                  description: 'Drag and drop media files onto the canvas to add them.',
-                });
-              }}
-            />
+            {showAIChat ? (
+              <div className="flex-1 overflow-hidden">
+                <AIChat />
+              </div>
+            ) : (
+              <FileTree 
+                onFileSelect={(path) => {
+                  setSelectedFile(path);
+                  // Sync tab based on file type
+                  if (path === '/styles.css') {
+                    setActiveTab('css');
+                  } else if (path === '/script.js') {
+                    setActiveTab('react');
+                  } else if (path.endsWith('.html')) {
+                    setActiveTab('html');
+                  }
+                }}
+                selectedFile={selectedFile}
+                pages={pages}
+                onAddComponent={() => setShowCreateComponentDialog(true)}
+                onAddPage={() => {
+                  toast({
+                    title: 'Add Page',
+                    description: 'Use the page navigation at the bottom to add new pages.',
+                  });
+                }}
+                onAddMedia={() => {
+                  toast({
+                    title: 'Add Media',
+                    description: 'Drag and drop media files onto the canvas to add them.',
+                  });
+                }}
+              />
+            )}
           </div>
         </ResizablePanel>
 
