@@ -162,52 +162,75 @@ When updating this component, use targetId: "${styleSourceId}" in the update act
         },
         onDone: async () => {
           let displayMessage = fullResponse;
+          let componentsBuilt = false;
 
           // Handle build mode - parse and process actions
           if (chatMode === 'build') {
+            console.log('Parsing AI response for build mode...');
             const parsed = parseAIResponse(fullResponse);
+            console.log('Parsed result:', parsed);
             
             // Handle CREATE action
             if (parsed && parsed.action === 'create' && parsed.components && parsed.components.length > 0) {
+              console.log('Processing CREATE action with', parsed.components.length, 'components');
+              
               for (const componentSpec of parsed.components) {
-                const { instances, styleSources: newStyleSources, rootInstanceId } = flattenInstances(componentSpec, 'root');
+                try {
+                  const { instances, styleSources: newStyleSources, rootInstanceId } = flattenInstances(componentSpec, 'root');
+                  console.log('Flattened instances:', instances.length, 'Root ID:', rootInstanceId);
 
-                // Add style sources with breakpoint support
-                for (const [styleSourceId, breakpointStyles] of Object.entries(newStyleSources)) {
-                  createStyleSource('local', styleSourceId);
-                  
-                  // Apply base styles
-                  for (const [property, value] of Object.entries(breakpointStyles.base || {})) {
-                    setStyle(styleSourceId, property, value, 'base', 'default');
-                  }
-                  
-                  // Apply tablet styles
-                  if (breakpointStyles.tablet) {
-                    for (const [property, value] of Object.entries(breakpointStyles.tablet)) {
-                      setStyle(styleSourceId, property, value, 'tablet', 'default');
+                  // Add style sources with breakpoint support
+                  for (const [styleSourceId, breakpointStyles] of Object.entries(newStyleSources)) {
+                    createStyleSource('local', styleSourceId);
+                    
+                    // Apply base styles
+                    if (breakpointStyles.base) {
+                      for (const [property, value] of Object.entries(breakpointStyles.base)) {
+                        setStyle(styleSourceId, property, value, 'base', 'default');
+                      }
+                    }
+                    
+                    // Apply tablet styles
+                    if (breakpointStyles.tablet) {
+                      for (const [property, value] of Object.entries(breakpointStyles.tablet)) {
+                        setStyle(styleSourceId, property, value, 'tablet', 'default');
+                      }
+                    }
+                    
+                    // Apply mobile styles
+                    if (breakpointStyles.mobile) {
+                      for (const [property, value] of Object.entries(breakpointStyles.mobile)) {
+                        setStyle(styleSourceId, property, value, 'mobile', 'default');
+                      }
                     }
                   }
-                  
-                  // Apply mobile styles
-                  if (breakpointStyles.mobile) {
-                    for (const [property, value] of Object.entries(breakpointStyles.mobile)) {
-                      setStyle(styleSourceId, property, value, 'mobile', 'default');
-                    }
-                  }
-                }
 
-                // Find the root instance (the one we just built)
-                const rootInstance = instances.find(i => i.id === rootInstanceId);
-                if (rootInstance) {
-                  addInstance(rootInstance, 'root');
-                  setSelectedInstanceId(rootInstanceId);
+                  // Find the root instance (the one we just built)
+                  const rootInstance = instances.find(i => i.id === rootInstanceId);
+                  if (rootInstance) {
+                    addInstance(rootInstance, 'root');
+                    setSelectedInstanceId(rootInstanceId);
+                    componentsBuilt = true;
+                    console.log('Added root instance to canvas:', rootInstance.type);
+                  }
+                } catch (err) {
+                  console.error('Error processing component:', err);
                 }
               }
-              displayMessage = parsed.message || '✓ Components created successfully!';
+              
+              displayMessage = componentsBuilt 
+                ? `✓ ${parsed.message || 'Components created successfully!'}`
+                : `⚠️ Failed to build components. Please try again.`;
+              
+              if (componentsBuilt) {
+                toast.success('Components built on canvas!');
+              }
             }
             
             // Handle UPDATE action
             else if (parsed && parsed.action === 'update' && parsed.updates && parsed.updates.length > 0) {
+              console.log('Processing UPDATE action with', parsed.updates.length, 'updates');
+              
               for (const update of parsed.updates) {
                 const { targetId, styles, responsiveStyles, props } = update;
                 
@@ -249,7 +272,7 @@ When updating this component, use targetId: "${styleSourceId}" in the update act
                   }
                 }
               }
-              displayMessage = parsed.message || '✓ Styles updated successfully!';
+              displayMessage = `✓ ${parsed.message || 'Styles updated successfully!'}`;
               toast.success('Styles updated');
             }
             
@@ -298,7 +321,13 @@ When updating this component, use targetId: "${styleSourceId}" in the update act
             
             // Handle DELETE action
             else if (parsed && parsed.action === 'delete') {
-              displayMessage = parsed.message || '✓ Components deleted successfully!';
+              displayMessage = `✓ ${parsed.message || 'Components deleted successfully!'}`;
+            }
+            
+            // If we couldn't parse a valid action but we're in build mode
+            else if (!parsed) {
+              console.warn('Could not parse AI response as JSON action');
+              // Keep the raw response as displayMessage - it might be a conversation
             }
           }
 

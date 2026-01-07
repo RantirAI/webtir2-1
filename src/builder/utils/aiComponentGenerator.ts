@@ -108,14 +108,34 @@ function normalizeStyles(styles: Record<string, string>): Record<string, string>
 }
 
 export function parseAIResponse(text: string): AIResponse | null {
-  // Try to extract JSON from markdown code blocks
+  // Try multiple methods to extract JSON
+  let jsonStr = '';
+  
+  // Method 1: Extract from markdown code blocks (most common)
   const jsonBlockMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
-  const jsonStr = jsonBlockMatch ? jsonBlockMatch[1].trim() : text.trim();
+  if (jsonBlockMatch) {
+    jsonStr = jsonBlockMatch[1].trim();
+  } else {
+    // Method 2: Try to find JSON object directly in text
+    const jsonObjectMatch = text.match(/\{[\s\S]*"action"[\s\S]*\}/);
+    if (jsonObjectMatch) {
+      jsonStr = jsonObjectMatch[0];
+    } else {
+      // Method 3: Use raw text
+      jsonStr = text.trim();
+    }
+  }
+
+  // Clean up common issues
+  jsonStr = jsonStr
+    .replace(/,\s*}/g, '}')  // Remove trailing commas
+    .replace(/,\s*]/g, ']'); // Remove trailing commas in arrays
 
   try {
     const parsed = JSON.parse(jsonStr);
     
     if (!parsed.action) {
+      console.warn('AI response missing action field:', parsed);
       return null;
     }
 
@@ -123,9 +143,9 @@ export function parseAIResponse(text: string): AIResponse | null {
     if (parsed.action === 'create' && Array.isArray(parsed.components)) {
       const normalizedComponents = parsed.components.map(normalizeComponentSpec);
       return {
-        action: parsed.action,
+        action: 'create',
         components: normalizedComponents,
-        message: parsed.message || '',
+        message: parsed.message || 'Components created successfully!',
       };
     }
 
@@ -133,7 +153,7 @@ export function parseAIResponse(text: string): AIResponse | null {
       return {
         action: 'update',
         updates: parsed.updates,
-        message: parsed.message || '',
+        message: parsed.message || 'Styles updated successfully!',
       };
     }
 
@@ -141,19 +161,21 @@ export function parseAIResponse(text: string): AIResponse | null {
       return {
         action: 'generate-image',
         imageSpec: parsed.imageSpec,
-        message: parsed.message || '',
+        message: parsed.message || 'Generating image...',
       };
     }
 
     if (parsed.action === 'delete') {
       return {
         action: 'delete',
-        message: parsed.message || '',
+        message: parsed.message || 'Components deleted!',
       };
     }
 
+    console.warn('AI response has unknown action:', parsed.action);
     return null;
-  } catch {
+  } catch (error) {
+    console.error('Failed to parse AI JSON response:', error, '\nJSON string:', jsonStr.substring(0, 500));
     return null;
   }
 }
