@@ -198,7 +198,7 @@ export const FeatureCardStyleEditor: React.FC<FeatureCardStyleEditorProps> = ({ 
     <div className="space-y-3">
       {/* Card Variant */}
       <div className="space-y-1.5">
-        <Label className="text-[10px] font-medium">Card Variant</Label>
+        <Label className="text-[10px] font-medium text-foreground">Card Variant</Label>
         <Select value={cardVariant} onValueChange={applyCardVariant}>
           <SelectTrigger className="h-7 text-[10px]">
             <SelectValue />
@@ -217,7 +217,7 @@ export const FeatureCardStyleEditor: React.FC<FeatureCardStyleEditorProps> = ({ 
 
       {/* Icon Style */}
       <div className="space-y-1.5">
-        <Label className="text-[10px] font-medium">Icon Style</Label>
+        <Label className="text-[10px] font-medium text-foreground">Icon Style</Label>
         <Select value={iconStyle} onValueChange={applyIconStyle}>
           <SelectTrigger className="h-7 text-[10px]">
             <SelectValue />
@@ -234,7 +234,7 @@ export const FeatureCardStyleEditor: React.FC<FeatureCardStyleEditorProps> = ({ 
 
       {/* Icon Color */}
       <div className="space-y-1.5">
-        <Label className="text-[10px] font-medium">Icon Color</Label>
+        <Label className="text-[10px] font-medium text-foreground">Icon Color</Label>
         <Select value={iconColor} onValueChange={applyIconColor}>
           <SelectTrigger className="h-7 text-[10px]">
             <SelectValue />
@@ -257,7 +257,7 @@ export const FeatureCardStyleEditor: React.FC<FeatureCardStyleEditorProps> = ({ 
 
       {/* Icon Size */}
       <div className="space-y-1.5">
-        <Label className="text-[10px] font-medium">Icon Size</Label>
+        <Label className="text-[10px] font-medium text-foreground">Icon Size</Label>
         <Select value={iconSize} onValueChange={applyIconSize}>
           <SelectTrigger className="h-7 text-[10px]">
             <SelectValue />
@@ -274,7 +274,7 @@ export const FeatureCardStyleEditor: React.FC<FeatureCardStyleEditorProps> = ({ 
 
       {/* Card Padding */}
       <div className="space-y-1.5">
-        <Label className="text-[10px] font-medium">Card Padding</Label>
+        <Label className="text-[10px] font-medium text-foreground">Card Padding</Label>
         <Select value={cardPadding} onValueChange={applyPadding}>
           <SelectTrigger className="h-7 text-[10px]">
             <SelectValue />
@@ -291,7 +291,7 @@ export const FeatureCardStyleEditor: React.FC<FeatureCardStyleEditorProps> = ({ 
 
       {/* Border Radius */}
       <div className="space-y-1.5">
-        <Label className="text-[10px] font-medium">Border Radius</Label>
+        <Label className="text-[10px] font-medium text-foreground">Border Radius</Label>
         <Select value={cardRadius} onValueChange={applyRadius}>
           <SelectTrigger className="h-7 text-[10px]">
             <SelectValue />
@@ -308,7 +308,7 @@ export const FeatureCardStyleEditor: React.FC<FeatureCardStyleEditorProps> = ({ 
 
       {/* Alignment */}
       <div className="space-y-1.5">
-        <Label className="text-[10px] font-medium">Alignment</Label>
+        <Label className="text-[10px] font-medium text-foreground">Alignment</Label>
         <Select value={alignment} onValueChange={applyAlignment}>
           <SelectTrigger className="h-7 text-[10px]">
             <SelectValue />
