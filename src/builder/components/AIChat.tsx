@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
@@ -386,105 +386,12 @@ When updating this component, use targetId: "${styleSourceId}" in the update act
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSend();
     }
-    // Undo/Redo are handled natively by the browser
   };
-
-  // Handle paste events including images
-  const handlePaste = useCallback(async (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
-    const clipboardData = e.clipboardData;
-    
-    // Check for image files in clipboard
-    const items = Array.from(clipboardData.items);
-    const imageItem = items.find(item => item.type.startsWith('image/'));
-    
-    if (imageItem) {
-      e.preventDefault();
-      const file = imageItem.getAsFile();
-      if (!file) return;
-      
-      // Convert image to base64 and add reference
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const base64 = event.target?.result as string;
-        // Store base64 in a data attribute or state for sending
-        setInput(prev => prev + `\n[Pasted image: ${file.type}]`);
-        toast.success('Image pasted');
-      };
-      reader.readAsDataURL(file);
-      return;
-    }
-
-    // Check for files (e.g., copied files from file explorer)
-    const files = Array.from(clipboardData.files);
-    if (files.length > 0) {
-      e.preventDefault();
-      for (const file of files) {
-        if (file.type.startsWith('image/')) {
-          const reader = new FileReader();
-          reader.onload = (event) => {
-            setInput(prev => prev + `\n[Pasted image: ${file.name}]`);
-            toast.success(`Image "${file.name}" pasted`);
-          };
-          reader.readAsDataURL(file);
-        } else {
-          // Try to read text content
-          try {
-            const text = await file.text();
-            setInput(prev => prev + (prev ? '\n\n' : '') + text);
-            toast.success(`Content from "${file.name}" pasted`);
-          } catch {
-            toast.error(`Cannot read file: ${file.name}`);
-          }
-        }
-      }
-      return;
-    }
-
-    // Regular text paste is handled by the browser natively
-  }, []);
-
-  // Handle drop events for files
-  const handleDrop = useCallback(async (e: React.DragEvent<HTMLTextAreaElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    const files = Array.from(e.dataTransfer.files);
-    if (files.length === 0) return;
-    
-    for (const file of files) {
-      if (file.type.startsWith('image/')) {
-        const reader = new FileReader();
-        reader.onload = () => {
-          setInput(prev => prev + `\n[Dropped image: ${file.name}]`);
-          toast.success(`Image "${file.name}" added`);
-        };
-        reader.readAsDataURL(file);
-      } else if (file.type.startsWith('text/') || file.name.match(/\.(txt|html|css|js|json|md)$/i)) {
-        try {
-          const text = await file.text();
-          setInput(prev => {
-            const prefix = prev ? prev + '\n\n' : '';
-            return prefix + `[Content from ${file.name}]:\n\`\`\`\n${text}\n\`\`\``;
-          });
-          toast.success(`"${file.name}" content added`);
-        } catch {
-          toast.error(`Cannot read file: ${file.name}`);
-        }
-      } else {
-        toast.info(`File "${file.name}" - paste content manually`);
-      }
-    }
-  }, []);
-
-  const handleDragOver = useCallback((e: React.DragEvent<HTMLTextAreaElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-  }, []);
 
   const handleFileUpload = (type: string) => {
     if (fileInputRef.current) {
@@ -700,9 +607,6 @@ When updating this component, use targetId: "${styleSourceId}" in the update act
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                onPaste={handlePaste}
-                onDrop={handleDrop}
-                onDragOver={handleDragOver}
                 placeholder={chatMode === 'build' ? 'Ask AI to build something...' : 'Discuss features and ideas...'}
                 className="min-h-[60px] max-h-[120px] resize-none bg-transparent border-none outline-none text-[11px] p-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                 disabled={isLoading}
