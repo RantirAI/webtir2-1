@@ -122,6 +122,9 @@ When updating this component, use targetId: "${styleSourceId}" in the update act
     }
 
     const userMessageContent = input.trim();
+    // Capture mode at send time to prevent issues if user toggles during stream
+    const modeAtSend = chatMode;
+    
     setInput('');
     setIsLoading(true);
     setStreamingContent('');
@@ -131,11 +134,11 @@ When updating this component, use targetId: "${styleSourceId}" in the update act
       role: 'user',
       content: userMessageContent,
       timestamp: Date.now(),
-      mode: chatMode,
+      mode: modeAtSend,
     });
 
     // Build messages array for AI - include component context in build mode
-    const componentContext = chatMode === 'build' ? buildSelectedComponentContext() : '';
+    const componentContext = modeAtSend === 'build' ? buildSelectedComponentContext() : '';
     const contextualMessage = componentContext 
       ? `${componentContext}\n\nUser request: ${userMessageContent}`
       : userMessageContent;
@@ -155,17 +158,22 @@ When updating this component, use targetId: "${styleSourceId}" in the update act
         model: provider === 'custom' ? customModel : model,
         customEndpoint,
         messages: aiMessages,
-        mode: chatMode,
+        mode: modeAtSend,
         onDelta: (text) => {
           fullResponse += text;
-          setStreamingContent(fullResponse);
+          // In build mode, don't show raw JSON streaming - show placeholder
+          if (modeAtSend === 'build') {
+            setStreamingContent('🔨 Building components...');
+          } else {
+            setStreamingContent(fullResponse);
+          }
         },
         onDone: async () => {
-          let displayMessage = fullResponse;
+          let displayMessage = '';
           let componentsBuilt = false;
 
           // Handle build mode - parse and process actions
-          if (chatMode === 'build') {
+          if (modeAtSend === 'build') {
             console.log('Parsing AI response for build mode...');
             const parsed = parseAIResponse(fullResponse);
             console.log('Parsed result:', parsed);
@@ -324,10 +332,27 @@ When updating this component, use targetId: "${styleSourceId}" in the update act
               displayMessage = `✓ ${parsed.message || 'Components deleted successfully!'}`;
             }
             
-            // If we couldn't parse a valid action but we're in build mode
+            // If we couldn't parse a valid action in build mode
             else if (!parsed) {
-              console.warn('Could not parse AI response as JSON action');
-              // Keep the raw response as displayMessage - it might be a conversation
+              // Check if response looks like JSON (failed parse) vs conversation
+              const looksLikeJSON = fullResponse.includes('"action"') || fullResponse.includes('"components"');
+              if (looksLikeJSON) {
+                displayMessage = '⚠️ I had trouble processing that request. Please try rephrasing or try again.';
+              } else {
+                // It's a conversational response, clean it but show it
+                displayMessage = fullResponse.replace(/```[\s\S]*?```/g, '').trim() || 
+                  'I understood your request. Please provide more details or switch to Build mode to create components.';
+              }
+            }
+          } else {
+            // Discuss mode - check if AI accidentally returned JSON
+            const parsed = parseAIResponse(fullResponse);
+            if (parsed && parsed.action) {
+              // AI returned build instructions in discuss mode
+              displayMessage = `I can help with that! Switch to **Build mode** to create: ${parsed.message || 'components'}`;
+            } else {
+              // Normal conversation
+              displayMessage = fullResponse;
             }
           }
 
@@ -336,7 +361,7 @@ When updating this component, use targetId: "${styleSourceId}" in the update act
             role: 'assistant',
             content: displayMessage,
             timestamp: Date.now(),
-            mode: chatMode,
+            mode: modeAtSend,
           });
 
           setStreamingContent('');
@@ -348,7 +373,7 @@ When updating this component, use targetId: "${styleSourceId}" in the update act
             role: 'assistant',
             content: `Error: ${error.message}`,
             timestamp: Date.now(),
-            mode: chatMode,
+            mode: modeAtSend,
           });
           setStreamingContent('');
           setIsLoading(false);

@@ -107,75 +107,187 @@ function normalizeStyles(styles: Record<string, string>): Record<string, string>
   return normalized;
 }
 
-export function parseAIResponse(text: string): AIResponse | null {
-  // Try multiple methods to extract JSON
-  let jsonStr = '';
-  
-  // Method 1: Extract from markdown code blocks (most common)
-  const jsonBlockMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
-  if (jsonBlockMatch) {
-    jsonStr = jsonBlockMatch[1].trim();
-  } else {
-    // Method 2: Try to find JSON object directly in text
-    const jsonObjectMatch = text.match(/\{[\s\S]*"action"[\s\S]*\}/);
-    if (jsonObjectMatch) {
-      jsonStr = jsonObjectMatch[0];
-    } else {
-      // Method 3: Use raw text
-      jsonStr = text.trim();
+// Extract JSON from text using multiple strategies
+function extractJSON(text: string): string | null {
+  // Strategy 1: All markdown code blocks - try each in order
+  const codeBlockRegex = /```(?:json)?\s*([\s\S]*?)```/g;
+  let match;
+  while ((match = codeBlockRegex.exec(text)) !== null) {
+    const candidate = match[1].trim();
+    try {
+      const parsed = JSON.parse(candidate);
+      if (parsed && typeof parsed === 'object') {
+        return candidate;
+      }
+    } catch {
+      // Continue to next block
     }
+  }
+  
+  // Strategy 2: Find balanced JSON object containing "action" or "components"
+  const startIdx = text.search(/\{\s*"(?:action|components)/i);
+  if (startIdx !== -1) {
+    let depth = 0;
+    let inString = false;
+    let escape = false;
+    
+    for (let i = startIdx; i < text.length; i++) {
+      const char = text[i];
+      
+      if (escape) {
+        escape = false;
+        continue;
+      }
+      
+      if (char === '\\' && inString) {
+        escape = true;
+        continue;
+      }
+      
+      if (char === '"' && !escape) {
+        inString = !inString;
+        continue;
+      }
+      
+      if (!inString) {
+        if (char === '{') depth++;
+        if (char === '}') {
+          depth--;
+          if (depth === 0) {
+            const candidate = text.slice(startIdx, i + 1);
+            try {
+              JSON.parse(candidate);
+              return candidate;
+            } catch {
+              break;
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  // Strategy 3: Try raw text as JSON
+  try {
+    JSON.parse(text.trim());
+    return text.trim();
+  } catch {
+    return null;
+  }
+}
+
+// Normalize parsed object to handle common variations
+function normalizeAIObject(obj: Record<string, unknown>): Record<string, unknown> {
+  // Unwrap common wrapper keys
+  const wrappers = ['result', 'data', 'response', 'output'];
+  for (const key of wrappers) {
+    if (obj[key] && typeof obj[key] === 'object' && !Array.isArray(obj[key])) {
+      const inner = obj[key] as Record<string, unknown>;
+      if (inner.action || inner.components) {
+        obj = inner;
+        break;
+      }
+    }
+  }
+  
+  // Normalize action to lowercase
+  if (typeof obj.action === 'string') {
+    obj.action = obj.action.toLowerCase();
+  }
+  
+  // Infer action from presence of components/updates/imageSpec
+  if (!obj.action) {
+    if (obj.components) obj.action = 'create';
+    else if (obj.updates) obj.action = 'update';
+    else if (obj.imageSpec) obj.action = 'generate-image';
+  }
+  
+  // Wrap single component object into array
+  if (obj.components && !Array.isArray(obj.components) && typeof obj.components === 'object') {
+    obj.components = [obj.components];
+  }
+  
+  // Wrap single update object into array
+  if (obj.updates && !Array.isArray(obj.updates) && typeof obj.updates === 'object') {
+    obj.updates = [obj.updates];
+  }
+  
+  return obj;
+}
+
+export function parseAIResponse(text: string): AIResponse | null {
+  const jsonStr = extractJSON(text);
+  
+  if (!jsonStr) {
+    console.log('No valid JSON found in AI response');
+    return null;
   }
 
   // Clean up common issues
-  jsonStr = jsonStr
-    .replace(/,\s*}/g, '}')  // Remove trailing commas
-    .replace(/,\s*]/g, ']'); // Remove trailing commas in arrays
+  const cleanedJson = jsonStr
+    .replace(/,\s*}/g, '}')
+    .replace(/,\s*]/g, ']');
 
   try {
-    const parsed = JSON.parse(jsonStr);
+    let parsed = JSON.parse(cleanedJson) as Record<string, unknown>;
+    parsed = normalizeAIObject(parsed);
     
-    if (!parsed.action) {
-      console.warn('AI response missing action field:', parsed);
+    const action = parsed.action as string;
+    
+    if (!action) {
+      console.warn('AI response missing action field after normalization');
       return null;
     }
 
-    // Handle different action types
-    if (parsed.action === 'create' && Array.isArray(parsed.components)) {
-      const normalizedComponents = parsed.components.map(normalizeComponentSpec);
-      return {
-        action: 'create',
-        components: normalizedComponents,
-        message: parsed.message || 'Components created successfully!',
-      };
+    // Handle CREATE action
+    if (action === 'create') {
+      const components = parsed.components as AIComponentSpec[] | undefined;
+      if (components && Array.isArray(components) && components.length > 0) {
+        const normalizedComponents = components.map(normalizeComponentSpec);
+        return {
+          action: 'create',
+          components: normalizedComponents,
+          message: (parsed.message as string) || 'Components created successfully!',
+        };
+      }
     }
 
-    if (parsed.action === 'update' && Array.isArray(parsed.updates)) {
-      return {
-        action: 'update',
-        updates: parsed.updates,
-        message: parsed.message || 'Styles updated successfully!',
-      };
+    // Handle UPDATE action
+    if (action === 'update') {
+      const updates = parsed.updates as AIUpdateSpec[] | undefined;
+      if (updates && Array.isArray(updates)) {
+        return {
+          action: 'update',
+          updates,
+          message: (parsed.message as string) || 'Styles updated successfully!',
+        };
+      }
     }
 
-    if (parsed.action === 'generate-image' && parsed.imageSpec) {
-      return {
-        action: 'generate-image',
-        imageSpec: parsed.imageSpec,
-        message: parsed.message || 'Generating image...',
-      };
+    // Handle IMAGE GENERATION action
+    if (action === 'generate-image') {
+      const imageSpec = parsed.imageSpec as AIImageSpec | undefined;
+      if (imageSpec) {
+        return {
+          action: 'generate-image',
+          imageSpec,
+          message: (parsed.message as string) || 'Generating image...',
+        };
+      }
     }
 
-    if (parsed.action === 'delete') {
+    // Handle DELETE action
+    if (action === 'delete') {
       return {
         action: 'delete',
-        message: parsed.message || 'Components deleted!',
+        message: (parsed.message as string) || 'Components deleted!',
       };
     }
 
-    console.warn('AI response has unknown action:', parsed.action);
+    console.warn('AI response has unhandled action or missing data:', action);
     return null;
   } catch (error) {
-    console.error('Failed to parse AI JSON response:', error, '\nJSON string:', jsonStr.substring(0, 500));
+    console.error('Failed to parse AI JSON:', error);
     return null;
   }
 }

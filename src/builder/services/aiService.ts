@@ -16,6 +16,12 @@ ${aiContext}
 
 ## Response Format
 
+## CRITICAL: Response Rules
+
+**BUILD MODE**: You MUST respond with ONLY a single JSON object inside a single \`\`\`json code block. NO other text before or after the JSON block. No explanations, no commentary.
+
+**DISCUSS MODE**: Have a normal conversation. NEVER output JSON or code blocks unless the user explicitly asks for code.
+
 When asked to CREATE components in BUILD mode, respond with a JSON code block:
 \`\`\`json
 {
