@@ -346,6 +346,19 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
         avatarShadow: 'none',
         showRating: false,
         rating: 5,
+        // Hover effects
+        hoverEffect: 'none',
+        glowColor: 'hsl(var(--primary))',
+        // Carousel/Display mode
+        displayMode: 'single',
+        testimonials: [
+          { id: 'default-1', quote: '"This product has completely transformed our workflow. Highly recommended!"', name: 'John Doe', role: 'CEO at Company', rating: 5 }
+        ],
+        autoPlay: true,
+        autoPlayInterval: 5000,
+        loop: true,
+        navigationStyle: 'arrows',
+        cardsPerView: '1',
       },
       styleSourceIds: ['style-testimonial-card'],
       children: [
