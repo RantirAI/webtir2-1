@@ -300,6 +300,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({
     getStyleMetadata,
     getPropertyState,
   } = useStyleStore();
+  const { getInstanceLink } = useComponentInstanceStore();
   const selectedInstance = getSelectedInstance();
 
   // ALL useState hooks MUST be at the top, before any conditional logic
@@ -1466,7 +1467,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({
 
             {/* Feature Card Style Controls - detect by prebuilt link */}
             {(() => {
-              const instanceLink = useComponentInstanceStore.getState().getInstanceLink(selectedInstance.id);
+              const instanceLink = getInstanceLink(selectedInstance.id);
               const isFeatureCard = instanceLink?.prebuiltId === 'system-feature-card';
               return isFeatureCard ? (
                 <AccordionSection title="Feature Card Styles" section="featureCardStyles" properties={[]}>
@@ -4937,7 +4938,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({
 
                   {/* Feature Card Settings - detect by prebuilt link */}
                   {(() => {
-                    const instanceLink = useComponentInstanceStore.getState().getInstanceLink(selectedInstance.id);
+                    const instanceLink = getInstanceLink(selectedInstance.id);
                     const isFeatureCard = instanceLink?.prebuiltId === 'system-feature-card';
                     return isFeatureCard ? <FeatureCardDataEditor instance={selectedInstance} /> : null;
                   })()}
