@@ -122,13 +122,7 @@ export const AIChat: React.FC = () => {
           setStreamingContent(fullResponse);
         },
         onDone: () => {
-          // Add assistant message to store
-          addMessage({
-            role: 'assistant',
-            content: fullResponse,
-            timestamp: Date.now(),
-            mode: chatMode,
-          });
+          let displayMessage = fullResponse;
 
           // Handle build mode - parse and add components
           if (chatMode === 'build') {
@@ -152,8 +146,22 @@ export const AIChat: React.FC = () => {
                   setSelectedInstanceId(rootInstanceId);
                 }
               }
+              // Use friendly message instead of raw JSON
+              displayMessage = parsed.message || '✓ Components created successfully!';
+            } else if (parsed && parsed.action === 'update') {
+              displayMessage = parsed.message || '✓ Components updated successfully!';
+            } else if (parsed && parsed.action === 'delete') {
+              displayMessage = parsed.message || '✓ Components deleted successfully!';
             }
           }
+
+          // Add assistant message to store
+          addMessage({
+            role: 'assistant',
+            content: displayMessage,
+            timestamp: Date.now(),
+            mode: chatMode,
+          });
 
           setStreamingContent('');
           setIsLoading(false);
