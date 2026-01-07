@@ -267,10 +267,10 @@ export const AIChat: React.FC = () => {
           </button>
         </div>
 
-      <TabsContent value="chat" className="flex-1 flex flex-col m-0 min-h-0">
+      <TabsContent value="chat" className="flex-1 flex flex-col m-0 min-h-0 overflow-hidden">
           {/* Messages Area */}
-          <ScrollArea className="flex-1 p-2 [&_[data-radix-scroll-area-scrollbar]]:opacity-0 [&:hover_[data-radix-scroll-area-scrollbar]]:opacity-100 [&_[data-radix-scroll-area-scrollbar]]:transition-opacity">
-            <div ref={scrollRef} className="space-y-2">
+          <ScrollArea className="flex-1 min-h-0 [&_[data-radix-scroll-area-scrollbar]]:opacity-0 [&:hover_[data-radix-scroll-area-scrollbar]]:opacity-100 [&_[data-radix-scroll-area-scrollbar]]:transition-opacity">
+            <div ref={scrollRef} className="space-y-2 p-2">
               {!isConfigured() ? (
                 <div className="text-[10px] text-muted-foreground text-center py-8">
                   <Settings className="w-6 h-6 mx-auto mb-2 text-muted-foreground/50" />
