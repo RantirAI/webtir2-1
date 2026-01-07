@@ -99,9 +99,12 @@ export const useAISettingsStore = create<AISettingsStore>()(
 
       clearSettings: () =>
         set({
+          provider: 'openai',
           apiKey: '',
+          model: 'gpt-4o',
           customEndpoint: '',
           customModel: '',
+          lastChatMode: 'build',
         }),
     }),
     {
