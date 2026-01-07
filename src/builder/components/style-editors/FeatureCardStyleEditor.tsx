@@ -1,6 +1,11 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Search, icons } from 'lucide-react';
 import { ComponentInstance } from '../../store/types';
 import { useBuilderStore } from '../../store/useBuilderStore';
 import { useStyleStore } from '../../store/useStyleStore';
@@ -9,6 +14,23 @@ import { ColorPicker } from '../ColorPicker';
 interface FeatureCardStyleEditorProps {
   instance: ComponentInstance;
 }
+
+// Get icon component from lucide-react icons object
+const Icon = ({ name, size = 16 }: { name: string; size?: number }) => {
+  const LucideIcon = icons[name as keyof typeof icons];
+  if (!LucideIcon) {
+    return <div className="w-4 h-4 bg-muted rounded" />;
+  }
+  return <LucideIcon size={size} />;
+};
+
+// Popular icons for quick selection
+const popularIcons = [
+  'Star', 'Heart', 'Zap', 'Shield', 'Rocket', 'Target',
+  'TrendingUp', 'CheckCircle', 'Award', 'Gift', 'Lightbulb', 'Compass',
+  'Cpu', 'Database', 'Globe', 'Lock', 'Settings', 'Users',
+  'Sparkles', 'Crown', 'Flame', 'Gem', 'Infinity', 'Layers'
+];
 
 const cardVariants = [
   { value: 'default', label: 'Default', description: 'Subtle border with background' },
@@ -55,15 +77,32 @@ const alignments = [
 export const FeatureCardStyleEditor: React.FC<FeatureCardStyleEditorProps> = ({ instance }) => {
   const { updateInstance } = useBuilderStore();
   const { setStyle } = useStyleStore();
+  const [iconSearch, setIconSearch] = useState('');
+  const [iconPickerOpen, setIconPickerOpen] = useState(false);
 
   // Get current style values from props (for preset tracking) or defaults
   const cardVariant = instance.props?.cardVariant || 'default';
   const iconStyle = instance.props?.iconStyle || 'filled';
   const iconSize = instance.props?.iconSize || 'md';
-  const iconColor = instance.props?.iconColor || '#3B82F6'; // Now a hex/rgb color value
+  const iconColor = instance.props?.iconColor || '#3B82F6';
+  const currentIcon = instance.props?.icon || 'Star';
   const cardPadding = instance.props?.cardPadding || 'default';
   const cardRadius = instance.props?.cardRadius || 'lg';
   const alignment = instance.props?.alignment || 'left';
+
+  // Filter icons based on search
+  const allIconNames = Object.keys(icons);
+  const filteredIcons = useMemo(() => {
+    if (!iconSearch) return popularIcons;
+    const search = iconSearch.toLowerCase();
+    return allIconNames.filter(name => name.toLowerCase().includes(search)).slice(0, 48);
+  }, [iconSearch, allIconNames]);
+
+  const selectIcon = (iconName: string) => {
+    updateStyleProp('icon', iconName);
+    setIconPickerOpen(false);
+    setIconSearch('');
+  };
 
   // Get style source IDs
   const cardStyleId = instance.styleSourceIds?.[0];
@@ -205,6 +244,56 @@ export const FeatureCardStyleEditor: React.FC<FeatureCardStyleEditorProps> = ({ 
             ))}
           </SelectContent>
         </Select>
+      </div>
+
+      {/* Icon Picker */}
+      <div className="space-y-1.5">
+        <Label className="text-[10px] font-medium text-foreground">Icon</Label>
+        <Popover open={iconPickerOpen} onOpenChange={setIconPickerOpen}>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              className="w-full h-8 justify-start gap-2 text-[10px] text-foreground bg-background"
+            >
+              <Icon name={currentIcon} size={16} />
+              <span className="flex-1 text-left truncate">{currentIcon}</span>
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-[280px] p-2 bg-popover" align="start">
+            <div className="space-y-2">
+              <div className="relative">
+                <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
+                <Input
+                  value={iconSearch}
+                  onChange={(e) => setIconSearch(e.target.value)}
+                  placeholder="Search icons..."
+                  className="h-7 pl-7 text-[10px] text-foreground bg-background"
+                />
+              </div>
+              <ScrollArea className="h-[200px]">
+                <div className="grid grid-cols-6 gap-1">
+                  {filteredIcons.map((iconName) => (
+                    <button
+                      key={iconName}
+                      onClick={() => selectIcon(iconName)}
+                      className={`p-2 rounded hover:bg-accent flex items-center justify-center ${
+                        currentIcon === iconName ? 'bg-accent ring-1 ring-primary' : ''
+                      }`}
+                      title={iconName}
+                    >
+                      <Icon name={iconName} size={16} />
+                    </button>
+                  ))}
+                </div>
+                {filteredIcons.length === 0 && (
+                  <p className="text-[10px] text-muted-foreground text-center py-4">
+                    No icons found
+                  </p>
+                )}
+              </ScrollArea>
+            </div>
+          </PopoverContent>
+        </Popover>
       </div>
 
       {/* Icon Style */}
