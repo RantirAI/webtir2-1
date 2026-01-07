@@ -5,7 +5,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { ArrowUp, Plus, Sparkles, MessageSquare, FileCode, FileText, Image, Figma, Wrench, Settings, Eye, EyeOff, X } from 'lucide-react';
+import { ArrowUp, Plus, Sparkles, MessageSquare, FileCode, FileText, Image, Figma, Wrench, Settings, Eye, EyeOff, X, History, Trash2 } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useAISettingsStore, AI_PROVIDERS, AIProvider } from '../store/useAISettingsStore';
@@ -229,6 +230,25 @@ export const AIChat: React.FC = () => {
     { id: 'html', label: 'HTML', icon: FileCode },
   ];
 
+  const [activeTab, setActiveTab] = useState<'chat' | 'history'>('chat');
+
+  const handleSelectSession = (sessionId: string) => {
+    setCurrentSession(sessionId);
+    setActiveTab('chat');
+  };
+
+  const handleDeleteSession = (sessionId: string) => {
+    deleteSession(sessionId);
+  };
+
+  const getSessionTitle = (session: typeof sessions[0]) => {
+    const firstUserMessage = session.messages.find(m => m.role === 'user');
+    if (firstUserMessage) {
+      return firstUserMessage.content.slice(0, 30) + (firstUserMessage.content.length > 30 ? '...' : '');
+    }
+    return 'New Chat';
+  };
+
   return (
     <div className="flex flex-col h-full min-h-0 overflow-hidden">
       <input
@@ -238,23 +258,35 @@ export const AIChat: React.FC = () => {
         onChange={handleFileChange}
       />
 
-      {/* Top Tabs */}
-      <div className="flex items-center border-b h-8 px-2">
-        <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
-          <MessageSquare className="w-2.5 h-2.5" />
-          Chat
-        </div>
-        <div className="flex-1" />
-        <button
-          onClick={() => setShowSettingsDialog(true)}
-          className="p-1.5 rounded hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
-          title="AI Settings"
-        >
-          <Settings className="w-3.5 h-3.5" />
-        </button>
-      </div>
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'chat' | 'history')} className="flex flex-col h-full min-h-0 overflow-hidden">
+        {/* Tab Header */}
+        <TabsList className="flex items-center border-b h-8 px-2 bg-transparent rounded-none justify-start gap-0">
+          <TabsTrigger
+            value="chat"
+            className="flex items-center gap-1 text-[10px] px-2 py-1 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:text-foreground text-muted-foreground bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none h-8"
+          >
+            <MessageSquare className="w-2.5 h-2.5" />
+            Chat
+          </TabsTrigger>
+          <TabsTrigger
+            value="history"
+            className="flex items-center gap-1 text-[10px] px-2 py-1 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:text-foreground text-muted-foreground bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none h-8"
+          >
+            <History className="w-2.5 h-2.5" />
+            History
+          </TabsTrigger>
+          <div className="flex-1" />
+          <button
+            onClick={() => setShowSettingsDialog(true)}
+            className="p-1.5 rounded hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+            title="AI Settings"
+          >
+            <Settings className="w-3.5 h-3.5" />
+          </button>
+        </TabsList>
 
-      <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+        {/* Chat Tab Content */}
+        <TabsContent value="chat" className="flex-1 flex flex-col min-h-0 overflow-hidden mt-0 data-[state=inactive]:hidden">
           {/* Messages Area */}
           <ScrollArea className="flex-1 min-h-0 [&_[data-radix-scroll-area-scrollbar]]:opacity-0 [&:hover_[data-radix-scroll-area-scrollbar]]:opacity-100 [&_[data-radix-scroll-area-scrollbar]]:transition-opacity">
             <div ref={scrollRef} className="min-h-full flex flex-col justify-end space-y-2 p-2">
@@ -319,86 +351,139 @@ export const AIChat: React.FC = () => {
               )}
             </div>
           </ScrollArea>
-      </div>
 
-      {/* Bottom Input Bar - Always visible */}
-      <div className="p-2 border-t flex-shrink-0">
-        <div className="flex flex-col gap-2 bg-muted/50 rounded-xl px-3 py-2 border border-border">
-          <Textarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder={chatMode === 'build' ? 'Ask AI to build something...' : 'Discuss features and ideas...'}
-            className="min-h-[60px] max-h-[120px] resize-none bg-transparent border-none outline-none text-[11px] p-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-            disabled={isLoading}
-          />
+          {/* Bottom Input Bar - Only in Chat Tab */}
+          <div className="p-2 border-t flex-shrink-0">
+            <div className="flex flex-col gap-2 bg-muted/50 rounded-xl px-3 py-2 border border-border">
+              <Textarea
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder={chatMode === 'build' ? 'Ask AI to build something...' : 'Discuss features and ideas...'}
+                className="min-h-[60px] max-h-[120px] resize-none bg-transparent border-none outline-none text-[11px] p-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                disabled={isLoading}
+              />
 
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => setChatMode(chatMode === 'build' ? 'discuss' : 'build')}
+                    className={`flex items-center gap-1 px-2 py-1 rounded-full text-[10px] border transition-colors ${chatMode === 'build'
+                      ? 'bg-primary/10 text-primary border-primary/30'
+                      : 'bg-blue-500/10 text-blue-500 border-blue-500/30'
+                      }`}
+                    title={chatMode === 'build' ? 'Build Mode - AI makes changes to canvas' : 'Chat Mode - Discuss features'}
+                  >
+                    {chatMode === 'build' ? (
+                      <>
+                        <Wrench className="w-3 h-3" />
+                        <span>Build</span>
+                      </>
+                    ) : (
+                      <>
+                        <MessageSquare className="w-3 h-3" />
+                        <span>Chat</span>
+                      </>
+                    )}
+                  </button>
+
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        className="p-1.5 rounded-full border border-border hover:bg-background transition-colors text-muted-foreground hover:text-foreground"
+                        title="Import"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent side="top" align="start" sideOffset={8} className="w-44 p-1.5 bg-popover border border-border shadow-lg z-50">
+                      <div className="space-y-0.5">
+                        <p className="text-[9px] text-muted-foreground px-2 py-1 font-medium uppercase tracking-wider">Import from</p>
+                        {importOptions.map((option) => {
+                          const Icon = option.icon;
+                          return (
+                            <button
+                              key={option.id}
+                              onClick={() => handleFileUpload(option.id)}
+                              className="w-full flex items-center gap-2.5 px-2 py-2 rounded text-[11px] text-foreground hover:bg-accent transition-colors"
+                            >
+                              <Icon className="w-4 h-4 text-muted-foreground" />
+                              <span>{option.label}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                </div>
+
+                <button
+                  onClick={handleSend}
+                  disabled={!input.trim() || isLoading}
+                  className={`p-1.5 rounded-full transition-colors ${input.trim() && !isLoading
+                    ? 'bg-foreground text-background hover:bg-foreground/90'
+                    : 'bg-muted text-muted-foreground cursor-not-allowed'
+                    }`}
+                >
+                  <ArrowUp className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </TabsContent>
+
+        {/* History Tab Content */}
+        <TabsContent value="history" className="flex-1 flex flex-col min-h-0 overflow-hidden mt-0 data-[state=inactive]:hidden">
+          <ScrollArea className="flex-1 min-h-0">
+            <div className="p-2 space-y-1">
               <button
-                onClick={() => setChatMode(chatMode === 'build' ? 'discuss' : 'build')}
-                className={`flex items-center gap-1 px-2 py-1 rounded-full text-[10px] border transition-colors ${chatMode === 'build'
-                  ? 'bg-primary/10 text-primary border-primary/30'
-                  : 'bg-blue-500/10 text-blue-500 border-blue-500/30'
-                  }`}
-                title={chatMode === 'build' ? 'Build Mode - AI makes changes to canvas' : 'Chat Mode - Discuss features'}
+                onClick={handleNewChat}
+                className="w-full flex items-center gap-2 px-2 py-2 rounded-lg text-[10px] text-primary hover:bg-primary/10 transition-colors border border-dashed border-primary/30"
               >
-                {chatMode === 'build' ? (
-                  <>
-                    <Wrench className="w-3 h-3" />
-                    <span>Build</span>
-                  </>
-                ) : (
-                  <>
-                    <MessageSquare className="w-3 h-3" />
-                    <span>Chat</span>
-                  </>
-                )}
+                <Plus className="w-3.5 h-3.5" />
+                New Chat
               </button>
 
-              <Popover>
-                <PopoverTrigger asChild>
-                  <button
-                    className="p-1.5 rounded-full border border-border hover:bg-background transition-colors text-muted-foreground hover:text-foreground"
-                    title="Import"
+              {sessions.length === 0 ? (
+                <div className="text-[10px] text-muted-foreground text-center py-8">
+                  <History className="w-6 h-6 mx-auto mb-2 text-muted-foreground/50" />
+                  <p>No chat history yet</p>
+                </div>
+              ) : (
+                sessions.map((session) => (
+                  <div
+                    key={session.id}
+                    className={`group flex items-center gap-2 px-2 py-2 rounded-lg text-[10px] cursor-pointer transition-colors ${
+                      session.id === currentSessionId
+                        ? 'bg-primary/10 text-foreground'
+                        : 'hover:bg-muted text-muted-foreground hover:text-foreground'
+                    }`}
+                    onClick={() => handleSelectSession(session.id)}
                   >
-                    <Plus className="w-3.5 h-3.5" />
-                  </button>
-                </PopoverTrigger>
-                <PopoverContent side="top" align="start" sideOffset={8} className="w-44 p-1.5 bg-popover border border-border shadow-lg z-50">
-                  <div className="space-y-0.5">
-                    <p className="text-[9px] text-muted-foreground px-2 py-1 font-medium uppercase tracking-wider">Import from</p>
-                    {importOptions.map((option) => {
-                      const Icon = option.icon;
-                      return (
-                        <button
-                          key={option.id}
-                          onClick={() => handleFileUpload(option.id)}
-                          className="w-full flex items-center gap-2.5 px-2 py-2 rounded text-[11px] text-foreground hover:bg-accent transition-colors"
-                        >
-                          <Icon className="w-4 h-4 text-muted-foreground" />
-                          <span>{option.label}</span>
-                        </button>
-                      );
-                    })}
+                    <MessageSquare className="w-3 h-3 flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="truncate font-medium">{getSessionTitle(session)}</p>
+                      <p className="text-[9px] text-muted-foreground">
+                        {formatTimestamp(session.updatedAt)}
+                      </p>
+                    </div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteSession(session.id);
+                      }}
+                      className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+                      title="Delete session"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </button>
                   </div>
-                </PopoverContent>
-              </Popover>
+                ))
+              )}
             </div>
-
-            <button
-              onClick={handleSend}
-              disabled={!input.trim() || isLoading}
-              className={`p-1.5 rounded-full transition-colors ${input.trim() && !isLoading
-                ? 'bg-foreground text-background hover:bg-foreground/90'
-                : 'bg-muted text-muted-foreground cursor-not-allowed'
-                }`}
-            >
-              <ArrowUp className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        </div>
-      </div>
+          </ScrollArea>
+        </TabsContent>
+      </Tabs>
 
       {/* AI Settings Dialog */}
       <Dialog open={showSettingsDialog} onOpenChange={setShowSettingsDialog}>
