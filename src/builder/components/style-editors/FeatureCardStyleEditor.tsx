@@ -84,7 +84,8 @@ export const FeatureCardStyleEditor: React.FC<FeatureCardStyleEditorProps> = ({ 
   const cardVariant = instance.props?.cardVariant || 'default';
   const iconStyle = instance.props?.iconStyle || 'filled';
   const iconSize = instance.props?.iconSize || 'md';
-  const iconColor = instance.props?.iconColor || '#3B82F6';
+  const iconColor = instance.props?.iconColor || '#FFFFFF';
+  const iconBgColor = instance.props?.iconBgColor || '#3B82F6';
   const currentIcon = instance.props?.icon || 'Star';
   const cardPadding = instance.props?.cardPadding || 'default';
   const cardRadius = instance.props?.cardRadius || 'lg';
@@ -152,24 +153,24 @@ export const FeatureCardStyleEditor: React.FC<FeatureCardStyleEditorProps> = ({ 
     }
   };
 
-  const applyIconStyle = (style: string, colorOverride?: string) => {
+  const applyIconStyle = (style: string, bgColorOverride?: string) => {
     updateStyleProp('iconStyle', style);
     
     if (!iconStyleId) return;
     
-    const color = colorOverride || iconColor;
+    const bgColor = bgColorOverride || iconBgColor;
     
     switch (style) {
       case 'filled':
-        setStyle(iconStyleId, 'backgroundColor', color, 'base', 'default');
+        setStyle(iconStyleId, 'backgroundColor', bgColor, 'base', 'default');
         setStyle(iconStyleId, 'border', 'none', 'base', 'default');
         break;
       case 'outlined':
         setStyle(iconStyleId, 'backgroundColor', 'transparent', 'base', 'default');
-        setStyle(iconStyleId, 'border', `1px solid ${color}`, 'base', 'default');
+        setStyle(iconStyleId, 'border', `1px solid ${bgColor}`, 'base', 'default');
         break;
       case 'gradient':
-        setStyle(iconStyleId, 'backgroundImage', `linear-gradient(135deg, ${color}, ${color})`, 'base', 'default');
+        setStyle(iconStyleId, 'backgroundImage', `linear-gradient(135deg, ${bgColor}, ${bgColor})`, 'base', 'default');
         setStyle(iconStyleId, 'border', 'none', 'base', 'default');
         break;
       case 'none':
@@ -194,7 +195,16 @@ export const FeatureCardStyleEditor: React.FC<FeatureCardStyleEditorProps> = ({ 
     
     if (!iconStyleId) return;
     
-    // Re-apply icon style with new color
+    // Set the actual icon (SVG) color
+    setStyle(iconStyleId, 'color', color, 'base', 'default');
+  };
+
+  const applyIconBgColor = (color: string) => {
+    updateStyleProp('iconBgColor', color);
+    
+    if (!iconStyleId) return;
+    
+    // Re-apply icon style with new background color
     applyIconStyle(iconStyle, color);
   };
 
@@ -319,6 +329,15 @@ export const FeatureCardStyleEditor: React.FC<FeatureCardStyleEditorProps> = ({ 
         <div className="flex items-center gap-2">
           <ColorPicker value={iconColor} onChange={applyIconColor} />
           <span className="text-[10px] text-muted-foreground font-mono">{iconColor}</span>
+        </div>
+      </div>
+
+      {/* Icon Background Color */}
+      <div className="space-y-1.5">
+        <Label className="text-[10px] font-medium text-foreground">Icon Background</Label>
+        <div className="flex items-center gap-2">
+          <ColorPicker value={iconBgColor} onChange={applyIconBgColor} />
+          <span className="text-[10px] text-muted-foreground font-mono">{iconBgColor}</span>
         </div>
       </div>
 
