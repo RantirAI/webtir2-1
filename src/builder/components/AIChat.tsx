@@ -537,7 +537,7 @@ When updating this component, use targetId: "${styleSourceId}" in the update act
         <TabsContent value="chat" className="flex-1 flex flex-col min-h-0 overflow-hidden mt-0 data-[state=inactive]:hidden">
           {/* Messages Area */}
           <ScrollArea className="flex-1 min-h-0 [&_[data-radix-scroll-area-scrollbar]]:opacity-0 [&:hover_[data-radix-scroll-area-scrollbar]]:opacity-100 [&_[data-radix-scroll-area-scrollbar]]:transition-opacity">
-            <div ref={scrollRef} className="min-h-full flex flex-col justify-end space-y-2 p-2">
+            <div ref={scrollRef} className="min-h-full flex flex-col justify-end space-y-2 p-2 overflow-x-hidden">
               {!isConfigured() ? (
                 <div className="text-[10px] text-muted-foreground text-center py-8">
                   <Settings className="w-6 h-6 mx-auto mb-2 text-muted-foreground/50" />
@@ -573,23 +573,23 @@ When updating this component, use targetId: "${styleSourceId}" in the update act
                   {messages.map((message) => (
                     <div
                       key={message.id}
-                      className={`text-[10px] p-2 rounded-lg ${message.role === 'user'
-                        ? 'bg-primary text-primary-foreground ml-4'
-                        : 'bg-muted mr-4'
+                      className={`text-[10px] p-2 rounded-lg overflow-hidden ${message.role === 'user'
+                        ? 'bg-foreground text-background'
+                        : 'bg-muted'
                         }`}
                     >
-                      <p className="whitespace-pre-wrap">{message.content}</p>
+                      <p className="whitespace-pre-wrap break-words">{message.content}</p>
                     </div>
                   ))}
                   {streamingContent && (
-                    <div className="text-[10px] p-2 rounded-lg bg-muted mr-4">
-                      <p className="whitespace-pre-wrap">{streamingContent}</p>
+                    <div className="text-[10px] p-2 rounded-lg bg-muted overflow-hidden">
+                      <p className="whitespace-pre-wrap break-words">{streamingContent}</p>
                     </div>
                   )}
                 </>
               )}
               {isLoading && !streamingContent && (
-                <div className="text-[10px] text-muted-foreground italic p-2 bg-muted rounded-lg mr-4">
+                <div className="text-[10px] text-muted-foreground italic p-2 bg-muted rounded-lg">
                   <span className="inline-flex items-center gap-1">
                     <span className="animate-pulse">●</span>
                     <span className="animate-pulse animation-delay-100">●</span>
