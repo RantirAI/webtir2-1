@@ -194,6 +194,30 @@ const findPathToInstance = (
   return null;
 };
 
+// Helper to find if selected instance or any ancestor is linked to a specific prebuilt
+// Returns { prebuiltId, rootInstance } if found, null otherwise
+const findLinkedAncestorPrebuilt = (
+  instanceId: string,
+  rootInstance: ComponentInstance | null,
+  getInstanceLink: (id: string) => { prebuiltId: string } | undefined
+): { prebuiltId: string; linkedInstance: ComponentInstance } | null => {
+  if (!rootInstance) return null;
+  
+  // Find the path from root to this instance
+  const path = findPathToInstance(rootInstance, instanceId);
+  if (!path) return null;
+  
+  // Check each element in the path (from current to root) for a prebuilt link
+  for (let i = path.length - 1; i >= 0; i--) {
+    const instanceLink = getInstanceLink(path[i].id);
+    if (instanceLink?.prebuiltId) {
+      return { prebuiltId: instanceLink.prebuiltId, linkedInstance: path[i] };
+    }
+  }
+  
+  return null;
+};
+
 // Component to show "Relative to" indicator for positioned elements
 const PositionRelativeToIndicator: React.FC<{ instanceId: string; positionType: string }> = ({
   instanceId,
@@ -285,7 +309,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({
   homePage,
   isRulersView = false,
 }) => {
-  const { getSelectedInstance, updateInstance } = useBuilderStore();
+  const { getSelectedInstance, updateInstance, rootInstance } = useBuilderStore();
   const { isClient, isDeveloper } = useRoleStore();
   const {
     setStyle,
@@ -1468,24 +1492,24 @@ export const StylePanel: React.FC<StylePanelProps> = ({
               </AccordionSection>
             )}
 
-            {/* Feature Card Style Controls - detect by prebuilt link */}
+            {/* Feature Card Style Controls - detect by prebuilt link (also checks ancestors) */}
             {(() => {
-              const instanceLink = getInstanceLink(selectedInstance.id);
-              const isFeatureCard = instanceLink?.prebuiltId === 'system-feature-card';
-              return isFeatureCard ? (
+              const linkedAncestor = findLinkedAncestorPrebuilt(selectedInstance.id, rootInstance, getInstanceLink);
+              const isFeatureCard = linkedAncestor?.prebuiltId === 'system-feature-card';
+              return isFeatureCard && linkedAncestor ? (
                 <AccordionSection title="Feature Card Styles" section="featureCardStyles" properties={[]}>
-                  <FeatureCardStyleEditor instance={selectedInstance} />
+                  <FeatureCardStyleEditor instance={linkedAncestor.linkedInstance} />
                 </AccordionSection>
               ) : null;
             })()}
 
-            {/* Testimonial Card Style Controls - detect by prebuilt link */}
+            {/* Testimonial Card Style Controls - detect by prebuilt link (also checks ancestors) */}
             {(() => {
-              const instanceLink = getInstanceLink(selectedInstance.id);
-              const isTestimonialCard = instanceLink?.prebuiltId === 'system-testimonial-card';
-              return isTestimonialCard ? (
+              const linkedAncestor = findLinkedAncestorPrebuilt(selectedInstance.id, rootInstance, getInstanceLink);
+              const isTestimonialCard = linkedAncestor?.prebuiltId === 'system-testimonial-card';
+              return isTestimonialCard && linkedAncestor ? (
                 <AccordionSection title="Testimonial Styles" section="testimonialStyles" properties={[]}>
-                  <TestimonialStyleEditor instance={selectedInstance} />
+                  <TestimonialStyleEditor instance={linkedAncestor.linkedInstance} />
                 </AccordionSection>
               ) : null;
             })()}
@@ -4950,18 +4974,18 @@ export const StylePanel: React.FC<StylePanelProps> = ({
                   {/* Navigation Settings */}
                   {selectedInstance.type === "Navigation" && <NavigationDataEditor instance={selectedInstance} />}
 
-                  {/* Feature Card Settings - detect by prebuilt link */}
+                  {/* Feature Card Settings - detect by prebuilt link (also checks ancestors) */}
                   {(() => {
-                    const instanceLink = getInstanceLink(selectedInstance.id);
-                    const isFeatureCard = instanceLink?.prebuiltId === 'system-feature-card';
-                    return isFeatureCard ? <FeatureCardDataEditor instance={selectedInstance} /> : null;
+                    const linkedAncestor = findLinkedAncestorPrebuilt(selectedInstance.id, rootInstance, getInstanceLink);
+                    const isFeatureCard = linkedAncestor?.prebuiltId === 'system-feature-card';
+                    return isFeatureCard && linkedAncestor ? <FeatureCardDataEditor instance={linkedAncestor.linkedInstance} /> : null;
                   })()}
 
-                  {/* Testimonial Card Settings - detect by prebuilt link */}
+                  {/* Testimonial Card Settings - detect by prebuilt link (also checks ancestors) */}
                   {(() => {
-                    const instanceLink = getInstanceLink(selectedInstance.id);
-                    const isTestimonialCard = instanceLink?.prebuiltId === 'system-testimonial-card';
-                    return isTestimonialCard ? <TestimonialDataEditor instance={selectedInstance} /> : null;
+                    const linkedAncestor = findLinkedAncestorPrebuilt(selectedInstance.id, rootInstance, getInstanceLink);
+                    const isTestimonialCard = linkedAncestor?.prebuiltId === 'system-testimonial-card';
+                    return isTestimonialCard && linkedAncestor ? <TestimonialDataEditor instance={linkedAncestor.linkedInstance} /> : null;
                   })()}
                 </div>
               </>
