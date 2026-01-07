@@ -65,7 +65,7 @@ export const AIChat: React.FC = () => {
   const { createStyleSource, setStyle } = useStyleStore();
 
   const [chatMode, setChatMode] = useState<ChatMode>(lastChatMode);
-  const currentSession = getCurrentSession();
+  const currentSession = sessions.find(s => s.id === currentSessionId) || null;
   const messages = currentSession?.messages || [];
   // Sync chat mode to store
   useEffect(() => {
