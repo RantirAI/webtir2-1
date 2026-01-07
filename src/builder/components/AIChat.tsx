@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import ReactMarkdown from 'react-markdown';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
@@ -667,25 +666,17 @@ When updating this component, use targetId: "${styleSourceId}" in the update act
                   {messages.map((message) => (
                     <div
                       key={message.id}
-                      className={`text-[11px] p-2.5 rounded-lg overflow-hidden ${message.role === 'user'
+                      className={`text-[10px] p-2 rounded-lg ${message.role === 'user'
                         ? 'bg-primary text-primary-foreground ml-4'
-                        : 'bg-transparent mr-0'
+                        : 'bg-muted mr-4'
                         }`}
                     >
-                      {message.role === 'user' ? (
-                        <p className="whitespace-pre-wrap break-words">{message.content}</p>
-                      ) : (
-                        <div className="prose prose-sm dark:prose-invert max-w-none prose-headings:text-[12px] prose-headings:font-semibold prose-headings:mt-3 prose-headings:mb-1.5 prose-p:text-[11px] prose-p:leading-relaxed prose-p:my-1.5 prose-li:text-[11px] prose-li:my-0.5 prose-strong:font-semibold prose-code:text-[10px] prose-code:bg-muted prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-pre:bg-muted prose-pre:p-2 prose-pre:rounded-md prose-pre:text-[10px] prose-pre:overflow-x-auto break-words">
-                          <ReactMarkdown>{message.content}</ReactMarkdown>
-                        </div>
-                      )}
+                      <p className="whitespace-pre-wrap">{message.content}</p>
                     </div>
                   ))}
                   {streamingContent && (
-                    <div className="text-[11px] p-2.5 rounded-lg bg-transparent mr-0 overflow-hidden">
-                      <div className="prose prose-sm dark:prose-invert max-w-none prose-headings:text-[12px] prose-headings:font-semibold prose-headings:mt-3 prose-headings:mb-1.5 prose-p:text-[11px] prose-p:leading-relaxed prose-p:my-1.5 prose-li:text-[11px] prose-li:my-0.5 prose-strong:font-semibold prose-code:text-[10px] prose-code:bg-muted prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-pre:bg-muted prose-pre:p-2 prose-pre:rounded-md prose-pre:text-[10px] prose-pre:overflow-x-auto break-words">
-                        <ReactMarkdown>{streamingContent}</ReactMarkdown>
-                      </div>
+                    <div className="text-[10px] p-2 rounded-lg bg-muted mr-4">
+                      <p className="whitespace-pre-wrap">{streamingContent}</p>
                     </div>
                   )}
                 </>
