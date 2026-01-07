@@ -98,12 +98,15 @@ import { AlertDataEditor } from "./data-editors/AlertDataEditor";
 import { PaginationDataEditor } from "./data-editors/PaginationDataEditor";
 import { OTPInputDataEditor } from "./data-editors/OTPInputDataEditor";
 import { NavigationDataEditor } from "./data-editors/NavigationDataEditor";
+import { FeatureCardDataEditor } from "./data-editors/FeatureCardDataEditor";
 import { AccordionStyleEditor } from "./style-editors/AccordionStyleEditor";
 import { BadgeStyleEditor } from "./style-editors/BadgeStyleEditor";
 import { BreadcrumbStyleEditor } from "./style-editors/BreadcrumbStyleEditor";
 import { CarouselStyleEditor } from "./style-editors/CarouselStyleEditor";
 import { TableStyleEditor } from "./style-editors/TableStyleEditor";
 import { TabsStyleEditor } from "./style-editors/TabsStyleEditor";
+import { FeatureCardStyleEditor } from "./style-editors/FeatureCardStyleEditor";
+import { useComponentInstanceStore } from "../store/useComponentInstanceStore";
 import "../styles/style-panel.css";
 import "../styles/tokens.css";
 import { Code } from "lucide-react";
@@ -332,6 +335,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({
     badgeStyles: true,
     breadcrumbStyles: true,
     carouselStyles: true,
+    featureCardStyles: true,
     tableStyles: true,
     tabsStyles: true,
     space: true,
@@ -1459,6 +1463,17 @@ export const StylePanel: React.FC<StylePanelProps> = ({
                 <TableStyleEditor instance={selectedInstance} />
               </AccordionSection>
             )}
+
+            {/* Feature Card Style Controls - detect by prebuilt link */}
+            {(() => {
+              const instanceLink = useComponentInstanceStore.getState().getInstanceLink(selectedInstance.id);
+              const isFeatureCard = instanceLink?.prebuiltId === 'system-feature-card';
+              return isFeatureCard ? (
+                <AccordionSection title="Feature Card Styles" section="featureCardStyles" properties={[]}>
+                  <FeatureCardStyleEditor instance={selectedInstance} />
+                </AccordionSection>
+              ) : null;
+            })()}
 
             {/* Space */}
             {componentSupportsPropertyGroup(selectedInstance.type as ComponentType, "space") && (
@@ -4919,6 +4934,13 @@ export const StylePanel: React.FC<StylePanelProps> = ({
 
                   {/* Navigation Settings */}
                   {selectedInstance.type === "Navigation" && <NavigationDataEditor instance={selectedInstance} />}
+
+                  {/* Feature Card Settings - detect by prebuilt link */}
+                  {(() => {
+                    const instanceLink = useComponentInstanceStore.getState().getInstanceLink(selectedInstance.id);
+                    const isFeatureCard = instanceLink?.prebuiltId === 'system-feature-card';
+                    return isFeatureCard ? <FeatureCardDataEditor instance={selectedInstance} /> : null;
+                  })()}
                 </div>
               </>
             )}
