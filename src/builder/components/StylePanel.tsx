@@ -99,6 +99,7 @@ import { PaginationDataEditor } from "./data-editors/PaginationDataEditor";
 import { OTPInputDataEditor } from "./data-editors/OTPInputDataEditor";
 import { NavigationDataEditor } from "./data-editors/NavigationDataEditor";
 import { FeatureCardDataEditor } from "./data-editors/FeatureCardDataEditor";
+import { TestimonialDataEditor } from "./data-editors/TestimonialDataEditor";
 import { AccordionStyleEditor } from "./style-editors/AccordionStyleEditor";
 import { BadgeStyleEditor } from "./style-editors/BadgeStyleEditor";
 import { BreadcrumbStyleEditor } from "./style-editors/BreadcrumbStyleEditor";
@@ -106,6 +107,7 @@ import { CarouselStyleEditor } from "./style-editors/CarouselStyleEditor";
 import { TableStyleEditor } from "./style-editors/TableStyleEditor";
 import { TabsStyleEditor } from "./style-editors/TabsStyleEditor";
 import { FeatureCardStyleEditor } from "./style-editors/FeatureCardStyleEditor";
+import { TestimonialStyleEditor } from "./style-editors/TestimonialStyleEditor";
 import { useComponentInstanceStore } from "../store/useComponentInstanceStore";
 import "../styles/style-panel.css";
 import "../styles/tokens.css";
@@ -337,6 +339,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({
     breadcrumbStyles: true,
     carouselStyles: true,
     featureCardStyles: true,
+    testimonialStyles: true,
     tableStyles: true,
     tabsStyles: true,
     space: true,
@@ -1472,6 +1475,17 @@ export const StylePanel: React.FC<StylePanelProps> = ({
               return isFeatureCard ? (
                 <AccordionSection title="Feature Card Styles" section="featureCardStyles" properties={[]}>
                   <FeatureCardStyleEditor instance={selectedInstance} />
+                </AccordionSection>
+              ) : null;
+            })()}
+
+            {/* Testimonial Card Style Controls - detect by prebuilt link */}
+            {(() => {
+              const instanceLink = getInstanceLink(selectedInstance.id);
+              const isTestimonialCard = instanceLink?.prebuiltId === 'system-testimonial-card';
+              return isTestimonialCard ? (
+                <AccordionSection title="Testimonial Styles" section="testimonialStyles" properties={[]}>
+                  <TestimonialStyleEditor instance={selectedInstance} />
                 </AccordionSection>
               ) : null;
             })()}
@@ -4941,6 +4955,13 @@ export const StylePanel: React.FC<StylePanelProps> = ({
                     const instanceLink = getInstanceLink(selectedInstance.id);
                     const isFeatureCard = instanceLink?.prebuiltId === 'system-feature-card';
                     return isFeatureCard ? <FeatureCardDataEditor instance={selectedInstance} /> : null;
+                  })()}
+
+                  {/* Testimonial Card Settings - detect by prebuilt link */}
+                  {(() => {
+                    const instanceLink = getInstanceLink(selectedInstance.id);
+                    const isTestimonialCard = instanceLink?.prebuiltId === 'system-testimonial-card';
+                    return isTestimonialCard ? <TestimonialDataEditor instance={selectedInstance} /> : null;
                   })()}
                 </div>
               </>

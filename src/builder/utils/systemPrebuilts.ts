@@ -322,6 +322,8 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
   // TESTIMONIAL CARD
   // ---------------------------------------------------------------------------
   const testimonialId = generateId();
+  const testimonialAvatarContainerId = generateId();
+  const testimonialAvatarImageId = generateId();
   const testimonialQuoteId = generateId();
   const testimonialAuthorId = generateId();
   const testimonialNameId = generateId();
@@ -335,9 +337,38 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
       id: testimonialId,
       type: 'Div' as ComponentType,
       label: 'Div',
-      props: {},
+      props: {
+        showAvatar: true,
+        avatarShape: 'circle',
+        avatarSize: 'md',
+        avatarPosition: 'top',
+        avatarBorderStyle: 'none',
+        avatarShadow: 'none',
+        showRating: false,
+        rating: 5,
+      },
       styleSourceIds: ['style-testimonial-card'],
       children: [
+        {
+          id: testimonialAvatarContainerId,
+          type: 'Div' as ComponentType,
+          label: 'Div',
+          props: {},
+          styleSourceIds: ['style-testimonial-avatar-container'],
+          children: [
+            {
+              id: testimonialAvatarImageId,
+              type: 'Image' as ComponentType,
+              label: 'Image',
+              props: { 
+                src: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
+                alt: 'Profile picture'
+              },
+              styleSourceIds: ['style-testimonial-avatar-image'],
+              children: [],
+            },
+          ],
+        },
         {
           id: testimonialQuoteId,
           type: 'Text' as ComponentType,
@@ -377,11 +408,24 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
       'style-testimonial-card': createStyleEntry({
         display: 'flex',
         flexDirection: 'column',
+        alignItems: 'center',
         gap: '24px',
         padding: '32px',
         backgroundColor: 'hsl(var(--card))',
         border: '1px solid hsl(var(--border))',
         borderRadius: '12px',
+        textAlign: 'center',
+      }),
+      'style-testimonial-avatar-container': createStyleEntry({
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }),
+      'style-testimonial-avatar-image': createStyleEntry({
+        width: '56px',
+        height: '56px',
+        borderRadius: '50%',
+        objectFit: 'cover',
       }),
       'style-testimonial-quote': createStyleEntry({
         fontSize: '18px',
@@ -393,6 +437,7 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
         display: 'flex',
         flexDirection: 'column',
         gap: '4px',
+        alignItems: 'center',
       }),
       'style-testimonial-name': createStyleEntry({
         fontSize: '16px',
