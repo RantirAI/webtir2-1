@@ -6,6 +6,10 @@ export interface AIComponentSpec {
   label?: string;
   props?: Record<string, unknown>;
   styles?: Record<string, string>;
+  responsiveStyles?: {
+    tablet?: Record<string, string>;
+    mobile?: Record<string, string>;
+  };
   children?: AIComponentSpec[];
 }
 
@@ -37,6 +41,15 @@ function normalizeComponentSpec(spec: AIComponentSpec): AIComponentSpec {
     ...spec.styles,
   });
   
+  // Normalize responsive styles
+  const normalizedResponsiveStyles: AIComponentSpec['responsiveStyles'] = {};
+  if (spec.responsiveStyles?.tablet) {
+    normalizedResponsiveStyles.tablet = normalizeStyles(spec.responsiveStyles.tablet);
+  }
+  if (spec.responsiveStyles?.mobile) {
+    normalizedResponsiveStyles.mobile = normalizeStyles(spec.responsiveStyles.mobile);
+  }
+  
   // Recursively normalize children
   const normalizedChildren = (spec.children || []).map(normalizeComponentSpec);
   
@@ -45,6 +58,7 @@ function normalizeComponentSpec(spec: AIComponentSpec): AIComponentSpec {
     label: spec.label || meta.label,
     props: normalizedProps,
     styles: normalizedStyles,
+    responsiveStyles: Object.keys(normalizedResponsiveStyles).length > 0 ? normalizedResponsiveStyles : undefined,
     children: normalizedChildren,
   };
 }
@@ -99,16 +113,22 @@ export function parseAIResponse(text: string): AIResponse | null {
   }
 }
 
+export interface BreakpointStyles {
+  base: Record<string, string>;
+  tablet?: Record<string, string>;
+  mobile?: Record<string, string>;
+}
+
 export function flattenInstances(
   spec: AIComponentSpec,
   parentId: string = 'root'
 ): {
   instances: ComponentInstance[];
-  styleSources: Record<string, Record<string, string>>;
+  styleSources: Record<string, BreakpointStyles>;
   rootInstanceId: string;
 } {
   const instances: ComponentInstance[] = [];
-  const styleSources: Record<string, Record<string, string>> = {};
+  const styleSources: Record<string, BreakpointStyles> = {};
 
   function processSpec(spec: AIComponentSpec): ComponentInstance {
     const type = spec.type as ComponentType;
@@ -140,7 +160,13 @@ export function flattenInstances(
     };
 
     instances.push(instance);
-    styleSources[styleSourceId] = styles as Record<string, string>;
+    
+    // Store styles with breakpoint info
+    styleSources[styleSourceId] = {
+      base: styles as Record<string, string>,
+      tablet: spec.responsiveStyles?.tablet,
+      mobile: spec.responsiveStyles?.mobile,
+    };
 
     return instance;
   }

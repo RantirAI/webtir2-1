@@ -31,8 +31,18 @@ When asked to CREATE components in BUILD mode, respond with a JSON code block:
         "alignItems": "center",
         "justifyContent": "center",
         "padding": "80px 24px",
-        "minHeight": "600px",
+        "minHeight": "100vh",
         "backgroundColor": "hsl(var(--background))"
+      },
+      "responsiveStyles": {
+        "tablet": {
+          "padding": "48px 20px",
+          "minHeight": "80vh"
+        },
+        "mobile": {
+          "padding": "40px 16px",
+          "minHeight": "auto"
+        }
       },
       "children": [
         {
@@ -46,6 +56,11 @@ When asked to CREATE components in BUILD mode, respond with a JSON code block:
             "maxWidth": "800px",
             "gap": "24px"
           },
+          "responsiveStyles": {
+            "mobile": {
+              "gap": "16px"
+            }
+          },
           "children": [
             {
               "type": "Heading",
@@ -55,6 +70,10 @@ When asked to CREATE components in BUILD mode, respond with a JSON code block:
                 "fontWeight": "700",
                 "lineHeight": "1.1",
                 "color": "hsl(var(--foreground))"
+              },
+              "responsiveStyles": {
+                "tablet": { "fontSize": "44px" },
+                "mobile": { "fontSize": "32px" }
               }
             },
             {
@@ -64,12 +83,18 @@ When asked to CREATE components in BUILD mode, respond with a JSON code block:
                 "fontSize": "20px",
                 "lineHeight": "1.6",
                 "color": "hsl(var(--muted-foreground))"
+              },
+              "responsiveStyles": {
+                "mobile": { "fontSize": "16px" }
               }
             },
             {
               "type": "Div",
               "props": {},
               "styles": { "display": "flex", "gap": "16px", "marginTop": "16px" },
+              "responsiveStyles": {
+                "mobile": { "flexDirection": "column", "gap": "12px" }
+              },
               "children": [
                 {
                   "type": "Button",
@@ -103,7 +128,7 @@ When asked to CREATE components in BUILD mode, respond with a JSON code block:
       ]
     }
   ],
-  "message": "I've created a hero section with heading, description, and CTA buttons."
+  "message": "I've created a responsive hero section with heading, description, and CTA buttons."
 }
 \`\`\`
 
@@ -111,17 +136,20 @@ When asked to CREATE components in BUILD mode, respond with a JSON code block:
 
 1. **Always use Section > Container > Content structure** for page sections
 2. **Use CSS variables** for all colors: \`hsl(var(--primary))\`, \`hsl(var(--foreground))\`, etc.
-3. **Use flex layouts** with gap for spacing - avoid margin between siblings
-4. **Include comprehensive styles** - don't leave components unstyled
-5. **Center sections** with \`alignItems: center\` and \`justifyContent: center\`
-6. **Use proper heading levels** - h1 for main headings, h2 for sections, h3 for cards
-7. **Add padding to sections** - typically 64px-80px vertical, 24px horizontal
+3. **Use gap for spacing** - avoid margin between siblings
+4. **Include responsiveStyles** for tablet and mobile breakpoints on every component
+5. **Apply proper padding scale** - sections: 64-80px vertical, cards: 16-24px
+6. **Scale typography responsively** - reduce font sizes ~20-30% per breakpoint
+7. **Stack layouts on mobile** - change row to column, reduce columns in grids
+8. **Full-page layouts** - use minHeight: 100vh for login/auth/hero pages, center with flexbox
+9. **Use proper heading levels** - h1 for main headings, h2 for sections, h3 for cards
+10. **Center sections** with \`alignItems: center\` and \`justifyContent: center\`
 
 For UPDATE or DELETE actions, use "action": "update" or "action": "delete".
 
 In DISCUSS mode, have a normal conversation without JSON - help the user plan their UI.
 
-Be concise and focus on creating visually polished, professional components.`;
+Be concise and focus on creating visually polished, responsive, professional components.`;
 };
 
 // Keep backward compatibility

@@ -131,11 +131,27 @@ export const AIChat: React.FC = () => {
               for (const componentSpec of parsed.components) {
                 const { instances, styleSources: newStyleSources, rootInstanceId } = flattenInstances(componentSpec, 'root');
 
-                // Add style sources first
-                for (const [styleSourceId, styles] of Object.entries(newStyleSources)) {
+                // Add style sources with breakpoint support
+                for (const [styleSourceId, breakpointStyles] of Object.entries(newStyleSources)) {
                   createStyleSource('local', styleSourceId);
-                  for (const [property, value] of Object.entries(styles)) {
-                    setStyle(styleSourceId, property, value);
+                  
+                  // Apply base styles
+                  for (const [property, value] of Object.entries(breakpointStyles.base || {})) {
+                    setStyle(styleSourceId, property, value, 'base', 'default');
+                  }
+                  
+                  // Apply tablet styles
+                  if (breakpointStyles.tablet) {
+                    for (const [property, value] of Object.entries(breakpointStyles.tablet)) {
+                      setStyle(styleSourceId, property, value, 'tablet', 'default');
+                    }
+                  }
+                  
+                  // Apply mobile styles
+                  if (breakpointStyles.mobile) {
+                    for (const [property, value] of Object.entries(breakpointStyles.mobile)) {
+                      setStyle(styleSourceId, property, value, 'mobile', 'default');
+                    }
                   }
                 }
 
