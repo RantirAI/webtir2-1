@@ -100,6 +100,11 @@ import { OTPInputDataEditor } from "./data-editors/OTPInputDataEditor";
 import { NavigationDataEditor } from "./data-editors/NavigationDataEditor";
 import { FeatureCardDataEditor } from "./data-editors/FeatureCardDataEditor";
 import { TestimonialDataEditor } from "./data-editors/TestimonialDataEditor";
+import { HeroSectionDataEditor } from "./data-editors/HeroSectionDataEditor";
+import { CTASectionDataEditor } from "./data-editors/CTASectionDataEditor";
+import { PricingCardDataEditor } from "./data-editors/PricingCardDataEditor";
+import { FooterDataEditor } from "./data-editors/FooterDataEditor";
+import { StatsCardDataEditor } from "./data-editors/StatsCardDataEditor";
 import { useComponentInstanceStore } from "../store/useComponentInstanceStore";
 import "../styles/style-panel.css";
 import "../styles/tokens.css";
@@ -4907,6 +4912,41 @@ export const StylePanel: React.FC<StylePanelProps> = ({
                     const linkedAncestor = findLinkedAncestorPrebuilt(selectedInstance.id, rootInstance, getInstanceLink);
                     const isTestimonialCard = linkedAncestor?.prebuiltId === 'system-testimonial-card';
                     return isTestimonialCard && linkedAncestor ? <TestimonialDataEditor instance={linkedAncestor.linkedInstance} /> : null;
+                  })()}
+
+                  {/* Hero Section Settings - detect by prebuilt link */}
+                  {(() => {
+                    const linkedAncestor = findLinkedAncestorPrebuilt(selectedInstance.id, rootInstance, getInstanceLink);
+                    const isHeroSection = linkedAncestor?.prebuiltId === 'system-hero-section';
+                    return isHeroSection && linkedAncestor ? <HeroSectionDataEditor instance={linkedAncestor.linkedInstance} /> : null;
+                  })()}
+
+                  {/* CTA Section Settings - detect by prebuilt link */}
+                  {(() => {
+                    const linkedAncestor = findLinkedAncestorPrebuilt(selectedInstance.id, rootInstance, getInstanceLink);
+                    const isCTASection = linkedAncestor?.prebuiltId === 'system-cta-section';
+                    return isCTASection && linkedAncestor ? <CTASectionDataEditor instance={linkedAncestor.linkedInstance} /> : null;
+                  })()}
+
+                  {/* Pricing Card Settings - detect by prebuilt link */}
+                  {(() => {
+                    const linkedAncestor = findLinkedAncestorPrebuilt(selectedInstance.id, rootInstance, getInstanceLink);
+                    const isPricingCard = linkedAncestor?.prebuiltId === 'system-pricing-card';
+                    return isPricingCard && linkedAncestor ? <PricingCardDataEditor instance={linkedAncestor.linkedInstance} /> : null;
+                  })()}
+
+                  {/* Footer Settings - detect by prebuilt link */}
+                  {(() => {
+                    const linkedAncestor = findLinkedAncestorPrebuilt(selectedInstance.id, rootInstance, getInstanceLink);
+                    const isFooter = linkedAncestor?.prebuiltId === 'system-footer';
+                    return isFooter && linkedAncestor ? <FooterDataEditor instance={linkedAncestor.linkedInstance} /> : null;
+                  })()}
+
+                  {/* Stats Card Settings - detect by prebuilt link */}
+                  {(() => {
+                    const linkedAncestor = findLinkedAncestorPrebuilt(selectedInstance.id, rootInstance, getInstanceLink);
+                    const isStatsCard = linkedAncestor?.prebuiltId === 'system-stats-card';
+                    return isStatsCard && linkedAncestor ? <StatsCardDataEditor instance={linkedAncestor.linkedInstance} /> : null;
                   })()}
                 </div>
               </>
