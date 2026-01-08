@@ -105,6 +105,10 @@ import { CTASectionDataEditor } from "./data-editors/CTASectionDataEditor";
 import { PricingCardDataEditor } from "./data-editors/PricingCardDataEditor";
 import { FooterDataEditor } from "./data-editors/FooterDataEditor";
 import { StatsCardDataEditor } from "./data-editors/StatsCardDataEditor";
+import { LoginFormDataEditor } from "./data-editors/LoginFormDataEditor";
+import { InputFieldDataEditor } from "./data-editors/InputFieldDataEditor";
+import { CalendarDataEditor } from "./data-editors/CalendarDataEditor";
+import { CommandPaletteDataEditor } from "./data-editors/CommandPaletteDataEditor";
 import { useComponentInstanceStore } from "../store/useComponentInstanceStore";
 import "../styles/style-panel.css";
 import "../styles/tokens.css";
@@ -4947,6 +4951,34 @@ export const StylePanel: React.FC<StylePanelProps> = ({
                     const linkedAncestor = findLinkedAncestorPrebuilt(selectedInstance.id, rootInstance, getInstanceLink);
                     const isStatsCard = linkedAncestor?.prebuiltId === 'system-stats-card';
                     return isStatsCard && linkedAncestor ? <StatsCardDataEditor instance={linkedAncestor.linkedInstance} /> : null;
+                  })()}
+
+                  {/* Login Form Settings - detect by prebuilt link */}
+                  {(() => {
+                    const linkedAncestor = findLinkedAncestorPrebuilt(selectedInstance.id, rootInstance, getInstanceLink);
+                    const isLoginForm = linkedAncestor?.prebuiltId === 'system-login-form';
+                    return isLoginForm && linkedAncestor ? <LoginFormDataEditor instance={linkedAncestor.linkedInstance} /> : null;
+                  })()}
+
+                  {/* Input Field Settings - detect by prebuilt link */}
+                  {(() => {
+                    const linkedAncestor = findLinkedAncestorPrebuilt(selectedInstance.id, rootInstance, getInstanceLink);
+                    const isInputField = linkedAncestor?.prebuiltId === 'system-input-field';
+                    return isInputField && linkedAncestor ? <InputFieldDataEditor instance={linkedAncestor.linkedInstance} /> : null;
+                  })()}
+
+                  {/* Calendar Settings - detect by prebuilt link */}
+                  {(() => {
+                    const linkedAncestor = findLinkedAncestorPrebuilt(selectedInstance.id, rootInstance, getInstanceLink);
+                    const isCalendar = linkedAncestor?.prebuiltId === 'system-calendar';
+                    return isCalendar && linkedAncestor ? <CalendarDataEditor instance={linkedAncestor.linkedInstance} /> : null;
+                  })()}
+
+                  {/* Command Palette Settings - detect by prebuilt link */}
+                  {(() => {
+                    const linkedAncestor = findLinkedAncestorPrebuilt(selectedInstance.id, rootInstance, getInstanceLink);
+                    const isCommandPalette = linkedAncestor?.prebuiltId === 'system-command';
+                    return isCommandPalette && linkedAncestor ? <CommandPaletteDataEditor instance={linkedAncestor.linkedInstance} /> : null;
                   })()}
                 </div>
               </>
