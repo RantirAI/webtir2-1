@@ -246,45 +246,62 @@ const detectPrebuiltByStructure = (instance: ComponentInstance): string | null =
     return 'system-cta-section';
   }
   
-  // Testimonial Card: Div with Avatar + italic quote Text + author name Text
-  if (
-    instance.type === 'Div' &&
-    instance.children?.length === 3 &&
-    instance.children[0]?.type === 'Avatar' &&
-    instance.children[1]?.type === 'Text' &&
-    instance.children[2]?.type === 'Text'
-  ) {
-    return 'system-testimonial-card';
-  }
-  
-  // Feature Card: Div with Icon + Heading + Text (3 children, first has icon prop)
+  // Testimonial Card: Div -> [Div(Image), Text, Div(Text, Text)]
+  // Structure from systemPrebuilts: avatarContainer(Div) + quote(Text) + author(Div with name+role)
   if (
     instance.type === 'Div' &&
     instance.children?.length === 3 &&
     instance.children[0]?.type === 'Div' &&
-    instance.children[0]?.props?.icon &&
+    instance.children[0]?.children?.[0]?.type === 'Image' &&
+    instance.children[1]?.type === 'Text' &&
+    instance.children[2]?.type === 'Div' &&
+    instance.children[2]?.children?.length === 2 &&
+    instance.children[2]?.children?.every(c => c.type === 'Text')
+  ) {
+    return 'system-testimonial-card';
+  }
+  
+  // Feature Card: Div -> [Div (icon container, empty), Heading, Text]
+  // Structure from systemPrebuilts: icon div (no children/props) + Heading + Text
+  if (
+    instance.type === 'Div' &&
+    instance.children?.length === 3 &&
+    instance.children[0]?.type === 'Div' &&
     instance.children[1]?.type === 'Heading' &&
     instance.children[2]?.type === 'Text'
   ) {
     return 'system-feature-card';
   }
   
-  // Pricing Card: Div with name, price, features list, and button
+  // Pricing Card: Div -> [Div(header with Heading+Text+Text), Div(features with Text items), Button]
+  // Structure from systemPrebuilts: header div + features div + button
   if (
     instance.type === 'Div' &&
-    instance.children?.some(c => c.type === 'Text' && typeof c.props?.children === 'string' && c.props.children.includes('$')) &&
-    instance.children?.some(c => c.type === 'Div' && c.children?.every(fc => fc.type === 'Text')) &&
-    instance.children?.some(c => c.type === 'Button')
+    instance.children?.length === 3 &&
+    instance.children[0]?.type === 'Div' &&
+    instance.children[0]?.children?.[0]?.type === 'Heading' &&
+    instance.children[0]?.children?.some(c => c.type === 'Text') &&
+    instance.children[1]?.type === 'Div' &&
+    instance.children[1]?.children?.every(c => c.type === 'Text') &&
+    instance.children[2]?.type === 'Button'
   ) {
     return 'system-pricing-card';
   }
   
-  // Login Form: Div with Heading + Form containing inputs and button
+  // Login Form: Div -> [Heading, Text, Div(InputLabel+TextInput), Div(InputLabel+TextInput), Button]
+  // Structure from systemPrebuilts: No Form wrapper, direct Div with heading, desc, input groups, button
   if (
     instance.type === 'Div' &&
-    instance.children?.[0]?.type === 'Heading' &&
-    instance.children?.[1]?.type === 'Form' &&
-    instance.children[1].children?.some(c => c.type === 'Div' && c.children?.some(i => i.type === 'TextInput'))
+    instance.children?.length === 5 &&
+    instance.children[0]?.type === 'Heading' &&
+    instance.children[1]?.type === 'Text' &&
+    instance.children[2]?.type === 'Div' &&
+    instance.children[2]?.children?.some(c => c.type === 'InputLabel') &&
+    instance.children[2]?.children?.some(c => c.type === 'TextInput') &&
+    instance.children[3]?.type === 'Div' &&
+    instance.children[3]?.children?.some(c => c.type === 'InputLabel') &&
+    instance.children[3]?.children?.some(c => c.type === 'TextInput') &&
+    instance.children[4]?.type === 'Button'
   ) {
     return 'system-login-form';
   }
