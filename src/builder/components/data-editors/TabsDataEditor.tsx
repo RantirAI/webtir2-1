@@ -1,9 +1,12 @@
 import React from 'react';
-import { Plus, X, GripVertical } from 'lucide-react';
+import { Plus, X, GripVertical, ArrowUp, ArrowDown, ArrowLeft, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
+import { ColorPicker } from '../ColorPicker';
 import { ComponentInstance } from '../../store/types';
 import { useBuilderStore } from '../../store/useBuilderStore';
 
@@ -29,9 +32,43 @@ export const TabsDataEditor: React.FC<TabsDataEditorProps> = ({ instance }) => {
   const defaultTab = instance.props?.defaultTab || tabs[0]?.id;
   const orientation = instance.props?.orientation || 'horizontal';
 
+  // Get current tabs style props with defaults
+  const tabsStyles = instance.props?.tabsStyles || {
+    listBackground: 'hsl(var(--muted))',
+    listBorderRadius: '8',
+    listPadding: '4',
+    listGap: '4',
+    listPosition: 'top',
+    triggerBackground: 'transparent',
+    triggerHoverBackground: 'hsl(var(--muted))',
+    triggerActiveBackground: 'hsl(var(--background))',
+    triggerTextColor: 'hsl(var(--muted-foreground))',
+    triggerActiveTextColor: 'hsl(var(--foreground))',
+    triggerPadding: '8',
+    triggerBorderRadius: '6',
+    triggerFontSize: '14',
+    triggerFontWeight: '500',
+    indicatorStyle: 'boxed',
+    indicatorColor: 'hsl(var(--primary))',
+    indicatorHeight: '2',
+    contentBackground: 'transparent',
+    contentPadding: '16',
+    contentBorderRadius: '0',
+    animationDuration: '200',
+  };
+
   const updateTabs = (newTabs: TabItem[]) => {
     updateInstance(instance.id, {
       props: { ...instance.props, tabs: newTabs }
+    });
+  };
+
+  const updateTabsStyles = (updates: Partial<typeof tabsStyles>) => {
+    updateInstance(instance.id, {
+      props: {
+        ...instance.props,
+        tabsStyles: { ...tabsStyles, ...updates }
+      }
     });
   };
 
@@ -123,7 +160,7 @@ export const TabsDataEditor: React.FC<TabsDataEditorProps> = ({ instance }) => {
           </Button>
         </div>
         
-        <div className="space-y-2 max-h-[250px] overflow-y-auto">
+        <div className="space-y-2 max-h-[180px] overflow-y-auto">
           {tabs.map((tab, index) => (
             <div key={tab.id} className="p-2 border border-border rounded bg-muted/30 space-y-2">
               <div className="flex items-center gap-1">
@@ -171,6 +208,201 @@ export const TabsDataEditor: React.FC<TabsDataEditorProps> = ({ instance }) => {
               </label>
             </div>
           ))}
+        </div>
+      </div>
+
+      <Separator />
+
+      {/* Tabs Styling */}
+      <div className="space-y-3">
+        <Label className="text-[10px] font-medium text-foreground">Tab Bar</Label>
+        
+        <div className="grid grid-cols-2 gap-2">
+          <div className="space-y-1">
+            <Label className="text-[9px] text-muted-foreground">Position</Label>
+            <Select 
+              value={tabsStyles.listPosition} 
+              onValueChange={(val) => updateTabsStyles({ listPosition: val })}
+            >
+              <SelectTrigger className="h-6 text-[10px] bg-muted text-foreground">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="top">
+                  <span className="flex items-center gap-1.5">
+                    <ArrowUp className="w-3 h-3" /> Top
+                  </span>
+                </SelectItem>
+                <SelectItem value="bottom">
+                  <span className="flex items-center gap-1.5">
+                    <ArrowDown className="w-3 h-3" /> Bottom
+                  </span>
+                </SelectItem>
+                <SelectItem value="left">
+                  <span className="flex items-center gap-1.5">
+                    <ArrowLeft className="w-3 h-3" /> Left
+                  </span>
+                </SelectItem>
+                <SelectItem value="right">
+                  <span className="flex items-center gap-1.5">
+                    <ArrowRight className="w-3 h-3" /> Right
+                  </span>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div className="space-y-1">
+            <Label className="text-[9px] text-muted-foreground">Indicator Style</Label>
+            <Select 
+              value={tabsStyles.indicatorStyle} 
+              onValueChange={(val) => updateTabsStyles({ indicatorStyle: val })}
+            >
+              <SelectTrigger className="h-6 text-[10px] bg-muted text-foreground">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="underline">Underline</SelectItem>
+                <SelectItem value="pill">Pill</SelectItem>
+                <SelectItem value="boxed">Boxed</SelectItem>
+                <SelectItem value="none">None</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2">
+          <div className="flex items-center justify-between">
+            <Label className="text-[9px] text-muted-foreground">Bar Bg</Label>
+            <ColorPicker
+              value={tabsStyles.listBackground}
+              onChange={(val) => updateTabsStyles({ listBackground: val })}
+            />
+          </div>
+          <div className="flex items-center justify-between">
+            <Label className="text-[9px] text-muted-foreground">Indicator</Label>
+            <ColorPicker
+              value={tabsStyles.indicatorColor}
+              onChange={(val) => updateTabsStyles({ indicatorColor: val })}
+            />
+          </div>
+        </div>
+      </div>
+
+      <Separator />
+
+      {/* Tab Buttons */}
+      <div className="space-y-3">
+        <Label className="text-[10px] font-medium text-foreground">Tab Buttons</Label>
+        
+        <div className="grid grid-cols-2 gap-2">
+          <div className="flex items-center justify-between">
+            <Label className="text-[9px] text-muted-foreground">Background</Label>
+            <ColorPicker
+              value={tabsStyles.triggerBackground}
+              onChange={(val) => updateTabsStyles({ triggerBackground: val })}
+            />
+          </div>
+          <div className="flex items-center justify-between">
+            <Label className="text-[9px] text-muted-foreground">Hover Bg</Label>
+            <ColorPicker
+              value={tabsStyles.triggerHoverBackground}
+              onChange={(val) => updateTabsStyles({ triggerHoverBackground: val })}
+            />
+          </div>
+          <div className="flex items-center justify-between">
+            <Label className="text-[9px] text-muted-foreground">Active Bg</Label>
+            <ColorPicker
+              value={tabsStyles.triggerActiveBackground}
+              onChange={(val) => updateTabsStyles({ triggerActiveBackground: val })}
+            />
+          </div>
+          <div className="flex items-center justify-between">
+            <Label className="text-[9px] text-muted-foreground">Text Color</Label>
+            <ColorPicker
+              value={tabsStyles.triggerTextColor}
+              onChange={(val) => updateTabsStyles({ triggerTextColor: val })}
+            />
+          </div>
+          <div className="flex items-center justify-between">
+            <Label className="text-[9px] text-muted-foreground">Active Text</Label>
+            <ColorPicker
+              value={tabsStyles.triggerActiveTextColor}
+              onChange={(val) => updateTabsStyles({ triggerActiveTextColor: val })}
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2">
+          <div className="space-y-1">
+            <Label className="text-[9px] text-muted-foreground">Font Size</Label>
+            <Input
+              type="number"
+              value={tabsStyles.triggerFontSize}
+              onChange={(e) => updateTabsStyles({ triggerFontSize: e.target.value })}
+              className="h-6 text-[10px] bg-muted text-foreground"
+              min="10"
+              max="24"
+            />
+          </div>
+          <div className="space-y-1">
+            <Label className="text-[9px] text-muted-foreground">Font Weight</Label>
+            <Select 
+              value={tabsStyles.triggerFontWeight} 
+              onValueChange={(val) => updateTabsStyles({ triggerFontWeight: val })}
+            >
+              <SelectTrigger className="h-6 text-[10px] bg-muted text-foreground">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="400">Regular</SelectItem>
+                <SelectItem value="500">Medium</SelectItem>
+                <SelectItem value="600">Semibold</SelectItem>
+                <SelectItem value="700">Bold</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      </div>
+
+      <Separator />
+
+      {/* Content Panel */}
+      <div className="space-y-3">
+        <Label className="text-[10px] font-medium text-foreground">Content Panel</Label>
+        
+        <div className="grid grid-cols-2 gap-2">
+          <div className="flex items-center justify-between">
+            <Label className="text-[9px] text-muted-foreground">Background</Label>
+            <ColorPicker
+              value={tabsStyles.contentBackground}
+              onChange={(val) => updateTabsStyles({ contentBackground: val })}
+            />
+          </div>
+          <div className="space-y-1">
+            <Label className="text-[9px] text-muted-foreground">Padding</Label>
+            <Input
+              type="number"
+              value={tabsStyles.contentPadding}
+              onChange={(e) => updateTabsStyles({ contentPadding: e.target.value })}
+              className="h-6 text-[10px] bg-muted text-foreground"
+              min="0"
+              max="64"
+            />
+          </div>
+        </div>
+
+        <div className="space-y-1">
+          <Label className="text-[9px] text-muted-foreground">Animation Duration (ms)</Label>
+          <Input
+            type="number"
+            value={tabsStyles.animationDuration}
+            onChange={(e) => updateTabsStyles({ animationDuration: e.target.value })}
+            className="h-6 text-[10px] bg-muted text-foreground"
+            min="0"
+            max="1000"
+            step="50"
+          />
         </div>
       </div>
     </div>

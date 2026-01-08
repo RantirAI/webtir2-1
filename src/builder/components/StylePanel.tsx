@@ -100,14 +100,6 @@ import { OTPInputDataEditor } from "./data-editors/OTPInputDataEditor";
 import { NavigationDataEditor } from "./data-editors/NavigationDataEditor";
 import { FeatureCardDataEditor } from "./data-editors/FeatureCardDataEditor";
 import { TestimonialDataEditor } from "./data-editors/TestimonialDataEditor";
-import { AccordionStyleEditor } from "./style-editors/AccordionStyleEditor";
-import { BadgeStyleEditor } from "./style-editors/BadgeStyleEditor";
-import { BreadcrumbStyleEditor } from "./style-editors/BreadcrumbStyleEditor";
-import { CarouselStyleEditor } from "./style-editors/CarouselStyleEditor";
-import { TableStyleEditor } from "./style-editors/TableStyleEditor";
-import { TabsStyleEditor } from "./style-editors/TabsStyleEditor";
-import { FeatureCardStyleEditor } from "./style-editors/FeatureCardStyleEditor";
-import { TestimonialStyleEditor } from "./style-editors/TestimonialStyleEditor";
 import { useComponentInstanceStore } from "../store/useComponentInstanceStore";
 import "../styles/style-panel.css";
 import "../styles/tokens.css";
@@ -358,14 +350,6 @@ export const StylePanel: React.FC<StylePanelProps> = ({
 
   const [openSections, setOpenSections] = useState({
     layout: true,
-    accordionStyles: true,
-    badgeStyles: true,
-    breadcrumbStyles: true,
-    carouselStyles: true,
-    featureCardStyles: true,
-    testimonialStyles: true,
-    tableStyles: true,
-    tabsStyles: true,
     space: true,
     size: true,
     position: false,
@@ -1450,69 +1434,6 @@ export const StylePanel: React.FC<StylePanelProps> = ({
               </AccordionSection>
             )}
 
-            {/* Accordion-specific Style Controls */}
-            {selectedInstance.type === "Accordion" && (
-              <AccordionSection title="Accordion Styles" section="accordionStyles" properties={[]}>
-                <AccordionStyleEditor instance={selectedInstance} />
-              </AccordionSection>
-            )}
-
-            {/* Badge-specific Style Controls */}
-            {selectedInstance.type === "Badge" && (
-              <AccordionSection title="Badge Styles" section="badgeStyles" properties={[]}>
-                <BadgeStyleEditor instance={selectedInstance} />
-              </AccordionSection>
-            )}
-
-            {/* Breadcrumb-specific Style Controls */}
-            {selectedInstance.type === "Breadcrumb" && (
-              <AccordionSection title="Breadcrumb Styles" section="breadcrumbStyles" properties={[]}>
-                <BreadcrumbStyleEditor instance={selectedInstance} />
-              </AccordionSection>
-            )}
-
-            {/* Carousel-specific Style Controls */}
-            {selectedInstance.type === "Carousel" && (
-              <AccordionSection title="Carousel Styles" section="carouselStyles" properties={[]}>
-                <CarouselStyleEditor instance={selectedInstance} />
-              </AccordionSection>
-            )}
-
-            {/* Tabs-specific Style Controls */}
-            {selectedInstance.type === "Tabs" && (
-              <AccordionSection title="Tabs Styles" section="tabsStyles" properties={[]}>
-                <TabsStyleEditor instance={selectedInstance} />
-              </AccordionSection>
-            )}
-
-            {/* Table-specific Style Controls */}
-            {selectedInstance.type === "Table" && (
-              <AccordionSection title="Table Styles" section="tableStyles" properties={[]}>
-                <TableStyleEditor instance={selectedInstance} />
-              </AccordionSection>
-            )}
-
-            {/* Feature Card Style Controls - detect by prebuilt link (also checks ancestors) */}
-            {(() => {
-              const linkedAncestor = findLinkedAncestorPrebuilt(selectedInstance.id, rootInstance, getInstanceLink);
-              const isFeatureCard = linkedAncestor?.prebuiltId === 'system-feature-card';
-              return isFeatureCard && linkedAncestor ? (
-                <AccordionSection title="Feature Card Styles" section="featureCardStyles" properties={[]}>
-                  <FeatureCardStyleEditor instance={linkedAncestor.linkedInstance} />
-                </AccordionSection>
-              ) : null;
-            })()}
-
-            {/* Testimonial Card Style Controls - detect by prebuilt link (also checks ancestors) */}
-            {(() => {
-              const linkedAncestor = findLinkedAncestorPrebuilt(selectedInstance.id, rootInstance, getInstanceLink);
-              const isTestimonialCard = linkedAncestor?.prebuiltId === 'system-testimonial-card';
-              return isTestimonialCard && linkedAncestor ? (
-                <AccordionSection title="Testimonial Styles" section="testimonialStyles" properties={[]}>
-                  <TestimonialStyleEditor instance={linkedAncestor.linkedInstance} />
-                </AccordionSection>
-              ) : null;
-            })()}
 
             {/* Space */}
             {componentSupportsPropertyGroup(selectedInstance.type as ComponentType, "space") && (

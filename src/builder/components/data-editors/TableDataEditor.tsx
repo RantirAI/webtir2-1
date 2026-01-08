@@ -5,6 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
+import { ColorPicker } from '../ColorPicker';
 import { ComponentInstance } from '../../store/types';
 import { useBuilderStore } from '../../store/useBuilderStore';
 
@@ -131,7 +133,8 @@ const templateStyles: Record<string, any> = {
 export const TableDataEditor: React.FC<TableDataEditorProps> = ({ instance }) => {
   const { updateInstance } = useBuilderStore();
   
-  const currentTemplate = instance.props?.tableStyles?.template || '';
+  const tableStyles = instance.props?.tableStyles || {};
+  const currentTemplate = tableStyles.template || '';
 
   // Normalize data: handle both 2D string arrays and arrays of objects from various prop sources
   const normalizeData = (): { headers: string[], data: string[][] } => {
@@ -219,13 +222,22 @@ export const TableDataEditor: React.FC<TableDataEditorProps> = ({ instance }) =>
     });
   };
 
+  const updateTableStyles = (updates: Partial<typeof tableStyles>) => {
+    updateInstance(instance.id, {
+      props: {
+        ...instance.props,
+        tableStyles: { ...tableStyles, ...updates }
+      }
+    });
+  };
+
   const applyTemplate = (templateId: string) => {
     const templateStyle = templateStyles[templateId];
     if (templateStyle) {
       updateInstance(instance.id, {
         props: {
           ...instance.props,
-          tableStyles: { ...instance.props?.tableStyles, ...templateStyle, template: templateId }
+          tableStyles: { ...tableStyles, ...templateStyle, template: templateId }
         }
       });
     }
@@ -301,56 +313,155 @@ export const TableDataEditor: React.FC<TableDataEditorProps> = ({ instance }) =>
         <div className="grid grid-cols-2 gap-2">
           <label className="flex items-center gap-2 text-[10px]">
             <Checkbox
-              checked={instance.props?.tableStyles?.striped ?? false}
-              onCheckedChange={(checked) => updateInstance(instance.id, {
-                props: { ...instance.props, tableStyles: { ...instance.props?.tableStyles, striped: !!checked } }
-              })}
+              checked={tableStyles.striped ?? false}
+              onCheckedChange={(checked) => updateTableStyles({ striped: !!checked })}
               className="h-3.5 w-3.5"
             />
             Striped rows
           </label>
           <label className="flex items-center gap-2 text-[10px]">
             <Checkbox
-              checked={instance.props?.tableStyles?.hoverable ?? false}
-              onCheckedChange={(checked) => updateInstance(instance.id, {
-                props: { ...instance.props, tableStyles: { ...instance.props?.tableStyles, hoverable: !!checked } }
-              })}
+              checked={tableStyles.hoverable ?? false}
+              onCheckedChange={(checked) => updateTableStyles({ hoverable: !!checked })}
               className="h-3.5 w-3.5"
             />
             Hoverable rows
           </label>
           <label className="flex items-center gap-2 text-[10px]">
             <Checkbox
-              checked={instance.props?.tableStyles?.bordered ?? false}
-              onCheckedChange={(checked) => updateInstance(instance.id, {
-                props: { ...instance.props, tableStyles: { ...instance.props?.tableStyles, bordered: !!checked } }
-              })}
+              checked={tableStyles.bordered ?? false}
+              onCheckedChange={(checked) => updateTableStyles({ bordered: !!checked })}
               className="h-3.5 w-3.5"
             />
             Full borders
           </label>
           <label className="flex items-center gap-2 text-[10px]">
             <Checkbox
-              checked={instance.props?.tableStyles?.compact ?? false}
-              onCheckedChange={(checked) => updateInstance(instance.id, {
-                props: { ...instance.props, tableStyles: { ...instance.props?.tableStyles, compact: !!checked } }
-              })}
+              checked={tableStyles.compact ?? false}
+              onCheckedChange={(checked) => updateTableStyles({ compact: !!checked })}
               className="h-3.5 w-3.5"
             />
             Compact
           </label>
           <label className="flex items-center gap-2 text-[10px]">
             <Checkbox
-              checked={instance.props?.tableStyles?.stickyHeader ?? false}
-              onCheckedChange={(checked) => updateInstance(instance.id, {
-                props: { ...instance.props, tableStyles: { ...instance.props?.tableStyles, stickyHeader: !!checked } }
-              })}
+              checked={tableStyles.stickyHeader ?? false}
+              onCheckedChange={(checked) => updateTableStyles({ stickyHeader: !!checked })}
               className="h-3.5 w-3.5"
             />
             Sticky header
           </label>
         </div>
       </div>
+
+      <Separator />
+
+      {/* Table Styling */}
+      <div className="space-y-3">
+        <Label className="text-[10px] font-medium text-foreground">Header Styling</Label>
+        <div className="grid grid-cols-2 gap-2">
+          <div className="flex items-center justify-between">
+            <Label className="text-[9px] text-muted-foreground">Background</Label>
+            <ColorPicker
+              value={tableStyles.headerBackground || ''}
+              onChange={(v) => updateTableStyles({ headerBackground: v })}
+            />
+          </div>
+          <div className="flex items-center justify-between">
+            <Label className="text-[9px] text-muted-foreground">Text Color</Label>
+            <ColorPicker
+              value={tableStyles.headerTextColor || ''}
+              onChange={(v) => updateTableStyles({ headerTextColor: v })}
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        <Label className="text-[10px] font-medium text-foreground">Body Styling</Label>
+        <div className="grid grid-cols-2 gap-2">
+          <div className="flex items-center justify-between">
+            <Label className="text-[9px] text-muted-foreground">Cell Bg</Label>
+            <ColorPicker
+              value={tableStyles.cellBackground || ''}
+              onChange={(v) => updateTableStyles({ cellBackground: v })}
+            />
+          </div>
+          <div className="flex items-center justify-between">
+            <Label className="text-[9px] text-muted-foreground">Text Color</Label>
+            <ColorPicker
+              value={tableStyles.cellTextColor || ''}
+              onChange={(v) => updateTableStyles({ cellTextColor: v })}
+            />
+          </div>
+          <div className="flex items-center justify-between">
+            <Label className="text-[9px] text-muted-foreground">Striped</Label>
+            <ColorPicker
+              value={tableStyles.stripedColor || ''}
+              onChange={(v) => updateTableStyles({ stripedColor: v })}
+            />
+          </div>
+          <div className="flex items-center justify-between">
+            <Label className="text-[9px] text-muted-foreground">Hover</Label>
+            <ColorPicker
+              value={tableStyles.hoverColor || ''}
+              onChange={(v) => updateTableStyles({ hoverColor: v })}
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        <Label className="text-[10px] font-medium text-foreground">Borders</Label>
+        <div className="grid grid-cols-2 gap-2">
+          <div className="space-y-1">
+            <Label className="text-[9px] text-muted-foreground">Border Style</Label>
+            <Select value={tableStyles.borderStyle || 'horizontal'} onValueChange={(v) => updateTableStyles({ borderStyle: v })}>
+              <SelectTrigger className="h-6 text-[10px] bg-muted">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-popover z-50">
+                <SelectItem value="none" className="text-[10px]">None</SelectItem>
+                <SelectItem value="horizontal" className="text-[10px]">Horizontal</SelectItem>
+                <SelectItem value="vertical" className="text-[10px]">Vertical</SelectItem>
+                <SelectItem value="full" className="text-[10px]">Full Grid</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-center justify-between">
+            <Label className="text-[9px] text-muted-foreground">Border Color</Label>
+            <ColorPicker
+              value={tableStyles.borderColor || ''}
+              onChange={(v) => updateTableStyles({ borderColor: v })}
+            />
+          </div>
+          <div className="space-y-1">
+            <Label className="text-[9px] text-muted-foreground">Border Radius</Label>
+            <Input
+              type="number"
+              value={tableStyles.outerBorderRadius || '0'}
+              onChange={(e) => updateTableStyles({ outerBorderRadius: e.target.value })}
+              className="h-6 text-[10px] bg-muted"
+            />
+          </div>
+          <div className="space-y-1">
+            <Label className="text-[9px] text-muted-foreground">Shadow</Label>
+            <Select value={tableStyles.tableShadow || 'none'} onValueChange={(v) => updateTableStyles({ tableShadow: v })}>
+              <SelectTrigger className="h-6 text-[10px] bg-muted">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-popover z-50">
+                <SelectItem value="none" className="text-[10px]">None</SelectItem>
+                <SelectItem value="sm" className="text-[10px]">Small</SelectItem>
+                <SelectItem value="md" className="text-[10px]">Medium</SelectItem>
+                <SelectItem value="lg" className="text-[10px]">Large</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      </div>
+
+      <Separator />
 
       {/* Controls */}
       <div className="space-y-2">
@@ -404,7 +515,7 @@ export const TableDataEditor: React.FC<TableDataEditorProps> = ({ instance }) =>
       {/* Data Rows */}
       <div className="space-y-1">
         <Label className="text-[10px] font-medium text-foreground">Data ({rows} rows)</Label>
-        <div className="space-y-1 max-h-[200px] overflow-y-auto">
+        <div className="space-y-1 max-h-[150px] overflow-y-auto">
           {data.map((row, rowIndex) => (
             <div key={rowIndex} className="flex items-center gap-1 p-1.5 rounded border border-border bg-muted/30">
               <div className="flex flex-col gap-0.5">
