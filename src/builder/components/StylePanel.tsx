@@ -219,6 +219,145 @@ const findLinkedAncestorPrebuilt = (
   return null;
 };
 
+// Fallback detection for composite prebuilts by analyzing component structure
+const detectPrebuiltByStructure = (instance: ComponentInstance): string | null => {
+  if (!instance) return null;
+  
+  // Hero Section: Section > Container > [Heading(h1), Text, Div(buttons with 2 buttons)]
+  if (
+    instance.type === 'Section' &&
+    instance.children?.[0]?.type === 'Container' &&
+    instance.children[0].children?.some(c => c.type === 'Heading' && c.props?.level === 'h1') &&
+    instance.children[0].children?.some(c => c.type === 'Div' && c.children?.filter(b => b.type === 'Button').length === 2)
+  ) {
+    return 'system-hero-section';
+  }
+  
+  // CTA Section: Section > Container > [Heading(h2), Text, single Button]
+  if (
+    instance.type === 'Section' &&
+    instance.children?.[0]?.type === 'Container' &&
+    instance.children[0].children?.length === 3 &&
+    instance.children[0].children?.[0]?.type === 'Heading' &&
+    instance.children[0].children?.[0]?.props?.level === 'h2' &&
+    instance.children[0].children?.[1]?.type === 'Text' &&
+    instance.children[0].children?.[2]?.type === 'Button'
+  ) {
+    return 'system-cta-section';
+  }
+  
+  // Testimonial Card: Div with Avatar + italic quote Text + author name Text
+  if (
+    instance.type === 'Div' &&
+    instance.children?.length === 3 &&
+    instance.children[0]?.type === 'Avatar' &&
+    instance.children[1]?.type === 'Text' &&
+    instance.children[2]?.type === 'Text'
+  ) {
+    return 'system-testimonial-card';
+  }
+  
+  // Feature Card: Div with Icon + Heading + Text (3 children, first has icon prop)
+  if (
+    instance.type === 'Div' &&
+    instance.children?.length === 3 &&
+    instance.children[0]?.type === 'Div' &&
+    instance.children[0]?.props?.icon &&
+    instance.children[1]?.type === 'Heading' &&
+    instance.children[2]?.type === 'Text'
+  ) {
+    return 'system-feature-card';
+  }
+  
+  // Pricing Card: Div with name, price, features list, and button
+  if (
+    instance.type === 'Div' &&
+    instance.children?.some(c => c.type === 'Text' && typeof c.props?.children === 'string' && c.props.children.includes('$')) &&
+    instance.children?.some(c => c.type === 'Div' && c.children?.every(fc => fc.type === 'Text')) &&
+    instance.children?.some(c => c.type === 'Button')
+  ) {
+    return 'system-pricing-card';
+  }
+  
+  // Login Form: Div with Heading + Form containing inputs and button
+  if (
+    instance.type === 'Div' &&
+    instance.children?.[0]?.type === 'Heading' &&
+    instance.children?.[1]?.type === 'Form' &&
+    instance.children[1].children?.some(c => c.type === 'Div' && c.children?.some(i => i.type === 'TextInput'))
+  ) {
+    return 'system-login-form';
+  }
+  
+  // Footer: Section with Container containing brand, links, and copyright
+  if (
+    instance.type === 'Section' &&
+    instance.children?.[0]?.type === 'Container' &&
+    instance.children[0].children?.some(c => c.type === 'Div' && c.children?.some(l => l.type === 'Link')) &&
+    instance.children[0].children?.some(c => c.type === 'Text' && typeof c.props?.children === 'string' && c.props.children.includes('©'))
+  ) {
+    return 'system-footer';
+  }
+  
+  // Stats Card: Div with exactly 3 Text children (trend, value, label pattern)
+  if (
+    instance.type === 'Div' &&
+    instance.children?.length === 3 &&
+    instance.children.every(c => c.type === 'Text')
+  ) {
+    return 'system-stats-card';
+  }
+  
+  // Input Field: Div with InputLabel + TextInput
+  if (
+    instance.type === 'Div' &&
+    instance.children?.length === 2 &&
+    instance.children[0]?.type === 'InputLabel' &&
+    instance.children[1]?.type === 'TextInput'
+  ) {
+    return 'system-input-field';
+  }
+  
+  // Calendar: direct Calendar type
+  if (instance.type === 'Calendar') {
+    return 'system-calendar';
+  }
+  
+  // Command: direct CommandPalette type
+  if (instance.type === 'CommandPalette') {
+    return 'system-command';
+  }
+  
+  return null;
+};
+
+// Combined detection: tries link-based first, then falls back to structure detection
+const findPrebuiltEditor = (
+  instanceId: string,
+  rootInstance: ComponentInstance | null,
+  getInstanceLink: (id: string) => { prebuiltId: string } | undefined
+): { prebuiltId: string; linkedInstance: ComponentInstance } | null => {
+  if (!rootInstance) return null;
+  
+  // First, try the link-based detection
+  const linkedResult = findLinkedAncestorPrebuilt(instanceId, rootInstance, getInstanceLink);
+  if (linkedResult) return linkedResult;
+  
+  // Fallback: Detect by structure
+  const path = findPathToInstance(rootInstance, instanceId);
+  if (!path) return null;
+  
+  // Check each element in path (from current to root) for structure match
+  for (let i = path.length - 1; i >= 0; i--) {
+    const detectedPrebuiltId = detectPrebuiltByStructure(path[i]);
+    if (detectedPrebuiltId) {
+      return { prebuiltId: detectedPrebuiltId, linkedInstance: path[i] };
+    }
+  }
+  
+  return null;
+};
+
 // Component to show "Relative to" indicator for positioned elements
 const PositionRelativeToIndicator: React.FC<{ instanceId: string; positionType: string }> = ({
   instanceId,
@@ -4904,81 +5043,39 @@ export const StylePanel: React.FC<StylePanelProps> = ({
                   {/* Navigation Settings */}
                   {selectedInstance.type === "Navigation" && <NavigationDataEditor instance={selectedInstance} />}
 
-                  {/* Feature Card Settings - detect by prebuilt link (also checks ancestors) */}
+                  {/* Composite Prebuilt Data Editors - detect by link or structure */}
                   {(() => {
-                    const linkedAncestor = findLinkedAncestorPrebuilt(selectedInstance.id, rootInstance, getInstanceLink);
-                    const isFeatureCard = linkedAncestor?.prebuiltId === 'system-feature-card';
-                    return isFeatureCard && linkedAncestor ? <FeatureCardDataEditor instance={linkedAncestor.linkedInstance} /> : null;
-                  })()}
-
-                  {/* Testimonial Card Settings - detect by prebuilt link (also checks ancestors) */}
-                  {(() => {
-                    const linkedAncestor = findLinkedAncestorPrebuilt(selectedInstance.id, rootInstance, getInstanceLink);
-                    const isTestimonialCard = linkedAncestor?.prebuiltId === 'system-testimonial-card';
-                    return isTestimonialCard && linkedAncestor ? <TestimonialDataEditor instance={linkedAncestor.linkedInstance} /> : null;
-                  })()}
-
-                  {/* Hero Section Settings - detect by prebuilt link */}
-                  {(() => {
-                    const linkedAncestor = findLinkedAncestorPrebuilt(selectedInstance.id, rootInstance, getInstanceLink);
-                    const isHeroSection = linkedAncestor?.prebuiltId === 'system-hero-section';
-                    return isHeroSection && linkedAncestor ? <HeroSectionDataEditor instance={linkedAncestor.linkedInstance} /> : null;
-                  })()}
-
-                  {/* CTA Section Settings - detect by prebuilt link */}
-                  {(() => {
-                    const linkedAncestor = findLinkedAncestorPrebuilt(selectedInstance.id, rootInstance, getInstanceLink);
-                    const isCTASection = linkedAncestor?.prebuiltId === 'system-cta-section';
-                    return isCTASection && linkedAncestor ? <CTASectionDataEditor instance={linkedAncestor.linkedInstance} /> : null;
-                  })()}
-
-                  {/* Pricing Card Settings - detect by prebuilt link */}
-                  {(() => {
-                    const linkedAncestor = findLinkedAncestorPrebuilt(selectedInstance.id, rootInstance, getInstanceLink);
-                    const isPricingCard = linkedAncestor?.prebuiltId === 'system-pricing-card';
-                    return isPricingCard && linkedAncestor ? <PricingCardDataEditor instance={linkedAncestor.linkedInstance} /> : null;
-                  })()}
-
-                  {/* Footer Settings - detect by prebuilt link */}
-                  {(() => {
-                    const linkedAncestor = findLinkedAncestorPrebuilt(selectedInstance.id, rootInstance, getInstanceLink);
-                    const isFooter = linkedAncestor?.prebuiltId === 'system-footer';
-                    return isFooter && linkedAncestor ? <FooterDataEditor instance={linkedAncestor.linkedInstance} /> : null;
-                  })()}
-
-                  {/* Stats Card Settings - detect by prebuilt link */}
-                  {(() => {
-                    const linkedAncestor = findLinkedAncestorPrebuilt(selectedInstance.id, rootInstance, getInstanceLink);
-                    const isStatsCard = linkedAncestor?.prebuiltId === 'system-stats-card';
-                    return isStatsCard && linkedAncestor ? <StatsCardDataEditor instance={linkedAncestor.linkedInstance} /> : null;
-                  })()}
-
-                  {/* Login Form Settings - detect by prebuilt link */}
-                  {(() => {
-                    const linkedAncestor = findLinkedAncestorPrebuilt(selectedInstance.id, rootInstance, getInstanceLink);
-                    const isLoginForm = linkedAncestor?.prebuiltId === 'system-login-form';
-                    return isLoginForm && linkedAncestor ? <LoginFormDataEditor instance={linkedAncestor.linkedInstance} /> : null;
-                  })()}
-
-                  {/* Input Field Settings - detect by prebuilt link */}
-                  {(() => {
-                    const linkedAncestor = findLinkedAncestorPrebuilt(selectedInstance.id, rootInstance, getInstanceLink);
-                    const isInputField = linkedAncestor?.prebuiltId === 'system-input-field';
-                    return isInputField && linkedAncestor ? <InputFieldDataEditor instance={linkedAncestor.linkedInstance} /> : null;
-                  })()}
-
-                  {/* Calendar Settings - detect by prebuilt link */}
-                  {(() => {
-                    const linkedAncestor = findLinkedAncestorPrebuilt(selectedInstance.id, rootInstance, getInstanceLink);
-                    const isCalendar = linkedAncestor?.prebuiltId === 'system-calendar';
-                    return isCalendar && linkedAncestor ? <CalendarDataEditor instance={linkedAncestor.linkedInstance} /> : null;
-                  })()}
-
-                  {/* Command Palette Settings - detect by prebuilt link */}
-                  {(() => {
-                    const linkedAncestor = findLinkedAncestorPrebuilt(selectedInstance.id, rootInstance, getInstanceLink);
-                    const isCommandPalette = linkedAncestor?.prebuiltId === 'system-command';
-                    return isCommandPalette && linkedAncestor ? <CommandPaletteDataEditor instance={linkedAncestor.linkedInstance} /> : null;
+                    const prebuiltMatch = findPrebuiltEditor(selectedInstance.id, rootInstance, getInstanceLink);
+                    if (!prebuiltMatch) return null;
+                    
+                    const { prebuiltId, linkedInstance } = prebuiltMatch;
+                    
+                    switch (prebuiltId) {
+                      case 'system-feature-card':
+                        return <FeatureCardDataEditor instance={linkedInstance} />;
+                      case 'system-testimonial-card':
+                        return <TestimonialDataEditor instance={linkedInstance} />;
+                      case 'system-hero-section':
+                        return <HeroSectionDataEditor instance={linkedInstance} />;
+                      case 'system-cta-section':
+                        return <CTASectionDataEditor instance={linkedInstance} />;
+                      case 'system-pricing-card':
+                        return <PricingCardDataEditor instance={linkedInstance} />;
+                      case 'system-footer':
+                        return <FooterDataEditor instance={linkedInstance} />;
+                      case 'system-stats-card':
+                        return <StatsCardDataEditor instance={linkedInstance} />;
+                      case 'system-login-form':
+                        return <LoginFormDataEditor instance={linkedInstance} />;
+                      case 'system-input-field':
+                        return <InputFieldDataEditor instance={linkedInstance} />;
+                      case 'system-calendar':
+                        return <CalendarDataEditor instance={linkedInstance} />;
+                      case 'system-command':
+                        return <CommandPaletteDataEditor instance={linkedInstance} />;
+                      default:
+                        return null;
+                    }
                   })()}
                 </div>
               </>
