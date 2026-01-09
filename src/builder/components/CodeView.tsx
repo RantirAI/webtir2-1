@@ -32,9 +32,11 @@ interface CodeViewProps {
 export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames }) => {
   const rootInstance = useBuilderStore((state) => state.rootInstance);
   const updateInstance = useBuilderStore((state) => state.updateInstance);
-  const { getCurrentPage, getPageCustomCode } = usePageStore();
+  const { getCurrentPage, getPageCustomCode, getAllPages, getGlobalComponents } = usePageStore();
   const currentPage = getCurrentPage();
   const customCode = currentPage ? getPageCustomCode(currentPage.id) : { header: '', body: '', footer: '' };
+  const allProjectPages = getAllPages();
+  const globalComponents = getGlobalComponents();
   
   const [activeTab, setActiveTab] = useState('html');
   const [copiedTab, setCopiedTab] = useState<string | null>(null);
@@ -43,6 +45,7 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
   const [showCreateComponentDialog, setShowCreateComponentDialog] = useState(false);
   const defaultFile = pages.length > 0 ? `/pages/${pages[0].toLowerCase().replace(/\s+/g, '-')}.html` : '/pages/page-1.html';
   const [selectedFile, setSelectedFile] = useState(defaultFile);
+  const [currentPreviewPage, setCurrentPreviewPage] = useState(defaultFile);
   const [showAIChat, setShowAIChat] = useState(false);
   const [isCodeEdited, setIsCodeEdited] = useState(false);
   
@@ -405,7 +408,26 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
           <div className="h-full bg-muted/30 flex flex-col">
             {/* Preview Controls */}
             <div className="h-14 border-b border-border flex items-center justify-between px-4 bg-background/50">
-              <h3 className="text-sm font-medium text-muted-foreground">Preview</h3>
+              <div className="flex items-center gap-3">
+                <h3 className="text-sm font-medium text-muted-foreground">Preview</h3>
+                {/* Page selector for multi-page preview */}
+                {allProjectPages.length > 1 && (
+                  <select
+                    value={currentPreviewPage}
+                    onChange={(e) => setCurrentPreviewPage(e.target.value)}
+                    className="h-7 px-2 text-xs bg-muted border border-border rounded text-foreground"
+                  >
+                    {allProjectPages.map((page) => {
+                      const pagePath = `/pages/${page.name.toLowerCase().replace(/\s+/g, '-')}.html`;
+                      return (
+                        <option key={page.id} value={pagePath}>
+                          {page.name}
+                        </option>
+                      );
+                    })}
+                  </select>
+                )}
+              </div>
               <div className="flex gap-1">
                 <Button
                   variant={previewSize === 'desktop' ? 'secondary' : 'ghost'}
@@ -448,7 +470,11 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
                   <PreviewFrame 
                     htmlCode={htmlCode} 
                     cssCode={exportCSS()} 
-                    jsCode={jsCode} 
+                    jsCode={jsCode}
+                    allPages={allProjectPages}
+                    currentPage={currentPreviewPage}
+                    onNavigate={setCurrentPreviewPage}
+                    globalComponents={globalComponents}
                   />
                 </div>
               </div>
@@ -535,10 +561,34 @@ interface PreviewFrameProps {
   htmlCode: string;
   cssCode: string;
   jsCode: string;
+  allPages?: Array<{ id: string; name: string; rootInstance: any }>;
+  currentPage?: string;
+  onNavigate?: (pagePath: string) => void;
+  globalComponents?: { header: any; footer: any };
 }
 
-const PreviewFrame: React.FC<PreviewFrameProps> = ({ htmlCode, cssCode, jsCode }) => {
+const PreviewFrame: React.FC<PreviewFrameProps> = ({ 
+  htmlCode, 
+  cssCode, 
+  jsCode, 
+  allPages = [], 
+  currentPage,
+  onNavigate,
+  globalComponents 
+}) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  // Listen for navigation messages from iframe
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data?.type === 'navigate' && onNavigate) {
+        const pagePath = event.data.page;
+        onNavigate(pagePath);
+      }
+    };
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [onNavigate]);
 
   useEffect(() => {
     if (iframeRef.current) {
@@ -552,6 +602,34 @@ const PreviewFrame: React.FC<PreviewFrameProps> = ({ htmlCode, cssCode, jsCode }
         bodyContent = bodyContent
           .replace(/<script[^>]*src=[^>]*><\/script>/gi, '')
           .replace(/<link[^>]*rel=["']stylesheet["'][^>]*>/gi, '');
+        
+        // Build page paths map for navigation script
+        const pagePathsMap = allPages.reduce((acc, page) => {
+          const path = `/pages/${page.name.toLowerCase().replace(/\s+/g, '-')}.html`;
+          acc[path] = page.name;
+          return acc;
+        }, {} as Record<string, string>);
+        
+        // Navigation interception script
+        const navigationScript = `
+          // Intercept all anchor clicks for internal page navigation
+          document.addEventListener('click', (e) => {
+            const link = e.target.closest('a');
+            if (link && link.href) {
+              const url = new URL(link.href, window.location.origin);
+              const path = url.pathname;
+              const pageNames = ${JSON.stringify(pagePathsMap)};
+              
+              // Check if it's an internal page link
+              if (path.startsWith('/pages/') && path.endsWith('.html')) {
+                if (pageNames[path]) {
+                  e.preventDefault();
+                  window.parent.postMessage({ type: 'navigate', page: path }, '*');
+                }
+              }
+            }
+          });
+        `;
         
         // Build the complete preview HTML
         const previewHTML = `<!DOCTYPE html>
@@ -569,6 +647,7 @@ const PreviewFrame: React.FC<PreviewFrameProps> = ({ htmlCode, cssCode, jsCode }
     ${bodyContent}
     <script>
       try {
+        ${navigationScript}
         ${jsCode}
       } catch(e) {
         console.error('Preview script error:', e);
@@ -582,7 +661,7 @@ const PreviewFrame: React.FC<PreviewFrameProps> = ({ htmlCode, cssCode, jsCode }
         doc.close();
       }
     }
-  }, [htmlCode, cssCode, jsCode]);
+  }, [htmlCode, cssCode, jsCode, allPages]);
 
   return (
     <iframe

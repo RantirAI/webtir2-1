@@ -10,6 +10,11 @@ interface CustomCode {
 // Alias for backwards compatibility
 type PageCustomCode = CustomCode;
 
+interface GlobalComponents {
+  header: ComponentInstance | null;
+  footer: ComponentInstance | null;
+}
+
 interface PageData {
   id: string;
   name: string;
@@ -21,6 +26,7 @@ interface PageStore {
   pages: Record<string, PageData>;
   currentPageId: string;
   projectCustomCode: CustomCode; // Universal code for all pages
+  globalComponents: GlobalComponents; // Shared header/footer across all pages
   
   addPage: (name: string, rootInstance: ComponentInstance) => string;
   updatePage: (id: string, updates: Partial<PageData>) => void;
@@ -32,6 +38,9 @@ interface PageStore {
   getPageCustomCode: (id: string) => PageCustomCode;
   updateProjectCustomCode: (section: keyof CustomCode, code: string) => void;
   getProjectCustomCode: () => CustomCode;
+  setGlobalComponent: (slot: 'header' | 'footer', instance: ComponentInstance | null) => void;
+  getGlobalComponent: (slot: 'header' | 'footer') => ComponentInstance | null;
+  getGlobalComponents: () => GlobalComponents;
 }
 
 // Create initial page
@@ -58,6 +67,10 @@ export const usePageStore = create<PageStore>((set, get) => ({
   },
   currentPageId: initialPageId,
   projectCustomCode: { ...defaultCustomCode },
+  globalComponents: {
+    header: null,
+    footer: null,
+  },
   
   addPage: (name, rootInstance) => {
     const state = get();
@@ -138,5 +151,22 @@ export const usePageStore = create<PageStore>((set, get) => ({
   
   getProjectCustomCode: () => {
     return get().projectCustomCode;
+  },
+  
+  setGlobalComponent: (slot, instance) => {
+    set((state) => ({
+      globalComponents: {
+        ...state.globalComponents,
+        [slot]: instance,
+      },
+    }));
+  },
+  
+  getGlobalComponent: (slot) => {
+    return get().globalComponents[slot];
+  },
+  
+  getGlobalComponents: () => {
+    return get().globalComponents;
   },
 }));
