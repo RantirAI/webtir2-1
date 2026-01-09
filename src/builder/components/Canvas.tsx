@@ -227,6 +227,13 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
   const updateInstance = useBuilderStore((state) => state.updateInstance);
   const { findInstance } = useBuilderStore();
   const { getComputedStyles } = useStyleStore();
+  
+  // Global components from page store
+  const { getGlobalComponents } = usePageStore();
+  const globalComponents = getGlobalComponents();
+  const globalHeader = globalComponents.header;
+  const globalFooter = globalComponents.footer;
+  
   const [editingPageId, setEditingPageId] = useState<string | null>(null);
   const [isPanning, setIsPanning] = useState(false);
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });
@@ -1719,7 +1726,31 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
             ))}
 
 
+            {/* Global Header */}
+            {globalHeader && (
+              <div className="global-component-wrapper" data-global-slot="header">
+                {!isPreviewMode && (
+                  <div className="absolute top-0 left-0 right-0 z-10 bg-primary/10 border-b border-primary/30 px-2 py-0.5">
+                    <span className="text-[9px] font-medium text-primary">Global Header</span>
+                  </div>
+                )}
+                {renderInstance(globalHeader)}
+              </div>
+            )}
+            
             {pageRootInstance && renderInstance(pageRootInstance)}
+            
+            {/* Global Footer */}
+            {globalFooter && (
+              <div className="global-component-wrapper" data-global-slot="footer">
+                {!isPreviewMode && (
+                  <div className="absolute bottom-0 left-0 right-0 z-10 bg-primary/10 border-t border-primary/30 px-2 py-0.5">
+                    <span className="text-[9px] font-medium text-primary">Global Footer</span>
+                  </div>
+                )}
+                {renderInstance(globalFooter)}
+              </div>
+            )}
           </div>
           );
         })}

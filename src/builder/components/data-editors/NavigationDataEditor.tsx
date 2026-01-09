@@ -2,13 +2,14 @@ import React, { useRef } from 'react';
 import { ComponentInstance } from '../../store/types';
 import { useBuilderStore } from '../../store/useBuilderStore';
 import { useMediaStore } from '../../store/useMediaStore';
+import { usePageStore } from '../../store/usePageStore';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Plus, Trash2, GripVertical, Upload, X, ChevronDown } from 'lucide-react';
+import { Plus, Trash2, GripVertical, Upload, X, ChevronDown, Globe } from 'lucide-react';
 import { NavigationTemplate } from '../../utils/navigationTemplates';
 
 interface NavigationDataEditorProps {
@@ -47,7 +48,11 @@ const ACTIVE_PRESETS = [
 export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ instance }) => {
   const { updateInstance } = useBuilderStore();
   const { addAsset } = useMediaStore();
+  const { getAllPages, getGlobalComponent, setGlobalComponent } = usePageStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Get all pages for the page picker
+  const allPages = getAllPages();
 
   const menuItems = instance.props?.menuItems || [
     { text: 'Home', url: '#', id: '1' },
@@ -62,6 +67,10 @@ export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ inst
   const ctaText = instance.props?.ctaText || 'Get Started';
   const ctaUrl = instance.props?.ctaUrl || '#';
   const mobileBreakpoint = instance.props?.mobileBreakpoint || 768;
+  
+  // Check if this navigation is the global header
+  const currentGlobalHeader = getGlobalComponent('header');
+  const isGlobalHeader = currentGlobalHeader?.id === instance.id;
   
   // Hover & Active styles
   const hoverPreset = instance.props?.hoverPreset || 'underline-slide';
@@ -178,8 +187,43 @@ export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ inst
     });
   };
 
+  const handleGlobalHeaderToggle = (checked: boolean) => {
+    if (checked) {
+      // Make a deep copy of the instance for global storage
+      const instanceCopy = JSON.parse(JSON.stringify(instance));
+      setGlobalComponent('header', instanceCopy);
+    } else {
+      setGlobalComponent('header', null);
+    }
+  };
+
+  // Generate page URL from page name
+  const getPageUrl = (pageName: string) => {
+    return `/pages/${pageName.toLowerCase().replace(/\s+/g, '-')}.html`;
+  };
+
   return (
     <div className="space-y-3">
+      {/* Global Header Toggle */}
+      <div className="space-y-1.5 p-2 bg-primary/5 rounded-md border border-primary/20">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1.5">
+            <Globe className="w-3 h-3 text-primary" />
+            <Label className="text-[10px] font-medium text-foreground">Global Header</Label>
+          </div>
+          <Switch 
+            checked={isGlobalHeader}
+            onCheckedChange={handleGlobalHeaderToggle}
+            className="scale-75 origin-right"
+          />
+        </div>
+        <p className="text-[9px] text-muted-foreground">
+          {isGlobalHeader 
+            ? "This navigation appears on all pages." 
+            : "Enable to show this navigation on all pages automatically."}
+        </p>
+      </div>
+
       {/* Layout Template */}
       <div className="space-y-1.5">
         <Label className="text-[10px] font-medium text-foreground">Layout Template</Label>
@@ -260,12 +304,45 @@ export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ inst
                     placeholder="Label"
                     className="h-6 text-[10px] text-foreground bg-background"
                   />
-                  <Input
-                    value={item.url}
-                    onChange={(e) => handleMenuItemChange(index, 'url', e.target.value)}
-                    placeholder="URL"
-                    className="h-6 text-[10px] text-foreground bg-background font-mono"
-                  />
+                  {/* Page picker or custom URL */}
+                  <Select 
+                    value={item.url} 
+                    onValueChange={(value) => {
+                      if (value === '__custom__') {
+                        // Keep current value, user will type manually
+                      } else {
+                        handleMenuItemChange(index, 'url', value);
+                      }
+                    }}
+                  >
+                    <SelectTrigger className="h-6 text-[10px] text-foreground bg-background font-mono">
+                      <SelectValue placeholder="Select page or URL" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-popover">
+                      <SelectItem value="#" className="text-[10px]"># (Same page anchor)</SelectItem>
+                      {allPages.map((page) => (
+                        <SelectItem 
+                          key={page.id} 
+                          value={getPageUrl(page.name)} 
+                          className="text-[10px]"
+                        >
+                          📄 {page.name}
+                        </SelectItem>
+                      ))}
+                      <SelectItem value="__custom__" className="text-[10px] text-muted-foreground">
+                        Custom URL...
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {/* Show input for custom URLs */}
+                  {item.url && !item.url.startsWith('/pages/') && item.url !== '#' && (
+                    <Input
+                      value={item.url}
+                      onChange={(e) => handleMenuItemChange(index, 'url', e.target.value)}
+                      placeholder="https://example.com or #section"
+                      className="h-6 text-[10px] text-foreground bg-background font-mono"
+                    />
+                  )}
                 </div>
                 <Button
                   variant="ghost"
