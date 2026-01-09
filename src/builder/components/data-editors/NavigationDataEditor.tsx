@@ -46,7 +46,7 @@ const ACTIVE_PRESETS = [
 ];
 
 export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ instance }) => {
-  const { updateInstance } = useBuilderStore();
+  const { updateInstance, deleteInstance, addInstance } = useBuilderStore();
   const { addAsset } = useMediaStore();
   const { getAllPages, getGlobalComponent, setGlobalComponent } = usePageStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -192,7 +192,15 @@ export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ inst
       // Make a deep copy of the instance for global storage
       const instanceCopy = JSON.parse(JSON.stringify(instance));
       setGlobalComponent('header', instanceCopy);
+      // Remove the original instance from the page to prevent duplication
+      deleteInstance(instance.id);
     } else {
+      // When disabling global, add the component back to the current page
+      const globalInstance = getGlobalComponent('header');
+      if (globalInstance) {
+        const instanceCopy = JSON.parse(JSON.stringify(globalInstance));
+        addInstance(instanceCopy, 'root', 0);
+      }
       setGlobalComponent('header', null);
     }
   };
