@@ -9,18 +9,48 @@ const propertyAliases: Record<string, string> = {
   backgroundGradient: 'background-image',
 };
 
-// Combine background layers (from StyleSheetInjector logic)
+function toCssProp(prop: string) {
+  if (propertyAliases[prop]) {
+    return propertyAliases[prop];
+  }
+  return prop.replace(/([A-Z])/g, '-$1').toLowerCase();
+}
+
+// Combines background layers: fill color (overlay) on top of image/media
+// CSS background-image layers are stacked: first = top, last = bottom
 function combineBackgroundLayers(props: Record<string, string>): Record<string, string> {
   const result = { ...props };
-  const bgColor = result['background-color'] || result['backgroundColor'];
-  const bgImage = result['background-image'] || result['backgroundImage'];
-  
-  if (bgColor && bgImage) {
-    // Layer: gradient/image on top, solid color as fallback underneath
-    result['background-image'] = bgImage;
-    result['background-color'] = bgColor;
+
+  const bgColor = props['background-color'];
+  const bgImage = props['background-image'];
+  const bgGradient = props['background-gradient']; // optional custom prop
+
+  // Check if we have a fill color AND media (image or gradient)
+  if (bgColor && bgColor !== 'transparent' && (bgImage || bgGradient)) {
+    // Create a solid color gradient layer to sit on top
+    const colorOverlay = `linear-gradient(${bgColor}, ${bgColor})`;
+
+    // Combine layers: overlay first (top), then gradient, then image (bottom)
+    const layers: string[] = [colorOverlay];
+    if (bgGradient) layers.push(bgGradient);
+    if (bgImage) layers.push(bgImage);
+
+    result['background-image'] = layers.join(', ');
+
+    // Remove background-color since it's now part of background-image layers
+    delete result['background-color'];
+
+    // Adjust background-size and position to match layer count
+    const existingSize = props['background-size'] || 'cover';
+    const existingPosition = props['background-position'] || 'center';
+    const existingRepeat = props['background-repeat'] || 'no-repeat';
+
+    const layerCount = layers.length;
+    result['background-size'] = Array(layerCount).fill(existingSize).join(', ');
+    result['background-position'] = Array(layerCount).fill(existingPosition).join(', ');
+    result['background-repeat'] = Array(layerCount).fill(existingRepeat).join(', ');
   }
-  
+
   return result;
 }
 
@@ -86,7 +116,7 @@ body {
         const parts = key.split(':');
         if (parts.length === 4 && parts[0] === source.id && parts[1] === 'base' && parts[2] === state) {
           const property = parts[3];
-          baseStyles[property] = value;
+          baseStyles[toCssProp(property)] = value;
         }
       });
 
@@ -109,21 +139,24 @@ body {
       breakpoints.forEach(breakpoint => {
         if (breakpoint.id === 'base') return;
 
-        const responsiveStyles: StyleDeclaration = {};
+        const responsiveStyles: Record<string, string> = {};
         Object.entries(styles).forEach(([key, value]) => {
           const parts = key.split(':');
           if (parts.length === 4 && parts[0] === source.id && parts[1] === breakpoint.id && parts[2] === state) {
             const property = parts[3];
-            responsiveStyles[property] = value;
+            responsiveStyles[toCssProp(property)] = value;
           }
         });
 
-        if (Object.keys(responsiveStyles).length > 0) {
-          const mediaQuery = breakpoint.maxWidth 
+        // Combine background layers for breakpoint styles too
+        const finalResponsiveStyles = combineBackgroundLayers(responsiveStyles);
+
+        if (Object.keys(finalResponsiveStyles).length > 0) {
+          const mediaQuery = breakpoint.maxWidth
             ? `@media (max-width: ${breakpoint.maxWidth}px)`
             : `@media (min-width: ${breakpoint.minWidth}px)`;
-          
-          css += `${mediaQuery} {\n  ${stateSelector} {\n${styleObjectToCSS(responsiveStyles).split('\n').map(line => '  ' + line).join('\n')}\n  }\n}\n\n`;
+
+          css += `${mediaQuery} {\n  ${stateSelector} {\n${styleObjectToCSS(finalResponsiveStyles).split('\n').map(line => '  ' + line).join('\n')}\n  }\n}\n\n`;
         }
       });
     });
