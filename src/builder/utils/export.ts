@@ -2,22 +2,43 @@ import JSZip from 'jszip';
 import { ComponentInstance, StyleDeclaration } from '../store/types';
 import { useStyleStore } from '../store/useStyleStore';
 import { componentRegistry } from '../primitives/registry';
+import { compileMetadataToCSS } from './cssCompiler';
 
 // Map custom property names to valid CSS property names
 const propertyAliases: Record<string, string> = {
   backgroundGradient: 'background-image',
 };
 
+// Combine background layers (from StyleSheetInjector logic)
+function combineBackgroundLayers(props: Record<string, string>): Record<string, string> {
+  const result = { ...props };
+  const bgColor = result['background-color'] || result['backgroundColor'];
+  const bgImage = result['background-image'] || result['backgroundImage'];
+  
+  if (bgColor && bgImage) {
+    // Layer: gradient/image on top, solid color as fallback underneath
+    result['background-image'] = bgImage;
+    result['background-color'] = bgColor;
+  }
+  
+  return result;
+}
+
 // Convert style object to CSS string
-function styleObjectToCSS(styles: StyleDeclaration): string {
+function styleObjectToCSS(styles: StyleDeclaration | Record<string, string>): string {
   return Object.entries(styles)
     .filter(([_, value]) => value && value !== 'initial' && value !== 'inherit')
     .map(([property, value]) => {
       // Check for property alias first
       let cssProperty = propertyAliases[property];
       if (!cssProperty) {
-        // Convert camelCase to kebab-case
-        cssProperty = property.replace(/([A-Z])/g, '-$1').toLowerCase();
+        // Skip conversion if already kebab-case (contains hyphen)
+        if (property.includes('-')) {
+          cssProperty = property;
+        } else {
+          // Convert camelCase to kebab-case
+          cssProperty = property.replace(/([A-Z])/g, '-$1').toLowerCase();
+        }
       }
       return `  ${cssProperty}: ${value};`;
     })
@@ -60,7 +81,7 @@ body {
         : `.${className}:${state}`;
 
       // Base styles for this state
-      const baseStyles: StyleDeclaration = {};
+      const baseStyles: Record<string, string> = {};
       Object.entries(styles).forEach(([key, value]) => {
         const parts = key.split(':');
         if (parts.length === 4 && parts[0] === source.id && parts[1] === 'base' && parts[2] === state) {
@@ -69,8 +90,19 @@ body {
         }
       });
 
-      if (Object.keys(baseStyles).length > 0) {
-        css += `${stateSelector} {\n${styleObjectToCSS(baseStyles)}\n}\n\n`;
+      // Compile metadata (shadows, transforms, filters, transitions, backgrounds) for default state
+      if (state === 'default' && source.metadata) {
+        const metadataCSS = compileMetadataToCSS(source.metadata);
+        Object.entries(metadataCSS).forEach(([prop, value]) => {
+          baseStyles[prop] = value;
+        });
+      }
+
+      // Apply background layer combination
+      const finalStyles = combineBackgroundLayers(baseStyles);
+
+      if (Object.keys(finalStyles).length > 0) {
+        css += `${stateSelector} {\n${styleObjectToCSS(finalStyles)}\n}\n\n`;
       }
 
       // Responsive styles for this state
