@@ -2985,56 +2985,9 @@ export const StylePanel: React.FC<StylePanelProps> = ({
         </TabsContent>
 
         <TabsContent value="settings" className="flex-1 min-h-0 m-0 p-2 overflow-y-auto overflow-x-hidden">
-          {/* Navigation Template - unique to Settings tab */}
-          {selectedInstance.label === "Navigation" && (
-            <div className="space-y-2">
-              <label className="text-[10px] font-semibold text-foreground">Navigation Template</label>
-              <Select
-                value={selectedInstance.props?.template || "logo-left-menu-right"}
-                onValueChange={(value) => {
-                  const { applyTemplateToStyles } = require("../utils/navigationTemplates");
-                  const { setStyle } = useStyleStore.getState();
-                  updateInstance(selectedInstance.id, {
-                    props: { ...selectedInstance.props, template: value },
-                  });
-                  const logoBox = selectedInstance.children?.find((c) => c.children?.some((ch) => ch.type === "Image"));
-                  const linksBox = selectedInstance.children?.find((c) => c.children?.some((ch) => ch.type === "Link"));
-                  const buttonBox = selectedInstance.children?.find((c) =>
-                    c.children?.some((ch) => ch.type === "Button"),
-                  );
-                  if (logoBox && linksBox) {
-                    applyTemplateToStyles(
-                      value,
-                      selectedInstance.styleSourceIds?.[0],
-                      logoBox.styleSourceIds?.[0],
-                      linksBox.styleSourceIds?.[0],
-                      buttonBox?.styleSourceIds?.[0],
-                      setStyle,
-                    );
-                  }
-                }}
-              >
-                <SelectTrigger className="h-6 text-[10px]">
-                  <SelectValue placeholder="Select template" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="logo-left-menu-right">Logo Left + Menu Right</SelectItem>
-                  <SelectItem value="logo-right-menu-left">Logo Right + Menu Left</SelectItem>
-                  <SelectItem value="logo-center-split">Logo Center + Split Menu</SelectItem>
-                  <SelectItem value="stacked-center">Stacked</SelectItem>
-                  <SelectItem value="center-hamburger">Center Logo + Hamburger</SelectItem>
-                  <SelectItem value="logo-left-menu-center">Logo Left + Menu Center</SelectItem>
-                  <SelectItem value="minimal-logo">Minimal (Logo Only)</SelectItem>
-                  <SelectItem value="mega-menu">Mega Menu</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-          {selectedInstance.label !== "Navigation" && (
-            <div className="text-[10px] text-muted-foreground text-center py-4">
-              Component settings are in the Data tab
-            </div>
-          )}
+          <div className="text-[10px] text-muted-foreground text-center py-4">
+            Component settings are in the Data tab
+          </div>
         </TabsContent>
 
         <TabsContent value="pages" className="flex-1 min-h-0 m-0 p-0 overflow-y-auto overflow-x-hidden">

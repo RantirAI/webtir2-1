@@ -12,7 +12,7 @@ import { RantirExportModal } from './RantirExportModal';
 import { useRoleStore, UserRole } from '@/builder/store/useRoleStore';
 import { useCommentStore } from '@/builder/store/useCommentStore';
 import { useProjectSettingsStore } from '@/builder/store/useProjectSettingsStore';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -88,7 +88,7 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
   // Publishing state
   const [stagingDomain, setStagingDomain] = useState(() => {
     const slug = projectName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'my-project';
-    return `${slug}.wstd.io`;
+    return `${slug}.webtir.com`;
   });
   const [isPasswordProtected, setIsPasswordProtected] = useState(false);
   const [stagingUsername, setStagingUsername] = useState('admin');
@@ -441,37 +441,37 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
         <Eye className="w-3.5 h-3.5" />
       </Button>
 
-      {/* Publish Button */}
-      <Button 
-        variant="default" 
-        size="sm" 
-        className="h-8 px-3 gap-1.5 dark:bg-white dark:text-black dark:hover:bg-white/90"
-        onClick={() => setShowPublishDialog(true)}
-      >
-        <Rocket className="w-3.5 h-3.5" />
-        Publish
-      </Button>
-
-      {/* Publish Dialog */}
-      <Dialog open={showPublishDialog} onOpenChange={setShowPublishDialog}>
-        <DialogContent className="sm:max-w-[400px] p-0 gap-0 [&>button]:hidden">
-          <DialogHeader className="p-3 pb-1">
-            <DialogTitle className="text-sm font-semibold">Publish</DialogTitle>
-          </DialogHeader>
-          
+      {/* Publish Dropdown */}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button 
+            variant="default" 
+            size="sm" 
+            className="h-8 px-3 gap-1.5 dark:bg-white dark:text-black dark:hover:bg-white/90"
+          >
+            <Rocket className="w-3.5 h-3.5" />
+            Publish
+            <ChevronDown className="w-3 h-3 ml-0.5" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent 
+          align="end" 
+          side="top" 
+          className="z-[9999] bg-popover border border-border shadow-lg p-0 w-[280px]"
+        >
           <Tabs value={publishTab} onValueChange={(v) => setPublishTab(v as 'publish' | 'export')} className="w-full">
-            <div className="px-3">
-              <TabsList className="w-full flex rounded-none bg-transparent h-8 p-0 justify-start gap-1">
+            <div className="px-2 pt-2">
+              <TabsList className="w-full flex rounded-md bg-muted h-8 p-0.5 gap-0.5">
                 <TabsTrigger 
                   value="publish" 
-                  className="text-[10px] h-7 rounded-md px-2 data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none flex items-center gap-1"
+                  className="text-[10px] h-7 flex-1 rounded px-2 data-[state=active]:bg-background data-[state=active]:shadow-sm flex items-center justify-center gap-1"
                 >
                   <Rocket className="w-3 h-3" />
                   Publish
                 </TabsTrigger>
                 <TabsTrigger 
                   value="export" 
-                  className="text-[10px] h-7 rounded-md px-2 data-[state=active]:bg-[#F5F5F5] dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none flex items-center gap-1"
+                  className="text-[10px] h-7 flex-1 rounded px-2 data-[state=active]:bg-background data-[state=active]:shadow-sm flex items-center justify-center gap-1"
                 >
                   <Download className="w-3 h-3" />
                   Export
@@ -479,140 +479,134 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
               </TabsList>
             </div>
 
-            <TabsContent value="publish" className="p-3 pt-2 m-0 space-y-3">
+            <TabsContent value="publish" className="p-2 pt-2 m-0 space-y-2">
               {/* Staging URL */}
               <div className="flex items-center justify-between gap-2 p-2 bg-muted/50 rounded border">
-                <span className="text-xs font-medium truncate flex-1">{stagingDomain}</span>
+                <span className="text-[10px] font-medium truncate flex-1">{stagingDomain}</span>
                 <div className="flex items-center gap-1">
-                  {isPublished && <Check className="w-3.5 h-3.5 text-green-500" />}
+                  {isPublished && <Check className="w-3 h-3 text-green-500" />}
                   <button
                     onClick={() => window.open(`https://${stagingDomain}`, '_blank')}
-                    className="p-1 rounded hover:bg-background"
+                    className="p-0.5 rounded hover:bg-background"
                     title="Open site"
                   >
-                    <ExternalLink className="w-3.5 h-3.5" />
+                    <ExternalLink className="w-3 h-3" />
                   </button>
                 </div>
               </div>
 
               {/* Domain */}
               <div className="space-y-1">
-                <Label className="text-[10px] text-muted-foreground">Domain</Label>
+                <Label className="text-[9px] text-muted-foreground">Domain</Label>
                 <Input
-                  value={stagingDomain.replace('.wstd.io', '')}
-                  onChange={(e) => setStagingDomain(`${e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '')}.wstd.io`)}
-                  className="h-7 text-xs"
+                  value={stagingDomain.replace('.webtir.com', '')}
+                  onChange={(e) => setStagingDomain(`${e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '')}.webtir.com`)}
+                  className="h-7 text-[10px]"
                   placeholder="my-project"
                 />
               </div>
 
               {/* Password Protection */}
-              <div className="space-y-2 p-2 border rounded bg-muted/30">
+              <div className="space-y-1.5 p-2 border rounded bg-muted/30">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1">
                     {isPasswordProtected ? <Lock className="w-3 h-3 text-amber-500" /> : <Unlock className="w-3 h-3 text-muted-foreground" />}
-                    <span className="text-[10px] font-medium">Password Protection</span>
+                    <span className="text-[9px] font-medium">Password Protection</span>
                   </div>
                   <Switch
                     checked={isPasswordProtected}
                     onCheckedChange={setIsPasswordProtected}
-                    className="scale-75"
+                    className="scale-[0.65]"
                   />
                 </div>
                 
                 {isPasswordProtected && (
-                  <div className="space-y-2 pt-1">
-                    <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-1.5 pt-1">
+                    <div className="grid grid-cols-2 gap-1.5">
                       <div className="space-y-0.5">
-                        <Label className="text-[9px] text-muted-foreground">Username</Label>
+                        <Label className="text-[8px] text-muted-foreground">Username</Label>
                         <Input
                           value={stagingUsername}
                           onChange={(e) => setStagingUsername(e.target.value)}
-                          className="h-6 text-[10px]"
+                          className="h-5 text-[9px]"
                           placeholder="admin"
                         />
                       </div>
                       <div className="space-y-0.5">
-                        <Label className="text-[9px] text-muted-foreground">Password</Label>
+                        <Label className="text-[8px] text-muted-foreground">Password</Label>
                         <Input
                           type="password"
                           value={stagingPassword}
                           onChange={(e) => setStagingPassword(e.target.value)}
-                          className="h-6 text-[10px]"
+                          className="h-5 text-[9px]"
                           placeholder="••••••••"
                         />
                       </div>
                     </div>
-                    <p className="text-[9px] text-muted-foreground">
-                      Protects against phishing from staging domain
-                    </p>
                   </div>
                 )}
               </div>
 
               {/* Custom Domain */}
               <button
-                className="w-full flex items-center justify-between p-2 border rounded hover:bg-muted/50 transition-colors text-xs"
+                className="w-full flex items-center justify-between p-1.5 border rounded hover:bg-muted/50 transition-colors text-[10px]"
                 onClick={() => toast({ title: 'Coming Soon', description: 'Custom domain support is coming soon!' })}
               >
                 <span className="text-muted-foreground">Add a new domain</span>
-                <Plus className="w-3.5 h-3.5" />
+                <Plus className="w-3 h-3" />
               </button>
 
               {/* Publish Button */}
               <Button 
                 onClick={handlePublish} 
-                className="w-full h-9 text-xs font-medium"
+                className="w-full h-8 text-[10px] font-medium"
               >
-                <Rocket className="w-3.5 h-3.5 mr-1.5" />
+                <Rocket className="w-3 h-3 mr-1" />
                 {isPublished ? 'Update' : 'Publish'}
               </Button>
             </TabsContent>
 
-            <TabsContent value="export" className="p-3 pt-2 m-0 space-y-1">
+            <TabsContent value="export" className="p-2 pt-2 m-0 space-y-0.5">
               <button
                 onClick={handleExportReact}
-                className="w-full flex items-center gap-2 p-2 rounded hover:bg-muted transition-colors text-xs text-left"
+                className="w-full flex items-center gap-2 p-1.5 rounded hover:bg-muted transition-colors text-[10px] text-left"
               >
-                <FileCode className="w-3.5 h-3.5 text-muted-foreground" />
+                <FileCode className="w-3 h-3 text-muted-foreground" />
                 <span>Export React (.jsx)</span>
               </button>
               <button
                 onClick={handleExportHTML}
-                className="w-full flex items-center gap-2 p-2 rounded hover:bg-muted transition-colors text-xs text-left"
+                className="w-full flex items-center gap-2 p-1.5 rounded hover:bg-muted transition-colors text-[10px] text-left"
               >
-                <FileText className="w-3.5 h-3.5 text-muted-foreground" />
+                <FileText className="w-3 h-3 text-muted-foreground" />
                 <span>Export HTML</span>
               </button>
               <button
                 onClick={handleExportCSS}
-                className="w-full flex items-center gap-2 p-2 rounded hover:bg-muted transition-colors text-xs text-left"
+                className="w-full flex items-center gap-2 p-1.5 rounded hover:bg-muted transition-colors text-[10px] text-left"
               >
-                <Palette className="w-3.5 h-3.5 text-muted-foreground" />
+                <Palette className="w-3 h-3 text-muted-foreground" />
                 <span>Export CSS</span>
               </button>
               <Separator className="my-1" />
               <button
                 onClick={handleExportAll}
-                className="w-full flex items-center gap-2 p-2 rounded hover:bg-muted transition-colors text-xs text-left font-medium"
+                className="w-full flex items-center gap-2 p-1.5 rounded hover:bg-muted transition-colors text-[10px] text-left font-medium"
               >
-                <Download className="w-3.5 h-3.5 text-muted-foreground" />
+                <Download className="w-3 h-3 text-muted-foreground" />
                 <span>Export All (Legacy)</span>
               </button>
               <button
-                onClick={() => {
-                  setShowPublishDialog(false);
-                  setShowRantirModal(true);
-                }}
-                className="w-full flex items-center gap-2 p-2 rounded hover:bg-muted transition-colors text-xs text-left font-medium"
+                onClick={() => setShowRantirModal(true)}
+                className="w-full flex items-center gap-2 p-1.5 rounded hover:bg-muted transition-colors text-[10px] text-left font-medium"
               >
-                <Zap className="w-3.5 h-3.5 text-muted-foreground" />
-                <span>Export Rantir</span>
+                <Zap className="w-3 h-3 text-muted-foreground" />
+                <span>Export Astro</span>
               </button>
             </TabsContent>
           </Tabs>
-        </DialogContent>
-      </Dialog>
+        </DropdownMenuContent>
+      </DropdownMenu>
 
       <RantirExportModal
         open={showRantirModal}

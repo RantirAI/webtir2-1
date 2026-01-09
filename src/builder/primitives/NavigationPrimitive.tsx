@@ -438,8 +438,6 @@ export const NavigationPrimitive: React.FC<NavigationPrimitiveProps> = ({
 
   // Mobile view rendering
   if (isMobileView) {
-    const { mobile } = templateConfig;
-    
     return (
       <>
         <style>{dynamicStyles}</style>
@@ -447,30 +445,15 @@ export const NavigationPrimitive: React.FC<NavigationPrimitiveProps> = ({
           role="navigation"
           aria-label="Main Navigation"
           className={`nav-${instanceId} ${className}`}
-          style={{ width: '100%', ...style }}
+          style={{ width: '100%', position: 'relative', ...style }}
           data-instance-id={instanceId}
         >
+          {/* Mobile Header Bar */}
           <div 
-            className="flex items-center w-full px-4 py-3"
-            style={{
-              justifyContent: mobile.logoPosition === 'center' ? 'center' : 'space-between',
-            }}
+            className="flex items-center justify-between w-full px-4 py-3"
           >
-            {/* Hamburger on left */}
-            {mobile.hamburgerPosition === 'left' && (
-              <button
-                className="p-2 -ml-2"
-                onClick={toggleMobileMenu}
-                aria-expanded={isMobileMenuOpen}
-                aria-controls="mobile-menu"
-                aria-label="Toggle navigation menu"
-              >
-                {hamburgerIcon()}
-              </button>
-            )}
-
-            {/* Logo */}
-            <div className={mobile.logoPosition === 'center' ? 'absolute left-1/2 -translate-x-1/2' : ''}>
+            {/* Logo on left */}
+            <div>
               {logoImage ? (
                 <img 
                   src={logoImage} 
@@ -484,30 +467,29 @@ export const NavigationPrimitive: React.FC<NavigationPrimitiveProps> = ({
             </div>
 
             {/* Hamburger on right */}
-            {mobile.hamburgerPosition === 'right' && (
-              <button
-                className="p-2 -mr-2"
-                onClick={toggleMobileMenu}
-                aria-expanded={isMobileMenuOpen}
-                aria-controls="mobile-menu"
-                aria-label="Toggle navigation menu"
-              >
-                {hamburgerIcon()}
-              </button>
-            )}
+            <button
+              className="p-2 -mr-2"
+              onClick={toggleMobileMenu}
+              aria-expanded={isMobileMenuOpen}
+              aria-controls="mobile-menu"
+              aria-label="Toggle navigation menu"
+            >
+              {hamburgerIcon()}
+            </button>
           </div>
 
-          {/* Mobile Menu */}
+          {/* Mobile Menu - Full width below nav with high z-index */}
           <div
             id="mobile-menu"
-            className={`overflow-hidden transition-all ${getInitialMobileClasses()} ${getMobileAnimationClasses()}`}
+            className={`absolute left-0 right-0 top-full bg-background border-t border-border shadow-lg overflow-hidden transition-all ${getInitialMobileClasses()} ${getMobileAnimationClasses()}`}
             style={{ 
               transitionDuration: `${animationDuration}ms`,
-              transitionProperty: 'opacity, transform, max-height'
+              transitionProperty: 'opacity, transform, max-height',
+              zIndex: 2000,
             }}
             aria-hidden={!isMobileMenuOpen}
           >
-            <div className="flex flex-col px-4 py-2 border-t border-border">
+            <div className="flex flex-col px-4 py-2">
               {menuItems.map((item, index) => (
                 <a
                   key={item.id}
