@@ -51,11 +51,42 @@ export const DroppableContainer: React.FC<DroppableContainerProps> = ({
         const target = e.target as HTMLElement;
         const closestDroppable = target.closest('[data-droppable-id]');
         const clickedDroppableId = closestDroppable?.getAttribute('data-droppable-id');
+        
+        // Find the actual clicked instance element
+        const clickedInstanceEl = target.closest('[data-instance-id]');
+        const clickedInstanceId = clickedInstanceEl?.getAttribute('data-instance-id');
+
+        // If this is the Navigation root, handle clicks specially
+        if (isNavigationRoot) {
+          // Check if click was directly on a leaf element (Text, Link, Button, etc.)
+          // These are elements that have data-instance-id but are NOT droppable containers
+          const isLeafElement = clickedInstanceId && clickedInstanceId !== clickedDroppableId;
+          
+          if (isLeafElement) {
+            // Click was on a leaf child element - don't intercept, let normal selection happen
+            // But the leaf element's DraggableInstance should handle this
+            return;
+          }
+          
+          // Click was on the Container area (padding) or directly on Section
+          // Select the Navigation root
+          e.stopPropagation();
+          onSelect?.();
+          return;
+        }
 
         // If this is a Container inside Navigation and user clicked on this container's area,
         // let the click bubble up to the Navigation root
-        if (isInsideNavigation && instance.type === 'Container' && clickedDroppableId === instance.id) {
-          // Don't stop propagation - let parent Navigation handle selection
+        if (isInsideNavigation && instance.type === 'Container') {
+          // Check if click was on a leaf element inside this container
+          const isLeafElement = clickedInstanceId && clickedInstanceId !== clickedDroppableId;
+          
+          if (isLeafElement) {
+            // Click was on a leaf child - don't intercept
+            return;
+          }
+          
+          // Click was on Container padding - let it bubble to Navigation root
           return;
         }
 
