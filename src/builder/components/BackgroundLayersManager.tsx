@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { X, GripVertical, Paintbrush, Image as ImageIcon, Layers, Scissors } from 'lucide-react';
 import { ColorPicker } from './ColorPicker';
 import { GradientPicker } from './GradientPicker';
@@ -20,7 +20,6 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Button } from '@/components/ui/button';
 
 export type BackgroundLayerType = 'fill' | 'gradient' | 'media';
 
@@ -341,33 +340,27 @@ export const BackgroundLayersManager: React.FC<BackgroundLayersManagerProps> = (
 
       {/* Add Layer Buttons */}
       <div className="flex gap-1.5">
-        <Button
-          variant="outline"
-          size="sm"
+        <button
           onClick={() => addLayer('fill')}
-          className="flex-1 h-8 text-[10px] gap-1.5 border-dashed"
+          className="flex-1 h-8 text-[10px] gap-1.5 border border-dashed border-border rounded-md flex items-center justify-center bg-muted/50 hover:bg-accent text-foreground transition-colors"
         >
           <Paintbrush className="w-3.5 h-3.5" />
           Fill
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
+        </button>
+        <button
           onClick={() => addLayer('gradient')}
-          className="flex-1 h-8 text-[10px] gap-1.5 border-dashed"
+          className="flex-1 h-8 text-[10px] gap-1.5 border border-dashed border-border rounded-md flex items-center justify-center bg-muted/50 hover:bg-accent text-foreground transition-colors"
         >
           <Layers className="w-3.5 h-3.5" />
           Gradient
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
+        </button>
+        <button
           onClick={() => addLayer('media')}
-          className="flex-1 h-8 text-[10px] gap-1.5 border-dashed"
+          className="flex-1 h-8 text-[10px] gap-1.5 border border-dashed border-border rounded-md flex items-center justify-center bg-muted/50 hover:bg-accent text-foreground transition-colors"
         >
           <ImageIcon className="w-3.5 h-3.5" />
           Media
-        </Button>
+        </button>
       </div>
 
       {/* Clip Option - Only shown when layers exist */}
