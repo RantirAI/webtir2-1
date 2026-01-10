@@ -91,21 +91,63 @@ export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ inst
     return null;
   };
 
+  // Helper to find instance in either rootInstance OR global components
+  const findInstanceAnywhere = (id: string): ComponentInstance | null => {
+    const currentRoot = useBuilderStore.getState().rootInstance;
+    
+    // First search in page tree
+    const foundInTree = findInstanceInTree(currentRoot, id);
+    if (foundInTree) return foundInTree;
+    
+    // Then search in global components (header/footer)
+    const globalHeader = getGlobalComponent('header');
+    if (globalHeader) {
+      const foundInHeader = findInstanceInTree(globalHeader, id);
+      if (foundInHeader) return foundInHeader;
+    }
+    
+    const globalFooter = getGlobalComponent('footer');
+    if (globalFooter) {
+      const foundInFooter = findInstanceInTree(globalFooter, id);
+      if (foundInFooter) return foundInFooter;
+    }
+    
+    return null;
+  };
+
   // Helper to get fresh navigation children from current store state
   const getFreshNavChildren = () => {
-    const currentRoot = useBuilderStore.getState().rootInstance;
-    const currentInstance = findInstanceInTree(currentRoot, instance.id) || instance;
+    const currentInstance = findInstanceAnywhere(instance.id) || instance;
     if (isCompositionNavigation(currentInstance)) {
       return findNavChildren(currentInstance);
     }
     return { logoText: null, logoImage: null, menu: null, cta: null, container: null };
   };
 
+  // Get the global header to include in dependencies for reactivity
+  const globalHeader = getGlobalComponent('header');
+  const globalFooter = getGlobalComponent('footer');
+
   // Re-read the instance from the store to get fresh data after updates
-  // This ensures we react to changes in the tree
+  // This ensures we react to changes in the tree AND global components
   const freshInstance = useMemo(() => {
-    return findInstanceInTree(rootInstance, instance.id) || instance;
-  }, [rootInstance, instance.id]);
+    // Search in page tree first
+    const foundInTree = findInstanceInTree(rootInstance, instance.id);
+    if (foundInTree) return foundInTree;
+    
+    // Then search in global components
+    if (globalHeader) {
+      const foundInHeader = findInstanceInTree(globalHeader, instance.id);
+      if (foundInHeader) return foundInHeader;
+    }
+    
+    if (globalFooter) {
+      const foundInFooter = findInstanceInTree(globalFooter, instance.id);
+      if (foundInFooter) return foundInFooter;
+    }
+    
+    return instance;
+  }, [rootInstance, globalHeader, globalFooter, instance.id]);
 
   // Determine if this is the new composition-based navigation or the old monolithic one
   const isComposition = isCompositionNavigation(freshInstance);
