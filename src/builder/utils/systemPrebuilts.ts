@@ -1063,18 +1063,13 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
   });
 
   // ---------------------------------------------------------------------------
-  // ACCORDION (Composition-based - editable children)
+  // ACCORDION ITEM
   // ---------------------------------------------------------------------------
   const accordionId = generateId();
-  const accordionItem1Id = generateId();
-  const accordionTrigger1Id = generateId();
-  const accordionContent1Id = generateId();
-  const accordionItem2Id = generateId();
-  const accordionTrigger2Id = generateId();
-  const accordionContent2Id = generateId();
-  const accordionItem3Id = generateId();
-  const accordionTrigger3Id = generateId();
-  const accordionContent3Id = generateId();
+  const accordionHeaderId = generateId();
+  const accordionTitleId = generateId();
+  const accordionIconId = generateId();
+  const accordionContentId = generateId();
 
   prebuilts.push({
     id: 'system-accordion',
@@ -1082,121 +1077,21 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
     category: 'Interactive',
     instance: {
       id: accordionId,
-      type: 'Div' as ComponentType,
-      label: 'Div',
-      props: {},
+      type: 'Accordion' as ComponentType,
+      label: 'Accordion',
+      props: {
+        items: [
+          { id: '1', title: 'Is it accessible?', content: 'Yes. It adheres to the WAI-ARIA design pattern.', defaultOpen: true },
+          { id: '2', title: 'Is it styled?', content: 'Yes. It comes with default styles that match your design system.' },
+          { id: '3', title: 'Is it animated?', content: 'Yes. It supports smooth animations for expanding and collapsing.' },
+        ]
+      },
       styleSourceIds: ['style-accordion'],
-      children: [
-        {
-          id: accordionItem1Id,
-          type: 'Div' as ComponentType,
-          label: 'Div',
-          props: {},
-          styleSourceIds: ['style-accordion-item'],
-          children: [
-            {
-              id: accordionTrigger1Id,
-              type: 'Button' as ComponentType,
-              label: 'Button',
-              props: { children: 'Is it accessible?' },
-              styleSourceIds: ['style-accordion-trigger'],
-              children: [],
-            },
-            {
-              id: accordionContent1Id,
-              type: 'Text' as ComponentType,
-              label: 'Text',
-              props: { children: 'Yes. It adheres to the WAI-ARIA design pattern.' },
-              styleSourceIds: ['style-accordion-content'],
-              children: [],
-            },
-          ],
-        },
-        {
-          id: accordionItem2Id,
-          type: 'Div' as ComponentType,
-          label: 'Div',
-          props: {},
-          styleSourceIds: ['style-accordion-item'],
-          children: [
-            {
-              id: accordionTrigger2Id,
-              type: 'Button' as ComponentType,
-              label: 'Button',
-              props: { children: 'Is it styled?' },
-              styleSourceIds: ['style-accordion-trigger'],
-              children: [],
-            },
-            {
-              id: accordionContent2Id,
-              type: 'Text' as ComponentType,
-              label: 'Text',
-              props: { children: 'Yes. It comes with default styles that match your design system.' },
-              styleSourceIds: ['style-accordion-content'],
-              children: [],
-            },
-          ],
-        },
-        {
-          id: accordionItem3Id,
-          type: 'Div' as ComponentType,
-          label: 'Div',
-          props: {},
-          styleSourceIds: ['style-accordion-item'],
-          children: [
-            {
-              id: accordionTrigger3Id,
-              type: 'Button' as ComponentType,
-              label: 'Button',
-              props: { children: 'Is it animated?' },
-              styleSourceIds: ['style-accordion-trigger'],
-              children: [],
-            },
-            {
-              id: accordionContent3Id,
-              type: 'Text' as ComponentType,
-              label: 'Text',
-              props: { children: 'Yes. It supports smooth animations for expanding and collapsing.' },
-              styleSourceIds: ['style-accordion-content'],
-              children: [],
-            },
-          ],
-        },
-      ],
+      children: [],
     },
     defaultStyles: {
       'style-accordion': createStyleEntry({
-        display: 'flex',
-        flexDirection: 'column',
         width: '100%',
-        gap: '8px',
-      }),
-      'style-accordion-item': createStyleEntry({
-        display: 'flex',
-        flexDirection: 'column',
-        border: '1px solid hsl(var(--border))',
-        borderRadius: '8px',
-        overflow: 'hidden',
-      }),
-      'style-accordion-trigger': createStyleEntry({
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '16px',
-        fontSize: '14px',
-        fontWeight: '500',
-        backgroundColor: 'hsl(var(--background))',
-        border: 'none',
-        cursor: 'pointer',
-        textAlign: 'left',
-        width: '100%',
-        color: 'hsl(var(--foreground))',
-      }),
-      'style-accordion-content': createStyleEntry({
-        padding: '0 16px 16px 16px',
-        fontSize: '14px',
-        color: 'hsl(var(--muted-foreground))',
-        lineHeight: '1.6',
       }),
     },
   });
@@ -1371,7 +1266,7 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
   });
 
   // ---------------------------------------------------------------------------
-  // BREADCRUMB (Composition-based - editable children)
+  // BREADCRUMB
   // ---------------------------------------------------------------------------
   const breadcrumbId = generateId();
   const breadcrumb1Id = generateId();
@@ -1386,52 +1281,18 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
     category: 'Navigation',
     instance: {
       id: breadcrumbId,
-      type: 'Div' as ComponentType,
-      label: 'Div',
-      props: {},
+      type: 'Breadcrumb' as ComponentType,
+      label: 'Breadcrumb',
+      props: {
+        items: [
+          { id: '1', label: 'Home', href: '/' },
+          { id: '2', label: 'Products', href: '/products' },
+          { id: '3', label: 'Current Page', href: '' },
+        ],
+        separator: '/',
+      },
       styleSourceIds: ['style-breadcrumb'],
-      children: [
-        {
-          id: breadcrumb1Id,
-          type: 'Link' as ComponentType,
-          label: 'Link',
-          props: { children: 'Home', href: '/' },
-          styleSourceIds: ['style-breadcrumb-link'],
-          children: [],
-        },
-        {
-          id: breadcrumbSep1Id,
-          type: 'Text' as ComponentType,
-          label: 'Text',
-          props: { children: '/' },
-          styleSourceIds: ['style-breadcrumb-sep'],
-          children: [],
-        },
-        {
-          id: breadcrumb2Id,
-          type: 'Link' as ComponentType,
-          label: 'Link',
-          props: { children: 'Products', href: '/products' },
-          styleSourceIds: ['style-breadcrumb-link'],
-          children: [],
-        },
-        {
-          id: breadcrumbSep2Id,
-          type: 'Text' as ComponentType,
-          label: 'Text',
-          props: { children: '/' },
-          styleSourceIds: ['style-breadcrumb-sep'],
-          children: [],
-        },
-        {
-          id: breadcrumb3Id,
-          type: 'Text' as ComponentType,
-          label: 'Text',
-          props: { children: 'Current Page' },
-          styleSourceIds: ['style-breadcrumb-current'],
-          children: [],
-        },
-      ],
+      children: [],
     },
     defaultStyles: {
       'style-breadcrumb': createStyleEntry({
@@ -1444,7 +1305,16 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
         color: 'hsl(var(--muted-foreground))',
         textDecoration: 'none',
       }),
+      'style-breadcrumb-link-2': createStyleEntry({
+        fontSize: '14px',
+        color: 'hsl(var(--muted-foreground))',
+        textDecoration: 'none',
+      }),
       'style-breadcrumb-sep': createStyleEntry({
+        fontSize: '14px',
+        color: 'hsl(var(--muted-foreground))',
+      }),
+      'style-breadcrumb-sep-2': createStyleEntry({
         fontSize: '14px',
         color: 'hsl(var(--muted-foreground))',
       }),
@@ -1586,22 +1456,14 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
   });
 
   // ---------------------------------------------------------------------------
-  // CAROUSEL (Composition-based - editable children)
+  // CAROUSEL
   // ---------------------------------------------------------------------------
   const carouselId = generateId();
   const carouselTrackId = generateId();
   const carouselSlide1Id = generateId();
-  const carouselSlide1ImageId = generateId();
-  const carouselSlide1TitleId = generateId();
-  const carouselSlide1DescId = generateId();
   const carouselSlide2Id = generateId();
-  const carouselSlide2ImageId = generateId();
-  const carouselSlide2TitleId = generateId();
-  const carouselSlide2DescId = generateId();
   const carouselSlide3Id = generateId();
-  const carouselSlide3ImageId = generateId();
-  const carouselSlide3TitleId = generateId();
-  const carouselSlide3DescId = generateId();
+  const carouselDotsId = generateId();
 
   prebuilts.push({
     id: 'system-carousel',
@@ -1609,120 +1471,21 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
     category: 'Interactive',
     instance: {
       id: carouselId,
-      type: 'Div' as ComponentType,
-      label: 'Div',
-      props: {},
+      type: 'Carousel' as ComponentType,
+      label: 'Carousel',
+      props: {
+        slides: [
+          { id: '1', imageUrl: '', title: 'Slide 1', description: 'First slide content' },
+          { id: '2', imageUrl: '', title: 'Slide 2', description: 'Second slide content' },
+          { id: '3', imageUrl: '', title: 'Slide 3', description: 'Third slide content' },
+        ],
+        autoPlay: false,
+        loop: true,
+        showArrows: true,
+        showDots: true,
+      },
       styleSourceIds: ['style-carousel'],
-      children: [
-        {
-          id: carouselTrackId,
-          type: 'Div' as ComponentType,
-          label: 'Div',
-          props: {},
-          styleSourceIds: ['style-carousel-track'],
-          children: [
-            {
-              id: carouselSlide1Id,
-              type: 'Div' as ComponentType,
-              label: 'Div',
-              props: {},
-              styleSourceIds: ['style-carousel-slide'],
-              children: [
-                {
-                  id: carouselSlide1ImageId,
-                  type: 'Image' as ComponentType,
-                  label: 'Image',
-                  props: { src: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&h=400&fit=crop', alt: 'Slide 1' },
-                  styleSourceIds: ['style-slide-image'],
-                  children: [],
-                },
-                {
-                  id: carouselSlide1TitleId,
-                  type: 'Heading' as ComponentType,
-                  label: 'Heading',
-                  props: { level: 'h3', children: 'Slide 1' },
-                  styleSourceIds: ['style-slide-title'],
-                  children: [],
-                },
-                {
-                  id: carouselSlide1DescId,
-                  type: 'Text' as ComponentType,
-                  label: 'Text',
-                  props: { children: 'First slide content goes here' },
-                  styleSourceIds: ['style-slide-desc'],
-                  children: [],
-                },
-              ],
-            },
-            {
-              id: carouselSlide2Id,
-              type: 'Div' as ComponentType,
-              label: 'Div',
-              props: {},
-              styleSourceIds: ['style-carousel-slide'],
-              children: [
-                {
-                  id: carouselSlide2ImageId,
-                  type: 'Image' as ComponentType,
-                  label: 'Image',
-                  props: { src: 'https://images.unsplash.com/photo-1557682250-33bd709cbe85?w=800&h=400&fit=crop', alt: 'Slide 2' },
-                  styleSourceIds: ['style-slide-image'],
-                  children: [],
-                },
-                {
-                  id: carouselSlide2TitleId,
-                  type: 'Heading' as ComponentType,
-                  label: 'Heading',
-                  props: { level: 'h3', children: 'Slide 2' },
-                  styleSourceIds: ['style-slide-title'],
-                  children: [],
-                },
-                {
-                  id: carouselSlide2DescId,
-                  type: 'Text' as ComponentType,
-                  label: 'Text',
-                  props: { children: 'Second slide content goes here' },
-                  styleSourceIds: ['style-slide-desc'],
-                  children: [],
-                },
-              ],
-            },
-            {
-              id: carouselSlide3Id,
-              type: 'Div' as ComponentType,
-              label: 'Div',
-              props: {},
-              styleSourceIds: ['style-carousel-slide'],
-              children: [
-                {
-                  id: carouselSlide3ImageId,
-                  type: 'Image' as ComponentType,
-                  label: 'Image',
-                  props: { src: 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=800&h=400&fit=crop', alt: 'Slide 3' },
-                  styleSourceIds: ['style-slide-image'],
-                  children: [],
-                },
-                {
-                  id: carouselSlide3TitleId,
-                  type: 'Heading' as ComponentType,
-                  label: 'Heading',
-                  props: { level: 'h3', children: 'Slide 3' },
-                  styleSourceIds: ['style-slide-title'],
-                  children: [],
-                },
-                {
-                  id: carouselSlide3DescId,
-                  type: 'Text' as ComponentType,
-                  label: 'Text',
-                  props: { children: 'Third slide content goes here' },
-                  styleSourceIds: ['style-slide-desc'],
-                  children: [],
-                },
-              ],
-            },
-          ],
-        },
-      ],
+      children: [],
     },
     defaultStyles: {
       'style-carousel': createStyleEntry({
@@ -1736,27 +1499,31 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
         gap: '16px',
       }),
       'style-carousel-slide': createStyleEntry({
-        display: 'flex',
-        flexDirection: 'column',
         flexShrink: '0',
         width: '100%',
-        gap: '12px',
-      }),
-      'style-slide-image': createStyleEntry({
-        width: '100%',
         height: '200px',
-        objectFit: 'cover',
+        backgroundColor: 'hsl(var(--muted))',
         borderRadius: '8px',
       }),
-      'style-slide-title': createStyleEntry({
-        fontSize: '20px',
-        fontWeight: '600',
-        color: 'hsl(var(--foreground))',
+      'style-carousel-slide-2': createStyleEntry({
+        flexShrink: '0',
+        width: '100%',
+        height: '200px',
+        backgroundColor: 'hsl(var(--muted))',
+        borderRadius: '8px',
       }),
-      'style-slide-desc': createStyleEntry({
-        fontSize: '14px',
-        color: 'hsl(var(--muted-foreground))',
-        lineHeight: '1.6',
+      'style-carousel-slide-3': createStyleEntry({
+        flexShrink: '0',
+        width: '100%',
+        height: '200px',
+        backgroundColor: 'hsl(var(--muted))',
+        borderRadius: '8px',
+      }),
+      'style-carousel-dots': createStyleEntry({
+        display: 'flex',
+        justifyContent: 'center',
+        gap: '8px',
+        marginTop: '16px',
       }),
     },
   });
@@ -2569,21 +2336,19 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
   });
 
   // ---------------------------------------------------------------------------
-  // TABLE (Composition-based - editable children)
+  // TABLE
   // ---------------------------------------------------------------------------
   const tableId = generateId();
-  const tableHeaderRowId = generateId();
+  const tableHeaderId = generateId();
+  const tableHeaderRow = generateId();
   const tableH1Id = generateId();
   const tableH2Id = generateId();
   const tableH3Id = generateId();
+  const tableBodyId = generateId();
   const tableRow1Id = generateId();
-  const tableCell1_1Id = generateId();
-  const tableCell1_2Id = generateId();
-  const tableCell1_3Id = generateId();
-  const tableRow2Id = generateId();
-  const tableCell2_1Id = generateId();
-  const tableCell2_2Id = generateId();
-  const tableCell2_3Id = generateId();
+  const tableD1Id = generateId();
+  const tableD2Id = generateId();
+  const tableD3Id = generateId();
 
   prebuilts.push({
     id: 'system-table',
@@ -2591,161 +2356,43 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
     category: 'Data Display',
     instance: {
       id: tableId,
-      type: 'Div' as ComponentType,
-      label: 'Div',
-      props: {},
-      styleSourceIds: ['style-table'],
-      children: [
-        {
-          id: tableHeaderRowId,
-          type: 'Div' as ComponentType,
-          label: 'Div',
-          props: {},
-          styleSourceIds: ['style-table-header-row'],
-          children: [
-            {
-              id: tableH1Id,
-              type: 'Text' as ComponentType,
-              label: 'Text',
-              props: { children: 'Name' },
-              styleSourceIds: ['style-table-header-cell'],
-              children: [],
-            },
-            {
-              id: tableH2Id,
-              type: 'Text' as ComponentType,
-              label: 'Text',
-              props: { children: 'Status' },
-              styleSourceIds: ['style-table-header-cell'],
-              children: [],
-            },
-            {
-              id: tableH3Id,
-              type: 'Text' as ComponentType,
-              label: 'Text',
-              props: { children: 'Amount' },
-              styleSourceIds: ['style-table-header-cell'],
-              children: [],
-            },
-          ],
-        },
-        {
-          id: tableRow1Id,
-          type: 'Div' as ComponentType,
-          label: 'Div',
-          props: {},
-          styleSourceIds: ['style-table-row'],
-          children: [
-            {
-              id: tableCell1_1Id,
-              type: 'Text' as ComponentType,
-              label: 'Text',
-              props: { children: 'John Doe' },
-              styleSourceIds: ['style-table-cell'],
-              children: [],
-            },
-            {
-              id: tableCell1_2Id,
-              type: 'Text' as ComponentType,
-              label: 'Text',
-              props: { children: 'Active' },
-              styleSourceIds: ['style-table-cell'],
-              children: [],
-            },
-            {
-              id: tableCell1_3Id,
-              type: 'Text' as ComponentType,
-              label: 'Text',
-              props: { children: '$250.00' },
-              styleSourceIds: ['style-table-cell'],
-              children: [],
-            },
-          ],
-        },
-        {
-          id: tableRow2Id,
-          type: 'Div' as ComponentType,
-          label: 'Div',
-          props: {},
-          styleSourceIds: ['style-table-row'],
-          children: [
-            {
-              id: tableCell2_1Id,
-              type: 'Text' as ComponentType,
-              label: 'Text',
-              props: { children: 'Jane Smith' },
-              styleSourceIds: ['style-table-cell'],
-              children: [],
-            },
-            {
-              id: tableCell2_2Id,
-              type: 'Text' as ComponentType,
-              label: 'Text',
-              props: { children: 'Pending' },
-              styleSourceIds: ['style-table-cell'],
-              children: [],
-            },
-            {
-              id: tableCell2_3Id,
-              type: 'Text' as ComponentType,
-              label: 'Text',
-              props: { children: '$150.00' },
-              styleSourceIds: ['style-table-cell'],
-              children: [],
-            },
-          ],
-        },
-      ],
+      type: 'Table' as ComponentType,
+      label: 'Table',
+      props: {
+        columns: [
+          { id: 'name', header: 'Name', accessor: 'name' },
+          { id: 'status', header: 'Status', accessor: 'status' },
+          { id: 'amount', header: 'Amount', accessor: 'amount' },
+        ],
+        rows: [
+          { id: '1', name: 'John Doe', status: 'Active', amount: '$250.00' },
+          { id: '2', name: 'Jane Smith', status: 'Pending', amount: '$150.00' },
+        ],
+        showHeader: true,
+        striped: false,
+      },
+      styleSourceIds: ['style-table-wrapper'],
+      children: [],
     },
     defaultStyles: {
-      'style-table': createStyleEntry({
-        display: 'flex',
-        flexDirection: 'column',
+      'style-table-wrapper': createStyleEntry({
         width: '100%',
         border: '1px solid hsl(var(--border))',
         borderRadius: '8px',
         overflow: 'hidden',
       }),
-      'style-table-header-row': createStyleEntry({
-        display: 'flex',
-        backgroundColor: 'hsl(var(--muted))',
-        borderBottom: '1px solid hsl(var(--border))',
-      }),
-      'style-table-header-cell': createStyleEntry({
-        flex: '1',
-        padding: '12px 16px',
-        fontSize: '14px',
-        fontWeight: '600',
-        color: 'hsl(var(--foreground))',
-      }),
-      'style-table-row': createStyleEntry({
-        display: 'flex',
-        borderBottom: '1px solid hsl(var(--border))',
-      }),
-      'style-table-cell': createStyleEntry({
-        flex: '1',
-        padding: '12px 16px',
-        fontSize: '14px',
-        color: 'hsl(var(--muted-foreground))',
-      }),
     },
   });
 
   // ---------------------------------------------------------------------------
-  // TABS (Composition-based - editable children)
+  // TABS
   // ---------------------------------------------------------------------------
   const tabsId = generateId();
   const tabsListId = generateId();
   const tab1Id = generateId();
   const tab2Id = generateId();
   const tab3Id = generateId();
-  const tabPanelsId = generateId();
-  const tabPanel1Id = generateId();
-  const tabPanel1ContentId = generateId();
-  const tabPanel2Id = generateId();
-  const tabPanel2ContentId = generateId();
-  const tabPanel3Id = generateId();
-  const tabPanel3ContentId = generateId();
+  const tabsContentId = generateId();
 
   prebuilts.push({
     id: 'system-tabs',
@@ -2753,105 +2400,18 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
     category: 'Navigation',
     instance: {
       id: tabsId,
-      type: 'Div' as ComponentType,
-      label: 'Div',
-      props: {},
+      type: 'Tabs' as ComponentType,
+      label: 'Tabs',
+      props: {
+        tabs: [
+          { id: 'account', label: 'Account', content: 'Account settings and preferences.' },
+          { id: 'password', label: 'Password', content: 'Change your password here.' },
+          { id: 'settings', label: 'Settings', content: 'Other settings.' },
+        ],
+        defaultTab: 'account',
+      },
       styleSourceIds: ['style-tabs'],
-      children: [
-        {
-          id: tabsListId,
-          type: 'Div' as ComponentType,
-          label: 'Div',
-          props: {},
-          styleSourceIds: ['style-tabs-list'],
-          children: [
-            {
-              id: tab1Id,
-              type: 'Button' as ComponentType,
-              label: 'Button',
-              props: { children: 'Account' },
-              styleSourceIds: ['style-tab-active'],
-              children: [],
-            },
-            {
-              id: tab2Id,
-              type: 'Button' as ComponentType,
-              label: 'Button',
-              props: { children: 'Password' },
-              styleSourceIds: ['style-tab'],
-              children: [],
-            },
-            {
-              id: tab3Id,
-              type: 'Button' as ComponentType,
-              label: 'Button',
-              props: { children: 'Settings' },
-              styleSourceIds: ['style-tab'],
-              children: [],
-            },
-          ],
-        },
-        {
-          id: tabPanelsId,
-          type: 'Div' as ComponentType,
-          label: 'Div',
-          props: {},
-          styleSourceIds: ['style-tab-panels'],
-          children: [
-            {
-              id: tabPanel1Id,
-              type: 'Div' as ComponentType,
-              label: 'Div',
-              props: {},
-              styleSourceIds: ['style-tab-panel'],
-              children: [
-                {
-                  id: tabPanel1ContentId,
-                  type: 'Text' as ComponentType,
-                  label: 'Text',
-                  props: { children: 'Account settings and preferences. Manage your profile, email, and account details here.' },
-                  styleSourceIds: ['style-tab-content'],
-                  children: [],
-                },
-              ],
-            },
-            {
-              id: tabPanel2Id,
-              type: 'Div' as ComponentType,
-              label: 'Div',
-              props: {},
-              styleSourceIds: ['style-tab-panel-hidden'],
-              children: [
-                {
-                  id: tabPanel2ContentId,
-                  type: 'Text' as ComponentType,
-                  label: 'Text',
-                  props: { children: 'Change your password here. Make sure to use a strong password.' },
-                  styleSourceIds: ['style-tab-content'],
-                  children: [],
-                },
-              ],
-            },
-            {
-              id: tabPanel3Id,
-              type: 'Div' as ComponentType,
-              label: 'Div',
-              props: {},
-              styleSourceIds: ['style-tab-panel-hidden'],
-              children: [
-                {
-                  id: tabPanel3ContentId,
-                  type: 'Text' as ComponentType,
-                  label: 'Text',
-                  props: { children: 'Other settings. Configure notifications, privacy, and more.' },
-                  styleSourceIds: ['style-tab-content'],
-                  children: [],
-                },
-              ],
-            },
-          ],
-        },
-      ],
+      children: [],
     },
     defaultStyles: {
       'style-tabs': createStyleEntry({
@@ -2884,20 +2444,10 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
         borderBottom: '2px solid hsl(var(--primary))',
         cursor: 'pointer',
       }),
-      'style-tab-panels': createStyleEntry({
-        display: 'flex',
-        flexDirection: 'column',
-      }),
-      'style-tab-panel': createStyleEntry({
-        display: 'block',
-      }),
-      'style-tab-panel-hidden': createStyleEntry({
-        display: 'none',
-      }),
       'style-tab-content': createStyleEntry({
+        padding: '16px 0',
         fontSize: '14px',
         color: 'hsl(var(--muted-foreground))',
-        lineHeight: '1.6',
       }),
     },
   });
