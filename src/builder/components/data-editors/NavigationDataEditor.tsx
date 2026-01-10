@@ -48,7 +48,7 @@ const ACTIVE_PRESETS = [
 export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ instance }) => {
   const { updateInstance, deleteInstance, addInstance } = useBuilderStore();
   const { addAsset } = useMediaStore();
-  const { getAllPages, getGlobalComponent, setGlobalComponent } = usePageStore();
+  const { getAllPages, getGlobalComponent, setGlobalComponent, currentPageId, setPageGlobalOverride, getPageGlobalOverrides } = usePageStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Get all pages for the page picker
@@ -71,6 +71,10 @@ export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ inst
   // Check if this navigation is the global header
   const currentGlobalHeader = getGlobalComponent('header');
   const isGlobalHeader = currentGlobalHeader?.id === instance.id;
+  
+  // Per-page visibility for global header
+  const pageOverrides = getPageGlobalOverrides(currentPageId);
+  const isHiddenOnCurrentPage = pageOverrides.hideHeader ?? false;
   
   // Hover & Active styles
   const hoverPreset = instance.props?.hoverPreset || 'underline-slide';
@@ -205,15 +209,22 @@ export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ inst
     }
   };
 
+  const handleHideOnPageToggle = (hide: boolean) => {
+    setPageGlobalOverride(currentPageId, 'header', hide);
+  };
+
   // Generate page URL from page name
   const getPageUrl = (pageName: string) => {
     return `/pages/${pageName.toLowerCase().replace(/\s+/g, '-')}.html`;
   };
 
+  // Get current page name for display
+  const currentPageName = allPages.find(p => p.id === currentPageId)?.name || 'this page';
+
   return (
     <div className="space-y-3">
       {/* Global Header Toggle */}
-      <div className="space-y-1.5 p-2 bg-primary/5 rounded-md border border-primary/20">
+      <div className="space-y-2 p-2 bg-primary/5 rounded-md border border-primary/20">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
             <Globe className="w-3 h-3 text-primary" />
@@ -227,9 +238,28 @@ export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ inst
         </div>
         <p className="text-[9px] text-muted-foreground">
           {isGlobalHeader 
-            ? "This navigation appears on all pages." 
+            ? "This navigation appears on all pages by default." 
             : "Enable to show this navigation on all pages automatically."}
         </p>
+        
+        {/* Per-page visibility toggle - only show when it's a global header */}
+        {isGlobalHeader && (
+          <div className="pt-2 mt-2 border-t border-primary/10">
+            <div className="flex items-center justify-between">
+              <Label className="text-[10px] text-muted-foreground">Hide on "{currentPageName}"</Label>
+              <Switch 
+                checked={isHiddenOnCurrentPage}
+                onCheckedChange={handleHideOnPageToggle}
+                className="scale-75 origin-right"
+              />
+            </div>
+            <p className="text-[9px] text-muted-foreground mt-1">
+              {isHiddenOnCurrentPage 
+                ? "Hidden on this page only. Other pages still show it." 
+                : "Toggle to hide this header on the current page only."}
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Layout Template */}
