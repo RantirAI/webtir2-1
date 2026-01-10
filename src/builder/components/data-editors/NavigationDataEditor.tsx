@@ -91,6 +91,16 @@ export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ inst
     return null;
   };
 
+  // Helper to get fresh navigation children from current store state
+  const getFreshNavChildren = () => {
+    const currentRoot = useBuilderStore.getState().rootInstance;
+    const currentInstance = findInstanceInTree(currentRoot, instance.id) || instance;
+    if (isCompositionNavigation(currentInstance)) {
+      return findNavChildren(currentInstance);
+    }
+    return { logoText: null, logoImage: null, menu: null, cta: null, container: null };
+  };
+
   // Re-read the instance from the store to get fresh data after updates
   // This ensures we react to changes in the tree
   const freshInstance = useMemo(() => {
@@ -222,20 +232,24 @@ export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ inst
           altText: '',
         });
         
-        if (isComposition && navChildren.container) {
+        // Get fresh nav children at the time of execution (not from closure)
+        const fresh = getFreshNavChildren();
+        
+        if (isComposition && fresh.container) {
           // For composition navigation, replace the Text logo with an Image
           // or update the existing Image logo
-          if (navChildren.logoImage) {
+          if (fresh.logoImage) {
             // Update existing image logo
-            updateInstance(navChildren.logoImage.id, {
-              props: { ...navChildren.logoImage.props, src: dataUrl }
+            updateInstance(fresh.logoImage.id, {
+              props: { ...fresh.logoImage.props, src: dataUrl }
             });
-          } else if (navChildren.logoText) {
+          } else if (fresh.logoText) {
             // Replace Text with Image
-            const logoIndex = navChildren.container.children?.findIndex(c => c.id === navChildren.logoText?.id) ?? 0;
+            const logoIndex = fresh.container.children?.findIndex(c => c.id === fresh.logoText?.id) ?? 0;
+            const containerId = fresh.container.id;
             
             // Delete the old Text logo
-            deleteInstance(navChildren.logoText.id);
+            deleteInstance(fresh.logoText.id);
             
             // Add a new Image logo at the same position
             const newImageLogo: ComponentInstance = {
@@ -246,12 +260,14 @@ export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ inst
               styleSourceIds: ['style-nav-logo'],
               children: [],
             };
-            addInstance(newImageLogo, navChildren.container.id, logoIndex);
+            addInstance(newImageLogo, containerId, logoIndex);
           }
         } else {
           // Store on nav wrapper props for old navigation
-          updateInstance(freshInstance.id, {
-            props: { ...freshInstance.props, logoImage: dataUrl }
+          const currentRoot = useBuilderStore.getState().rootInstance;
+          const currentInstance = findInstanceInTree(currentRoot, instance.id);
+          updateInstance(instance.id, {
+            props: { ...(currentInstance?.props || {}), logoImage: dataUrl }
           });
         }
       };
@@ -260,12 +276,16 @@ export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ inst
   };
 
   const handleRemoveLogoImage = () => {
-    if (isComposition && navChildren.container) {
+    // Get fresh nav children at the time of execution
+    const fresh = getFreshNavChildren();
+    
+    if (isComposition && fresh.container) {
       // Find the Image logo and replace with Text
-      const imageLogo = navChildren.container.children?.find(c => c.type === 'Image');
-      if (imageLogo) {
-        const logoIndex = navChildren.container.children?.findIndex(c => c.id === imageLogo.id) ?? 0;
-        deleteInstance(imageLogo.id);
+      if (fresh.logoImage) {
+        const logoIndex = fresh.container.children?.findIndex(c => c.id === fresh.logoImage?.id) ?? 0;
+        const containerId = fresh.container.id;
+        
+        deleteInstance(fresh.logoImage.id);
         
         // Add back a Text logo
         const newTextLogo: ComponentInstance = {
@@ -276,7 +296,7 @@ export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ inst
           styleSourceIds: ['style-nav-logo'],
           children: [],
         };
-        addInstance(newTextLogo, navChildren.container.id, logoIndex);
+        addInstance(newTextLogo, containerId, logoIndex);
       }
     } else {
       updateInstance(freshInstance.id, {
@@ -345,8 +365,11 @@ export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ inst
   };
 
   const handleShowCTAChange = (checked: boolean) => {
-    if (isComposition && navChildren.container) {
-      if (checked && !navChildren.cta) {
+    // Get fresh nav children at the time of execution
+    const fresh = getFreshNavChildren();
+    
+    if (isComposition && fresh.container) {
+      if (checked && !fresh.cta) {
         // Add a new CTA Button to the Container
         const newCta: ComponentInstance = {
           id: generateId(),
@@ -356,10 +379,10 @@ export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ inst
           styleSourceIds: ['style-nav-cta'],
           children: [],
         };
-        addInstance(newCta, navChildren.container.id);
-      } else if (!checked && navChildren.cta) {
+        addInstance(newCta, fresh.container.id);
+      } else if (!checked && fresh.cta) {
         // Remove the CTA Button
-        deleteInstance(navChildren.cta.id);
+        deleteInstance(fresh.cta.id);
       }
     } else {
       updateInstance(freshInstance.id, {
