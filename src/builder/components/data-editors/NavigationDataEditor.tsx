@@ -52,18 +52,17 @@ const generateId = () => `inst_${Date.now()}_${Math.random().toString(36).substr
 const findNavChildren = (instance: ComponentInstance) => {
   const container = instance.children?.[0]; // Container
   if (!container || container.type !== 'Container') {
-    return { logo: null, logoImage: null, menu: null, cta: null, container: null };
+    return { logoText: null, logoImage: null, menu: null, cta: null, container: null };
   }
   
-  // Logo can be Text or Image
+  // Logo can be Text or Image - find both separately
   const logoText = container.children?.find(c => c.type === 'Text');
   const logoImage = container.children?.find(c => c.type === 'Image');
-  const logo = logoText || logoImage; // Prefer text, but accept image
   
   const menu = container.children?.find(c => c.type === 'Div' && c.children?.some(l => l.type === 'Link'));
   const cta = container.children?.find(c => c.type === 'Button');
   
-  return { logo, logoImage, menu, cta, container };
+  return { logoText, logoImage, menu, cta, container };
 };
 
 // Check if this is a composition-based navigation (Section with htmlTag='nav')
@@ -107,7 +106,7 @@ export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ inst
     if (isComposition) {
       return findNavChildren(freshInstance);
     }
-    return { logo: null, logoImage: null, menu: null, cta: null, container: null };
+    return { logoText: null, logoImage: null, menu: null, cta: null, container: null };
   }, [freshInstance, isComposition]);
 
   // Get all pages for the page picker
@@ -133,12 +132,12 @@ export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ inst
     ];
   }, [freshInstance, isComposition, navChildren.menu]);
 
-  const logoText = useMemo(() => {
-    if (isComposition && navChildren.logo) {
-      return (navChildren.logo.props?.children as string) || 'Logo';
+  const logoTextValue = useMemo(() => {
+    if (isComposition && navChildren.logoText) {
+      return (navChildren.logoText.props?.children as string) || 'Logo';
     }
     return freshInstance.props?.logo || 'Logo';
-  }, [freshInstance, isComposition, navChildren.logo]);
+  }, [freshInstance, isComposition, navChildren.logoText]);
 
   const ctaText = useMemo(() => {
     if (isComposition && navChildren.cta) {
@@ -159,7 +158,11 @@ export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ inst
   const logoImageUrl = isComposition 
     ? (navChildren.logoImage?.props?.src as string) || '' 
     : freshInstance.props?.logoImage || '';
-  const showCTA = navChildren.cta !== null || freshInstance.props?.showCTA !== false;
+  // For composition navigation, use state from the component tree
+  // For legacy navigation, use props
+  const showCTA = isComposition 
+    ? navChildren.cta !== null 
+    : freshInstance.props?.showCTA !== false;
   const mobileBreakpoint = freshInstance.props?.mobileBreakpoint || 768;
   
   // Check if this navigation is the global header
@@ -186,10 +189,15 @@ export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ inst
   };
 
   const handleLogoChange = (value: string) => {
-    if (isComposition && navChildren.logo) {
+    if (isComposition && navChildren.logoText) {
       // Update the Text child directly
-      updateInstance(navChildren.logo.id, {
-        props: { ...navChildren.logo.props, children: value }
+      updateInstance(navChildren.logoText.id, {
+        props: { ...navChildren.logoText.props, children: value }
+      });
+    } else if (isComposition && navChildren.logoImage) {
+      // If there's an image logo, update its alt text instead
+      updateInstance(navChildren.logoImage.id, {
+        props: { ...navChildren.logoImage.props, alt: value }
       });
     } else {
       updateInstance(freshInstance.id, {
@@ -214,24 +222,32 @@ export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ inst
           altText: '',
         });
         
-        if (isComposition && navChildren.logo && navChildren.container) {
+        if (isComposition && navChildren.container) {
           // For composition navigation, replace the Text logo with an Image
-          // First, find the index of the logo in the container
-          const logoIndex = navChildren.container.children?.findIndex(c => c.id === navChildren.logo?.id) ?? 0;
-          
-          // Delete the old Text logo
-          deleteInstance(navChildren.logo.id);
-          
-          // Add a new Image logo at the same position
-          const newImageLogo: ComponentInstance = {
-            id: generateId(),
-            type: 'Image' as ComponentType,
-            label: 'Image',
-            props: { src: dataUrl, alt: 'Logo' },
-            styleSourceIds: ['style-nav-logo'],
-            children: [],
-          };
-          addInstance(newImageLogo, navChildren.container.id, logoIndex);
+          // or update the existing Image logo
+          if (navChildren.logoImage) {
+            // Update existing image logo
+            updateInstance(navChildren.logoImage.id, {
+              props: { ...navChildren.logoImage.props, src: dataUrl }
+            });
+          } else if (navChildren.logoText) {
+            // Replace Text with Image
+            const logoIndex = navChildren.container.children?.findIndex(c => c.id === navChildren.logoText?.id) ?? 0;
+            
+            // Delete the old Text logo
+            deleteInstance(navChildren.logoText.id);
+            
+            // Add a new Image logo at the same position
+            const newImageLogo: ComponentInstance = {
+              id: generateId(),
+              type: 'Image' as ComponentType,
+              label: 'Image',
+              props: { src: dataUrl, alt: 'Logo' },
+              styleSourceIds: ['style-nav-logo'],
+              children: [],
+            };
+            addInstance(newImageLogo, navChildren.container.id, logoIndex);
+          }
         } else {
           // Store on nav wrapper props for old navigation
           updateInstance(freshInstance.id, {
@@ -531,7 +547,7 @@ export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ inst
         <p className="text-[9px] text-muted-foreground">Max height: 40px. Auto-fitted.</p>
 
         <Input
-          value={logoText}
+          value={logoTextValue}
           onChange={(e) => handleLogoChange(e.target.value)}
           placeholder="Logo text (fallback)"
           className="h-7 text-[10px] text-foreground bg-background"
