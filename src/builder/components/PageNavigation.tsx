@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Plus, ChevronDown, Monitor, Tablet, Smartphone, Download, Eye, ZoomIn, ZoomOut, Sun, Moon, Hand, FileCode, FileText, Palette, Zap, X, PanelLeftClose, Ruler, MessageSquare, Code2, User, Rocket, Settings, ExternalLink, Check, Copy, Lock, Unlock } from 'lucide-react';
+import { Plus, ChevronDown, Monitor, Tablet, Smartphone, Download, Eye, ZoomIn, ZoomOut, Sun, Moon, Hand, FileCode, FileText, Palette, Zap, X, PanelLeftClose, Ruler, MessageSquare, Code2, User, Rocket, Settings, ExternalLink, Check, Copy, Lock, Unlock, EyeOff } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Separator } from '@/components/ui/separator';
 import { useTheme } from 'next-themes';
@@ -17,6 +17,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { usePageStore } from '@/builder/store/usePageStore';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 interface PageNavigationProps {
   currentPage: string;
@@ -47,6 +49,126 @@ export const breakpoints = [
   { id: 'mobile-landscape', label: 'Mobile L', icon: Smartphone, width: 640 },
   { id: 'mobile', label: 'Mobile', icon: Smartphone, width: 375 },
 ];
+
+// Page settings component for controlling global component visibility per page
+const PagesDropdownWithSettings: React.FC<{
+  currentPage: string;
+  pages: string[];
+  onPageChange: (page: string) => void;
+  onAddPage: () => void;
+}> = ({ currentPage, pages, onPageChange, onAddPage }) => {
+  const { 
+    getGlobalComponents, 
+    getPageGlobalOverrides, 
+    setPageGlobalOverride, 
+    getAllPages 
+  } = usePageStore();
+  
+  const globalComponents = getGlobalComponents();
+  const hasGlobalHeader = !!globalComponents.header;
+  const hasGlobalFooter = !!globalComponents.footer;
+  
+  // Get page IDs from store
+  const allPages = getAllPages();
+  
+  const getPageIdByName = (pageName: string) => {
+    const page = allPages.find(p => p.name === pageName);
+    return page?.id || '';
+  };
+  
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="sm" className="h-7 px-2 gap-1 text-xs">
+          {currentPage}
+          <ChevronDown className="w-3 h-3" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" side="top" className="z-[9999] w-56 bg-popover p-1">
+        {pages.map((page) => {
+          const pageId = getPageIdByName(page);
+          const overrides = getPageGlobalOverrides(pageId);
+          const hasOverrides = overrides.hideHeader || overrides.hideFooter;
+          
+          return (
+            <div key={page} className="flex items-center group">
+              <DropdownMenuItem 
+                onClick={() => onPageChange(page)} 
+                className="flex-1 text-[11px] py-1 px-2"
+              >
+                <span className="flex items-center gap-1.5">
+                  {page}
+                  {hasOverrides && (
+                    <span title="Has hidden global components">
+                      <EyeOff className="w-2.5 h-2.5 text-muted-foreground" />
+                    </span>
+                  )}
+                </span>
+              </DropdownMenuItem>
+              
+              {/* Page settings popover - only show if there are global components */}
+              {(hasGlobalHeader || hasGlobalFooter) && (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button 
+                      className="p-1 mr-1 rounded opacity-0 group-hover:opacity-100 hover:bg-muted transition-opacity"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Settings className="w-3 h-3 text-muted-foreground" />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent 
+                    side="right" 
+                    align="start" 
+                    className="w-48 p-2 z-[10000]"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="space-y-3">
+                      <div className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+                        Page Settings: {page}
+                      </div>
+                      
+                      {hasGlobalHeader && (
+                        <div className="flex items-center justify-between">
+                          <Label className="text-[11px] cursor-pointer">Show Global Header</Label>
+                          <Switch
+                            checked={!overrides.hideHeader}
+                            onCheckedChange={(checked) => setPageGlobalOverride(pageId, 'header', !checked)}
+                            className="scale-75"
+                          />
+                        </div>
+                      )}
+                      
+                      {hasGlobalFooter && (
+                        <div className="flex items-center justify-between">
+                          <Label className="text-[11px] cursor-pointer">Show Global Footer</Label>
+                          <Switch
+                            checked={!overrides.hideFooter}
+                            onCheckedChange={(checked) => setPageGlobalOverride(pageId, 'footer', !checked)}
+                            className="scale-75"
+                          />
+                        </div>
+                      )}
+                      
+                      <p className="text-[9px] text-muted-foreground leading-tight">
+                        Disable to hide global components on this page only.
+                      </p>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              )}
+            </div>
+          );
+        })}
+        <DropdownMenuSeparator className="my-1" />
+        <DropdownMenuItem onClick={onAddPage} className="gap-1.5 text-[11px] py-1 px-2">
+          <Plus className="w-3 h-3" />
+          Add Page
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+};
 
 export const PageNavigation: React.FC<PageNavigationProps> = ({
   currentPage,
@@ -377,26 +499,12 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
       <Separator orientation="vertical" className="h-5" />
 
       {/* Pages Dropdown */}
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="sm" className="h-7 px-2 gap-1 text-xs">
-            {currentPage}
-            <ChevronDown className="w-3 h-3" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" side="top" className="z-[9999] w-40 bg-popover p-1">
-          {safePages.map((page) => (
-            <DropdownMenuItem key={page} onClick={() => onPageChange(page)} className="text-[11px] py-1 px-2">
-              {page}
-            </DropdownMenuItem>
-          ))}
-          <DropdownMenuSeparator className="my-1" />
-          <DropdownMenuItem onClick={onAddPage} className="gap-1.5 text-[11px] py-1 px-2">
-            <Plus className="w-3 h-3" />
-            Add Page
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <PagesDropdownWithSettings
+        currentPage={currentPage}
+        pages={safePages}
+        onPageChange={onPageChange}
+        onAddPage={onAddPage}
+      />
 
       {!isCodeViewOpen && (
         <>
