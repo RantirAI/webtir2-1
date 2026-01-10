@@ -1,5 +1,5 @@
-import React, { useRef } from 'react';
-import { ComponentInstance } from '../../store/types';
+import React, { useRef, useMemo } from 'react';
+import { ComponentInstance, ComponentType } from '../../store/types';
 import { useBuilderStore } from '../../store/useBuilderStore';
 import { useMediaStore } from '../../store/useMediaStore';
 import { usePageStore } from '../../store/usePageStore';
@@ -45,27 +45,92 @@ const ACTIVE_PRESETS = [
   { id: 'border-bottom', label: 'Border Bottom' },
 ];
 
+// Helper to generate unique IDs
+const generateId = () => `inst_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+// Helper to find children by role in the composition-based navigation
+const findNavChildren = (instance: ComponentInstance) => {
+  const container = instance.children?.[0]; // Container
+  if (!container || container.type !== 'Container') {
+    return { logo: null, menu: null, cta: null, container: null };
+  }
+  
+  const logo = container.children?.find(c => c.type === 'Text');
+  const menu = container.children?.find(c => c.type === 'Div' && c.children?.some(l => l.type === 'Link'));
+  const cta = container.children?.find(c => c.type === 'Button');
+  
+  return { logo, menu, cta, container };
+};
+
+// Check if this is a composition-based navigation (Section with htmlTag='nav')
+const isCompositionNavigation = (instance: ComponentInstance): boolean => {
+  return instance.type === 'Section' && instance.props?.htmlTag === 'nav';
+};
+
 export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ instance }) => {
   const { updateInstance, deleteInstance, addInstance } = useBuilderStore();
   const { addAsset } = useMediaStore();
   const { getAllPages, getGlobalComponent, setGlobalComponent, currentPageId, setPageGlobalOverride, getPageGlobalOverrides } = usePageStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Determine if this is the new composition-based navigation or the old monolithic one
+  const isComposition = isCompositionNavigation(instance);
+  
+  // For composition-based navigation, find the child components
+  const navChildren = useMemo(() => {
+    if (isComposition) {
+      return findNavChildren(instance);
+    }
+    return { logo: null, menu: null, cta: null, container: null };
+  }, [instance, isComposition]);
+
   // Get all pages for the page picker
   const allPages = getAllPages();
 
-  const menuItems = instance.props?.menuItems || [
-    { text: 'Home', url: '#', id: '1' },
-    { text: 'About', url: '#', id: '2' },
-    { text: 'Contact', url: '#', id: '3' },
-  ];
+  // Extract data from composition or props
+  const menuItems = useMemo(() => {
+    if (isComposition && navChildren.menu) {
+      // Extract menu items from Link children
+      return navChildren.menu.children
+        ?.filter(c => c.type === 'Link')
+        .map(link => ({
+          id: link.id,
+          text: (link.props?.children as string) || '',
+          url: (link.props?.href as string) || '#'
+        })) || [];
+    }
+    // Fall back to props for old Navigation component
+    return instance.props?.menuItems || [
+      { text: 'Home', url: '#', id: '1' },
+      { text: 'About', url: '#', id: '2' },
+      { text: 'Contact', url: '#', id: '3' },
+    ];
+  }, [instance, isComposition, navChildren.menu]);
+
+  const logoText = useMemo(() => {
+    if (isComposition && navChildren.logo) {
+      return (navChildren.logo.props?.children as string) || 'Logo';
+    }
+    return instance.props?.logo || 'Logo';
+  }, [instance, isComposition, navChildren.logo]);
+
+  const ctaText = useMemo(() => {
+    if (isComposition && navChildren.cta) {
+      return (navChildren.cta.props?.children as string) || 'Get Started';
+    }
+    return instance.props?.ctaText || 'Get Started';
+  }, [instance, isComposition, navChildren.cta]);
+
+  const ctaUrl = useMemo(() => {
+    if (isComposition && navChildren.cta) {
+      return (navChildren.cta.props?.href as string) || '#';
+    }
+    return instance.props?.ctaUrl || '#';
+  }, [instance, isComposition, navChildren.cta]);
 
   const template = instance.props?.template || 'logo-left-menu-right';
-  const logoText = instance.props?.logo || 'Logo';
   const logoImage = instance.props?.logoImage || '';
-  const showCTA = instance.props?.showCTA !== false;
-  const ctaText = instance.props?.ctaText || 'Get Started';
-  const ctaUrl = instance.props?.ctaUrl || '#';
+  const showCTA = navChildren.cta !== null || instance.props?.showCTA !== false;
   const mobileBreakpoint = instance.props?.mobileBreakpoint || 768;
   
   // Check if this navigation is the global header
@@ -76,7 +141,7 @@ export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ inst
   const pageOverrides = getPageGlobalOverrides(currentPageId);
   const isHiddenOnCurrentPage = pageOverrides.hideHeader ?? false;
   
-  // Hover & Active styles
+  // Hover & Active styles (stored on the instance props)
   const hoverPreset = instance.props?.hoverPreset || 'underline-slide';
   const activePreset = instance.props?.activePreset || 'underline';
   const hoverColor = instance.props?.hoverColor || '';
@@ -92,9 +157,16 @@ export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ inst
   };
 
   const handleLogoChange = (value: string) => {
-    updateInstance(instance.id, {
-      props: { ...instance.props, logo: value }
-    });
+    if (isComposition && navChildren.logo) {
+      // Update the Text child directly
+      updateInstance(navChildren.logo.id, {
+        props: { ...navChildren.logo.props, children: value }
+      });
+    } else {
+      updateInstance(instance.id, {
+        props: { ...instance.props, logo: value }
+      });
+    }
   };
 
   const handleLogoImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -112,7 +184,7 @@ export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ inst
           mimeType: file.type || 'image/png',
           altText: '',
         });
-        // Update instance
+        // Update instance props (for logo image we store on the nav wrapper)
         updateInstance(instance.id, {
           props: { ...instance.props, logoImage: dataUrl }
         });
@@ -127,44 +199,113 @@ export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ inst
     });
   };
 
-  const handleMenuItemChange = (index: number, field: 'text' | 'url', value: string) => {
-    const newItems = [...menuItems];
-    newItems[index] = { ...newItems[index], [field]: value };
-    updateInstance(instance.id, {
-      props: { ...instance.props, menuItems: newItems }
-    });
+  const handleMenuItemChange = (itemId: string, field: 'text' | 'url', value: string) => {
+    if (isComposition && navChildren.menu) {
+      // Update the Link child directly
+      const linkInstance = navChildren.menu.children?.find(c => c.id === itemId);
+      if (linkInstance) {
+        updateInstance(itemId, {
+          props: { 
+            ...linkInstance.props, 
+            [field === 'text' ? 'children' : 'href']: value 
+          }
+        });
+      }
+    } else {
+      // Old method: update props array
+      const newItems = [...menuItems];
+      const index = newItems.findIndex((item: any) => item.id === itemId);
+      if (index !== -1) {
+        newItems[index] = { ...newItems[index], [field]: value };
+        updateInstance(instance.id, {
+          props: { ...instance.props, menuItems: newItems }
+        });
+      }
+    }
   };
 
   const handleAddMenuItem = () => {
-    const newItems = [...menuItems, { text: 'New Link', url: '#', id: Date.now().toString() }];
-    updateInstance(instance.id, {
-      props: { ...instance.props, menuItems: newItems }
-    });
+    if (isComposition && navChildren.menu) {
+      // Add a new Link child to the menu Div
+      const newLink: ComponentInstance = {
+        id: generateId(),
+        type: 'Link' as ComponentType,
+        label: 'Link',
+        props: { children: 'New Link', href: '#' },
+        styleSourceIds: ['style-nav-link'],
+        children: [],
+      };
+      addInstance(newLink, navChildren.menu.id);
+    } else {
+      // Old method: update props array
+      const newItems = [...menuItems, { text: 'New Link', url: '#', id: Date.now().toString() }];
+      updateInstance(instance.id, {
+        props: { ...instance.props, menuItems: newItems }
+      });
+    }
   };
 
-  const handleRemoveMenuItem = (index: number) => {
-    const newItems = menuItems.filter((_: any, i: number) => i !== index);
-    updateInstance(instance.id, {
-      props: { ...instance.props, menuItems: newItems }
-    });
+  const handleRemoveMenuItem = (itemId: string) => {
+    if (isComposition) {
+      // Delete the Link child directly
+      deleteInstance(itemId);
+    } else {
+      // Old method: update props array
+      const newItems = menuItems.filter((item: any) => item.id !== itemId);
+      updateInstance(instance.id, {
+        props: { ...instance.props, menuItems: newItems }
+      });
+    }
   };
 
   const handleShowCTAChange = (checked: boolean) => {
-    updateInstance(instance.id, {
-      props: { ...instance.props, showCTA: checked }
-    });
+    if (isComposition && navChildren.container) {
+      if (checked && !navChildren.cta) {
+        // Add a new CTA Button to the Container
+        const newCta: ComponentInstance = {
+          id: generateId(),
+          type: 'Button' as ComponentType,
+          label: 'Button',
+          props: { children: 'Get Started' },
+          styleSourceIds: ['style-nav-cta'],
+          children: [],
+        };
+        addInstance(newCta, navChildren.container.id);
+      } else if (!checked && navChildren.cta) {
+        // Remove the CTA Button
+        deleteInstance(navChildren.cta.id);
+      }
+    } else {
+      updateInstance(instance.id, {
+        props: { ...instance.props, showCTA: checked }
+      });
+    }
   };
 
   const handleCTATextChange = (value: string) => {
-    updateInstance(instance.id, {
-      props: { ...instance.props, ctaText: value }
-    });
+    if (isComposition && navChildren.cta) {
+      // Update the Button child directly
+      updateInstance(navChildren.cta.id, {
+        props: { ...navChildren.cta.props, children: value }
+      });
+    } else {
+      updateInstance(instance.id, {
+        props: { ...instance.props, ctaText: value }
+      });
+    }
   };
 
   const handleCTAUrlChange = (value: string) => {
-    updateInstance(instance.id, {
-      props: { ...instance.props, ctaUrl: value }
-    });
+    if (isComposition && navChildren.cta) {
+      // Update the Button child directly
+      updateInstance(navChildren.cta.id, {
+        props: { ...navChildren.cta.props, href: value }
+      });
+    } else {
+      updateInstance(instance.id, {
+        props: { ...instance.props, ctaUrl: value }
+      });
+    }
   };
 
   const handleMobileBreakpointChange = (value: string) => {
@@ -332,13 +473,13 @@ export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ inst
         <div className="space-y-1.5">
           <Label className="text-[10px] font-medium text-foreground">Menu Items</Label>
           <div className="space-y-1.5">
-            {menuItems.map((item: any, index: number) => (
+            {menuItems.map((item: any) => (
               <div key={item.id} className="flex items-start gap-1.5 p-1.5 bg-muted/30 rounded border border-border/50">
                 <GripVertical className="w-3 h-3 text-muted-foreground cursor-move mt-1.5 flex-shrink-0" />
                 <div className="flex-1 space-y-1">
                   <Input
                     value={item.text}
-                    onChange={(e) => handleMenuItemChange(index, 'text', e.target.value)}
+                    onChange={(e) => handleMenuItemChange(item.id, 'text', e.target.value)}
                     placeholder="Label"
                     className="h-6 text-[10px] text-foreground bg-background"
                   />
@@ -349,7 +490,7 @@ export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ inst
                       if (value === '__custom__') {
                         // Keep current value, user will type manually
                       } else {
-                        handleMenuItemChange(index, 'url', value);
+                        handleMenuItemChange(item.id, 'url', value);
                       }
                     }}
                   >
@@ -376,7 +517,7 @@ export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ inst
                   {item.url && !item.url.startsWith('/pages/') && item.url !== '#' && (
                     <Input
                       value={item.url}
-                      onChange={(e) => handleMenuItemChange(index, 'url', e.target.value)}
+                      onChange={(e) => handleMenuItemChange(item.id, 'url', e.target.value)}
                       placeholder="https://example.com or #section"
                       className="h-6 text-[10px] text-foreground bg-background font-mono"
                     />
@@ -386,7 +527,7 @@ export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ inst
                   variant="ghost"
                   size="icon"
                   className="h-6 w-6 text-destructive hover:text-destructive hover:bg-destructive/10 flex-shrink-0"
-                  onClick={() => handleRemoveMenuItem(index)}
+                  onClick={() => handleRemoveMenuItem(item.id)}
                 >
                   <Trash2 className="w-3 h-3" />
                 </Button>

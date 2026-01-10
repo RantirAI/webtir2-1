@@ -346,6 +346,17 @@ const detectPrebuiltByStructure = (instance: ComponentInstance): string | null =
     return 'system-command';
   }
   
+  // Navigation: Section(htmlTag='nav') > Container > [Text(logo), Div(Links), Button(CTA)]
+  if (
+    instance.type === 'Section' &&
+    instance.props?.htmlTag === 'nav' &&
+    instance.children?.[0]?.type === 'Container' &&
+    instance.children[0].children?.some(c => c.type === 'Text') &&
+    instance.children[0].children?.some(c => c.type === 'Div' && c.children?.some(l => l.type === 'Link'))
+  ) {
+    return 'system-navigation';
+  }
+  
   return null;
 };
 
@@ -4700,6 +4711,8 @@ export const StylePanel: React.FC<StylePanelProps> = ({
                         return <CalendarDataEditor instance={linkedInstance} />;
                       case 'system-command':
                         return <CommandPaletteDataEditor instance={linkedInstance} />;
+                      case 'system-navigation':
+                        return <NavigationDataEditor instance={linkedInstance} />;
                       default:
                         return null;
                     }
