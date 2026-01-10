@@ -214,3 +214,11 @@ export const usePageStore = create<PageStore>((set, get) => ({
     return !isHidden;
   },
 }));
+
+// Register the store on window for cross-store access (avoids circular dependency)
+if (typeof window !== 'undefined') {
+  (window as any).__pageStore__ = usePageStore.getState();
+  usePageStore.subscribe((state) => {
+    (window as any).__pageStore__ = state;
+  });
+}

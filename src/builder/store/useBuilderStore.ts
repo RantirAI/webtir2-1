@@ -4,6 +4,14 @@ import { generateId } from '../utils/instance';
 import { useComponentInstanceStore } from './useComponentInstanceStore';
 import { duplicateInstanceWithLinkage, applyDuplicationLinks } from '../utils/duplication';
 
+// Helper to get page store state - accesses via window to avoid circular dependency
+const getPageStore = (): any => {
+  if (typeof window !== 'undefined') {
+    return (window as any).__pageStore__;
+  }
+  return null;
+};
+
 // Initialize root style source
 const initRootStyle = () => {
   // Lazy import to avoid circular dependency
@@ -115,28 +123,30 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
         return { rootInstance: newRoot, ...saveToHistory({ ...state, rootInstance: newRoot }) };
       }
       
-      // If not in page tree, check global components
-      const { usePageStore } = require('./usePageStore');
-      const { getGlobalComponents, setGlobalComponent } = usePageStore.getState();
-      const globalComponents = getGlobalComponents();
-      
-      if (globalComponents.header) {
-        const headerCopy = JSON.parse(JSON.stringify(globalComponents.header));
-        const headerInstance = findInstanceInTree(headerCopy, id);
-        if (headerInstance) {
-          Object.assign(headerInstance, updates);
-          setGlobalComponent('header', headerCopy);
-          return state; // No change to rootInstance
+      // If not in page tree, check global components using deferred access
+      const pageStore = getPageStore();
+      if (pageStore) {
+        const { getGlobalComponents, setGlobalComponent } = pageStore;
+        const globalComponents = getGlobalComponents();
+        
+        if (globalComponents.header) {
+          const headerCopy = JSON.parse(JSON.stringify(globalComponents.header));
+          const headerInstance = findInstanceInTree(headerCopy, id);
+          if (headerInstance) {
+            Object.assign(headerInstance, updates);
+            setGlobalComponent('header', headerCopy);
+            return state; // No change to rootInstance
+          }
         }
-      }
-      
-      if (globalComponents.footer) {
-        const footerCopy = JSON.parse(JSON.stringify(globalComponents.footer));
-        const footerInstance = findInstanceInTree(footerCopy, id);
-        if (footerInstance) {
-          Object.assign(footerInstance, updates);
-          setGlobalComponent('footer', footerCopy);
-          return state; // No change to rootInstance
+        
+        if (globalComponents.footer) {
+          const footerCopy = JSON.parse(JSON.stringify(globalComponents.footer));
+          const footerInstance = findInstanceInTree(footerCopy, id);
+          if (footerInstance) {
+            Object.assign(footerInstance, updates);
+            setGlobalComponent('footer', footerCopy);
+            return state; // No change to rootInstance
+          }
         }
       }
 
@@ -321,20 +331,20 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
     const found = findInstanceInTree(state.rootInstance, id);
     if (found) return found;
     
-    // If not found, search in global components
-    import('./usePageStore').then(({ usePageStore }) => {});
-    const { usePageStore } = require('./usePageStore');
-    const { getGlobalComponents } = usePageStore.getState();
-    const globalComponents = getGlobalComponents();
-    
-    if (globalComponents.header) {
-      const foundInHeader = findInstanceInTree(globalComponents.header, id);
-      if (foundInHeader) return foundInHeader;
-    }
-    
-    if (globalComponents.footer) {
-      const foundInFooter = findInstanceInTree(globalComponents.footer, id);
-      if (foundInFooter) return foundInFooter;
+    // If not found, search in global components using deferred access
+    const pageStore = getPageStore();
+    if (pageStore) {
+      const globalComponents = pageStore.getGlobalComponents();
+      
+      if (globalComponents.header) {
+        const foundInHeader = findInstanceInTree(globalComponents.header, id);
+        if (foundInHeader) return foundInHeader;
+      }
+      
+      if (globalComponents.footer) {
+        const foundInFooter = findInstanceInTree(globalComponents.footer, id);
+        if (foundInFooter) return foundInFooter;
+      }
     }
     
     return null;
