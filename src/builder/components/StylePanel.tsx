@@ -496,6 +496,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({
     getPropertyState,
   } = useStyleStore();
   const { getInstanceLink } = useComponentInstanceStore();
+  const globalComponents = usePageStore((state) => state.globalComponents);
   const selectedInstance = getSelectedInstance();
 
   // ALL useState hooks MUST be at the top, before any conditional logic
@@ -4683,7 +4684,14 @@ export const StylePanel: React.FC<StylePanelProps> = ({
 
                   {/* Composite Prebuilt Data Editors - detect by link or structure */}
                   {(() => {
-                    const prebuiltMatch = findPrebuiltEditor(selectedInstance.id, rootInstance, getInstanceLink);
+                    const prebuiltRoot = (() => {
+                      if (rootInstance && findPathToInstance(rootInstance, selectedInstance.id)) return rootInstance;
+                      if (globalComponents.header && findPathToInstance(globalComponents.header, selectedInstance.id)) return globalComponents.header;
+                      if (globalComponents.footer && findPathToInstance(globalComponents.footer, selectedInstance.id)) return globalComponents.footer;
+                      return rootInstance || globalComponents.header || globalComponents.footer;
+                    })();
+
+                    const prebuiltMatch = findPrebuiltEditor(selectedInstance.id, prebuiltRoot, getInstanceLink);
                     if (!prebuiltMatch) return null;
                     
                     const { prebuiltId, linkedInstance } = prebuiltMatch;
