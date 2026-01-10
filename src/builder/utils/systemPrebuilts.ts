@@ -1678,6 +1678,7 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
       'style-nav-wrapper': createStyleEntry({
         display: 'flex',
         width: '100%',
+        minHeight: 'auto',
         backgroundColor: 'hsl(var(--background))',
         borderBottom: '1px solid hsl(var(--border))',
       }),
