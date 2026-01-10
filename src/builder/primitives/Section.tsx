@@ -57,22 +57,12 @@ export const Section: React.FC<SectionProps> = ({
   // Extract non-style dataBindingProps
   const { style: _style, ...restDataBindingProps } = dataBindingProps;
 
+  // Note: Selection is handled by DroppableContainer wrapper, not here
+  // This prevents double-handling of clicks when nested containers exist
   const elementProps = {
     'data-instance-id': instance.id,
     className: classNames.length > 0 ? classNames.join(' ') : undefined,
     style: finalStyles,
-    onClick: isPreviewMode ? undefined : (e: React.MouseEvent) => {
-      e.stopPropagation();
-      onSelect?.();
-    },
-    onMouseEnter: isPreviewMode ? undefined : (e: React.MouseEvent) => {
-      e.stopPropagation();
-      onHover?.();
-    },
-    onMouseLeave: isPreviewMode ? undefined : (e: React.MouseEvent) => {
-      e.stopPropagation();
-      onHoverEnd?.();
-    },
     onContextMenu: isPreviewMode ? undefined : onContextMenu,
     ...restDataBindingProps,
   };
