@@ -2515,9 +2515,17 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
   });
 
   // ---------------------------------------------------------------------------
-  // NAVIGATION COMPONENT
+  // NAVIGATION COMPONENT (Composition-based - editable children)
   // ---------------------------------------------------------------------------
   const navId = generateId();
+  const navContainerId = generateId();
+  const navLogoId = generateId();
+  const navMenuId = generateId();
+  const navMenuItem1Id = generateId();
+  const navMenuItem2Id = generateId();
+  const navMenuItem3Id = generateId();
+  const navMenuItem4Id = generateId();
+  const navCtaId = generateId();
 
   prebuilts.push({
     id: 'system-navigation',
@@ -2525,40 +2533,124 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
     category: 'Layout',
     instance: {
       id: navId,
-      type: 'Navigation' as ComponentType,
-      label: 'Navigation',
-      props: {
-        logo: 'Brand',
-        template: 'logo-left-menu-right',
-        menuItems: [
-          { text: 'Home', url: '#', id: '1' },
-          { text: 'About', url: '#', id: '2' },
-          { text: 'Services', url: '#', id: '3' },
-          { text: 'Contact', url: '#', id: '4' },
-        ],
-        showCTA: true,
-        ctaText: 'Get Started',
-        ctaUrl: '#',
-        mobileBreakpoint: 768,
-        mobileAnimation: 'slide',
-        animationDuration: 300,
-        hamburgerStyle: 'classic',
-        animateIcon: true,
-        hoverPreset: 'underline-slide',
-        activePreset: 'underline',
-      },
-      styleSourceIds: ['style-navigation'],
-      children: [],
+      type: 'Section' as ComponentType,
+      label: 'Section',
+      props: { htmlTag: 'nav' },
+      styleSourceIds: ['style-nav-wrapper'],
+      children: [
+        {
+          id: navContainerId,
+          type: 'Container' as ComponentType,
+          label: 'Container',
+          props: {},
+          styleSourceIds: ['style-nav-container'],
+          children: [
+            // Logo
+            {
+              id: navLogoId,
+              type: 'Text' as ComponentType,
+              label: 'Text',
+              props: { children: 'Brand' },
+              styleSourceIds: ['style-nav-logo'],
+              children: [],
+            },
+            // Menu Links Container
+            {
+              id: navMenuId,
+              type: 'Div' as ComponentType,
+              label: 'Div',
+              props: {},
+              styleSourceIds: ['style-nav-menu'],
+              children: [
+                {
+                  id: navMenuItem1Id,
+                  type: 'Link' as ComponentType,
+                  label: 'Link',
+                  props: { children: 'Home', href: '#' },
+                  styleSourceIds: ['style-nav-link'],
+                  children: [],
+                },
+                {
+                  id: navMenuItem2Id,
+                  type: 'Link' as ComponentType,
+                  label: 'Link',
+                  props: { children: 'About', href: '#' },
+                  styleSourceIds: ['style-nav-link'],
+                  children: [],
+                },
+                {
+                  id: navMenuItem3Id,
+                  type: 'Link' as ComponentType,
+                  label: 'Link',
+                  props: { children: 'Services', href: '#' },
+                  styleSourceIds: ['style-nav-link'],
+                  children: [],
+                },
+                {
+                  id: navMenuItem4Id,
+                  type: 'Link' as ComponentType,
+                  label: 'Link',
+                  props: { children: 'Contact', href: '#' },
+                  styleSourceIds: ['style-nav-link'],
+                  children: [],
+                },
+              ],
+            },
+            // CTA Button
+            {
+              id: navCtaId,
+              type: 'Button' as ComponentType,
+              label: 'Button',
+              props: { children: 'Get Started' },
+              styleSourceIds: ['style-nav-cta'],
+              children: [],
+            },
+          ],
+        },
+      ],
     },
     defaultStyles: {
-      'style-navigation': createStyleEntry({
+      'style-nav-wrapper': createStyleEntry({
+        display: 'flex',
+        width: '100%',
+        backgroundColor: 'hsl(var(--background))',
+        borderBottom: '1px solid hsl(var(--border))',
+      }),
+      'style-nav-container': createStyleEntry({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
         width: '100%',
+        maxWidth: '1200px',
+        margin: '0 auto',
         padding: '16px 24px',
-        backgroundColor: 'hsl(var(--background))',
-        borderBottom: '1px solid hsl(var(--border))',
+        gap: '32px',
+      }),
+      'style-nav-logo': createStyleEntry({
+        fontSize: '20px',
+        fontWeight: '700',
+        color: 'hsl(var(--foreground))',
+      }),
+      'style-nav-menu': createStyleEntry({
+        display: 'flex',
+        alignItems: 'center',
+        gap: '32px',
+        flexGrow: '1',
+        justifyContent: 'center',
+      }),
+      'style-nav-link': createStyleEntry({
+        fontSize: '14px',
+        fontWeight: '500',
+        color: 'hsl(var(--muted-foreground))',
+        textDecoration: 'none',
+      }),
+      'style-nav-cta': createStyleEntry({
+        padding: '8px 20px',
+        backgroundColor: 'hsl(var(--primary))',
+        color: 'hsl(var(--primary-foreground))',
+        borderRadius: '6px',
+        fontWeight: '600',
+        fontSize: '14px',
       }),
     },
   });
