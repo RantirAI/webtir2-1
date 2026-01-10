@@ -2,8 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useBuilderStore } from '../store/useBuilderStore';
 import { useStyleStore } from '../store/useStyleStore';
 import { useComponentInstanceStore } from '../store/useComponentInstanceStore';
+import { usePageStore } from '../store/usePageStore';
 import { ComponentInstance } from '../store/types';
-import { ChevronRight, ChevronDown, Trash2, Component, Copy, Plus } from 'lucide-react';
+import { ChevronRight, ChevronDown, Trash2, Component, Copy, Plus, Globe } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import * as Icons from 'lucide-react';
 import { componentRegistry } from '../primitives/registry';
@@ -129,11 +130,12 @@ export const Navigator: React.FC = () => {
     setContextMenu(null);
   };
 
-  const TreeNode: React.FC<{ instance: ComponentInstance; level: number; isInsidePrebuilt?: boolean; prebuiltName?: string }> = ({ 
+  const TreeNode: React.FC<{ instance: ComponentInstance; level: number; isInsidePrebuilt?: boolean; prebuiltName?: string; isGlobal?: boolean }> = ({ 
     instance, 
     level, 
     isInsidePrebuilt = false,
-    prebuiltName 
+    prebuiltName,
+    isGlobal = false
   }) => {
     const isExpanded = expandedIds.has(instance.id);
     const isSelected = instance.id === selectedInstanceId;
@@ -364,11 +366,31 @@ export const Navigator: React.FC = () => {
     );
   };
 
+  // Get global components
+  const { getGlobalComponents } = usePageStore();
+  const globalComponents = getGlobalComponents();
+  
   return (
     <>
       
       <ScrollArea className="flex-1 [&_[data-radix-scroll-area-scrollbar]]:opacity-0 [&:hover_[data-radix-scroll-area-scrollbar]]:opacity-100 [&_[data-radix-scroll-area-scrollbar]]:transition-opacity">
         <div className="p-2 space-y-0.5">
+          {/* Global Components Section */}
+          {(globalComponents.header || globalComponents.footer) && (
+            <div className="mb-2 pb-2 border-b border-border">
+              <div className="px-2 py-1 text-[10px] font-medium text-muted-foreground flex items-center gap-1">
+                <Globe className="w-3 h-3" />
+                Global Components
+              </div>
+              {globalComponents.header && (
+                <TreeNode instance={globalComponents.header} level={0} isGlobal={true} />
+              )}
+              {globalComponents.footer && (
+                <TreeNode instance={globalComponents.footer} level={0} isGlobal={true} />
+              )}
+            </div>
+          )}
+          
           {rootInstance && <TreeNode instance={rootInstance} level={0} />}
         </div>
       </ScrollArea>

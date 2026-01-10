@@ -110,11 +110,37 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
       const newRoot = JSON.parse(JSON.stringify(state.rootInstance)) as ComponentInstance;
       const instance = findInstanceInTree(newRoot, id);
 
-      if (!instance) return state;
+      if (instance) {
+        Object.assign(instance, updates);
+        return { rootInstance: newRoot, ...saveToHistory({ ...state, rootInstance: newRoot }) };
+      }
+      
+      // If not in page tree, check global components
+      const { usePageStore } = require('./usePageStore');
+      const { getGlobalComponents, setGlobalComponent } = usePageStore.getState();
+      const globalComponents = getGlobalComponents();
+      
+      if (globalComponents.header) {
+        const headerCopy = JSON.parse(JSON.stringify(globalComponents.header));
+        const headerInstance = findInstanceInTree(headerCopy, id);
+        if (headerInstance) {
+          Object.assign(headerInstance, updates);
+          setGlobalComponent('header', headerCopy);
+          return state; // No change to rootInstance
+        }
+      }
+      
+      if (globalComponents.footer) {
+        const footerCopy = JSON.parse(JSON.stringify(globalComponents.footer));
+        const footerInstance = findInstanceInTree(footerCopy, id);
+        if (footerInstance) {
+          Object.assign(footerInstance, updates);
+          setGlobalComponent('footer', footerCopy);
+          return state; // No change to rootInstance
+        }
+      }
 
-      Object.assign(instance, updates);
-
-      return { rootInstance: newRoot, ...saveToHistory({ ...state, rootInstance: newRoot }) };
+      return state;
     });
 
     // Internal updates (e.g. prebuilt propagation) should not trigger auto-sync.
@@ -290,7 +316,28 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
   findInstance: (id) => {
     const state = get();
     if (!state.rootInstance) return null;
-    return findInstanceInTree(state.rootInstance, id);
+    
+    // First, search in page tree
+    const found = findInstanceInTree(state.rootInstance, id);
+    if (found) return found;
+    
+    // If not found, search in global components
+    import('./usePageStore').then(({ usePageStore }) => {});
+    const { usePageStore } = require('./usePageStore');
+    const { getGlobalComponents } = usePageStore.getState();
+    const globalComponents = getGlobalComponents();
+    
+    if (globalComponents.header) {
+      const foundInHeader = findInstanceInTree(globalComponents.header, id);
+      if (foundInHeader) return foundInHeader;
+    }
+    
+    if (globalComponents.footer) {
+      const foundInFooter = findInstanceInTree(globalComponents.footer, id);
+      if (foundInFooter) return foundInFooter;
+    }
+    
+    return null;
   },
   
   getSelectedInstance: () => {
