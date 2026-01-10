@@ -518,13 +518,16 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
         );
       }
       case 'Container': {
+        // Check if parent is a Navigation Section (htmlTag='nav')
+        const isInsideNavigation = parentInstance?.type === 'Section' && parentInstance?.props?.htmlTag === 'nav';
+        
         const content = (
           <Container {...commonProps}>
             {instance.children.map((child, idx) => renderInstance(child, instance, idx))}
           </Container>
         );
         return isPreviewMode ? content : (
-          <DroppableContainer key={instance.id} instance={instance} {...commonProps}>
+          <DroppableContainer key={instance.id} instance={instance} {...commonProps} isInsideNavigation={isInsideNavigation}>
             {content}
           </DroppableContainer>
         );

@@ -52,23 +52,13 @@ export const Container: React.FC<ContainerProps> = ({
   // Extract non-style dataBindingProps
   const { style: _style, ...restDataBindingProps } = dataBindingProps;
 
+  // Note: Selection is handled by DroppableContainer wrapper, not here
+  // This prevents double-handling of clicks when nested containers exist
   return (
     <div
       data-instance-id={instance.id}
       className={classNames.length > 0 ? classNames.join(' ') : undefined}
       style={finalStyles}
-      onClick={isPreviewMode ? undefined : (e) => {
-        e.stopPropagation();
-        onSelect?.();
-      }}
-      onMouseEnter={isPreviewMode ? undefined : (e) => {
-        e.stopPropagation();
-        onHover?.();
-      }}
-      onMouseLeave={isPreviewMode ? undefined : (e) => {
-        e.stopPropagation();
-        onHoverEnd?.();
-      }}
       onContextMenu={isPreviewMode ? undefined : onContextMenu}
       {...restDataBindingProps}
     >

@@ -10,6 +10,7 @@ interface DroppableContainerProps {
   onHover?: () => void;
   onHoverEnd?: () => void;
   onContextMenu?: (e: React.MouseEvent) => void;
+  isInsideNavigation?: boolean;
 }
 
 export const DroppableContainer: React.FC<DroppableContainerProps> = ({
@@ -19,6 +20,7 @@ export const DroppableContainer: React.FC<DroppableContainerProps> = ({
   onHover,
   onHoverEnd,
   onContextMenu,
+  isInsideNavigation = false,
 }) => {
   const { setNodeRef } = useDroppable({
     id: `droppable-${instance.id}`,
@@ -30,6 +32,9 @@ export const DroppableContainer: React.FC<DroppableContainerProps> = ({
 
   // Get child IDs for sortable context
   const childIds = instance.children.map(child => child.id);
+
+  // Check if this is the Navigation root (Section with htmlTag='nav')
+  const isNavigationRoot = instance.type === 'Section' && instance.props?.htmlTag === 'nav';
 
   return (
     <div
@@ -43,8 +48,23 @@ export const DroppableContainer: React.FC<DroppableContainerProps> = ({
         minHeight: isFullWidthContainer && instance.children.length === 0 ? '100px' : undefined,
       }}
       onClick={(e) => {
-        e.stopPropagation();
-        onSelect?.();
+        const target = e.target as HTMLElement;
+        const closestDroppable = target.closest('[data-droppable-id]');
+        const clickedDroppableId = closestDroppable?.getAttribute('data-droppable-id');
+
+        // If this is a Container inside Navigation and user clicked on this container's area,
+        // let the click bubble up to the Navigation root
+        if (isInsideNavigation && instance.type === 'Container' && clickedDroppableId === instance.id) {
+          // Don't stop propagation - let parent Navigation handle selection
+          return;
+        }
+
+        // If the closest droppable is this container, select it
+        if (clickedDroppableId === instance.id) {
+          e.stopPropagation();
+          onSelect?.();
+        }
+        // Otherwise, let the click bubble up
       }}
       onMouseEnter={(e) => {
         e.stopPropagation();
