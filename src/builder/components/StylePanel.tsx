@@ -72,6 +72,7 @@ import { ClassSelector } from "./ClassSelector";
 import { ImageUpload } from "./ImageUpload";
 import { VideoUpload } from "./VideoUpload";
 import { ShadowManager } from "./ShadowManager";
+import { BackgroundLayersManager, BackgroundLayerItem } from "./BackgroundLayersManager";
 import { ShadowItem } from "../store/types";
 import { compileMetadataToCSS } from "../utils/cssCompiler";
 import { applyHeadingTypography } from "../utils/headingTypography";
@@ -502,7 +503,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({
   const [statusCode, setStatusCode] = useState("200");
   const [redirect, setRedirect] = useState("");
   const [language, setLanguage] = useState("en-US");
-
+  const [backgroundLayers, setBackgroundLayers] = useState<BackgroundLayerItem[]>([]);
   // Initialize label input and active class when selectedInstance changes
   useEffect(() => {
     if (selectedInstance) {
@@ -593,6 +594,79 @@ export const StylePanel: React.FC<StylePanelProps> = ({
       setLabelInput(selectedInstance.label || selectedInstance.type);
     }
   }, [selectedInstance?.id, selectedInstance?.label, selectedInstance?.type]);
+
+  // Sync background layers from computed styles
+  useEffect(() => {
+    if (!selectedInstance) {
+      setBackgroundLayers([]);
+      return;
+    }
+    
+    const layers: BackgroundLayerItem[] = [];
+    
+    // Check for background color (fill)
+    if (computedStyles.backgroundColor && computedStyles.backgroundColor !== 'transparent') {
+      layers.push({
+        id: `fill-${selectedInstance.id}`,
+        type: 'fill',
+        value: computedStyles.backgroundColor,
+      });
+    }
+    
+    // Check for gradient
+    if (computedStyles.backgroundGradient && computedStyles.backgroundGradient !== 'none') {
+      layers.push({
+        id: `gradient-${selectedInstance.id}`,
+        type: 'gradient',
+        value: computedStyles.backgroundGradient,
+      });
+    }
+    
+    // Check for background image (media)
+    if (computedStyles.backgroundImage && computedStyles.backgroundImage !== 'none') {
+      layers.push({
+        id: `media-${selectedInstance.id}`,
+        type: 'media',
+        value: computedStyles.backgroundImage,
+        size: computedStyles.backgroundSize || 'cover',
+        position: computedStyles.backgroundPosition || 'center',
+        repeat: computedStyles.backgroundRepeat || 'no-repeat',
+      });
+    }
+    
+    setBackgroundLayers(layers);
+  }, [selectedInstance?.id, computedStyles.backgroundColor, computedStyles.backgroundGradient, computedStyles.backgroundImage, computedStyles.backgroundSize, computedStyles.backgroundPosition, computedStyles.backgroundRepeat]);
+
+  // Handle background layers change
+  const handleBackgroundLayersChange = (layers: BackgroundLayerItem[]) => {
+    setBackgroundLayers(layers);
+    
+    // Reset all background properties first
+    updateStyle("backgroundColor", "");
+    updateStyle("backgroundGradient", "");
+    updateStyle("backgroundImage", "");
+    updateStyle("backgroundSize", "");
+    updateStyle("backgroundPosition", "");
+    updateStyle("backgroundRepeat", "");
+    
+    // Apply layers in order (CSS renders bottom to top, but we apply in array order)
+    layers.forEach((layer) => {
+      switch (layer.type) {
+        case 'fill':
+          updateStyle("backgroundColor", layer.value);
+          break;
+        case 'gradient':
+          updateStyle("backgroundGradient", layer.value);
+          break;
+        case 'media':
+          updateStyle("backgroundImage", layer.value);
+          if (layer.size) updateStyle("backgroundSize", layer.size);
+          if (layer.position) updateStyle("backgroundPosition", layer.position);
+          if (layer.repeat) updateStyle("backgroundRepeat", layer.repeat);
+          break;
+      }
+    });
+  };
 
   const handlePageClick = (page: string) => {
     setSelectedPageForSettings(page);
@@ -2602,169 +2676,13 @@ export const StylePanel: React.FC<StylePanelProps> = ({
                   "backgroundClip",
                 ]}
               >
-                <div className="Col" style={{ gap: "8px" }}>
-                  {/* Fill Color and Gradient side by side */}
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
-                    {/* Background Color */}
-                    <div>
-                      <label className={`Label ${getPropertyColorClass("backgroundColor")}`} style={{ marginBottom: "4px", display: "block" }}>
-                        Fill Color
-                        <PropertyIndicator property="backgroundColor" />
-                      </label>
-                      <div className="flex items-center gap-2">
-                        <ColorPicker
-                          value={computedStyles.backgroundColor || "transparent"}
-                          onChange={(val) => updateStyle("backgroundColor", val)}
-                        />
-                        <span className="text-[9px] text-muted-foreground truncate flex-1">
-                          {computedStyles.backgroundColor || "transparent"}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Gradient */}
-                    {showBackgroundImageControl(selectedInstance.type as ComponentType) && (
-                      <div>
-                        <label className={`Label ${getPropertyColorClass("backgroundGradient")}`} style={{ marginBottom: "4px", display: "block" }}>
-                          Gradient
-                          <PropertyIndicator property="backgroundGradient" />
-                        </label>
-                        <div className="flex items-center gap-2">
-                          <GradientPicker
-                            value={computedStyles.backgroundGradient || ""}
-                            onChange={(val) => updateStyle("backgroundGradient", val)}
-                          />
-                          <span className="text-[9px] text-muted-foreground truncate flex-1">
-                            {computedStyles.backgroundGradient ? "Gradient" : "None"}
-                          </span>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Background Image - only for components that support it */}
-                  {showBackgroundImageControl(selectedInstance.type as ComponentType) && (
-                    <>
-                      <div
-                        style={{ display: "grid", gridTemplateColumns: "40px 1fr", gap: "4px", alignItems: "center" }}
-                      >
-                        <label className={`Label ${getPropertyColorClass("backgroundImage")}`}>
-                          Media
-                          <PropertyIndicator property="backgroundImage" />
-                        </label>
-                        <div className="flex items-center gap-1">
-                          <ImageUpload
-                            currentValue={computedStyles.backgroundImage?.match(/url\(['"]?(.+?)['"]?\)/)?.[1] || ""}
-                            onImageChange={(url) => {
-                              if (url) {
-                                updateStyle("backgroundImage", `url(${url})`);
-                                // Set defaults if not already set
-                                if (!computedStyles.backgroundSize) updateStyle("backgroundSize", "cover");
-                                if (!computedStyles.backgroundPosition) updateStyle("backgroundPosition", "center");
-                                if (!computedStyles.backgroundRepeat) updateStyle("backgroundRepeat", "no-repeat");
-                              } else {
-                                updateStyle("backgroundImage", "");
-                              }
-                            }}
-                            mode="background"
-                            compact
-                          />
-                        </div>
-                      </div>
-
-                      {/* Show additional background settings when image is set */}
-                      {computedStyles.backgroundImage && (
-                        <>
-                          <div
-                            style={{
-                              display: "grid",
-                              gridTemplateColumns: "40px 1fr 40px 1fr",
-                              gap: "4px",
-                              alignItems: "center",
-                            }}
-                          >
-                            <label className={`Label ${getPropertyColorClass("backgroundSize")}`}>
-                              Size
-                              <PropertyIndicator property="backgroundSize" />
-                            </label>
-                            <select
-                              className="Select"
-                              value={computedStyles.backgroundSize || "cover"}
-                              onChange={(e) => updateStyle("backgroundSize", e.target.value)}
-                              style={{ maxWidth: "80px" }}
-                            >
-                              <option value="cover">Cover</option>
-                              <option value="contain">Contain</option>
-                              <option value="auto">Auto</option>
-                            </select>
-                            <label className={`Label ${getPropertyColorClass("backgroundPosition")}`}>
-                              Pos
-                              <PropertyIndicator property="backgroundPosition" />
-                            </label>
-                            <select
-                              className="Select"
-                              value={computedStyles.backgroundPosition || "center"}
-                              onChange={(e) => updateStyle("backgroundPosition", e.target.value)}
-                              style={{ maxWidth: "80px" }}
-                            >
-                              <option value="center">Center</option>
-                              <option value="top">Top</option>
-                              <option value="bottom">Bottom</option>
-                              <option value="left">Left</option>
-                              <option value="right">Right</option>
-                              <option value="top left">Top Left</option>
-                              <option value="top right">Top Right</option>
-                              <option value="bottom left">Bottom Left</option>
-                              <option value="bottom right">Bottom Right</option>
-                            </select>
-                          </div>
-                          <div
-                            style={{
-                              display: "grid",
-                              gridTemplateColumns: "40px 1fr",
-                              gap: "4px",
-                              alignItems: "center",
-                            }}
-                          >
-                            <label className={`Label ${getPropertyColorClass("backgroundRepeat")}`}>
-                              Repeat
-                              <PropertyIndicator property="backgroundRepeat" />
-                            </label>
-                            <select
-                              className="Select"
-                              value={computedStyles.backgroundRepeat || "no-repeat"}
-                              onChange={(e) => updateStyle("backgroundRepeat", e.target.value)}
-                              style={{ maxWidth: "90px" }}
-                            >
-                              <option value="no-repeat">No Repeat</option>
-                              <option value="repeat">Repeat</option>
-                              <option value="repeat-x">Repeat X</option>
-                              <option value="repeat-y">Repeat Y</option>
-                            </select>
-                          </div>
-                        </>
-                      )}
-                    </>
-                  )}
-
-                  <div style={{ display: "grid", gridTemplateColumns: "40px 1fr", gap: "4px", alignItems: "center" }}>
-                    <label className={`Label ${getPropertyColorClass("backgroundClip")}`}>
-                      Clip
-                      <PropertyIndicator property="backgroundClip" />
-                    </label>
-                    <select
-                      className="Select"
-                      value={computedStyles.backgroundClip || "border-box"}
-                      onChange={(e) => updateStyle("backgroundClip", e.target.value)}
-                      style={{ maxWidth: "90px" }}
-                    >
-                      <option value="border-box">Border</option>
-                      <option value="padding-box">Padding</option>
-                      <option value="content-box">Content</option>
-                      <option value="text">Text</option>
-                    </select>
-                  </div>
-                </div>
+                <BackgroundLayersManager
+                  layers={backgroundLayers}
+                  onChange={handleBackgroundLayersChange}
+                  backgroundClip={computedStyles.backgroundClip}
+                  onBackgroundClipChange={(val) => updateStyle("backgroundClip", val)}
+                  getPropertyColorClass={getPropertyColorClass}
+                />
               </AccordionSection>
             )}
 
