@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, X, GripVertical, Paintbrush, Image as ImageIcon, Layers, Scissors } from 'lucide-react';
+import { X, GripVertical, Paintbrush, Image as ImageIcon, Layers, Scissors } from 'lucide-react';
 import { ColorPicker } from './ColorPicker';
 import { GradientPicker } from './GradientPicker';
 import { ImageUpload } from './ImageUpload';
@@ -21,12 +21,6 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 
 export type BackgroundLayerType = 'fill' | 'gradient' | 'media';
 
@@ -345,33 +339,36 @@ export const BackgroundLayersManager: React.FC<BackgroundLayersManagerProps> = (
         </DndContext>
       )}
 
-      {/* Add Layer Dropdown */}
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-full h-8 text-[11px] gap-1.5 border-dashed"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            Add Background
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="w-48">
-          <DropdownMenuItem onClick={() => addLayer('fill')} className="gap-2 text-xs">
-            <Paintbrush className="w-3.5 h-3.5" />
-            Fill
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => addLayer('gradient')} className="gap-2 text-xs">
-            <Layers className="w-3.5 h-3.5" />
-            Gradient
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => addLayer('media')} className="gap-2 text-xs">
-            <ImageIcon className="w-3.5 h-3.5" />
-            Media
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      {/* Add Layer Buttons */}
+      <div className="flex gap-1.5">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => addLayer('fill')}
+          className="flex-1 h-8 text-[10px] gap-1.5 border-dashed"
+        >
+          <Paintbrush className="w-3.5 h-3.5" />
+          Fill
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => addLayer('gradient')}
+          className="flex-1 h-8 text-[10px] gap-1.5 border-dashed"
+        >
+          <Layers className="w-3.5 h-3.5" />
+          Gradient
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => addLayer('media')}
+          className="flex-1 h-8 text-[10px] gap-1.5 border-dashed"
+        >
+          <ImageIcon className="w-3.5 h-3.5" />
+          Media
+        </Button>
+      </div>
 
       {/* Clip Option - Only shown when layers exist */}
       {hasLayers && onBackgroundClipChange && (
