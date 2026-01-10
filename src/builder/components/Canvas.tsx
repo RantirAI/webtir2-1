@@ -1467,8 +1467,8 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
   // Get root instance styles for page body
   const rootStyles = rootInstance ? getComputedStyles(rootInstance.styleSourceIds || []) : {};
 
-  // In rulers view, only show the current page
-  const pagesToRender = isRulersView ? safePages.filter(p => p === currentPage) : safePages;
+  // Always show only the current page for focused editing
+  const pagesToRender = safePages.filter(p => p === currentPage);
 
   // Calculate left/top offsets for rulers view (sidebar widths + ruler size)
   const rulersOffset = isRulersView ? { left: 280, top: 72 } : { left: 0, top: 0 };
