@@ -229,7 +229,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
   const { getComputedStyles } = useStyleStore();
   
   // Global components from page store
-  const { getGlobalComponents } = usePageStore();
+  const { getGlobalComponents, shouldShowGlobalComponent, currentPageId } = usePageStore();
   const globalComponents = getGlobalComponents();
   const globalHeader = globalComponents.header;
   const globalFooter = globalComponents.footer;
@@ -1727,7 +1727,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
 
 
             {/* Global Header */}
-            {globalHeader && (
+            {globalHeader && shouldShowGlobalComponent(pageData.id, 'header') && (
               <div className="global-component-wrapper" data-global-slot="header">
                 {!isPreviewMode && (
                   <div className="absolute top-0 left-0 right-0 z-10 bg-primary/10 border-b border-primary/30 px-2 py-0.5">
@@ -1741,7 +1741,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
             {pageRootInstance && renderInstance(pageRootInstance)}
             
             {/* Global Footer */}
-            {globalFooter && (
+            {globalFooter && shouldShowGlobalComponent(pageData.id, 'footer') && (
               <div className="global-component-wrapper" data-global-slot="footer">
                 {!isPreviewMode && (
                   <div className="absolute bottom-0 left-0 right-0 z-10 bg-primary/10 border-t border-primary/30 px-2 py-0.5">

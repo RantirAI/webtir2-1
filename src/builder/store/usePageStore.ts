@@ -15,11 +15,17 @@ interface GlobalComponents {
   footer: ComponentInstance | null;
 }
 
+interface GlobalOverrides {
+  hideHeader?: boolean;
+  hideFooter?: boolean;
+}
+
 interface PageData {
   id: string;
   name: string;
   rootInstance: ComponentInstance;
   customCode: PageCustomCode;
+  globalOverrides?: GlobalOverrides;
 }
 
 interface PageStore {
@@ -41,6 +47,10 @@ interface PageStore {
   setGlobalComponent: (slot: 'header' | 'footer', instance: ComponentInstance | null) => void;
   getGlobalComponent: (slot: 'header' | 'footer') => ComponentInstance | null;
   getGlobalComponents: () => GlobalComponents;
+  // Per-page global component overrides
+  setPageGlobalOverride: (pageId: string, slot: 'header' | 'footer', hide: boolean) => void;
+  getPageGlobalOverrides: (pageId: string) => GlobalOverrides;
+  shouldShowGlobalComponent: (pageId: string, slot: 'header' | 'footer') => boolean;
 }
 
 // Create initial page
@@ -168,5 +178,39 @@ export const usePageStore = create<PageStore>((set, get) => ({
   
   getGlobalComponents: () => {
     return get().globalComponents;
+  },
+  
+  setPageGlobalOverride: (pageId, slot, hide) => {
+    set((state) => {
+      const page = state.pages[pageId];
+      if (!page) return state;
+      return {
+        pages: {
+          ...state.pages,
+          [pageId]: {
+            ...page,
+            globalOverrides: {
+              ...page.globalOverrides,
+              [slot === 'header' ? 'hideHeader' : 'hideFooter']: hide,
+            },
+          },
+        },
+      };
+    });
+  },
+  
+  getPageGlobalOverrides: (pageId) => {
+    const state = get();
+    return state.pages[pageId]?.globalOverrides || {};
+  },
+  
+  shouldShowGlobalComponent: (pageId, slot) => {
+    const state = get();
+    const globalComponent = state.globalComponents[slot];
+    if (!globalComponent) return false;
+    
+    const pageOverrides = state.pages[pageId]?.globalOverrides || {};
+    const isHidden = slot === 'header' ? pageOverrides.hideHeader : pageOverrides.hideFooter;
+    return !isHidden;
   },
 }));
