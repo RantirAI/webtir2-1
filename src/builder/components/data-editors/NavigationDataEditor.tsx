@@ -52,14 +52,18 @@ const generateId = () => `inst_${Date.now()}_${Math.random().toString(36).substr
 const findNavChildren = (instance: ComponentInstance) => {
   const container = instance.children?.[0]; // Container
   if (!container || container.type !== 'Container') {
-    return { logo: null, menu: null, cta: null, container: null };
+    return { logo: null, logoImage: null, menu: null, cta: null, container: null };
   }
   
-  const logo = container.children?.find(c => c.type === 'Text');
+  // Logo can be Text or Image
+  const logoText = container.children?.find(c => c.type === 'Text');
+  const logoImage = container.children?.find(c => c.type === 'Image');
+  const logo = logoText || logoImage; // Prefer text, but accept image
+  
   const menu = container.children?.find(c => c.type === 'Div' && c.children?.some(l => l.type === 'Link'));
   const cta = container.children?.find(c => c.type === 'Button');
   
-  return { logo, menu, cta, container };
+  return { logo, logoImage, menu, cta, container };
 };
 
 // Check if this is a composition-based navigation (Section with htmlTag='nav')
@@ -68,21 +72,43 @@ const isCompositionNavigation = (instance: ComponentInstance): boolean => {
 };
 
 export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ instance }) => {
-  const { updateInstance, deleteInstance, addInstance } = useBuilderStore();
+  const updateInstance = useBuilderStore((state) => state.updateInstance);
+  const deleteInstance = useBuilderStore((state) => state.deleteInstance);
+  const addInstance = useBuilderStore((state) => state.addInstance);
+  const rootInstance = useBuilderStore((state) => state.rootInstance);
+  
   const { addAsset } = useMediaStore();
   const { getAllPages, getGlobalComponent, setGlobalComponent, currentPageId, setPageGlobalOverride, getPageGlobalOverrides } = usePageStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Helper to find instance in tree
+  const findInstanceInTree = (tree: ComponentInstance | null, id: string): ComponentInstance | null => {
+    if (!tree) return null;
+    if (tree.id === id) return tree;
+    for (const child of tree.children || []) {
+      const found = findInstanceInTree(child, id);
+      if (found) return found;
+    }
+    return null;
+  };
+
+  // Re-read the instance from the store to get fresh data after updates
+  // This ensures we react to changes in the tree
+  const freshInstance = useMemo(() => {
+    return findInstanceInTree(rootInstance, instance.id) || instance;
+  }, [rootInstance, instance.id]);
+
   // Determine if this is the new composition-based navigation or the old monolithic one
-  const isComposition = isCompositionNavigation(instance);
+  const isComposition = isCompositionNavigation(freshInstance);
   
   // For composition-based navigation, find the child components
+  // Use freshInstance to ensure we get the latest children
   const navChildren = useMemo(() => {
     if (isComposition) {
-      return findNavChildren(instance);
+      return findNavChildren(freshInstance);
     }
-    return { logo: null, menu: null, cta: null, container: null };
-  }, [instance, isComposition]);
+    return { logo: null, logoImage: null, menu: null, cta: null, container: null };
+  }, [freshInstance, isComposition]);
 
   // Get all pages for the page picker
   const allPages = getAllPages();
@@ -100,59 +126,62 @@ export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ inst
         })) || [];
     }
     // Fall back to props for old Navigation component
-    return instance.props?.menuItems || [
+    return freshInstance.props?.menuItems || [
       { text: 'Home', url: '#', id: '1' },
       { text: 'About', url: '#', id: '2' },
       { text: 'Contact', url: '#', id: '3' },
     ];
-  }, [instance, isComposition, navChildren.menu]);
+  }, [freshInstance, isComposition, navChildren.menu]);
 
   const logoText = useMemo(() => {
     if (isComposition && navChildren.logo) {
       return (navChildren.logo.props?.children as string) || 'Logo';
     }
-    return instance.props?.logo || 'Logo';
-  }, [instance, isComposition, navChildren.logo]);
+    return freshInstance.props?.logo || 'Logo';
+  }, [freshInstance, isComposition, navChildren.logo]);
 
   const ctaText = useMemo(() => {
     if (isComposition && navChildren.cta) {
       return (navChildren.cta.props?.children as string) || 'Get Started';
     }
-    return instance.props?.ctaText || 'Get Started';
-  }, [instance, isComposition, navChildren.cta]);
+    return freshInstance.props?.ctaText || 'Get Started';
+  }, [freshInstance, isComposition, navChildren.cta]);
 
   const ctaUrl = useMemo(() => {
     if (isComposition && navChildren.cta) {
       return (navChildren.cta.props?.href as string) || '#';
     }
-    return instance.props?.ctaUrl || '#';
-  }, [instance, isComposition, navChildren.cta]);
+    return freshInstance.props?.ctaUrl || '#';
+  }, [freshInstance, isComposition, navChildren.cta]);
 
-  const template = instance.props?.template || 'logo-left-menu-right';
-  const logoImage = instance.props?.logoImage || '';
-  const showCTA = navChildren.cta !== null || instance.props?.showCTA !== false;
-  const mobileBreakpoint = instance.props?.mobileBreakpoint || 768;
+  const template = freshInstance.props?.template || 'logo-left-menu-right';
+  // For composition navigation, check if there's an Image logo child
+  const logoImageUrl = isComposition 
+    ? (navChildren.logoImage?.props?.src as string) || '' 
+    : freshInstance.props?.logoImage || '';
+  const showCTA = navChildren.cta !== null || freshInstance.props?.showCTA !== false;
+  const mobileBreakpoint = freshInstance.props?.mobileBreakpoint || 768;
   
   // Check if this navigation is the global header
   const currentGlobalHeader = getGlobalComponent('header');
-  const isGlobalHeader = currentGlobalHeader?.id === instance.id;
+  const isGlobalHeader = currentGlobalHeader?.id === freshInstance.id;
   
   // Per-page visibility for global header
   const pageOverrides = getPageGlobalOverrides(currentPageId);
   const isHiddenOnCurrentPage = pageOverrides.hideHeader ?? false;
   
   // Hover & Active styles (stored on the instance props)
-  const hoverPreset = instance.props?.hoverPreset || 'underline-slide';
-  const activePreset = instance.props?.activePreset || 'underline';
-  const hoverColor = instance.props?.hoverColor || '';
-  const hoverBgColor = instance.props?.hoverBgColor || '';
-  const activeColor = instance.props?.activeColor || '';
-  const activeBgColor = instance.props?.activeBgColor || '';
-  const animationDuration = instance.props?.animationDuration || 200;
+  const hoverPreset = freshInstance.props?.hoverPreset || 'underline-slide';
+  const activePreset = freshInstance.props?.activePreset || 'underline';
+  const hoverColor = freshInstance.props?.hoverColor || '';
+  const hoverBgColor = freshInstance.props?.hoverBgColor || '';
+  const activeColor = freshInstance.props?.activeColor || '';
+  const activeBgColor = freshInstance.props?.activeBgColor || '';
+  const animationDuration = freshInstance.props?.animationDuration || 200;
 
   const handleTemplateChange = (value: NavigationTemplate) => {
-    updateInstance(instance.id, {
-      props: { ...instance.props, template: value }
+    updateInstance(freshInstance.id, {
+      props: { ...freshInstance.props, template: value }
     });
   };
 
@@ -163,8 +192,8 @@ export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ inst
         props: { ...navChildren.logo.props, children: value }
       });
     } else {
-      updateInstance(instance.id, {
-        props: { ...instance.props, logo: value }
+      updateInstance(freshInstance.id, {
+        props: { ...freshInstance.props, logo: value }
       });
     }
   };
@@ -184,19 +213,60 @@ export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ inst
           mimeType: file.type || 'image/png',
           altText: '',
         });
-        // Update instance props (for logo image we store on the nav wrapper)
-        updateInstance(instance.id, {
-          props: { ...instance.props, logoImage: dataUrl }
-        });
+        
+        if (isComposition && navChildren.logo && navChildren.container) {
+          // For composition navigation, replace the Text logo with an Image
+          // First, find the index of the logo in the container
+          const logoIndex = navChildren.container.children?.findIndex(c => c.id === navChildren.logo?.id) ?? 0;
+          
+          // Delete the old Text logo
+          deleteInstance(navChildren.logo.id);
+          
+          // Add a new Image logo at the same position
+          const newImageLogo: ComponentInstance = {
+            id: generateId(),
+            type: 'Image' as ComponentType,
+            label: 'Image',
+            props: { src: dataUrl, alt: 'Logo' },
+            styleSourceIds: ['style-nav-logo'],
+            children: [],
+          };
+          addInstance(newImageLogo, navChildren.container.id, logoIndex);
+        } else {
+          // Store on nav wrapper props for old navigation
+          updateInstance(freshInstance.id, {
+            props: { ...freshInstance.props, logoImage: dataUrl }
+          });
+        }
       };
       reader.readAsDataURL(file);
     }
   };
 
   const handleRemoveLogoImage = () => {
-    updateInstance(instance.id, {
-      props: { ...instance.props, logoImage: '' }
-    });
+    if (isComposition && navChildren.container) {
+      // Find the Image logo and replace with Text
+      const imageLogo = navChildren.container.children?.find(c => c.type === 'Image');
+      if (imageLogo) {
+        const logoIndex = navChildren.container.children?.findIndex(c => c.id === imageLogo.id) ?? 0;
+        deleteInstance(imageLogo.id);
+        
+        // Add back a Text logo
+        const newTextLogo: ComponentInstance = {
+          id: generateId(),
+          type: 'Text' as ComponentType,
+          label: 'Text',
+          props: { children: 'Brand' },
+          styleSourceIds: ['style-nav-logo'],
+          children: [],
+        };
+        addInstance(newTextLogo, navChildren.container.id, logoIndex);
+      }
+    } else {
+      updateInstance(freshInstance.id, {
+        props: { ...freshInstance.props, logoImage: '' }
+      });
+    }
   };
 
   const handleMenuItemChange = (itemId: string, field: 'text' | 'url', value: string) => {
@@ -217,8 +287,8 @@ export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ inst
       const index = newItems.findIndex((item: any) => item.id === itemId);
       if (index !== -1) {
         newItems[index] = { ...newItems[index], [field]: value };
-        updateInstance(instance.id, {
-          props: { ...instance.props, menuItems: newItems }
+        updateInstance(freshInstance.id, {
+          props: { ...freshInstance.props, menuItems: newItems }
         });
       }
     }
@@ -239,8 +309,8 @@ export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ inst
     } else {
       // Old method: update props array
       const newItems = [...menuItems, { text: 'New Link', url: '#', id: Date.now().toString() }];
-      updateInstance(instance.id, {
-        props: { ...instance.props, menuItems: newItems }
+      updateInstance(freshInstance.id, {
+        props: { ...freshInstance.props, menuItems: newItems }
       });
     }
   };
@@ -252,8 +322,8 @@ export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ inst
     } else {
       // Old method: update props array
       const newItems = menuItems.filter((item: any) => item.id !== itemId);
-      updateInstance(instance.id, {
-        props: { ...instance.props, menuItems: newItems }
+      updateInstance(freshInstance.id, {
+        props: { ...freshInstance.props, menuItems: newItems }
       });
     }
   };
@@ -276,8 +346,8 @@ export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ inst
         deleteInstance(navChildren.cta.id);
       }
     } else {
-      updateInstance(instance.id, {
-        props: { ...instance.props, showCTA: checked }
+      updateInstance(freshInstance.id, {
+        props: { ...freshInstance.props, showCTA: checked }
       });
     }
   };
@@ -289,8 +359,8 @@ export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ inst
         props: { ...navChildren.cta.props, children: value }
       });
     } else {
-      updateInstance(instance.id, {
-        props: { ...instance.props, ctaText: value }
+      updateInstance(freshInstance.id, {
+        props: { ...freshInstance.props, ctaText: value }
       });
     }
   };
@@ -302,43 +372,43 @@ export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ inst
         props: { ...navChildren.cta.props, href: value }
       });
     } else {
-      updateInstance(instance.id, {
-        props: { ...instance.props, ctaUrl: value }
+      updateInstance(freshInstance.id, {
+        props: { ...freshInstance.props, ctaUrl: value }
       });
     }
   };
 
   const handleMobileBreakpointChange = (value: string) => {
-    updateInstance(instance.id, {
-      props: { ...instance.props, mobileBreakpoint: parseInt(value) }
+    updateInstance(freshInstance.id, {
+      props: { ...freshInstance.props, mobileBreakpoint: parseInt(value) }
     });
   };
 
   const handleHoverPresetChange = (value: string) => {
-    updateInstance(instance.id, {
-      props: { ...instance.props, hoverPreset: value }
+    updateInstance(freshInstance.id, {
+      props: { ...freshInstance.props, hoverPreset: value }
     });
   };
 
   const handleActivePresetChange = (value: string) => {
-    updateInstance(instance.id, {
-      props: { ...instance.props, activePreset: value }
+    updateInstance(freshInstance.id, {
+      props: { ...freshInstance.props, activePreset: value }
     });
   };
 
   const handleStyleChange = (key: string, value: string | number) => {
-    updateInstance(instance.id, {
-      props: { ...instance.props, [key]: value }
+    updateInstance(freshInstance.id, {
+      props: { ...freshInstance.props, [key]: value }
     });
   };
 
   const handleGlobalHeaderToggle = (checked: boolean) => {
     if (checked) {
       // Make a deep copy of the instance for global storage
-      const instanceCopy = JSON.parse(JSON.stringify(instance));
+      const instanceCopy = JSON.parse(JSON.stringify(freshInstance));
       setGlobalComponent('header', instanceCopy);
       // Remove the original instance from the page to prevent duplication
-      deleteInstance(instance.id);
+      deleteInstance(freshInstance.id);
     } else {
       // When disabling global, add the component back to the current page
       const globalInstance = getGlobalComponent('header');
@@ -427,10 +497,10 @@ export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ inst
       <div className="space-y-1.5">
         <Label className="text-[10px] font-medium text-foreground">Logo</Label>
         
-        {logoImage ? (
+        {logoImageUrl ? (
           <div className="relative inline-block">
             <img 
-              src={logoImage} 
+              src={logoImageUrl} 
               alt="Logo preview" 
               className="h-8 w-auto max-w-[120px] object-contain rounded border border-border"
             />
