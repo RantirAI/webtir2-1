@@ -1728,9 +1728,9 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
 
             {/* Global Header */}
             {globalHeader && shouldShowGlobalComponent(pageData.id, 'header') && (
-              <div className="global-component-wrapper" data-global-slot="header">
+              <div className="global-component-wrapper relative" data-global-slot="header">
                 {!isPreviewMode && (
-                  <div className="absolute top-0 left-0 right-0 z-10 bg-primary/10 border-b border-primary/30 px-2 py-0.5">
+                  <div className="absolute top-0 left-0 right-0 z-10 bg-primary/10 border-b border-primary/30 px-2 py-0.5 pointer-events-none">
                     <span className="text-[9px] font-medium text-primary">Global Header</span>
                   </div>
                 )}
@@ -1742,9 +1742,9 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
             
             {/* Global Footer */}
             {globalFooter && shouldShowGlobalComponent(pageData.id, 'footer') && (
-              <div className="global-component-wrapper" data-global-slot="footer">
+              <div className="global-component-wrapper relative" data-global-slot="footer">
                 {!isPreviewMode && (
-                  <div className="absolute bottom-0 left-0 right-0 z-10 bg-primary/10 border-t border-primary/30 px-2 py-0.5">
+                  <div className="absolute bottom-0 left-0 right-0 z-10 bg-primary/10 border-t border-primary/30 px-2 py-0.5 pointer-events-none">
                     <span className="text-[9px] font-medium text-primary">Global Footer</span>
                   </div>
                 )}
