@@ -4,6 +4,7 @@ import { ArrowUp, ArrowDown, Settings, Plus } from 'lucide-react';
 import { useBuilderStore } from '../store/useBuilderStore';
 import { useStyleStore } from '../store/useStyleStore';
 import { useComponentInstanceStore } from '../store/useComponentInstanceStore';
+import { usePageStore } from '../store/usePageStore';
 
 interface SelectionOverlayProps {
   instance: ComponentInstance;
@@ -45,9 +46,17 @@ export const SelectionOverlay: React.FC<SelectionOverlayProps> = ({ instance, el
   const { moveInstance, rootInstance } = useBuilderStore();
   const { getComputedStyles } = useStyleStore();
   const { isLinkedInstance } = useComponentInstanceStore();
+  const { getGlobalComponent } = usePageStore();
   
   // Check both direct link AND if inside a linked prebuilt subtree
   const isPrebuilt = isLinkedInstance(instance.id) || isInsideLinkedPrebuilt(instance.id, rootInstance);
+  
+  // Check if this instance is a global component
+  const globalHeader = getGlobalComponent('header');
+  const globalFooter = getGlobalComponent('footer');
+  const isGlobalHeader = globalHeader?.id === instance.id;
+  const isGlobalFooter = globalFooter?.id === instance.id;
+  const globalLabel = isGlobalHeader ? 'Global Header' : isGlobalFooter ? 'Global Footer' : null;
   
   // Get computed styles to check if element has grid display
   const computedStyles = getComputedStyles(instance.styleSourceIds || []);
@@ -276,6 +285,15 @@ export const SelectionOverlay: React.FC<SelectionOverlayProps> = ({ instance, el
           <ArrowDown className="w-3 h-3" />
         </button>
       </div>
+      
+      {/* Global component badge on the right */}
+      {globalLabel && (
+        <div className="absolute -top-7 right-0 pointer-events-none">
+          <div className="bg-green-500 text-white px-2 py-0.5 rounded text-[10px] font-medium whitespace-nowrap">
+            {globalLabel}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
