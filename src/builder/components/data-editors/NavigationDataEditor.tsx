@@ -92,23 +92,26 @@ export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ inst
   };
 
   // Helper to find instance in either rootInstance OR global components
+  // Uses fresh state from stores to avoid stale closures
   const findInstanceAnywhere = (id: string): ComponentInstance | null => {
+    // Get fresh state directly from stores at execution time
     const currentRoot = useBuilderStore.getState().rootInstance;
+    const pageStoreState = usePageStore.getState();
     
     // First search in page tree
     const foundInTree = findInstanceInTree(currentRoot, id);
     if (foundInTree) return foundInTree;
     
-    // Then search in global components (header/footer)
-    const globalHeader = getGlobalComponent('header');
-    if (globalHeader) {
-      const foundInHeader = findInstanceInTree(globalHeader, id);
+    // Then search in global components (header/footer) - get fresh from store
+    const freshGlobalHeader = pageStoreState.globalComponents?.header;
+    if (freshGlobalHeader) {
+      const foundInHeader = findInstanceInTree(freshGlobalHeader, id);
       if (foundInHeader) return foundInHeader;
     }
     
-    const globalFooter = getGlobalComponent('footer');
-    if (globalFooter) {
-      const foundInFooter = findInstanceInTree(globalFooter, id);
+    const freshGlobalFooter = pageStoreState.globalComponents?.footer;
+    if (freshGlobalFooter) {
+      const foundInFooter = findInstanceInTree(freshGlobalFooter, id);
       if (foundInFooter) return foundInFooter;
     }
     
@@ -116,6 +119,7 @@ export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ inst
   };
 
   // Helper to get fresh navigation children from current store state
+  // Uses findInstanceAnywhere which gets fresh state from stores
   const getFreshNavChildren = () => {
     const currentInstance = findInstanceAnywhere(instance.id) || instance;
     if (isCompositionNavigation(currentInstance)) {

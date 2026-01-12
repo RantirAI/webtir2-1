@@ -29,7 +29,7 @@ import { TextAreaPrimitive } from '../primitives/TextAreaPrimitive';
 import { SelectPrimitive } from '../primitives/SelectPrimitive';
 import { RadioPrimitive } from '../primitives/RadioPrimitive';
 import { CheckboxPrimitive } from '../primitives/CheckboxPrimitive';
-import { NavigationPrimitive } from '../primitives/NavigationPrimitive';
+import { NavigationPrimitive, generateLinkStyles as generateNavLinkStyles } from '../primitives/NavigationPrimitive';
 import { CellPrimitive } from '../primitives/CellPrimitive';
 import { DropdownPrimitive } from '../primitives/DropdownPrimitive';
 import { breakpoints } from './PageNavigation';
@@ -449,7 +449,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [richTextAddMenu]);
 
-  const renderInstance = (instance: ComponentInstance, parentInstance?: ComponentInstance, childIndex?: number): React.ReactNode => {
+  const renderInstance = (instance: ComponentInstance, parentInstance?: ComponentInstance, childIndex?: number, isInsideNavigation: boolean = false): React.ReactNode => {
     const isSelected = instance.id === selectedInstanceId;
     const isHovered = instance.id === hoveredInstanceId;
     const isContainer = ['Div', 'Container', 'Section', 'Navigation'].includes(instance.type);
@@ -508,7 +508,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
       case 'Box': { // Backward compatibility for Box -> Div rename
         const content = (
           <Div {...commonProps} featureCardIcon={featureCardIcon}>
-            {instance.children.map((child, idx) => renderInstance(child, instance, idx))}
+            {instance.children.map((child, idx) => renderInstance(child, instance, idx, isInsideNavigation))}
           </Div>
         );
         return isPreviewMode ? content : (
@@ -523,7 +523,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
         
         const content = (
           <Container {...commonProps}>
-            {instance.children.map((child, idx) => renderInstance(child, instance, idx))}
+            {instance.children.map((child, idx) => renderInstance(child, instance, idx, isInsideNavigation))}
           </Container>
         );
         return isPreviewMode ? content : (
@@ -533,10 +533,39 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
         );
       }
       case 'Section': {
+        // Check if this is a navigation section (htmlTag='nav')
+        const isNavSection = instance.props?.htmlTag === 'nav';
+        
+        // Generate dynamic styles for navigation links
+        let navStyles = '';
+        let navClassName = '';
+        if (isNavSection) {
+          navStyles = generateNavLinkStyles(
+            instance.id,
+            instance.props?.hoverPreset || 'underline-slide',
+            instance.props?.activePreset || 'underline',
+            instance.props?.hoverColor || '',
+            instance.props?.hoverBgColor || '',
+            instance.props?.activeColor || '',
+            instance.props?.activeBgColor || '',
+            instance.props?.animationDuration || 200
+          );
+          navClassName = `nav-${instance.id}`;
+        }
+        
         const content = (
-          <Section {...commonProps}>
-            {instance.children.map((child, idx) => renderInstance(child, instance, idx))}
-          </Section>
+          <>
+            {isNavSection && navStyles && <style>{navStyles}</style>}
+            <Section 
+              {...commonProps}
+              dataBindingProps={{
+                ...commonProps.dataBindingProps,
+                className: navClassName || undefined
+              }}
+            >
+              {instance.children.map((child, idx) => renderInstance(child, instance, idx, isNavSection))}
+            </Section>
+          </>
         );
         return isPreviewMode ? content : (
           <DroppableContainer key={instance.id} instance={instance} {...commonProps}>
@@ -620,8 +649,20 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
             style={getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties}
           />
         );
-      case 'Link':
+      case 'Link': {
+        // Add nav-link class if inside a navigation section for hover/active styles
+        if (isInsideNavigation) {
+          const navLinkProps = {
+            ...commonProps,
+            dataBindingProps: {
+              ...commonProps.dataBindingProps,
+              className: 'nav-link relative'
+            }
+          };
+          return wrapWithDraggable(<LinkPrimitive key={instance.id} {...navLinkProps} />);
+        }
         return wrapWithDraggable(<LinkPrimitive key={instance.id} {...commonProps} />);
+      }
       case 'Table':
         return wrapWithDraggable(
           <TablePrimitive 
