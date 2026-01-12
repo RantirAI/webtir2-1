@@ -30,6 +30,7 @@ import { SelectPrimitive } from '../primitives/SelectPrimitive';
 import { RadioPrimitive } from '../primitives/RadioPrimitive';
 import { CheckboxPrimitive } from '../primitives/CheckboxPrimitive';
 import { NavigationPrimitive, generateLinkStyles as generateNavLinkStyles } from '../primitives/NavigationPrimitive';
+import { ResponsiveNavWrapper } from './ResponsiveNavWrapper';
 import { CellPrimitive } from '../primitives/CellPrimitive';
 import { DropdownPrimitive } from '../primitives/DropdownPrimitive';
 import { breakpoints } from './PageNavigation';
@@ -553,7 +554,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
           navClassName = `nav-${instance.id}`;
         }
         
-        const content = (
+        const sectionContent = (
           <>
             {isNavSection && navStyles && <style>{navStyles}</style>}
             <Section 
@@ -567,6 +568,18 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
             </Section>
           </>
         );
+
+        // Wrap navigation sections with ResponsiveNavWrapper for mobile support
+        const content = isNavSection ? (
+          <ResponsiveNavWrapper
+            instance={instance}
+            isPreviewMode={isPreviewMode}
+            currentBreakpoint={currentBreakpoint}
+          >
+            {sectionContent}
+          </ResponsiveNavWrapper>
+        ) : sectionContent;
+
         return isPreviewMode ? content : (
           <DroppableContainer key={instance.id} instance={instance} {...commonProps}>
             {content}
