@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { ComponentInstance } from '../store/types';
-import { useBuilderStore } from '../store/useBuilderStore';
+import { useStyleStore } from '../store/useStyleStore';
 import { Menu, X } from 'lucide-react';
 
 interface ResponsiveNavWrapperProps {
@@ -9,6 +9,17 @@ interface ResponsiveNavWrapperProps {
   isPreviewMode?: boolean;
   currentBreakpoint?: string;
 }
+
+/**
+ * Helper to get className from styleSourceIds
+ */
+const getClassFromStyleSources = (instance: ComponentInstance): string => {
+  const styleSources = useStyleStore.getState().styleSources;
+  return (instance.styleSourceIds || [])
+    .map((id) => styleSources[id]?.name)
+    .filter(Boolean)
+    .join(' ');
+};
 
 /**
  * Wraps composition-based navigation (Section with htmlTag='nav') to provide
@@ -81,34 +92,34 @@ export const ResponsiveNavWrapper: React.FC<ResponsiveNavWrapperProps> = ({
     }
   };
 
-  // Find logo and menu items from composition children
+  // Find logo, links, and other children (Buttons, etc.) from composition children
   const navContent = useMemo(() => {
-    // Navigate: Section > Container > [Logo, LinksDiv, CTA]
+    // Navigate: Section > Container > [Logo, LinksDiv, Buttons, etc.]
     const container = instance.children?.[0];
     if (!container || container.type !== 'Container') {
-      return { logo: null, links: null, cta: null };
+      return { logo: null, links: null, otherChildren: [] };
     }
 
     let logo: ComponentInstance | null = null;
     let links: ComponentInstance | null = null;
-    let cta: ComponentInstance | null = null;
+    const otherChildren: ComponentInstance[] = [];
 
     for (const child of container.children || []) {
-      // Logo: Text or Image with 'logo' in label or first Text/Image
+      // Logo: Text or Image (first one found)
       if ((child.type === 'Text' || child.type === 'Image') && !logo) {
         logo = child;
       }
       // Links container: Div with Link children
-      if (child.type === 'Div' && child.children?.some((c) => c.type === 'Link')) {
+      else if (child.type === 'Div' && child.children?.some((c) => c.type === 'Link')) {
         links = child;
       }
-      // CTA: Button
-      if (child.type === 'Button') {
-        cta = child;
+      // Any other component (Button, custom components, etc.)
+      else if (child.type !== 'Text' && child.type !== 'Image') {
+        otherChildren.push(child);
       }
     }
 
-    return { logo, links, cta, container };
+    return { logo, links, otherChildren, container };
   }, [instance]);
 
   // If not mobile view, render children normally (desktop layout)
@@ -167,16 +178,18 @@ export const ResponsiveNavWrapper: React.FC<ResponsiveNavWrapperProps> = ({
             <MobileLinkRenderer
               key={link.id}
               link={link}
-              isLast={index === (navContent.links?.children?.length ?? 0) - 1}
+              isLast={index === (navContent.links?.children?.length ?? 0) - 1 && navContent.otherChildren.length === 0}
             />
           ))}
 
-          {/* CTA at bottom */}
-          {navContent.cta && (
-            <div className="mt-3 pb-2">
-              <MobileCTARenderer cta={navContent.cta} />
-            </div>
-          )}
+          {/* Render other children (Buttons, etc.) with their actual styles */}
+          {navContent.otherChildren.map((child, index) => (
+            <MobileChildRenderer
+              key={child.id}
+              child={child}
+              isLast={index === navContent.otherChildren.length - 1}
+            />
+          ))}
         </div>
       </div>
     </nav>
@@ -185,20 +198,22 @@ export const ResponsiveNavWrapper: React.FC<ResponsiveNavWrapperProps> = ({
 
 // Helper components for rendering mobile nav items
 const MobileLogoRenderer: React.FC<{ logo: ComponentInstance }> = ({ logo }) => {
+  const className = getClassFromStyleSources(logo);
+  
   if (logo.type === 'Image') {
     return (
       <img
         src={logo.props?.src || ''}
         alt={logo.props?.alt || 'Logo'}
-        className="h-8 w-auto max-w-[120px] object-contain"
+        className={className || "h-8 w-auto max-w-[120px] object-contain"}
         style={{ maxHeight: '32px' }}
       />
     );
   }
 
-  // Text logo
+  // Text logo - use its actual styles
   return (
-    <span className="text-xl font-bold text-foreground">
+    <span className={className || "text-xl font-bold text-foreground"}>
       {logo.props?.children || logo.props?.text || 'Logo'}
     </span>
   );
@@ -210,11 +225,12 @@ const MobileLinkRenderer: React.FC<{ link: ComponentInstance; isLast: boolean }>
 }) => {
   const href = link.props?.href || '#';
   const text = link.props?.children || link.props?.text || 'Link';
+  const className = getClassFromStyleSources(link);
 
   return (
     <a
       href={href}
-      className={`py-3 text-sm text-foreground hover:text-primary transition-colors ${
+      className={`py-3 text-sm transition-colors ${className} ${
         !isLast ? 'border-b border-border' : ''
       }`}
     >
@@ -223,17 +239,57 @@ const MobileLinkRenderer: React.FC<{ link: ComponentInstance; isLast: boolean }>
   );
 };
 
-const MobileCTARenderer: React.FC<{ cta: ComponentInstance }> = ({ cta }) => {
-  const text = cta.props?.children || cta.props?.text || 'Get Started';
-  const href = cta.props?.href || '#';
-
+/**
+ * Renders any child component (Button, etc.) with its actual styles from styleSourceIds
+ */
+const MobileChildRenderer: React.FC<{ child: ComponentInstance; isLast: boolean }> = ({ child, isLast }) => {
+  const className = getClassFromStyleSources(child);
+  
+  if (child.type === 'Button') {
+    const text = child.props?.children || child.props?.text || 'Button';
+    const href = child.props?.href || child.props?.url;
+    
+    // Base styles for proper display in mobile menu
+    const baseStyles: React.CSSProperties = {
+      display: 'inline-flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: '100%',
+      marginTop: '12px',
+      marginBottom: isLast ? '8px' : '0',
+    };
+    
+    if (href) {
+      return (
+        <a 
+          href={href} 
+          className={className}
+          style={baseStyles}
+        >
+          {text}
+        </a>
+      );
+    }
+    
+    return (
+      <button 
+        className={className}
+        style={baseStyles}
+      >
+        {text}
+      </button>
+    );
+  }
+  
+  // For other component types, render as a div with their className
+  // This is a fallback for custom components
   return (
-    <a
-      href={href}
-      className="block w-full px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium text-center hover:opacity-90 transition-opacity"
+    <div 
+      className={className}
+      style={{ marginTop: '12px', marginBottom: isLast ? '8px' : '0' }}
     >
-      {text}
-    </a>
+      {child.props?.children || child.props?.text || ''}
+    </div>
   );
 };
 
