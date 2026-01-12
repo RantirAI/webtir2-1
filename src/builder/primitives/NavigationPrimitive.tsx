@@ -42,8 +42,8 @@ interface NavigationPrimitiveProps {
   activeBgColor?: string;
 }
 
-// Generate CSS for hover and active states
-const generateLinkStyles = (
+// Generate CSS for hover and active states - exported for use in Canvas.tsx
+export const generateLinkStyles = (
   instanceId: string,
   hoverPreset: HoverPreset,
   activePreset: ActivePreset,

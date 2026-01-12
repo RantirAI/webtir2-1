@@ -26,12 +26,16 @@ export const LinkPrimitive: React.FC<LinkPrimitiveProps> = ({
   isPreviewMode,
   dataBindingProps = {},
 }) => {
-  const { style: dataBindingStyle, ...restDataBindingProps } = dataBindingProps;
+  const { style: dataBindingStyle, className: dataBindingClassName, ...restDataBindingProps } = dataBindingProps;
+
+  // Merge classNames: style source classes + any dataBindingProps className (e.g., nav-link)
+  const styleSourceClasses = (instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ');
+  const finalClassName = [styleSourceClasses, dataBindingClassName].filter(Boolean).join(' ') || undefined;
 
   return (
     <a
       data-instance-id={instance.id}
-      className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
+      className={finalClassName}
       href={instance.props.href || '#'}
       style={{ position: 'relative', ...dataBindingStyle }}
       onClick={isPreviewMode ? undefined : (e) => {

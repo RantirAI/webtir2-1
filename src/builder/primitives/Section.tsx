@@ -53,9 +53,14 @@ export const Section: React.FC<SectionProps> = ({
   const finalStyles = defaultStyles;
   const classNames = (instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean);
   if (isNewlyAdded) classNames.push('animate-fade-in');
+  
+  // Add className from dataBindingProps if provided (e.g., nav-{id} for navigation sections)
+  if (dataBindingProps.className) {
+    classNames.push(dataBindingProps.className);
+  }
 
-  // Extract non-style dataBindingProps
-  const { style: _style, ...restDataBindingProps } = dataBindingProps;
+  // Extract non-style and non-className dataBindingProps
+  const { style: _style, className: _className, ...restDataBindingProps } = dataBindingProps;
 
   // Note: Selection is handled by DroppableContainer wrapper, not here
   // This prevents double-handling of clicks when nested containers exist
