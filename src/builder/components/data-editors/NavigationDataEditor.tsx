@@ -539,6 +539,12 @@ export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ inst
     });
   };
 
+  const handleMobileAnimationChange = (value: string) => {
+    updateInstance(freshInstance.id, {
+      props: { ...freshInstance.props, mobileAnimation: value }
+    });
+  };
+
   const handleHoverPresetChange = (value: string) => {
     updateInstance(freshInstance.id, {
       props: { ...freshInstance.props, hoverPreset: value }
@@ -897,20 +903,43 @@ export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ inst
         </Collapsible>
       )}
 
-      {/* Mobile Breakpoint */}
-      <div className="space-y-1.5">
-        <Label className="text-[10px] font-medium text-foreground">Mobile Breakpoint</Label>
-        <Select value={mobileBreakpoint.toString()} onValueChange={handleMobileBreakpointChange}>
-          <SelectTrigger className="h-7 text-[10px] text-foreground bg-background">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent className="bg-popover">
-            <SelectItem value="640" className="text-[10px]">640px (Mobile)</SelectItem>
-            <SelectItem value="768" className="text-[10px]">768px (Tablet)</SelectItem>
-            <SelectItem value="1024" className="text-[10px]">1024px (Desktop)</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      {/* Mobile Settings */}
+      <Collapsible defaultOpen>
+        <CollapsibleTrigger className="flex items-center justify-between w-full py-1 text-[10px] font-medium text-foreground hover:text-foreground/80">
+          <span>Mobile Settings</span>
+          <ChevronDown className="w-3 h-3 text-muted-foreground" />
+        </CollapsibleTrigger>
+        <CollapsibleContent className="space-y-2 pt-2">
+          <div className="space-y-1.5">
+            <Label className="text-[10px] font-medium text-foreground">Mobile Breakpoint</Label>
+            <Select value={mobileBreakpoint.toString()} onValueChange={handleMobileBreakpointChange}>
+              <SelectTrigger className="h-7 text-[10px] text-foreground bg-background">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-popover">
+                <SelectItem value="640" className="text-[10px]">640px (Mobile)</SelectItem>
+                <SelectItem value="768" className="text-[10px]">768px (Tablet)</SelectItem>
+                <SelectItem value="1024" className="text-[10px]">1024px (Desktop)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label className="text-[10px] font-medium text-foreground">Menu Animation</Label>
+            <Select value={freshInstance.props?.mobileAnimation || 'slide'} onValueChange={handleMobileAnimationChange}>
+              <SelectTrigger className="h-7 text-[10px] text-foreground bg-background">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-popover">
+                <SelectItem value="slide" className="text-[10px]">Slide Down</SelectItem>
+                <SelectItem value="fade" className="text-[10px]">Fade In</SelectItem>
+                <SelectItem value="scale" className="text-[10px]">Scale</SelectItem>
+                <SelectItem value="none" className="text-[10px]">None</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
     </div>
   );
 };
