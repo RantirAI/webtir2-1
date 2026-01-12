@@ -196,30 +196,12 @@ export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ inst
     return freshInstance.props?.logo || 'Logo';
   }, [freshInstance, isComposition, navChildren.logoText]);
 
-  const ctaText = useMemo(() => {
-    if (isComposition && navChildren.cta) {
-      return (navChildren.cta.props?.children as string) || 'Get Started';
-    }
-    return freshInstance.props?.ctaText || 'Get Started';
-  }, [freshInstance, isComposition, navChildren.cta]);
-
-  const ctaUrl = useMemo(() => {
-    if (isComposition && navChildren.cta) {
-      return (navChildren.cta.props?.href as string) || '#';
-    }
-    return freshInstance.props?.ctaUrl || '#';
-  }, [freshInstance, isComposition, navChildren.cta]);
 
   const template = freshInstance.props?.template || 'logo-left-menu-right';
   // For composition navigation, check if there's an Image logo child
   const logoImageUrl = isComposition 
     ? (navChildren.logoImage?.props?.src as string) || '' 
     : freshInstance.props?.logoImage || '';
-  // For composition navigation, use state from the component tree
-  // For legacy navigation, use props
-  const showCTA = isComposition 
-    ? navChildren.cta !== null 
-    : freshInstance.props?.showCTA !== false;
   const mobileBreakpoint = freshInstance.props?.mobileBreakpoint || 768;
   
   // Check if this navigation is the global header
@@ -453,85 +435,6 @@ export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ inst
     }
   };
 
-  const handleShowCTAChange = (checked: boolean) => {
-    // Get fresh nav children at the time of execution
-    const fresh = getFreshNavChildren();
-    
-    if (isComposition && fresh.container) {
-      if (checked && !fresh.cta) {
-        // Try to derive styleSourceIds from existing nav children pattern
-        // Look for any existing child with a style ID we can derive from
-        let ctaStyleIds: string[] = [];
-        
-        // First, look for any existing nav link to derive a pattern
-        const existingLink = fresh.menu?.children?.[0];
-        if (existingLink?.styleSourceIds?.[0]) {
-          // Try to find a matching CTA style in the store based on the nav's ID pattern
-          const linkStyleId = existingLink.styleSourceIds[0];
-          // Extract the base pattern (e.g., "nav-xyz-link" -> try "nav-xyz-cta")
-          const ctaStyleId = linkStyleId.replace(/-link$/, '-cta').replace(/link$/, 'cta');
-          const styleSources = useStyleStore.getState().styleSources;
-          if (styleSources[ctaStyleId]) {
-            ctaStyleIds = [ctaStyleId];
-          }
-        }
-        
-        // If no pattern found, try deriving from container style
-        if (ctaStyleIds.length === 0 && fresh.container.styleSourceIds?.[0]) {
-          const containerStyleId = fresh.container.styleSourceIds[0];
-          const potentialCtaId = containerStyleId.replace(/-container$/, '-cta').replace(/container$/, 'cta');
-          const styleSources = useStyleStore.getState().styleSources;
-          if (styleSources[potentialCtaId]) {
-            ctaStyleIds = [potentialCtaId];
-          }
-        }
-        
-        // Add a new CTA Button to the Container with derived or empty styleSourceIds
-        const newCta: ComponentInstance = {
-          id: generateId(),
-          type: 'Button' as ComponentType,
-          label: 'Button',
-          props: { children: 'Get Started' },
-          styleSourceIds: ctaStyleIds,
-          children: [],
-        };
-        addInstance(newCta, fresh.container.id);
-      } else if (!checked && fresh.cta) {
-        // Remove the CTA Button
-        deleteInstance(fresh.cta.id);
-      }
-    } else {
-      updateInstance(freshInstance.id, {
-        props: { ...freshInstance.props, showCTA: checked }
-      });
-    }
-  };
-
-  const handleCTATextChange = (value: string) => {
-    if (isComposition && navChildren.cta) {
-      // Update the Button child directly
-      updateInstance(navChildren.cta.id, {
-        props: { ...navChildren.cta.props, children: value }
-      });
-    } else {
-      updateInstance(freshInstance.id, {
-        props: { ...freshInstance.props, ctaText: value }
-      });
-    }
-  };
-
-  const handleCTAUrlChange = (value: string) => {
-    if (isComposition && navChildren.cta) {
-      // Update the Button child directly
-      updateInstance(navChildren.cta.id, {
-        props: { ...navChildren.cta.props, href: value }
-      });
-    } else {
-      updateInstance(freshInstance.id, {
-        props: { ...freshInstance.props, ctaUrl: value }
-      });
-    }
-  };
 
   const handleMobileBreakpointChange = (value: string) => {
     updateInstance(freshInstance.id, {
@@ -776,33 +679,6 @@ export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ inst
         </div>
       )}
 
-      {/* CTA Button */}
-      <div className="space-y-1.5">
-        <div className="flex items-center justify-between">
-          <Label className="text-[10px] font-medium text-foreground">CTA Button</Label>
-          <Switch 
-            checked={showCTA} 
-            onCheckedChange={handleShowCTAChange}
-            className="scale-75 origin-right"
-          />
-        </div>
-        {showCTA && (
-          <div className="space-y-1.5 pl-2 border-l border-border">
-            <Input
-              value={ctaText}
-              onChange={(e) => handleCTATextChange(e.target.value)}
-              placeholder="Button text"
-              className="h-7 text-[10px] text-foreground bg-background"
-            />
-            <Input
-              value={ctaUrl}
-              onChange={(e) => handleCTAUrlChange(e.target.value)}
-              placeholder="URL"
-              className="h-7 text-[10px] text-foreground bg-background font-mono"
-            />
-          </div>
-        )}
-      </div>
 
       {/* Link Styles */}
       {template !== 'minimal-logo' && (
