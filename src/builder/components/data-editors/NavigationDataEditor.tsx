@@ -10,7 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Plus, Trash2, GripVertical, Upload, X, ChevronDown, Globe } from 'lucide-react';
-import { NavigationTemplate } from '../../utils/navigationTemplates';
+import { NavigationTemplate, applyTemplateToStyles, getTemplateConfig } from '../../utils/navigationTemplates';
+import { useStyleStore } from '../../store/useStyleStore';
 
 interface NavigationDataEditorProps {
   instance: ComponentInstance;
@@ -239,9 +240,45 @@ export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ inst
   const animationDuration = freshInstance.props?.animationDuration || 200;
 
   const handleTemplateChange = (value: NavigationTemplate) => {
+    // 1. Save the template to props
     updateInstance(freshInstance.id, {
       props: { ...freshInstance.props, template: value }
     });
+
+    // 2. For composition navigation, apply template styles
+    if (isComposition) {
+      const fresh = getFreshNavChildren();
+      if (!fresh.container) return;
+
+      // Get the actual style source IDs from the current instances
+      const navContainerStyleId = fresh.container.styleSourceIds?.[0];
+      const logoStyleId = (fresh.logoImage || fresh.logoText)?.styleSourceIds?.[0];
+      const linksStyleId = fresh.menu?.styleSourceIds?.[0];
+      const ctaStyleId = fresh.cta?.styleSourceIds?.[0];
+
+      // Apply template styles if we have the required style IDs
+      if (navContainerStyleId && logoStyleId && linksStyleId) {
+        const setStyle = useStyleStore.getState().setStyle;
+        applyTemplateToStyles(
+          value,
+          navContainerStyleId,
+          logoStyleId,
+          linksStyleId,
+          ctaStyleId,
+          setStyle
+        );
+      }
+
+      // Handle special templates like 'minimal-logo' that hide menu/CTA
+      const setStyle = useStyleStore.getState().setStyle;
+      if (value === 'minimal-logo') {
+        if (linksStyleId) setStyle(linksStyleId, 'display', 'none');
+        if (ctaStyleId) setStyle(ctaStyleId, 'display', 'none');
+      } else {
+        if (linksStyleId) setStyle(linksStyleId, 'display', 'flex');
+        if (ctaStyleId) setStyle(ctaStyleId, 'display', 'flex');
+      }
+    }
   };
 
   const handleLogoChange = (value: string) => {
@@ -290,20 +327,21 @@ export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ inst
               props: { ...fresh.logoImage.props, src: dataUrl }
             });
           } else if (fresh.logoText) {
-            // Replace Text with Image
+            // Replace Text with Image - REUSE the existing styleSourceIds
+            const existingStyleIds = fresh.logoText.styleSourceIds || [];
             const logoIndex = fresh.container.children?.findIndex(c => c.id === fresh.logoText?.id) ?? 0;
             const containerId = fresh.container.id;
             
             // Delete the old Text logo
             deleteInstance(fresh.logoText.id);
             
-            // Add a new Image logo at the same position
+            // Add a new Image logo at the same position with the SAME styleSourceIds
             const newImageLogo: ComponentInstance = {
               id: generateId(),
               type: 'Image' as ComponentType,
               label: 'Image',
-              props: { src: dataUrl, alt: 'Logo' },
-              styleSourceIds: ['style-nav-logo'],
+              props: { src: dataUrl, alt: logoTextValue || 'Logo' },
+              styleSourceIds: existingStyleIds,
               children: [],
             };
             addInstance(newImageLogo, containerId, logoIndex);
@@ -318,6 +356,9 @@ export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ inst
         }
       };
       reader.readAsDataURL(file);
+      
+      // Clear input so re-uploading the same file triggers onChange
+      e.target.value = '';
     }
   };
 
@@ -328,18 +369,20 @@ export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ inst
     if (isComposition && fresh.container) {
       // Find the Image logo and replace with Text
       if (fresh.logoImage) {
+        // REUSE the existing styleSourceIds from the Image
+        const existingStyleIds = fresh.logoImage.styleSourceIds || [];
         const logoIndex = fresh.container.children?.findIndex(c => c.id === fresh.logoImage?.id) ?? 0;
         const containerId = fresh.container.id;
         
         deleteInstance(fresh.logoImage.id);
         
-        // Add back a Text logo
+        // Add back a Text logo with the SAME styleSourceIds
         const newTextLogo: ComponentInstance = {
           id: generateId(),
           type: 'Text' as ComponentType,
           label: 'Text',
           props: { children: 'Brand' },
-          styleSourceIds: ['style-nav-logo'],
+          styleSourceIds: existingStyleIds,
           children: [],
         };
         addInstance(newTextLogo, containerId, logoIndex);
@@ -416,13 +459,40 @@ export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ inst
     
     if (isComposition && fresh.container) {
       if (checked && !fresh.cta) {
-        // Add a new CTA Button to the Container
+        // Try to derive styleSourceIds from existing nav children pattern
+        // Look for any existing child with a style ID we can derive from
+        let ctaStyleIds: string[] = [];
+        
+        // First, look for any existing nav link to derive a pattern
+        const existingLink = fresh.menu?.children?.[0];
+        if (existingLink?.styleSourceIds?.[0]) {
+          // Try to find a matching CTA style in the store based on the nav's ID pattern
+          const linkStyleId = existingLink.styleSourceIds[0];
+          // Extract the base pattern (e.g., "nav-xyz-link" -> try "nav-xyz-cta")
+          const ctaStyleId = linkStyleId.replace(/-link$/, '-cta').replace(/link$/, 'cta');
+          const styleSources = useStyleStore.getState().styleSources;
+          if (styleSources[ctaStyleId]) {
+            ctaStyleIds = [ctaStyleId];
+          }
+        }
+        
+        // If no pattern found, try deriving from container style
+        if (ctaStyleIds.length === 0 && fresh.container.styleSourceIds?.[0]) {
+          const containerStyleId = fresh.container.styleSourceIds[0];
+          const potentialCtaId = containerStyleId.replace(/-container$/, '-cta').replace(/container$/, 'cta');
+          const styleSources = useStyleStore.getState().styleSources;
+          if (styleSources[potentialCtaId]) {
+            ctaStyleIds = [potentialCtaId];
+          }
+        }
+        
+        // Add a new CTA Button to the Container with derived or empty styleSourceIds
         const newCta: ComponentInstance = {
           id: generateId(),
           type: 'Button' as ComponentType,
           label: 'Button',
           props: { children: 'Get Started' },
-          styleSourceIds: ['style-nav-cta'],
+          styleSourceIds: ctaStyleIds,
           children: [],
         };
         addInstance(newCta, fresh.container.id);
