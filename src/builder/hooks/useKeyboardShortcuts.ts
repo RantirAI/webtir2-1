@@ -15,15 +15,15 @@ export const useKeyboardShortcuts = () => {
       const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
       const modifier = isMac ? e.metaKey : e.ctrlKey;
 
-      // Undo: Ctrl/Cmd + Z
-      if (modifier && e.key === 'z' && !e.shiftKey) {
+      // Undo: Ctrl/Cmd + Z (only when not in input)
+      if (modifier && e.key === 'z' && !e.shiftKey && !isInput) {
         e.preventDefault();
         useBuilderStore.getState().undo();
         return;
       }
 
-      // Redo: Ctrl/Cmd + Shift + Z or Ctrl/Cmd + Y
-      if ((modifier && e.shiftKey && e.key === 'z') || (modifier && e.key === 'y')) {
+      // Redo: Ctrl/Cmd + Shift + Z or Ctrl/Cmd + Y (only when not in input)
+      if (((modifier && e.shiftKey && e.key === 'z') || (modifier && e.key === 'y')) && !isInput) {
         e.preventDefault();
         useBuilderStore.getState().redo();
         return;
