@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { MarkdownRenderer } from './MarkdownRenderer';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
@@ -579,12 +580,16 @@ When updating this component, use targetId: "${styleSourceId}" in the update act
                         : 'bg-muted mr-4'
                         }`}
                     >
-                      <p className="whitespace-pre-wrap break-all">{message.content}</p>
+                      {message.role === 'assistant' ? (
+                        <MarkdownRenderer content={message.content} />
+                      ) : (
+                        <p className="whitespace-pre-wrap break-all">{message.content}</p>
+                      )}
                     </div>
                   ))}
                   {streamingContent && (
                     <div className="text-[10px] p-2 rounded-lg bg-muted mr-4 min-w-0 overflow-hidden max-w-[calc(100%-1rem)]">
-                      <p className="whitespace-pre-wrap break-all">{streamingContent}</p>
+                      <MarkdownRenderer content={streamingContent} />
                     </div>
                   )}
                 </>
