@@ -87,15 +87,32 @@ NEVER create a hero with just heading + text + button. That's too basic.
 ## PAGE BUILDING RULES (CRITICAL)
 
 When building COMPLETE PAGES, follow industry blueprints:
-- ECOMMERCE: Hero → Categories → Products Grid (4-8 items) → Trust Badges → Reviews → Newsletter → Footer
-- RESTAURANT: Hero → About → Menu Items (6-8 dishes) → Reviews → Location/Hours → Reservation CTA → Footer
-- FITNESS: Hero → Classes Grid → Pricing Plans → Trainers → Gallery → Testimonials → Footer
-- REAL ESTATE: Hero with Search → Listings (4-6 properties) → Property Types → Agents → Contact → Footer
-- SAAS: Hero → Trust Logos → Features → How It Works → Pricing → Testimonials → FAQ → CTA → Footer
-- AGENCY: Hero → Services → Portfolio → Process → Clients → Team → Contact → Footer
-- PORTFOLIO: Hero → About → Skills → Projects → Experience → Testimonials → Contact → Footer
+
+**ECOMMERCE / FASHION / APPAREL:**
+- Navigation (logo + links + search + cart) → Hero (split layout with featured product) → Featured Products (8 items, 4-column grid) → Categories → Trust Bar → Newsletter → Footer
+- Use serif fonts (Georgia), cream backgrounds (#FAF9F7), 3:4 product images, "New" badges
+- Product cards: category label above name, no shadows, minimal aesthetic
+
+**RESTAURANT:**
+- Hero → About → Menu Items (6-8 dishes with images) → Reviews → Location/Hours → Reservation CTA → Footer
+
+**FITNESS:**
+- Hero → Classes Grid → Pricing Plans → Trainers → Gallery → Testimonials → Footer
+
+**REAL ESTATE:**
+- Hero with Search → Listings (4-6 properties) → Property Types → Agents → Contact → Footer
+
+**SAAS:**
+- Hero → Trust Logos → Features → How It Works → Pricing → Testimonials → FAQ → CTA → Footer
+
+**AGENCY:**
+- Hero → Services → Portfolio → Process → Clients → Team → Contact → Footer
+
+**PORTFOLIO:**
+- Hero → About → Skills → Projects → Experience → Testimonials → Contact → Footer
 
 NEVER create shallow pages. Each industry has REQUIRED sections - include them ALL.
+Apply the correct DESIGN SYSTEM for each industry (typography, colors, spacing, image ratios).
 
 ---
 

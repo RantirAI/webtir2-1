@@ -82,12 +82,93 @@ function simplifyInstance(
   };
 }
 
+// Generate industry-specific design systems
+export function generateIndustryDesignSystems(): string {
+  return `## Industry Design Systems (CRITICAL - Apply These Visual Languages)
+
+### FASHION / APPAREL / LIFESTYLE ECOMMERCE
+**Typography:**
+- Headings: Georgia, "Playfair Display", serif - elegant, refined
+- Body: Inter, system-ui - clean, readable
+- Logo: Uppercase with 3-4px letter-spacing
+- Heading sizes: 48-64px for main, 32-40px for sections
+
+**Color Palette:**
+- Background: #FAF9F7 (warm cream), #F5F5F4 (stone)
+- Text: #1C1917 (stone-900), #78716C (stone-500)
+- Accent: #B8860B (warm gold), #A16207 (amber)
+- Badges: #C2410C (burnt orange) for "New", #059669 for "Sale"
+
+**Product Card Style:**
+- Clean white cards, minimal shadows
+- Image ratio: 3:4 (portrait) for fashion - use aspectRatio: "3/4"
+- Category label ABOVE product name (small, uppercase, muted, 11px, letter-spacing 1px)
+- "New" badge: positioned top-left, colored background, white text, 11px font
+
+**Navigation Style:**
+- Logo: letterSpacing: "4px", fontFamily: "Georgia, serif", fontWeight: 400
+- Links: 14px, color: #44403C, textTransform: "none"
+- Icons: Search and Cart text or icons, 14px
+
+---
+
+### TECH / SAAS / STARTUP
+**Typography:**
+- Headings: Inter, system-ui - modern, geometric
+- Use bold weights (700-800), tight line-height (1.1-1.2)
+
+**Color Palette:**
+- Primary: Indigo (#6366F1), Purple (#8B5CF6)
+- Dark backgrounds: #0F172A, #1E293B
+- Accent: Cyan (#06B6D4), Emerald (#10B981)
+- Gradients: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)
+
+**Card Style:**
+- Rounded corners (12-16px), subtle shadows
+- Dark cards on light bg, or glassmorphism on dark
+
+---
+
+### RESTAURANT / FOOD / HOSPITALITY
+**Typography:**
+- Headings: Georgia, "Playfair Display" - warm, inviting
+- Body: system-ui
+
+**Color Palette:**
+- Warm: #78350F (amber-900), #92400E (warm brown)
+- Accents: #EF4444 (red), #F97316 (orange)
+- Background: #FFFBEB (warm cream), #1C1917 (dark)
+
+**Menu Style:**
+- Price in accent color (red or orange)
+- Image thumbnails 80x80px with 8px border-radius
+
+---
+
+### LUXURY / PREMIUM / HIGH-END
+**Typography:**
+- Serif headings with extra letter-spacing (2-4px)
+- Thin or light weights (300-400) with uppercase transforms
+- Large headings (56-72px) with plenty of whitespace
+
+**Color Palette:**
+- Gold: #D4AF37, #B8860B
+- Black: #18181B, #0F0F0F
+- Cream: #FEFCE8, #FAF9F7
+
+**Visual Elements:**
+- Generous whitespace
+- Minimal UI, let images breathe
+- Subtle animations and transitions
+`;
+}
+
 // Generate color palettes for vibrant designs
 export function generateColorPalettes(): string {
   return `## Color Palettes for Dynamic Designs
 
 ### CRITICAL: Be Creative with Colors
-DO NOT default to black/white/gray. Infer colors from user context and create VIBRANT designs.
+DO NOT default to black/white/gray. Infer colors from context and create VIBRANT designs.
 
 ### Industry-Specific Color Suggestions
 | Context | Primary | Secondary | Accent | Background Options |
@@ -101,7 +182,7 @@ DO NOT default to black/white/gray. Infer colors from user context and create VI
 | Food/Restaurant | #EF4444 (Red) | #F97316 (Orange) | #78350F (Brown) | #FEF2F2, #1C1917 |
 | Kids/Education | #3B82F6 (Blue) | #FACC15 (Yellow) | #EF4444 (Red) | #FFFFFF, #FEF3C7 |
 | Fitness/Sports | #EF4444 (Red) | #F97316 (Orange) | #22C55E (Green) | #18181B, #FAFAFA |
-| Fashion/Beauty | #EC4899 (Pink) | #F43F5E (Rose) | #A855F7 (Purple) | #FDF2F8, #18181B |
+| Fashion/Beauty | #1C1917 (Stone-900) | #78716C (Stone-500) | #C2410C (Orange) | #FAF9F7, #18181B |
 
 ### Gradient Backgrounds (Use for Hero sections, CTAs, Feature cards)
 - **Sunset**: linear-gradient(135deg, #F97316 0%, #EC4899 100%)
@@ -631,35 +712,47 @@ Diverse, high-quality Unsplash profile photos:
 
 ### Industry-Specific Image URLs
 
-**Ecommerce Products:**
-- https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=400&fit=crop (watch)
-- https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=400&fit=crop (headphones)
-- https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=400&fit=crop (shoes)
-- https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&h=400&fit=crop (camera)
-- https://images.unsplash.com/photo-1560343090-f0409e92791a?w=400&h=400&fit=crop (skincare)
-- https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=400&h=400&fit=crop (bag)
-- https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=400&h=400&fit=crop (sunglasses)
+**Fashion/Apparel Products (Use 3:4 ratio for portrait):**
+- Linen shirt: https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400&h=533&fit=crop
+- Blazer: https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=400&h=533&fit=crop
+- Trousers: https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=400&h=533&fit=crop
+- Sweater: https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=400&h=533&fit=crop
+- Coat: https://images.unsplash.com/photo-1544022613-e87ca75a784a?w=400&h=533&fit=crop
+- Dress: https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=400&h=533&fit=crop
+- Handbag: https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=400&h=533&fit=crop
+- Accessories: https://images.unsplash.com/photo-1611923134239-b9be5816a2d0?w=400&h=533&fit=crop
+- Model lifestyle: https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&h=800&fit=crop
+- Knit sweater: https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=400&h=533&fit=crop
+
+**Tech/Ecommerce Products (1:1 ratio):**
+- Watch: https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=400&fit=crop
+- Headphones: https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=400&fit=crop
+- Shoes: https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=400&fit=crop
+- Camera: https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&h=400&fit=crop
+- Skincare: https://images.unsplash.com/photo-1560343090-f0409e92791a?w=400&h=400&fit=crop
+- Bag: https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=400&h=400&fit=crop
+- Sunglasses: https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=400&h=400&fit=crop
 
 **Restaurant/Food:**
-- https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&h=400&fit=crop (salad)
-- https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400&h=400&fit=crop (pizza)
-- https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=400&h=400&fit=crop (pancakes)
-- https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=400&h=400&fit=crop (bowl)
-- https://images.unsplash.com/photo-1546964124-0cce460f38ef?w=400&h=400&fit=crop (steak)
-- https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&h=400&fit=crop (burger)
-- https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&h=600&fit=crop (restaurant interior)
+- Salad: https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&h=400&fit=crop
+- Pizza: https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400&h=400&fit=crop
+- Pancakes: https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=400&h=400&fit=crop
+- Bowl: https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=400&h=400&fit=crop
+- Steak: https://images.unsplash.com/photo-1546964124-0cce460f38ef?w=400&h=400&fit=crop
+- Burger: https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&h=400&fit=crop
+- Restaurant interior: https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&h=600&fit=crop
 
 **Fitness/Gym:**
-- https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&h=600&fit=crop (gym)
-- https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=400&h=400&fit=crop (yoga)
-- https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=400&h=400&fit=crop (training)
-- https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=800&h=600&fit=crop (workout)
+- Gym: https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&h=600&fit=crop
+- Yoga: https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=400&h=400&fit=crop
+- Training: https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=400&h=400&fit=crop
+- Workout: https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=800&h=600&fit=crop
 
 **Real Estate:**
-- https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&h=600&fit=crop (house exterior)
-- https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&h=600&fit=crop (apartment)
-- https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&h=600&fit=crop (modern home)
-- https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&h=600&fit=crop (luxury home)
+- House exterior: https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&h=600&fit=crop
+- Apartment: https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&h=600&fit=crop
+- Modern home: https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&h=600&fit=crop
+- Luxury home: https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&h=600&fit=crop
 
 ### Example Testimonial WITH Profile Image
 {
@@ -679,6 +772,8 @@ Diverse, high-quality Unsplash profile photos:
 ### Image Styling Rules
 - Profile photos: width/height 48-80px, borderRadius: 50%, objectFit: cover
 - Hero images: width: 100%, borderRadius: 12-16px, boxShadow for depth
+- Fashion products: aspectRatio: "3/4" (portrait)
+- Tech products: aspectRatio: "1" (square)
 - Always include meaningful alt text
 `;
 }
@@ -705,31 +800,106 @@ Do NOT create shallow pages with just hero + features + CTA.
 
 ---
 
-### ECOMMERCE / ONLINE STORE
+### ECOMMERCE / ONLINE STORE (Fashion/Apparel Style)
 Required Sections (in order):
-1. **Hero**: Featured collection/product, sale banner, "Shop Now" CTA
-2. **Categories Grid**: 4-6 product categories with images
-3. **Featured Products**: 4-8 product cards with image, name, price, rating, "Add to Cart"
-4. **Special Offers**: Banner with discount, promotional message
-5. **Trust Badges**: Free shipping, secure payment, easy returns icons
-6. **Testimonials**: 3-4 customer reviews with star ratings
-7. **Newsletter**: Email signup with discount incentive
-8. **Footer**: Links, payment icons, contact
+1. **Navigation**: 
+   - Logo (uppercase, letterSpacing: 4px, serif font for fashion)
+   - 3-4 links (New Arrivals, Collections, About)
+   - Search + Cart icons/text with count
+   - Background: #FAF9F7, borderBottom: 1px solid #E7E5E4
+   
+2. **Hero** (Split Layout):
+   - Left: Collection badge (uppercase, 12px, letter-spacing) → Serif headline (48-56px) → Description → 2 CTAs (filled + outlined)
+   - Right: Featured product/collection image with overlay showing featured item name + price
+   - Background: #FAF9F7 (cream)
+   
+3. **Featured Products Section**:
+   - Header with subtitle + "View All Products" link
+   - **MINIMUM 8 products** in 4-column grid
+   - Each product card: Image (3:4 ratio) → "New" badge on 2-3 items → Category label (TOPS, BOTTOMS, etc.) → Name → Price
+   
+4. **Categories**: 4-6 category cards with images
+5. **Trust Bar**: Free shipping, easy returns, quality guarantee
+6. **Newsletter**: Email signup with discount incentive ("10% off your first order")
+7. **Footer**: Multi-column links, social icons, payment badges
 
-**Product Card Structure:**
+**CRITICAL Fashion Ecommerce Rules:**
+- Use serif fonts (Georgia, Playfair Display) for headings
+- Warm cream backgrounds (#FAF9F7, #F5F5F4)
+- Muted stone colors for text (#1C1917, #78716C)
+- Product images MUST be 3:4 aspect ratio (portrait)
+- Show category labels ABOVE product name (11px, uppercase, letter-spacing: 1px)
+- Include "New" badge with background #C2410C on 2-3 products
+
+**Complete Fashion Navigation Example:**
 \`\`\`json
 {
-  "type": "Div", "styles": { "backgroundColor": "#FFFFFF", "borderRadius": "12px", "overflow": "hidden", "boxShadow": "0 4px 12px rgba(0,0,0,0.08)" },
-  "children": [
-    { "type": "Image", "props": { "src": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=400&fit=crop", "alt": "Premium Watch" }, "styles": { "width": "100%", "aspectRatio": "1", "objectFit": "cover" }},
-    { "type": "Div", "styles": { "padding": "16px" }, "children": [
-      { "type": "Text", "props": { "children": "Premium Watch" }, "styles": { "fontWeight": "600", "fontSize": "16px", "color": "#0F172A" }},
-      { "type": "Div", "styles": { "display": "flex", "justifyContent": "space-between", "alignItems": "center", "marginTop": "8px" }, "children": [
-        { "type": "Text", "props": { "children": "$299.00" }, "styles": { "fontWeight": "700", "fontSize": "18px", "color": "#0F172A" }},
-        { "type": "Text", "props": { "children": "★★★★★" }, "styles": { "color": "#F59E0B", "fontSize": "14px" }}
+  "type": "Section", "label": "Navigation",
+  "styles": { "backgroundColor": "#FAF9F7", "padding": "20px 24px", "borderBottom": "1px solid #E7E5E4" },
+  "children": [{
+    "type": "Container",
+    "styles": { "maxWidth": "1280px", "margin": "0 auto", "display": "flex", "justifyContent": "space-between", "alignItems": "center" },
+    "children": [
+      { "type": "Heading", "props": { "children": "MAISON", "level": "h3" }, "styles": { "fontSize": "24px", "fontWeight": "400", "letterSpacing": "4px", "fontFamily": "Georgia, serif", "color": "#1C1917" }},
+      { "type": "Div", "styles": { "display": "flex", "gap": "40px" }, "children": [
+        { "type": "Link", "props": { "children": "New Arrivals", "href": "#" }, "styles": { "color": "#44403C", "fontSize": "14px", "textDecoration": "none" }},
+        { "type": "Link", "props": { "children": "Collections", "href": "#" }, "styles": { "color": "#44403C", "fontSize": "14px", "textDecoration": "none" }},
+        { "type": "Link", "props": { "children": "About", "href": "#" }, "styles": { "color": "#44403C", "fontSize": "14px", "textDecoration": "none" }}
       ]},
-      { "type": "Button", "props": { "children": "Add to Cart" }, "styles": { "width": "100%", "marginTop": "12px", "backgroundColor": "#0F172A", "color": "#FFFFFF", "padding": "12px", "borderRadius": "8px", "border": "none" }}
-    ]}
+      { "type": "Div", "styles": { "display": "flex", "gap": "24px", "alignItems": "center" }, "children": [
+        { "type": "Text", "props": { "children": "Search" }, "styles": { "fontSize": "14px", "color": "#44403C" }},
+        { "type": "Text", "props": { "children": "Cart (2)" }, "styles": { "fontSize": "14px", "color": "#44403C" }}
+      ]}
+    ]
+  }]
+}
+\`\`\`
+
+**Complete Fashion Hero Example:**
+\`\`\`json
+{
+  "type": "Section", "label": "Hero",
+  "styles": { "backgroundColor": "#FAF9F7", "padding": "80px 24px" },
+  "children": [{
+    "type": "Container",
+    "styles": { "maxWidth": "1280px", "margin": "0 auto", "display": "grid", "gridTemplateColumns": "1fr 1fr", "gap": "64px", "alignItems": "center" },
+    "responsiveStyles": { "mobile": { "gridTemplateColumns": "1fr" } },
+    "children": [
+      { "type": "Div", "styles": { "display": "flex", "flexDirection": "column", "gap": "24px" }, "children": [
+        { "type": "Text", "props": { "children": "SPRING COLLECTION 2024" }, "styles": { "fontSize": "12px", "letterSpacing": "3px", "color": "#A8A29E" }},
+        { "type": "Heading", "props": { "children": "Effortless Elegance for Every Day", "level": "h1" }, "styles": { "fontSize": "56px", "fontWeight": "400", "fontFamily": "Georgia, serif", "color": "#1C1917", "lineHeight": "1.1" }},
+        { "type": "Text", "props": { "children": "Discover timeless pieces crafted with care. Designed to transition seamlessly from morning to evening." }, "styles": { "fontSize": "16px", "color": "#78716C", "lineHeight": "1.6" }},
+        { "type": "Div", "styles": { "display": "flex", "gap": "16px", "marginTop": "16px" }, "children": [
+          { "type": "Button", "props": { "children": "Shop Collection" }, "styles": { "backgroundColor": "#1C1917", "color": "#FFFFFF", "padding": "16px 32px", "borderRadius": "0", "border": "none", "fontSize": "14px" }},
+          { "type": "Button", "props": { "children": "View Lookbook" }, "styles": { "backgroundColor": "transparent", "color": "#1C1917", "padding": "16px 32px", "border": "1px solid #1C1917", "borderRadius": "0", "fontSize": "14px" }}
+        ]}
+      ]},
+      { "type": "Div", "styles": { "position": "relative" }, "children": [
+        { "type": "Image", "props": { "src": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&h=800&fit=crop", "alt": "Featured collection" }, "styles": { "width": "100%", "borderRadius": "0" }},
+        { "type": "Div", "styles": { "position": "absolute", "bottom": "24px", "left": "24px", "right": "24px", "backgroundColor": "#FFFFFF", "padding": "20px" }, "children": [
+          { "type": "Text", "props": { "children": "Featured: The Linen Blazer" }, "styles": { "fontWeight": "500", "color": "#1C1917" }},
+          { "type": "Text", "props": { "children": "$199" }, "styles": { "fontSize": "14px", "color": "#78716C" }}
+        ]}
+      ]}
+    ]
+  }]
+}
+\`\`\`
+
+**Fashion Product Card Example (with New badge):**
+\`\`\`json
+{
+  "type": "Div", "styles": { "display": "flex", "flexDirection": "column" },
+  "children": [
+    { "type": "Div", "styles": { "position": "relative" }, "children": [
+      { "type": "Image", "props": { "src": "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400&h=533&fit=crop", "alt": "Relaxed Linen Shirt" }, "styles": { "width": "100%", "aspectRatio": "3/4", "objectFit": "cover" }},
+      { "type": "Div", "styles": { "position": "absolute", "top": "12px", "left": "12px", "backgroundColor": "#C2410C", "padding": "6px 12px" }, "children": [
+        { "type": "Text", "props": { "children": "New" }, "styles": { "color": "#FFFFFF", "fontSize": "11px", "fontWeight": "500" }}
+      ]}
+    ]},
+    { "type": "Text", "props": { "children": "TOPS" }, "styles": { "fontSize": "11px", "letterSpacing": "1px", "color": "#A8A29E", "marginTop": "16px" }},
+    { "type": "Text", "props": { "children": "Relaxed Linen Shirt" }, "styles": { "fontSize": "15px", "color": "#1C1917", "marginTop": "4px" }},
+    { "type": "Text", "props": { "children": "$98" }, "styles": { "fontSize": "14px", "color": "#78716C", "marginTop": "4px" }}
   ]
 }
 \`\`\`
@@ -871,6 +1041,7 @@ Required Sections:
 export function buildAIContext(): string {
   return [
     generateComponentDocs(),
+    generateIndustryDesignSystems(), // Industry-specific visual languages
     generateIndustryBlueprints(),
     generateHeroGuidelines(),
     generateImageGuidelines(),
