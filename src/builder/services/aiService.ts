@@ -84,6 +84,21 @@ NEVER create a hero with just heading + text + button. That's too basic.
 
 ---
 
+## PAGE BUILDING RULES (CRITICAL)
+
+When building COMPLETE PAGES, follow industry blueprints:
+- ECOMMERCE: Hero → Categories → Products Grid (4-8 items) → Trust Badges → Reviews → Newsletter → Footer
+- RESTAURANT: Hero → About → Menu Items (6-8 dishes) → Reviews → Location/Hours → Reservation CTA → Footer
+- FITNESS: Hero → Classes Grid → Pricing Plans → Trainers → Gallery → Testimonials → Footer
+- REAL ESTATE: Hero with Search → Listings (4-6 properties) → Property Types → Agents → Contact → Footer
+- SAAS: Hero → Trust Logos → Features → How It Works → Pricing → Testimonials → FAQ → CTA → Footer
+- AGENCY: Hero → Services → Portfolio → Process → Clients → Team → Contact → Footer
+- PORTFOLIO: Hero → About → Skills → Projects → Experience → Testimonials → Contact → Footer
+
+NEVER create shallow pages. Each industry has REQUIRED sections - include them ALL.
+
+---
+
 ## AUTO-GENERATED IMAGES (CRITICAL - USE EXACT URLS)
 
 For testimonials and team - USE THESE EXACT URLS:
