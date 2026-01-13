@@ -371,8 +371,7 @@ export const Navigator: React.FC = () => {
   const globalComponents = getGlobalComponents();
   
   return (
-    <>
-      
+    <div className="flex flex-col h-full overflow-hidden">
       <ScrollArea className="flex-1 [&_[data-radix-scroll-area-scrollbar]]:opacity-0 [&:hover_[data-radix-scroll-area-scrollbar]]:opacity-100 [&_[data-radix-scroll-area-scrollbar]]:transition-opacity">
         <div className="p-2 space-y-0.5">
           {/* Global Components Section */}
@@ -434,6 +433,6 @@ export const Navigator: React.FC = () => {
         open={isCreateDialogOpen} 
         onOpenChange={setIsCreateDialogOpen} 
       />
-    </>
+    </div>
   );
 };

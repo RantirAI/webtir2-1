@@ -150,17 +150,28 @@ function normalizeStyles(styles: Record<string, string>): Record<string, string>
     
     // Convert string values
     let normalizedValue = String(value);
+    let normalizedKey = key;
+    
+    // Handle 'background' shorthand - convert gradient values to 'backgroundGradient'
+    // This is the internal property name that StyleSheetInjector maps to 'background-image'
+    if (key === 'background' && normalizedValue.includes('gradient')) {
+      normalizedKey = 'backgroundGradient';
+    }
+    // Handle 'background' with solid color - convert to 'backgroundColor'
+    else if (key === 'background' && !normalizedValue.includes('gradient') && !normalizedValue.includes('url(')) {
+      normalizedKey = 'backgroundColor';
+    }
     
     // Ensure color values use proper CSS variable syntax
     if (normalizedValue.includes('var(--') && !normalizedValue.includes('hsl(')) {
       // If it's just var(--something), wrap in hsl() for color properties
       const colorProps = ['color', 'backgroundColor', 'borderColor', 'background'];
-      if (colorProps.some(p => key.toLowerCase().includes(p.toLowerCase()))) {
+      if (colorProps.some(p => normalizedKey.toLowerCase().includes(p.toLowerCase()))) {
         normalizedValue = `hsl(${normalizedValue})`;
       }
     }
     
-    normalized[key] = normalizedValue;
+    normalized[normalizedKey] = normalizedValue;
   }
   
   return normalized;
