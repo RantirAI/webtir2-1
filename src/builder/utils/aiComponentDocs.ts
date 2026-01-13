@@ -82,11 +82,61 @@ function simplifyInstance(
   };
 }
 
+// Generate color palettes for vibrant designs
+export function generateColorPalettes(): string {
+  return `## Color Palettes for Dynamic Designs
+
+### CRITICAL: Be Creative with Colors
+DO NOT default to black/white/gray. Infer colors from user context and create VIBRANT designs.
+
+### Industry-Specific Color Suggestions
+| Context | Primary | Secondary | Accent | Background Options |
+|---------|---------|-----------|--------|-------------------|
+| Tech/SaaS/AI | #6366F1 (Indigo) | #8B5CF6 (Purple) | #06B6D4 (Cyan) | Dark: #0F172A, Light: #F8FAFC |
+| Startup/Energetic | #F97316 (Orange) | #EAB308 (Yellow) | #14B8A6 (Teal) | #FFFBEB, #1C1917 |
+| Nature/Health/Eco | #22C55E (Green) | #84CC16 (Lime) | #10B981 (Emerald) | #F0FDF4, #14532D |
+| Creative/Bold | #EC4899 (Pink) | #A855F7 (Purple) | #F43F5E (Rose) | #FDF2F8, #831843 |
+| Finance/Corporate | #3B82F6 (Blue) | #1E3A8A (Navy) | #0EA5E9 (Sky) | #F1F5F9, #1E3A5F |
+| Luxury/Premium | #F59E0B (Amber) | #78716C (Stone) | #D97706 (Orange) | #18181B, #FFFBEB |
+| Food/Restaurant | #EF4444 (Red) | #F97316 (Orange) | #78350F (Brown) | #FEF2F2, #1C1917 |
+| Kids/Education | #3B82F6 (Blue) | #FACC15 (Yellow) | #EF4444 (Red) | #FFFFFF, #FEF3C7 |
+| Fitness/Sports | #EF4444 (Red) | #F97316 (Orange) | #22C55E (Green) | #18181B, #FAFAFA |
+| Fashion/Beauty | #EC4899 (Pink) | #F43F5E (Rose) | #A855F7 (Purple) | #FDF2F8, #18181B |
+
+### Gradient Backgrounds (Use for Hero sections, CTAs, Feature cards)
+- **Sunset**: linear-gradient(135deg, #F97316 0%, #EC4899 100%)
+- **Ocean**: linear-gradient(135deg, #06B6D4 0%, #3B82F6 100%)
+- **Aurora**: linear-gradient(135deg, #8B5CF6 0%, #06B6D4 50%, #22C55E 100%)
+- **Fire**: linear-gradient(135deg, #EF4444 0%, #F97316 50%, #EAB308 100%)
+- **Night Sky**: linear-gradient(135deg, #1E293B 0%, #6366F1 100%)
+- **Forest**: linear-gradient(135deg, #14532D 0%, #22C55E 100%)
+- **Candy**: linear-gradient(135deg, #EC4899 0%, #8B5CF6 100%)
+- **Coral**: linear-gradient(135deg, #F43F5E 0%, #FB923C 100%)
+- **Electric**: linear-gradient(135deg, #06B6D4 0%, #8B5CF6 100%)
+- **Midnight**: linear-gradient(180deg, #0F172A 0%, #1E3A8A 100%)
+
+### When to Use HEX Colors vs CSS Variables
+| User Says | Use |
+|-----------|-----|
+| "colorful", "vibrant", "modern", "bold" | HEX colors from palettes |
+| Industry name (tech, restaurant, etc.) | Industry-specific HEX colors |
+| "dark mode", "dark theme" | Dark backgrounds with bright accents |
+| "minimal", "clean", "simple" | CSS variables for theme-aware |
+| "professional", "corporate" | Muted HEX colors or CSS variables |
+| No color preference stated | INFER from context, use appropriate HEX colors |
+
+### Text Color Rules
+- On light backgrounds (#FFFFFF, #F8FAFC): Use dark text (#1E293B, #0F172A)
+- On dark backgrounds (#18181B, #0F172A): Use light text (#FFFFFF, #F8FAFC)
+- On colored backgrounds: Use #FFFFFF for most, ensure contrast ratio > 4.5:1
+`;
+}
+
 // Generate design tokens reference
 export function generateDesignTokens(): string {
-  return `## Design Tokens
+  return `## Design Tokens (Theme-Aware Fallbacks)
 
-Use CSS variables for consistent theming:
+CSS variables for when user wants theme-aware/minimal designs:
 
 ### Colors
 - \`hsl(var(--background))\` - Page background
@@ -105,18 +155,20 @@ Use CSS variables for consistent theming:
 - Subtle: 4px
 - Standard: 8px
 - Prominent: 12px, 16px
+- Pill: 999px
 
 ### Font Sizes
 - Small text: 14px
 - Body: 16px
 - Large body: 18px, 20px
-- Headings: 24px, 32px, 40px, 48px, 56px
+- Headings: 24px, 32px, 40px, 48px, 56px, 72px
 
 ### Font Weights
 - Normal: 400
 - Medium: 500
 - Semibold: 600
 - Bold: 700
+- Extra Bold: 800
 `;
 }
 
@@ -358,6 +410,7 @@ export function generateCSSReference(): string {
 export function buildAIContext(): string {
   return [
     generateComponentDocs(),
+    generateColorPalettes(),
     generateDesignTokens(),
     generateSpacingGuidelines(),
     generateResponsiveGuidelines(),
