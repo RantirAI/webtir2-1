@@ -406,10 +406,104 @@ export function generateCSSReference(): string {
 `;
 }
 
+// Generate content density guidelines
+export function generateContentGuidelines(): string {
+  return `## Content Density Guidelines
+
+### CRITICAL: Generate COMPLETE, REALISTIC Content
+
+#### Section Content Minimums
+| Section Type | Minimum | Recommended Content |
+|-------------|---------|---------------------|
+| Testimonials | 3 | 3-6 reviews with quote, name, role, company |
+| Features | 4 | 4-6 features with icon, title, 15-25 word description |
+| Pricing | 3 | 3 plans (Starter, Pro, Enterprise) with features list |
+| Team | 4 | 4-6 members with name, role, bio |
+| FAQ | 5 | 5-8 questions with detailed answers |
+| Stats/Numbers | 4 | 4 stats with numbers and labels |
+| Logos/Partners | 5 | 5-8 partner/client logos |
+
+#### Testimonial Requirements
+Each testimonial MUST include:
+- **Quote**: 2-3 sentences (NOT generic like "Great product!")
+- **Author**: Full name (e.g., "Sarah Chen")
+- **Role & Company**: Specific title (e.g., "VP of Operations, TechFlow Inc.")
+
+Example testimonial content:
+"Since implementing this platform, our team productivity increased by 40%. The intuitive interface meant zero training time."
+— Sarah Chen, VP of Operations at TechFlow Inc.
+
+#### Feature Card Requirements
+- **Title**: 2-4 descriptive words
+- **Description**: 15-25 words explaining the BENEFIT, not just the feature
+- **Visual**: Icon or colored accent
+
+#### NEVER Generate:
+- Single testimonial when section expects multiple
+- Generic placeholder like "Lorem ipsum" or "Description here"
+- Empty or one-sentence descriptions
+- Repetitive/duplicate content across cards
+`;
+}
+
+// Generate visual hierarchy guidelines
+export function generateVisualHierarchyGuidelines(): string {
+  return `## Visual Hierarchy & Section Backgrounds
+
+### CRITICAL: Alternate Section Backgrounds for Readability
+
+NEVER use the same background for consecutive sections. Create VISUAL RHYTHM.
+
+### Section Background Pattern (Follow This Order)
+| Section | Background | Text Color |
+|---------|------------|------------|
+| Hero | Gradient or Dark (#0F172A) | White (#FFFFFF) |
+| Features | Light Gray (#F8FAFC) | Dark (#0F172A) |
+| Testimonials | White (#FFFFFF) or Tinted (#F0F9FF) | Dark (#1E293B) |
+| Stats/Social Proof | Subtle Color (#FEF3C7, #ECFDF5) | Dark |
+| CTA | Bold Color or Gradient | White (#FFFFFF) |
+| Footer | Dark (#18181B, #0F172A) | Light (#F8FAFC) |
+
+### Alternating Pattern Examples
+**Tech/SaaS Landing:**
+1. Hero: linear-gradient(135deg, #6366F1, #8B5CF6) + white text
+2. Features: #F8FAFC (light gray) + dark text
+3. Testimonials: #FFFFFF + dark text  
+4. Stats: #F0F9FF (light blue tint) + dark text
+5. CTA: #6366F1 (solid) + white text
+6. Footer: #0F172A (dark) + light text
+
+**Restaurant/Food Landing:**
+1. Hero: linear-gradient(135deg, #EF4444, #F97316) + white text
+2. Menu: #FFFBEB (warm cream) + dark text
+3. Reviews: #FFFFFF + dark text
+4. About: #FEF2F2 (light red tint) + dark text
+5. CTA: #EF4444 + white text
+6. Footer: #1C1917 + light text
+
+### Card Backgrounds Within Sections
+| Section Background | Card Background | Card Shadow |
+|-------------------|-----------------|-------------|
+| White (#FFFFFF) | #FFFFFF | 0 4px 20px rgba(0,0,0,0.08) |
+| Light Gray (#F8FAFC) | #FFFFFF | 0 2px 12px rgba(0,0,0,0.06) |
+| Dark (#0F172A) | rgba(255,255,255,0.05) | none |
+| Colored | #FFFFFF or rgba(255,255,255,0.95) | subtle |
+
+### Text Contrast Rules (WCAG 4.5:1 minimum)
+| Background | Primary Text | Secondary Text |
+|------------|--------------|----------------|
+| White/Light | #0F172A or #1E293B | #64748B |
+| Dark | #FFFFFF | #94A3B8 |
+| Colored/Gradient | #FFFFFF | rgba(255,255,255,0.85) |
+`;
+}
+
 // Build complete AI context
 export function buildAIContext(): string {
   return [
     generateComponentDocs(),
+    generateContentGuidelines(),
+    generateVisualHierarchyGuidelines(),
     generateColorPalettes(),
     generateDesignTokens(),
     generateSpacingGuidelines(),

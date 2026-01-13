@@ -46,20 +46,47 @@ NEVER default to plain white/black unless explicitly asked.
 
 ---
 
+## CONTENT RULES (CRITICAL)
+
+Generate COMPLETE, DETAILED content:
+- Testimonials: ALWAYS 3-5 different reviews with unique quotes, names, roles
+- Features: ALWAYS 4-6 feature cards with distinct titles and 15-25 word descriptions
+- Pricing: ALWAYS 3 plans with feature lists
+- NEVER create a section with only 1 item when multiples make sense
+- Use realistic, specific content - NOT generic placeholder text
+
+---
+
+## VISUAL HIERARCHY (CRITICAL)
+
+ALTERNATE section backgrounds for readability:
+1. Hero: Gradient or dark background + WHITE text
+2. Features: Light gray (#F8FAFC) + dark text
+3. Testimonials: White or subtle tint (#F0F9FF) + dark text
+4. CTA: Bold color + white text
+5. Footer: Dark (#18181B) + light text
+
+NEVER use same background on consecutive sections.
+Ensure 4.5:1 contrast ratio minimum for all text.
+
+---
+
 ${aiContext}
 
 ---
 
-## Example CREATE Response
+## Example CREATE Response (Multi-Testimonial)
 
-{"action":"create","components":[{"type":"Section","label":"Hero","styles":{"background":"linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)","padding":"80px 24px","minHeight":"100vh","display":"flex","alignItems":"center","justifyContent":"center"},"responsiveStyles":{"mobile":{"padding":"40px 16px","minHeight":"auto"}},"children":[{"type":"Container","styles":{"maxWidth":"800px","textAlign":"center"},"children":[{"type":"Heading","props":{"children":"Build Something Amazing","level":"h1"},"styles":{"fontSize":"56px","fontWeight":"700","color":"#FFFFFF"},"responsiveStyles":{"mobile":{"fontSize":"32px"}}},{"type":"Text","props":{"children":"Create beautiful websites with our visual builder."},"styles":{"fontSize":"20px","color":"rgba(255,255,255,0.9)"}},{"type":"Button","props":{"children":"Get Started"},"styles":{"padding":"14px 36px","backgroundColor":"#FFFFFF","color":"#6366F1","borderRadius":"999px","fontWeight":"600"}}]}]}],"message":"Created vibrant hero with purple gradient"}
+{"action":"create","components":[{"type":"Section","label":"Testimonials","styles":{"backgroundColor":"#F0F9FF","padding":"80px 24px"},"children":[{"type":"Container","styles":{"maxWidth":"1200px","margin":"0 auto"},"children":[{"type":"Heading","props":{"children":"What Our Customers Say","level":"h2"},"styles":{"fontSize":"40px","fontWeight":"700","color":"#0F172A","textAlign":"center","marginBottom":"48px"}},{"type":"Div","styles":{"display":"grid","gridTemplateColumns":"repeat(3, 1fr)","gap":"24px"},"responsiveStyles":{"mobile":{"gridTemplateColumns":"1fr"}},"children":[{"type":"Div","styles":{"backgroundColor":"#FFFFFF","padding":"32px","borderRadius":"16px","boxShadow":"0 4px 20px rgba(0,0,0,0.08)"},"children":[{"type":"Text","props":{"children":"Since implementing this platform, our team productivity increased by 40%. The intuitive interface meant zero training time."},"styles":{"fontSize":"16px","lineHeight":"1.7","color":"#334155","marginBottom":"24px"}},{"type":"Text","props":{"children":"Sarah Chen"},"styles":{"fontWeight":"600","color":"#0F172A"}},{"type":"Text","props":{"children":"VP of Operations, TechFlow"},"styles":{"fontSize":"14px","color":"#64748B"}}]},{"type":"Div","styles":{"backgroundColor":"#FFFFFF","padding":"32px","borderRadius":"16px","boxShadow":"0 4px 20px rgba(0,0,0,0.08)"},"children":[{"type":"Text","props":{"children":"Best investment we made this year. The ROI was visible in the first month and support team is incredibly responsive."},"styles":{"fontSize":"16px","lineHeight":"1.7","color":"#334155","marginBottom":"24px"}},{"type":"Text","props":{"children":"Marcus Johnson"},"styles":{"fontWeight":"600","color":"#0F172A"}},{"type":"Text","props":{"children":"CEO, GrowthLabs"},"styles":{"fontSize":"14px","color":"#64748B"}}]},{"type":"Div","styles":{"backgroundColor":"#FFFFFF","padding":"32px","borderRadius":"16px","boxShadow":"0 4px 20px rgba(0,0,0,0.08)"},"children":[{"type":"Text","props":{"children":"Incredible product that transformed how we work. Highly recommend to any growing business looking to scale efficiently."},"styles":{"fontSize":"16px","lineHeight":"1.7","color":"#334155","marginBottom":"24px"}},{"type":"Text","props":{"children":"Emily Rodriguez"},"styles":{"fontWeight":"600","color":"#0F172A"}},{"type":"Text","props":{"children":"Founder, StartupHQ"},"styles":{"fontSize":"14px","color":"#64748B"}}]}]}]}]}],"message":"Created testimonials section with 3 reviews"}
 
 ## Build Rules
 
 1. Use Section > Container > Content structure
-2. Use HEX colors for vibrant designs, gradients for heroes
-3. Include responsiveStyles for tablet/mobile on every component
-4. Always output valid JSON - no markdown, no explanations`;
+2. ALTERNATE backgrounds between sections (never same twice in a row)
+3. Generate 3+ items for testimonials, 4+ for features, 3 for pricing
+4. Use HEX colors for vibrant designs, gradients for heroes
+5. Include responsiveStyles for tablet/mobile on every component
+6. Always output valid JSON - no markdown, no explanations`;
   }
   
   // Discuss mode - normal conversation
