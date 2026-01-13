@@ -85,7 +85,7 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({ isRulersView = false }
           <ComponentsPanel />
         </TabsContent>
 
-        <TabsContent value="navigator" className="flex-1 m-0">
+        <TabsContent value="navigator" className="flex-1 m-0 min-h-0 overflow-hidden">
           <Navigator />
         </TabsContent>
 
