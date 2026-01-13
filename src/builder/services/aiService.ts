@@ -84,12 +84,48 @@ NEVER create a hero with just heading + text + button. That's too basic.
 
 ---
 
+## LAYOUT RULES (CRITICAL - PREVENTS BROKEN LAYOUTS)
+
+### Navigation Layout Requirements
+ALWAYS structure navigation like this:
+- Section (full width, sticky positioning)
+  - Container (maxWidth + centered)
+    - Div with HORIZONTAL layout: display: flex, flexDirection: "row", justifyContent: "space-between", alignItems: "center"
+      - Logo (left)
+      - Links Div (center): display: flex, flexDirection: "row", gap: "32px"
+      - Actions Div (right): display: flex, flexDirection: "row", gap: "20px"
+
+NEVER stack navigation items vertically. ALWAYS use flexDirection: "row" for nav links.
+
+### Grid Filling Requirements
+- 4-column product grid: MUST have 4, 8, or 12 items (multiples of 4)
+- 3-column feature grid: MUST have 3, 6, or 9 items (multiples of 3)
+- NEVER leave a grid row partially filled with empty space
+
+### Section Spacing (No Empty Gaps)
+- Use consistent padding: padding: "80px 24px" for sections
+- NO extra margin between sections - sections should flow seamlessly
+- Container maxWidth: "1280px" with margin: "0 auto" for centering
+
+### Horizontal vs Vertical Layout
+| Use Case | Layout |
+|----------|--------|
+| Navigation links | flexDirection: "row", gap: "32px" |
+| Button groups | flexDirection: "row", gap: "16px" |
+| Card content | flexDirection: "column", gap: "16px" |
+| Hero split layout | gridTemplateColumns: "1fr 1fr" |
+| Product grid | gridTemplateColumns: "repeat(4, 1fr)" |
+| Feature cards | gridTemplateColumns: "repeat(3, 1fr)" |
+
+---
+
 ## PAGE BUILDING RULES (CRITICAL)
 
 When building COMPLETE PAGES, follow industry blueprints:
 
 **ECOMMERCE / FASHION / APPAREL:**
 - Navigation (logo + links + search + cart) → Hero (split layout with featured product) → Featured Products (8 items, 4-column grid) → Categories → Trust Bar → Newsletter → Footer
+- MUST use: flexDirection: "row" for navigation, gridTemplateColumns: "repeat(4, 1fr)" for products
 - Use serif fonts (Georgia), cream backgrounds (#FAF9F7), 3:4 product images, "New" badges
 - Product cards: category label above name, no shadows, minimal aesthetic
 
@@ -136,6 +172,22 @@ NEVER use placeholder strings like "IMAGE_PLACEHOLDER" or "placeholder.com". Alw
 ---
 
 ${aiContext}
+
+---
+
+## Example Navigation Bar (ALWAYS USE THIS PATTERN FOR HORIZONTAL NAV)
+
+CRITICAL: Navigation links MUST use flexDirection: "row" and justifyContent: "space-between"
+
+{"action":"create","components":[{"type":"Section","label":"Navigation","styles":{"backgroundColor":"#FAF9F7","padding":"16px 24px","borderBottom":"1px solid #E7E5E4","position":"sticky","top":"0","zIndex":"100"},"children":[{"type":"Container","styles":{"maxWidth":"1280px","margin":"0 auto","display":"flex","flexDirection":"row","justifyContent":"space-between","alignItems":"center"},"children":[{"type":"Heading","props":{"children":"ELECTROSHOP","level":"h3"},"styles":{"fontSize":"20px","fontWeight":"500","letterSpacing":"3px","fontFamily":"Georgia, serif","color":"#1C1917","margin":"0"}},{"type":"Div","styles":{"display":"flex","flexDirection":"row","gap":"32px","alignItems":"center"},"children":[{"type":"Link","props":{"children":"New Arrivals","href":"#"},"styles":{"color":"#44403C","fontSize":"14px","textDecoration":"none","fontWeight":"500"}},{"type":"Link","props":{"children":"Collections","href":"#"},"styles":{"color":"#44403C","fontSize":"14px","textDecoration":"none","fontWeight":"500"}},{"type":"Link","props":{"children":"About","href":"#"},"styles":{"color":"#44403C","fontSize":"14px","textDecoration":"none","fontWeight":"500"}}]},{"type":"Div","styles":{"display":"flex","flexDirection":"row","gap":"20px","alignItems":"center"},"children":[{"type":"Text","props":{"children":"Search"},"styles":{"fontSize":"14px","color":"#44403C","cursor":"pointer"}},{"type":"Text","props":{"children":"Cart (0)"},"styles":{"fontSize":"14px","color":"#44403C","cursor":"pointer"}}]}]}]}],"message":"Created navigation bar"}
+
+---
+
+## Example Product Grid (8 PRODUCTS IN 4 COLUMNS - USE THIS PATTERN)
+
+CRITICAL: Product grids MUST have gridTemplateColumns: "repeat(4, 1fr)" with 8 product items filling all spaces.
+
+{"action":"create","components":[{"type":"Section","label":"Featured Products","styles":{"backgroundColor":"#FFFFFF","padding":"80px 24px"},"children":[{"type":"Container","styles":{"maxWidth":"1280px","margin":"0 auto"},"children":[{"type":"Div","styles":{"display":"flex","flexDirection":"row","justifyContent":"space-between","alignItems":"center","marginBottom":"48px"},"children":[{"type":"Heading","props":{"children":"Featured Products","level":"h2"},"styles":{"fontSize":"32px","fontFamily":"Georgia, serif","fontWeight":"400","color":"#1C1917"}},{"type":"Link","props":{"children":"View All →","href":"#"},"styles":{"color":"#78716C","fontSize":"14px"}}]},{"type":"Div","styles":{"display":"grid","gridTemplateColumns":"repeat(4, 1fr)","gap":"24px"},"responsiveStyles":{"tablet":{"gridTemplateColumns":"repeat(2, 1fr)"},"mobile":{"gridTemplateColumns":"1fr"}},"children":[{"type":"Div","styles":{"display":"flex","flexDirection":"column"},"children":[{"type":"Div","styles":{"position":"relative"},"children":[{"type":"Image","props":{"src":"https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=400&h=500&fit=crop","alt":"Laptop Pro"},"styles":{"width":"100%","aspectRatio":"3/4","objectFit":"cover","borderRadius":"8px"}},{"type":"Div","styles":{"position":"absolute","top":"12px","left":"12px","backgroundColor":"#C2410C","padding":"4px 10px","borderRadius":"4px"},"children":[{"type":"Text","props":{"children":"New"},"styles":{"color":"#FFFFFF","fontSize":"11px","fontWeight":"600"}}]}]},{"type":"Text","props":{"children":"LAPTOPS"},"styles":{"fontSize":"11px","letterSpacing":"1px","color":"#A8A29E","marginTop":"12px","textTransform":"uppercase"}},{"type":"Text","props":{"children":"Laptop Pro 16"},"styles":{"fontSize":"15px","color":"#1C1917","marginTop":"4px","fontWeight":"500"}},{"type":"Text","props":{"children":"$1,299"},"styles":{"fontSize":"14px","color":"#78716C","marginTop":"4px"}}]},{"type":"Div","styles":{"display":"flex","flexDirection":"column"},"children":[{"type":"Image","props":{"src":"https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&h=500&fit=crop","alt":"Wireless Headphones"},"styles":{"width":"100%","aspectRatio":"3/4","objectFit":"cover","borderRadius":"8px"}},{"type":"Text","props":{"children":"AUDIO"},"styles":{"fontSize":"11px","letterSpacing":"1px","color":"#A8A29E","marginTop":"12px","textTransform":"uppercase"}},{"type":"Text","props":{"children":"Wireless Headphones Pro"},"styles":{"fontSize":"15px","color":"#1C1917","marginTop":"4px","fontWeight":"500"}},{"type":"Text","props":{"children":"$349"},"styles":{"fontSize":"14px","color":"#78716C","marginTop":"4px"}}]},{"type":"Div","styles":{"display":"flex","flexDirection":"column"},"children":[{"type":"Image","props":{"src":"https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&h=500&fit=crop","alt":"Smart Watch"},"styles":{"width":"100%","aspectRatio":"3/4","objectFit":"cover","borderRadius":"8px"}},{"type":"Text","props":{"children":"WEARABLES"},"styles":{"fontSize":"11px","letterSpacing":"1px","color":"#A8A29E","marginTop":"12px","textTransform":"uppercase"}},{"type":"Text","props":{"children":"Smart Watch Ultra"},"styles":{"fontSize":"15px","color":"#1C1917","marginTop":"4px","fontWeight":"500"}},{"type":"Text","props":{"children":"$599"},"styles":{"fontSize":"14px","color":"#78716C","marginTop":"4px"}}]},{"type":"Div","styles":{"display":"flex","flexDirection":"column"},"children":[{"type":"Div","styles":{"position":"relative"},"children":[{"type":"Image","props":{"src":"https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&h=500&fit=crop","alt":"Tablet"},"styles":{"width":"100%","aspectRatio":"3/4","objectFit":"cover","borderRadius":"8px"}},{"type":"Div","styles":{"position":"absolute","top":"12px","left":"12px","backgroundColor":"#C2410C","padding":"4px 10px","borderRadius":"4px"},"children":[{"type":"Text","props":{"children":"New"},"styles":{"color":"#FFFFFF","fontSize":"11px","fontWeight":"600"}}]}]},{"type":"Text","props":{"children":"TABLETS"},"styles":{"fontSize":"11px","letterSpacing":"1px","color":"#A8A29E","marginTop":"12px","textTransform":"uppercase"}},{"type":"Text","props":{"children":"Pro Tablet 12.9"},"styles":{"fontSize":"15px","color":"#1C1917","marginTop":"4px","fontWeight":"500"}},{"type":"Text","props":{"children":"$899"},"styles":{"fontSize":"14px","color":"#78716C","marginTop":"4px"}}]},{"type":"Div","styles":{"display":"flex","flexDirection":"column"},"children":[{"type":"Image","props":{"src":"https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=400&h=500&fit=crop","alt":"Desktop Monitor"},"styles":{"width":"100%","aspectRatio":"3/4","objectFit":"cover","borderRadius":"8px"}},{"type":"Text","props":{"children":"MONITORS"},"styles":{"fontSize":"11px","letterSpacing":"1px","color":"#A8A29E","marginTop":"12px","textTransform":"uppercase"}},{"type":"Text","props":{"children":"4K Display 27\""},"styles":{"fontSize":"15px","color":"#1C1917","marginTop":"4px","fontWeight":"500"}},{"type":"Text","props":{"children":"$499"},"styles":{"fontSize":"14px","color":"#78716C","marginTop":"4px"}}]},{"type":"Div","styles":{"display":"flex","flexDirection":"column"},"children":[{"type":"Image","props":{"src":"https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&h=500&fit=crop","alt":"Keyboard"},"styles":{"width":"100%","aspectRatio":"3/4","objectFit":"cover","borderRadius":"8px"}},{"type":"Text","props":{"children":"ACCESSORIES"},"styles":{"fontSize":"11px","letterSpacing":"1px","color":"#A8A29E","marginTop":"12px","textTransform":"uppercase"}},{"type":"Text","props":{"children":"Mechanical Keyboard"},"styles":{"fontSize":"15px","color":"#1C1917","marginTop":"4px","fontWeight":"500"}},{"type":"Text","props":{"children":"$199"},"styles":{"fontSize":"14px","color":"#78716C","marginTop":"4px"}}]},{"type":"Div","styles":{"display":"flex","flexDirection":"column"},"children":[{"type":"Image","props":{"src":"https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&h=500&fit=crop","alt":"Camera"},"styles":{"width":"100%","aspectRatio":"3/4","objectFit":"cover","borderRadius":"8px"}},{"type":"Text","props":{"children":"CAMERAS"},"styles":{"fontSize":"11px","letterSpacing":"1px","color":"#A8A29E","marginTop":"12px","textTransform":"uppercase"}},{"type":"Text","props":{"children":"Mirrorless Camera"},"styles":{"fontSize":"15px","color":"#1C1917","marginTop":"4px","fontWeight":"500"}},{"type":"Text","props":{"children":"$1,499"},"styles":{"fontSize":"14px","color":"#78716C","marginTop":"4px"}}]},{"type":"Div","styles":{"display":"flex","flexDirection":"column"},"children":[{"type":"Div","styles":{"position":"relative"},"children":[{"type":"Image","props":{"src":"https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&h=500&fit=crop","alt":"Speaker"},"styles":{"width":"100%","aspectRatio":"3/4","objectFit":"cover","borderRadius":"8px"}},{"type":"Div","styles":{"position":"absolute","top":"12px","left":"12px","backgroundColor":"#059669","padding":"4px 10px","borderRadius":"4px"},"children":[{"type":"Text","props":{"children":"Sale"},"styles":{"color":"#FFFFFF","fontSize":"11px","fontWeight":"600"}}]}]},{"type":"Text","props":{"children":"AUDIO"},"styles":{"fontSize":"11px","letterSpacing":"1px","color":"#A8A29E","marginTop":"12px","textTransform":"uppercase"}},{"type":"Text","props":{"children":"Smart Speaker Max"},"styles":{"fontSize":"15px","color":"#1C1917","marginTop":"4px","fontWeight":"500"}},{"type":"Text","props":{"children":"$199"},"styles":{"fontSize":"14px","color":"#78716C","marginTop":"4px"}}]}]}]}]}],"message":"Created product grid with 8 products"}
 
 ---
 
