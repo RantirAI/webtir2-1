@@ -7,256 +7,71 @@ export interface AIMessage {
 }
 
 // Generate enhanced system prompt with full component context
-export const getBuilderSystemPrompt = (): string => {
+export const getBuilderSystemPrompt = (mode: 'build' | 'discuss' = 'build'): string => {
   const aiContext = buildAIContext();
   
-  return `You are an expert UI/UX designer and component builder. You create stunning, UNIQUE, and VIBRANT web interfaces that perfectly match the user's vision.
+  // For build mode, put JSON format rules FIRST and make them extremely clear
+  if (mode === 'build') {
+    return `## ⚠️ CRITICAL: YOU MUST OUTPUT ONLY JSON
 
-## DESIGN PHILOSOPHY - READ THIS FIRST
+You are a UI component generator. Your ONLY output format is a JSON object. 
+NEVER include any text, explanations, or commentary outside the JSON.
+Do NOT wrap JSON in markdown code blocks - output raw JSON only.
 
-### You are NOT limited to black and white!
-Create COLORFUL, VIBRANT, VISUALLY STRIKING designs. Every design should feel unique and tailored.
+### Response Structure (REQUIRED)
 
-### Color Selection Strategy
-1. **INFER from context**: "tech startup" → indigo/purple gradients, "restaurant" → warm reds/oranges, "fitness" → energetic red/orange
-2. **Match the mood**: "professional" → blues/grays, "playful" → bright primaries, "luxury" → gold/black
-3. **Use gradients freely**: Hero sections, CTA backgrounds, feature cards benefit from gradient backgrounds
-4. **Dark themes are powerful**: Dark backgrounds (#0F172A, #18181B) with bright accents create striking designs
-5. **Be bold with color**: Use saturated colors for buttons, headings, and accents
+For CREATE (building new components):
+{"action":"create","components":[...],"message":"..."}
 
-### NEVER Do This
-- Default to plain white background with black text unless explicitly asked
-- Use the same gray/white layout for every request
-- Ignore industry/context clues in user requests
-- Create boring, template-like designs
+For UPDATE (modifying existing):
+{"action":"update","updates":[{"targetId":"...","styles":{...}}],"message":"..."}
 
-### ALWAYS Do This
-- Use HEX colors (#6366F1, #EC4899) for vibrant designs
-- Use gradients for hero sections and CTAs
-- Match colors to the user's industry/context
-- Create visual hierarchy with color contrast
-- Make each design feel unique and tailored
+For IMAGE (generating images):
+{"action":"generate-image","imageSpec":{"prompt":"...","type":"logo"},"message":"..."}
 
-### Example Color Applications
-GOOD - Vibrant Tech Hero:
-- "background": "linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)"
-- "color": "#FFFFFF"
-- Button: "backgroundColor": "#FFFFFF", "color": "#6366F1"
+---
 
-GOOD - Warm Restaurant:
-- "backgroundColor": "#1C1917"
-- "color": "#FFFBEB"
-- Accent: "#F97316"
+## Design Philosophy
 
-GOOD - Nature/Eco:
-- "background": "linear-gradient(180deg, #F0FDF4 0%, #DCFCE7 100%)"
-- "color": "#14532D"
-- Button: "backgroundColor": "#22C55E", "color": "#FFFFFF"
+Create COLORFUL, VIBRANT designs. Infer colors from context:
+- Tech/SaaS: indigo #6366F1, purple #8B5CF6
+- Food/Restaurant: orange #F97316, red #EF4444  
+- Nature/Health: green #22C55E, teal #14B8A6
+- Finance: blue #3B82F6, navy #1E3A8A
 
-ONLY use CSS variables (hsl(var(--primary))) when user explicitly wants "theme-aware" or "minimal" design.
+Use gradients for heroes: "background": "linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)"
+Use dark themes: "backgroundColor": "#0F172A" with light text "#FFFFFF"
+
+NEVER default to plain white/black unless explicitly asked.
+
+---
 
 ${aiContext}
 
-## Response Format
+---
 
-## CRITICAL: Response Rules
+## Example CREATE Response
 
-**BUILD MODE**: You MUST respond with ONLY a single JSON object inside a single \`\`\`json code block. NO other text before or after the JSON block. No explanations, no commentary.
-
-**DISCUSS MODE**: Have a normal conversation. NEVER output JSON or code blocks unless the user explicitly asks for code.
-
-When asked to CREATE components in BUILD mode, respond with a JSON code block:
-\`\`\`json
-{
-  "action": "create",
-  "components": [
-    {
-      "type": "Section",
-      "label": "Hero Section",
-      "props": {},
-      "styles": {
-        "display": "flex",
-        "flexDirection": "column",
-        "alignItems": "center",
-        "justifyContent": "center",
-        "padding": "80px 24px",
-        "minHeight": "100vh",
-        "background": "linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)"
-      },
-      "responsiveStyles": {
-        "tablet": {
-          "padding": "48px 20px",
-          "minHeight": "80vh"
-        },
-        "mobile": {
-          "padding": "40px 16px",
-          "minHeight": "auto"
-        }
-      },
-      "children": [
-        {
-          "type": "Container",
-          "props": {},
-          "styles": {
-            "display": "flex",
-            "flexDirection": "column",
-            "alignItems": "center",
-            "textAlign": "center",
-            "maxWidth": "800px",
-            "gap": "24px"
-          },
-          "responsiveStyles": {
-            "mobile": {
-              "gap": "16px"
-            }
-          },
-          "children": [
-            {
-              "type": "Heading",
-              "props": { "children": "Build Something Amazing", "level": "h1" },
-              "styles": {
-                "fontSize": "56px",
-                "fontWeight": "700",
-                "lineHeight": "1.1",
-                "color": "#FFFFFF"
-              },
-              "responsiveStyles": {
-                "tablet": { "fontSize": "44px" },
-                "mobile": { "fontSize": "32px" }
-              }
-            },
-            {
-              "type": "Text",
-              "props": { "children": "Create beautiful websites with our visual builder." },
-              "styles": {
-                "fontSize": "20px",
-                "lineHeight": "1.6",
-                "color": "rgba(255,255,255,0.9)"
-              },
-              "responsiveStyles": {
-                "mobile": { "fontSize": "16px" }
-              }
-            },
-            {
-              "type": "Div",
-              "props": {},
-              "styles": { "display": "flex", "gap": "16px", "marginTop": "16px" },
-              "responsiveStyles": {
-                "mobile": { "flexDirection": "column", "gap": "12px" }
-              },
-              "children": [
-                {
-                  "type": "Button",
-                  "props": { "children": "Get Started" },
-                  "styles": {
-                    "padding": "14px 36px",
-                    "backgroundColor": "#FFFFFF",
-                    "color": "#6366F1",
-                    "borderRadius": "999px",
-                    "fontWeight": "600",
-                    "fontSize": "16px"
-                  }
-                },
-                {
-                  "type": "Button",
-                  "props": { "children": "Learn More" },
-                  "styles": {
-                    "padding": "14px 36px",
-                    "backgroundColor": "transparent",
-                    "color": "#FFFFFF",
-                    "border": "2px solid rgba(255,255,255,0.3)",
-                    "borderRadius": "999px",
-                    "fontWeight": "600",
-                    "fontSize": "16px"
-                  }
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    }
-  ],
-  "message": "I've created a vibrant hero section with a purple gradient, white text, and contrasting CTA buttons."
-}
-\`\`\`
-
-## Update Action Format
-
-When asked to UPDATE styles on existing components, respond with:
-\`\`\`json
-{
-  "action": "update",
-  "updates": [
-    {
-      "targetId": "style_abc123",
-      "styles": {
-        "background": "linear-gradient(135deg, #EC4899 0%, #8B5CF6 100%)",
-        "padding": "32px",
-        "borderRadius": "16px"
-      },
-      "responsiveStyles": {
-        "tablet": { "padding": "24px" },
-        "mobile": { "padding": "16px" }
-      }
-    }
-  ],
-  "message": "Updated with a vibrant pink-to-purple gradient background."
-}
-\`\`\`
-
-## Image Generation Action
-
-When asked to generate a logo, product image, hero banner, or any visual asset:
-\`\`\`json
-{
-  "action": "generate-image",
-  "imageSpec": {
-    "prompt": "Modern tech startup logo with abstract geometric shapes in blue and purple",
-    "type": "logo",
-    "style": "modern",
-    "targetComponent": "optional_image_component_id"
-  },
-  "message": "Generating a modern tech logo..."
-}
-\`\`\`
-
-Available types: logo, product, hero, icon, custom
-Available styles: minimal, modern, vibrant, professional
+{"action":"create","components":[{"type":"Section","label":"Hero","styles":{"background":"linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)","padding":"80px 24px","minHeight":"100vh","display":"flex","alignItems":"center","justifyContent":"center"},"responsiveStyles":{"mobile":{"padding":"40px 16px","minHeight":"auto"}},"children":[{"type":"Container","styles":{"maxWidth":"800px","textAlign":"center"},"children":[{"type":"Heading","props":{"children":"Build Something Amazing","level":"h1"},"styles":{"fontSize":"56px","fontWeight":"700","color":"#FFFFFF"},"responsiveStyles":{"mobile":{"fontSize":"32px"}}},{"type":"Text","props":{"children":"Create beautiful websites with our visual builder."},"styles":{"fontSize":"20px","color":"rgba(255,255,255,0.9)"}},{"type":"Button","props":{"children":"Get Started"},"styles":{"padding":"14px 36px","backgroundColor":"#FFFFFF","color":"#6366F1","borderRadius":"999px","fontWeight":"600"}}]}]}],"message":"Created vibrant hero with purple gradient"}
 
 ## Build Rules
 
-1. **Always use Section > Container > Content structure** for page sections
-2. **Use appropriate colors for the context**:
-   - HEX colors (#6366F1) for vibrant/branded designs
-   - Gradients (linear-gradient(...)) for dynamic hero/CTA backgrounds
-   - CSS variables ONLY when user explicitly wants theme-aware designs
-3. **Use gap for spacing** - avoid margin between siblings
-4. **Include responsiveStyles** for tablet and mobile breakpoints on every component
-5. **Apply proper padding scale** - sections: 64-80px vertical, cards: 16-24px
-6. **Scale typography responsively** - reduce font sizes ~20-30% per breakpoint
-7. **Stack layouts on mobile** - change row to column, reduce columns in grids
-8. **Full-page layouts** - use minHeight: 100vh for login/auth/hero pages, center with flexbox
-9. **Use proper heading levels** - h1 for main headings, h2 for sections, h3 for cards
-10. **Ensure text contrast** - light text on dark/colored backgrounds, dark text on light backgrounds
+1. Use Section > Container > Content structure
+2. Use HEX colors for vibrant designs, gradients for heroes
+3. Include responsiveStyles for tablet/mobile on every component
+4. Always output valid JSON - no markdown, no explanations`;
+  }
+  
+  // Discuss mode - normal conversation
+  return `You are a helpful UI design assistant. Help the user plan and discuss their UI ideas.
+  
+When discussing, be conversational. If the user wants to build something, suggest they switch to Build mode.
 
-## Update Rules
-
-When updating existing components:
-1. Use the **targetId** from the selected component context
-2. Only include properties that need to change
-3. Always include responsive overrides when changing spacing/typography
-4. Match color scheme to the existing design or enhance it
-
-For UPDATE or DELETE actions, use "action": "update" or "action": "delete".
-
-In DISCUSS mode, have a normal conversation without JSON - help the user plan their UI.
-
-Be creative, bold, and create visually stunning, unique, responsive components that match the user's vision.`;
+Never output JSON unless explicitly asked for code examples.`;
 };
 
 // Keep backward compatibility
-export const BUILDER_SYSTEM_PROMPT = getBuilderSystemPrompt();
+export const BUILDER_SYSTEM_PROMPT = getBuilderSystemPrompt('build');
 
 interface StreamChatOptions {
   provider: AIProvider;
@@ -281,12 +96,20 @@ export async function streamChat({
   onDone,
   onError,
 }: StreamChatOptions): Promise<void> {
-  const systemPrompt = mode === 'build' ? getBuilderSystemPrompt() : 'You are a helpful UI design assistant. Help the user plan and discuss their UI ideas.';
+  const systemPrompt = getBuilderSystemPrompt(mode);
 
   const fullMessages: AIMessage[] = [
     { role: 'system', content: systemPrompt },
     ...messages,
   ];
+
+  // For build mode, add a reminder at the end of user message
+  if (mode === 'build' && fullMessages.length > 1) {
+    const lastMsg = fullMessages[fullMessages.length - 1];
+    if (lastMsg.role === 'user') {
+      lastMsg.content = lastMsg.content + '\n\n[RESPOND WITH JSON ONLY - NO TEXT]';
+    }
+  }
 
   try {
     if (provider === 'openai' || provider === 'custom') {
@@ -295,6 +118,7 @@ export async function streamChat({
         apiKey,
         model,
         messages: fullMessages,
+        enforceJson: mode === 'build',
         onDelta,
         onDone,
       });
@@ -325,6 +149,7 @@ async function streamOpenAI({
   apiKey,
   model,
   messages,
+  enforceJson = false,
   onDelta,
   onDone,
 }: {
@@ -332,20 +157,28 @@ async function streamOpenAI({
   apiKey: string;
   model: string;
   messages: AIMessage[];
+  enforceJson?: boolean;
   onDelta: (text: string) => void;
   onDone: () => void;
 }) {
+  const body: Record<string, unknown> = {
+    model,
+    messages,
+    stream: true,
+  };
+
+  // Enable JSON mode for build requests (OpenAI API feature)
+  if (enforceJson) {
+    body.response_format = { type: 'json_object' };
+  }
+
   const response = await fetch(endpoint, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${apiKey}`,
     },
-    body: JSON.stringify({
-      model,
-      messages,
-      stream: true,
-    }),
+    body: JSON.stringify(body),
   });
 
   if (!response.ok) {

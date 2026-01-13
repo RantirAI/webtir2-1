@@ -338,13 +338,17 @@ When updating this component, use targetId: "${styleSourceId}" in the update act
             else if (!parsed) {
               // Check if response looks like JSON (failed parse) vs conversation
               const looksLikeJSON = fullResponse.includes('"action"') || fullResponse.includes('"components"');
-              if (looksLikeJSON) {
-                displayMessage = '⚠️ I had trouble processing that request. Please try rephrasing or try again.';
+              const hasMarkdownCodeBlock = fullResponse.includes('```');
+              
+              if (looksLikeJSON || hasMarkdownCodeBlock) {
+                console.warn('AI returned malformed JSON or wrapped in markdown:', fullResponse.substring(0, 200));
+                displayMessage = '⚠️ I had trouble processing that request. Please try again with a simpler request.';
               } else {
-                // It's a conversational response, clean it but show it
-                displayMessage = fullResponse.replace(/```[\s\S]*?```/g, '').trim() || 
-                  'I understood your request. Please provide more details or switch to Build mode to create components.';
+                // It's a conversational response - the AI ignored JSON instruction
+                console.warn('AI returned conversational text instead of JSON in build mode');
+                displayMessage = '⚠️ Let me try that again. Please describe what you want to build.';
               }
+              toast.error('Failed to build - try again');
             }
           } else {
             // Discuss mode - check if AI accidentally returned JSON
