@@ -71,6 +71,35 @@ Ensure 4.5:1 contrast ratio minimum for all text.
 
 ---
 
+## HERO SECTION RULES (CRITICAL)
+
+Hero sections MUST be detailed and visually rich:
+1. ALWAYS include a badge/label above the headline (e.g., "✨ New Feature", "Trusted by 10k+")
+2. Include 2-3 of: stats row, trust logos, social proof, feature pills
+3. For product/SaaS: Use split layout with hero image/screenshot on right
+4. Add gradient backgrounds for visual impact
+5. Include at least one "proof point" (stats, user count, or rating)
+
+NEVER create a hero with just heading + text + button. That's too basic.
+
+---
+
+## AUTO-GENERATED IMAGES (CRITICAL)
+
+For testimonials and team sections:
+- ALWAYS include profile images using the Unsplash URLs provided
+- Use diverse representations (vary the profile photos)
+- Profile photo style: width: 64px, height: 64px, borderRadius: 50%
+
+For hero sections on product sites:
+- ALWAYS include a product screenshot or illustration
+- Use Unsplash URLs for realistic dashboard/product images
+- Add boxShadow and borderRadius for polished look
+
+DO NOT leave image src empty or use broken placeholder URLs.
+
+---
+
 ${aiContext}
 
 ---
