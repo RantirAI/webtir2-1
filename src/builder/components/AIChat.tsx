@@ -103,6 +103,85 @@ ${JSON.stringify(selectedInstance.props, null, 2)}
 When updating this component, use targetId: "${styleSourceId}" in the update action.
 `;
   };
+
+  // Build page tree context - shows all components on the page
+  const buildPageTreeContext = (): string => {
+    const rootInstance = useBuilderStore.getState().rootInstance;
+    if (!rootInstance || rootInstance.children.length === 0) return '';
+    
+    const components: Array<{
+      id: string;
+      type: string;
+      label: string;
+      styleSourceId: string;
+      textContent?: string;
+      path: string;
+    }> = [];
+    
+    const traverse = (instance: { id: string; type: string; label?: string; styleSourceIds: string[]; props: Record<string, unknown>; children: unknown[] }, path: string = '') => {
+      const currentPath = path ? `${path} > ${instance.label || instance.type}` : instance.label || instance.type;
+      
+      const textContent = typeof instance.props.children === 'string' 
+        ? instance.props.children.slice(0, 50) 
+        : undefined;
+      
+      components.push({
+        id: instance.id,
+        type: instance.type,
+        label: instance.label || instance.type,
+        styleSourceId: instance.styleSourceIds[0] || '',
+        textContent,
+        path: currentPath,
+      });
+      
+      if (Array.isArray(instance.children)) {
+        instance.children.forEach((child: unknown) => traverse(child as typeof instance, currentPath));
+      }
+    };
+    
+    rootInstance.children.forEach((child: unknown) => traverse(child as Parameters<typeof traverse>[0]));
+    
+    if (components.length === 0) return '';
+    
+    return `
+## Current Page Components
+
+Here are all components currently on the page. Use styleSourceId as targetId for style changes, or id for prop changes:
+
+| Type | Label | StyleSourceId | Content Preview |
+|------|-------|---------------|-----------------|
+${components.slice(0, 50).map(c => `| ${c.type} | ${c.label} | ${c.styleSourceId} | ${c.textContent || '-'} |`).join('\n')}
+${components.length > 50 ? `\n... and ${components.length - 50} more components` : ''}
+
+When user says "change the heading color" or "update the button text", find the matching component above and use UPDATE action.
+`;
+  };
+
+  // Helper function to find instance by description/type
+  const findInstanceByDescription = (description: string): { id: string; styleSourceIds: string[]; props: Record<string, unknown> } | null => {
+    const rootInstance = useBuilderStore.getState().rootInstance;
+    const lowerDesc = description.toLowerCase();
+    
+    const findMatch = (instance: { id: string; type: string; label?: string; styleSourceIds: string[]; props: Record<string, unknown>; children: unknown[] }): typeof instance | null => {
+      const label = (instance.label || '').toLowerCase();
+      const type = instance.type.toLowerCase();
+      const content = String(instance.props.children || '').toLowerCase();
+      
+      if (label.includes(lowerDesc) || type.includes(lowerDesc) || content.includes(lowerDesc)) {
+        return instance;
+      }
+      
+      if (Array.isArray(instance.children)) {
+        for (const child of instance.children) {
+          const found = findMatch(child as typeof instance);
+          if (found) return found;
+        }
+      }
+      return null;
+    };
+    
+    return findMatch(rootInstance as Parameters<typeof findMatch>[0]);
+  };
   // Sync chat mode to store
   useEffect(() => {
     setLastChatMode(chatMode);
@@ -139,10 +218,11 @@ When updating this component, use targetId: "${styleSourceId}" in the update act
       mode: modeAtSend,
     });
 
-    // Build messages array for AI - include component context in build mode
+    // Build messages array for AI - include component context and page tree in build mode
     const componentContext = modeAtSend === 'build' ? buildSelectedComponentContext() : '';
-    const contextualMessage = componentContext 
-      ? `${componentContext}\n\nUser request: ${userMessageContent}`
+    const pageTreeContext = modeAtSend === 'build' ? buildPageTreeContext() : '';
+    const contextualMessage = (componentContext || pageTreeContext)
+      ? `${pageTreeContext}\n\n${componentContext}\n\nUser request: ${userMessageContent}`
       : userMessageContent;
 
     const aiMessages: AIMessage[] = messages.map((m) => ({
@@ -240,50 +320,72 @@ When updating this component, use targetId: "${styleSourceId}" in the update act
             // Handle UPDATE action
             else if (parsed && parsed.action === 'update' && parsed.updates && parsed.updates.length > 0) {
               console.log('Processing UPDATE action with', parsed.updates.length, 'updates');
+              let updatesApplied = 0;
               
               for (const update of parsed.updates) {
                 const { targetId, styles, responsiveStyles, props } = update;
                 
-                // Check if style source exists, if not check if it's a component ID
+                // Try to resolve targetId - it could be a style source ID or instance ID
                 let styleSourceId = targetId;
+                let instanceId = targetId;
+                
+                // If not a style source, try to find the instance and get its style source
                 if (!styleSources[targetId]) {
                   const instance = findInstance(targetId);
                   if (instance && instance.styleSourceIds.length > 0) {
                     styleSourceId = instance.styleSourceIds[0];
+                    instanceId = instance.id;
+                  } else {
+                    // Try finding by label/type match (fallback for when AI uses descriptive IDs)
+                    const matchedInstance = findInstanceByDescription(targetId);
+                    if (matchedInstance) {
+                      styleSourceId = matchedInstance.styleSourceIds[0];
+                      instanceId = matchedInstance.id;
+                    }
                   }
                 }
                 
                 // Apply base styles
-                if (styles) {
+                if (styles && styleSourceId && styleSources[styleSourceId]) {
                   for (const [property, value] of Object.entries(styles)) {
                     setStyle(styleSourceId, property, value, 'base', 'default');
                   }
+                  updatesApplied++;
                 }
                 
                 // Apply tablet styles
-                if (responsiveStyles?.tablet) {
+                if (responsiveStyles?.tablet && styleSourceId) {
                   for (const [property, value] of Object.entries(responsiveStyles.tablet)) {
                     setStyle(styleSourceId, property, value, 'tablet', 'default');
                   }
                 }
                 
                 // Apply mobile styles
-                if (responsiveStyles?.mobile) {
+                if (responsiveStyles?.mobile && styleSourceId) {
                   for (const [property, value] of Object.entries(responsiveStyles.mobile)) {
                     setStyle(styleSourceId, property, value, 'mobile', 'default');
                   }
                 }
                 
                 // Update props if provided
-                if (props && targetId) {
-                  const instance = findInstance(targetId);
+                if (props) {
+                  const instance = findInstance(instanceId);
                   if (instance) {
-                    updateInstance(targetId, { props: { ...instance.props, ...props } });
+                    updateInstance(instanceId, { props: { ...instance.props, ...props } });
+                    updatesApplied++;
                   }
                 }
               }
-              displayMessage = `✓ ${parsed.message || 'Styles updated successfully!'}`;
-              toast.success('Styles updated');
+              
+              displayMessage = updatesApplied > 0 
+                ? `✓ ${parsed.message || 'Styles updated successfully!'}`
+                : `⚠️ Could not find components to update. Try selecting the component first.`;
+              
+              if (updatesApplied > 0) {
+                toast.success('Component updated');
+              } else {
+                toast.warning('No components found to update');
+              }
             }
             
             // Handle IMAGE GENERATION action

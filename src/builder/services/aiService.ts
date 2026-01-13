@@ -130,6 +130,51 @@ ${aiContext}
 
 {"action":"create","components":[{"type":"Section","label":"Testimonials","styles":{"backgroundColor":"#F0F9FF","padding":"80px 24px"},"children":[{"type":"Container","styles":{"maxWidth":"1200px","margin":"0 auto"},"children":[{"type":"Heading","props":{"children":"What Our Customers Say","level":"h2"},"styles":{"fontSize":"40px","fontWeight":"700","color":"#0F172A","textAlign":"center","marginBottom":"48px"}},{"type":"Div","styles":{"display":"grid","gridTemplateColumns":"repeat(3, 1fr)","gap":"24px"},"responsiveStyles":{"mobile":{"gridTemplateColumns":"1fr"}},"children":[{"type":"Div","styles":{"backgroundColor":"#FFFFFF","padding":"32px","borderRadius":"16px","boxShadow":"0 4px 20px rgba(0,0,0,0.08)"},"children":[{"type":"Text","props":{"children":"Since implementing this platform, our team productivity increased by 40%. The intuitive interface meant zero training time."},"styles":{"fontSize":"16px","lineHeight":"1.7","color":"#334155","marginBottom":"24px"}},{"type":"Text","props":{"children":"Sarah Chen"},"styles":{"fontWeight":"600","color":"#0F172A"}},{"type":"Text","props":{"children":"VP of Operations, TechFlow"},"styles":{"fontSize":"14px","color":"#64748B"}}]},{"type":"Div","styles":{"backgroundColor":"#FFFFFF","padding":"32px","borderRadius":"16px","boxShadow":"0 4px 20px rgba(0,0,0,0.08)"},"children":[{"type":"Text","props":{"children":"Best investment we made this year. The ROI was visible in the first month and support team is incredibly responsive."},"styles":{"fontSize":"16px","lineHeight":"1.7","color":"#334155","marginBottom":"24px"}},{"type":"Text","props":{"children":"Marcus Johnson"},"styles":{"fontWeight":"600","color":"#0F172A"}},{"type":"Text","props":{"children":"CEO, GrowthLabs"},"styles":{"fontSize":"14px","color":"#64748B"}}]},{"type":"Div","styles":{"backgroundColor":"#FFFFFF","padding":"32px","borderRadius":"16px","boxShadow":"0 4px 20px rgba(0,0,0,0.08)"},"children":[{"type":"Text","props":{"children":"Incredible product that transformed how we work. Highly recommend to any growing business looking to scale efficiently."},"styles":{"fontSize":"16px","lineHeight":"1.7","color":"#334155","marginBottom":"24px"}},{"type":"Text","props":{"children":"Emily Rodriguez"},"styles":{"fontWeight":"600","color":"#0F172A"}},{"type":"Text","props":{"children":"Founder, StartupHQ"},"styles":{"fontSize":"14px","color":"#64748B"}}]}]}]}]}],"message":"Created testimonials section with 3 reviews"}
 
+---
+
+## UPDATE Actions (Modify Existing Components)
+
+When user wants to CHANGE existing components (colors, text, sizes, etc.), use UPDATE action.
+The page components table above shows all available components with their styleSourceId.
+
+### Example UPDATE Response (Change Styles)
+
+User says: "change the heading color to blue" or "make the button bigger"
+
+{"action":"update","updates":[{"targetId":"style-abc123","styles":{"color":"#3B82F6"}}],"message":"Changed heading color to blue"}
+
+### Example UPDATE Response (Change Text)
+
+User says: "change the button text to Get Started"
+
+{"action":"update","updates":[{"targetId":"instance-xyz789","props":{"children":"Get Started"}}],"message":"Updated button text"}
+
+### Example UPDATE Response (Multiple Changes)
+
+User says: "make the hero more vibrant with a gradient and white text"
+
+{"action":"update","updates":[{"targetId":"style-hero-heading","styles":{"color":"#FFFFFF","fontSize":"64px"}},{"targetId":"style-hero-section","styles":{"background":"linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)"}},{"targetId":"instance-cta-button","props":{"children":"Start Free Trial"}}],"message":"Updated hero section with new heading, background, and CTA"}
+
+### Finding Components to Update
+
+When user refers to components vaguely, match them:
+- "the heading" → Look for Heading components in the page components table
+- "the button" → Look for Button components
+- "the hero" → Look for Section with hero-related label/content
+- "the testimonials" → Look for testimonials section or cards
+- "all buttons" → Create multiple updates for each Button found
+
+Use styleSourceId for style changes, id for prop changes (like text content).
+
+### When to UPDATE vs CREATE
+
+- UPDATE: User wants to change existing components ("make it blue", "change the text", "make it bigger", "update colors")
+- CREATE: User wants to add new components ("add a testimonial section", "create a footer", "build a pricing table")
+
+ALWAYS check the page components table before creating duplicates.
+
+---
+
 ## Build Rules
 
 1. Use Section > Container > Content structure
@@ -137,7 +182,8 @@ ${aiContext}
 3. Generate 3+ items for testimonials, 4+ for features, 3 for pricing
 4. Use HEX colors for vibrant designs, gradients for heroes
 5. Include responsiveStyles for tablet/mobile on every component
-6. Always output valid JSON - no markdown, no explanations`;
+6. Always output valid JSON - no markdown, no explanations
+7. For UPDATE: Use the styleSourceId from the page components table as targetId`;
   }
   
   // Discuss mode - normal conversation
