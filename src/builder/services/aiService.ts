@@ -279,7 +279,41 @@ ALWAYS create exactly 4 categories to fill the row.
 Background: #18181B (dark), Text: #A1A1AA (muted)
 Grid: gridTemplateColumns: "repeat(4, 1fr)", gap: "48px"
 Columns: Brand/description | Shop links | Support links | Company links
-Bottom: Copyright + Social icons
+Bottom: Copyright + Social icons (use Icon component)
+
+---
+
+## ICONS (Using Lucide Icons)
+
+Use the Icon component to render social media icons and UI icons:
+
+{"type":"Icon","props":{"name":"Github","size":20},"styles":{"color":"#A1A1AA"}}
+{"type":"Icon","props":{"name":"Linkedin","size":20},"styles":{"color":"#A1A1AA"}}
+{"type":"Icon","props":{"name":"Twitter","size":20},"styles":{"color":"#A1A1AA"}}
+
+### Available Icon Names (use exact spelling):
+- Social: Github, Linkedin, Twitter, Facebook, Instagram, Youtube
+- Navigation: Search, ShoppingCart, User, Menu, X, ChevronDown, ChevronRight
+- Actions: ArrowRight, ArrowLeft, Check, Plus, Minus, Heart, Star, Download, Upload, Share
+- Contact: Mail, Phone, MapPin, Calendar, Clock, Globe, Send, MessageCircle
+
+### Icon Usage in Footer:
+{"type":"Div","styles":{"display":"flex","flexDirection":"row","gap":"16px"},"children":[
+  {"type":"Icon","props":{"name":"Twitter","size":20},"styles":{"color":"#A1A1AA","cursor":"pointer"}},
+  {"type":"Icon","props":{"name":"Instagram","size":20},"styles":{"color":"#A1A1AA","cursor":"pointer"}},
+  {"type":"Icon","props":{"name":"Github","size":20},"styles":{"color":"#A1A1AA","cursor":"pointer"}},
+  {"type":"Icon","props":{"name":"Linkedin","size":20},"styles":{"color":"#A1A1AA","cursor":"pointer"}}
+]}
+
+### Icon Usage in Navigation Actions:
+{"type":"Div","styles":{"display":"flex","flexDirection":"row","gap":"20px","alignItems":"center"},"children":[
+  {"type":"Icon","props":{"name":"Search","size":20},"styles":{"color":"#1C1917","cursor":"pointer"}},
+  {"type":"Icon","props":{"name":"ShoppingCart","size":20},"styles":{"color":"#1C1917","cursor":"pointer"}},
+  {"type":"Icon","props":{"name":"User","size":20},"styles":{"color":"#1C1917","cursor":"pointer"}}
+]}
+
+ALWAYS use Icon components for social links in footers instead of text.
+ALWAYS use Icon components for cart/search/user in navigation instead of text.
 
 {"action":"create","components":[{"type":"Section","label":"Footer","styles":{"backgroundColor":"#18181B","padding":"64px 24px 32px"},"children":[{"type":"Container","styles":{"maxWidth":"1280px","margin":"0 auto"},"children":[{"type":"Div","styles":{"display":"grid","gridTemplateColumns":"repeat(4, 1fr)","gap":"48px","marginBottom":"48px"},"responsiveStyles":{"tablet":{"gridTemplateColumns":"repeat(2, 1fr)"},"mobile":{"gridTemplateColumns":"1fr"}},"children":[{"type":"Div","children":[{"type":"Heading","props":{"children":"ELECTROSHOP","level":"h4"},"styles":{"fontSize":"18px","fontWeight":"500","letterSpacing":"2px","color":"#FFFFFF","marginBottom":"20px"}},{"type":"Text","props":{"children":"Premium electronics and tech accessories for the modern lifestyle. Quality products, exceptional service."},"styles":{"color":"#A1A1AA","fontSize":"14px","lineHeight":"1.6"}}]},{"type":"Div","children":[{"type":"Text","props":{"children":"Shop"},"styles":{"color":"#FFFFFF","fontSize":"14px","fontWeight":"600","marginBottom":"16px"}},{"type":"Div","styles":{"display":"flex","flexDirection":"column","gap":"12px"},"children":[{"type":"Link","props":{"children":"New Arrivals","href":"#"},"styles":{"color":"#A1A1AA","fontSize":"14px","textDecoration":"none"}},{"type":"Link","props":{"children":"Best Sellers","href":"#"},"styles":{"color":"#A1A1AA","fontSize":"14px","textDecoration":"none"}},{"type":"Link","props":{"children":"Sale","href":"#"},"styles":{"color":"#A1A1AA","fontSize":"14px","textDecoration":"none"}},{"type":"Link","props":{"children":"All Products","href":"#"},"styles":{"color":"#A1A1AA","fontSize":"14px","textDecoration":"none"}}]}]},{"type":"Div","children":[{"type":"Text","props":{"children":"Support"},"styles":{"color":"#FFFFFF","fontSize":"14px","fontWeight":"600","marginBottom":"16px"}},{"type":"Div","styles":{"display":"flex","flexDirection":"column","gap":"12px"},"children":[{"type":"Link","props":{"children":"Contact Us","href":"#"},"styles":{"color":"#A1A1AA","fontSize":"14px","textDecoration":"none"}},{"type":"Link","props":{"children":"FAQs","href":"#"},"styles":{"color":"#A1A1AA","fontSize":"14px","textDecoration":"none"}},{"type":"Link","props":{"children":"Shipping & Returns","href":"#"},"styles":{"color":"#A1A1AA","fontSize":"14px","textDecoration":"none"}},{"type":"Link","props":{"children":"Track Order","href":"#"},"styles":{"color":"#A1A1AA","fontSize":"14px","textDecoration":"none"}}]}]},{"type":"Div","children":[{"type":"Text","props":{"children":"Company"},"styles":{"color":"#FFFFFF","fontSize":"14px","fontWeight":"600","marginBottom":"16px"}},{"type":"Div","styles":{"display":"flex","flexDirection":"column","gap":"12px"},"children":[{"type":"Link","props":{"children":"About Us","href":"#"},"styles":{"color":"#A1A1AA","fontSize":"14px","textDecoration":"none"}},{"type":"Link","props":{"children":"Careers","href":"#"},"styles":{"color":"#A1A1AA","fontSize":"14px","textDecoration":"none"}},{"type":"Link","props":{"children":"Press","href":"#"},"styles":{"color":"#A1A1AA","fontSize":"14px","textDecoration":"none"}},{"type":"Link","props":{"children":"Privacy Policy","href":"#"},"styles":{"color":"#A1A1AA","fontSize":"14px","textDecoration":"none"}}]}]}]},{"type":"Div","styles":{"borderTop":"1px solid #27272A","paddingTop":"24px","display":"flex","flexDirection":"row","justifyContent":"space-between","alignItems":"center"},"responsiveStyles":{"mobile":{"flexDirection":"column","gap":"16px"}},"children":[{"type":"Text","props":{"children":"© 2024 ELECTROSHOP. All rights reserved."},"styles":{"color":"#71717A","fontSize":"13px"}},{"type":"Div","styles":{"display":"flex","flexDirection":"row","gap":"24px"},"children":[{"type":"Text","props":{"children":"Twitter"},"styles":{"color":"#A1A1AA","fontSize":"13px","cursor":"pointer"}},{"type":"Text","props":{"children":"Instagram"},"styles":{"color":"#A1A1AA","fontSize":"13px","cursor":"pointer"}},{"type":"Text","props":{"children":"Facebook"},"styles":{"color":"#A1A1AA","fontSize":"13px","cursor":"pointer"}}]}]}]}]}],"message":"Created footer with 4 columns"}
 

@@ -19,6 +19,7 @@ import { ImagePrimitive } from '../primitives/ImagePrimitive';
 import { VideoPrimitive } from '../primitives/VideoPrimitive';
 import { YoutubePrimitive } from '../primitives/YoutubePrimitive';
 import { LottiePrimitive } from '../primitives/LottiePrimitive';
+import { IconPrimitive } from '../primitives/IconPrimitive';
 import { LinkPrimitive } from '../primitives/LinkPrimitive';
 import { TablePrimitive } from '../primitives/TablePrimitive';
 import { FormPrimitive } from '../primitives/FormPrimitive';
@@ -659,6 +660,17 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
             loop={instance.props.loop}
             isSelected={isSelected}
             className=""
+            style={getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties}
+          />
+        );
+      case 'Icon':
+        return wrapWithDraggable(
+          <IconPrimitive
+            key={instance.id}
+            name={instance.props?.name || 'Circle'}
+            size={instance.props?.size || 24}
+            color={instance.props?.color}
+            strokeWidth={instance.props?.strokeWidth}
             style={getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties}
           />
         );

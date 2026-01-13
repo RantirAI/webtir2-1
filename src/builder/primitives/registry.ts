@@ -413,6 +413,45 @@ export const componentRegistry: Record<string, ComponentMeta> = {
       },
     },
   },
+  Icon: {
+    type: 'Icon',
+    label: 'Icon',
+    icon: 'Smile',
+    defaultProps: {
+      name: 'Circle',
+      size: 24,
+    },
+    defaultStyles: {
+      display: 'inline-flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    propsDefinition: {
+      name: {
+        type: 'select',
+        label: 'Icon Name',
+        control: 'select',
+        options: [
+          // Social icons
+          'Github', 'Linkedin', 'Twitter', 'Facebook', 'Instagram', 'Youtube',
+          // UI icons
+          'Search', 'ShoppingCart', 'User', 'Menu', 'X', 'ChevronDown', 'ChevronRight',
+          'ArrowRight', 'ArrowLeft', 'Check', 'Plus', 'Minus', 'Heart', 'Star',
+          'Mail', 'Phone', 'MapPin', 'Calendar', 'Clock', 'Settings', 'Home',
+          // Common
+          'Circle', 'Square', 'Play', 'Pause', 'Download', 'Upload', 'Share',
+          'ExternalLink', 'Globe', 'Send', 'MessageCircle', 'Bell', 'Bookmark',
+        ],
+        defaultValue: 'Circle',
+      },
+      size: {
+        type: 'number',
+        label: 'Size',
+        control: 'number',
+        defaultValue: 24,
+      },
+    },
+  },
   
   // Commonly Used Components
   Table: {
@@ -1084,14 +1123,6 @@ export const componentRegistry: Record<string, ComponentMeta> = {
     type: 'EventList',
     label: 'Event List',
     icon: 'ListOrdered',
-    defaultProps: {},
-    defaultStyles: {},
-    propsDefinition: {},
-  },
-  Icon: {
-    type: 'Icon',
-    label: 'Icon',
-    icon: 'Smile',
     defaultProps: {},
     defaultStyles: {},
     propsDefinition: {},
