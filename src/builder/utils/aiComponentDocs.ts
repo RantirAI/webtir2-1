@@ -629,6 +629,38 @@ Diverse, high-quality Unsplash profile photos:
 - https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=800&h=600&fit=crop (coding)
 - https://images.unsplash.com/photo-1531297484001-80022131f5a1?w=800&h=600&fit=crop (tech)
 
+### Industry-Specific Image URLs
+
+**Ecommerce Products:**
+- https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=400&fit=crop (watch)
+- https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=400&fit=crop (headphones)
+- https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=400&fit=crop (shoes)
+- https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&h=400&fit=crop (camera)
+- https://images.unsplash.com/photo-1560343090-f0409e92791a?w=400&h=400&fit=crop (skincare)
+- https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=400&h=400&fit=crop (bag)
+- https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=400&h=400&fit=crop (sunglasses)
+
+**Restaurant/Food:**
+- https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&h=400&fit=crop (salad)
+- https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400&h=400&fit=crop (pizza)
+- https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=400&h=400&fit=crop (pancakes)
+- https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=400&h=400&fit=crop (bowl)
+- https://images.unsplash.com/photo-1546964124-0cce460f38ef?w=400&h=400&fit=crop (steak)
+- https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&h=400&fit=crop (burger)
+- https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&h=600&fit=crop (restaurant interior)
+
+**Fitness/Gym:**
+- https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&h=600&fit=crop (gym)
+- https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=400&h=400&fit=crop (yoga)
+- https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=400&h=400&fit=crop (training)
+- https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=800&h=600&fit=crop (workout)
+
+**Real Estate:**
+- https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&h=600&fit=crop (house exterior)
+- https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&h=600&fit=crop (apartment)
+- https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&h=600&fit=crop (modern home)
+- https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&h=600&fit=crop (luxury home)
+
 ### Example Testimonial WITH Profile Image
 {
   "type": "Div",
@@ -651,9 +683,195 @@ Diverse, high-quality Unsplash profile photos:
 `;
 }
 
+// Generate industry-specific page blueprints
+export function generateIndustryBlueprints(): string {
+  return `## Industry Page Blueprints (CRITICAL - Follow These Exactly)
+
+### SITE TYPE DETECTION
+When user requests a page, IDENTIFY the site type and follow its blueprint:
+
+| Keywords | Site Type | Blueprint to Follow |
+|----------|-----------|---------------------|
+| "ecommerce", "store", "shop", "products", "buy", "cart" | ECOMMERCE | Product grids, categories, cart |
+| "restaurant", "food", "menu", "cafe", "dining", "bistro" | RESTAURANT | Menu, reservations, hours |
+| "fitness", "gym", "workout", "training", "yoga" | FITNESS | Classes, trainers, membership |
+| "real estate", "property", "homes", "listings", "realtor" | REAL ESTATE | Property cards, search, agents |
+| "saas", "software", "app", "platform", "tool", "dashboard" | SAAS | Features, pricing, integrations |
+| "agency", "studio", "creative", "design", "marketing" | AGENCY | Portfolio, services, process |
+| "portfolio", "personal", "freelance", "resume", "developer" | PORTFOLIO | Projects, skills, about, contact |
+
+FOLLOW THE INDUSTRY BLUEPRINT - include ALL required sections.
+Do NOT create shallow pages with just hero + features + CTA.
+
+---
+
+### ECOMMERCE / ONLINE STORE
+Required Sections (in order):
+1. **Hero**: Featured collection/product, sale banner, "Shop Now" CTA
+2. **Categories Grid**: 4-6 product categories with images
+3. **Featured Products**: 4-8 product cards with image, name, price, rating, "Add to Cart"
+4. **Special Offers**: Banner with discount, promotional message
+5. **Trust Badges**: Free shipping, secure payment, easy returns icons
+6. **Testimonials**: 3-4 customer reviews with star ratings
+7. **Newsletter**: Email signup with discount incentive
+8. **Footer**: Links, payment icons, contact
+
+**Product Card Structure:**
+\`\`\`json
+{
+  "type": "Div", "styles": { "backgroundColor": "#FFFFFF", "borderRadius": "12px", "overflow": "hidden", "boxShadow": "0 4px 12px rgba(0,0,0,0.08)" },
+  "children": [
+    { "type": "Image", "props": { "src": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=400&fit=crop", "alt": "Premium Watch" }, "styles": { "width": "100%", "aspectRatio": "1", "objectFit": "cover" }},
+    { "type": "Div", "styles": { "padding": "16px" }, "children": [
+      { "type": "Text", "props": { "children": "Premium Watch" }, "styles": { "fontWeight": "600", "fontSize": "16px", "color": "#0F172A" }},
+      { "type": "Div", "styles": { "display": "flex", "justifyContent": "space-between", "alignItems": "center", "marginTop": "8px" }, "children": [
+        { "type": "Text", "props": { "children": "$299.00" }, "styles": { "fontWeight": "700", "fontSize": "18px", "color": "#0F172A" }},
+        { "type": "Text", "props": { "children": "★★★★★" }, "styles": { "color": "#F59E0B", "fontSize": "14px" }}
+      ]},
+      { "type": "Button", "props": { "children": "Add to Cart" }, "styles": { "width": "100%", "marginTop": "12px", "backgroundColor": "#0F172A", "color": "#FFFFFF", "padding": "12px", "borderRadius": "8px", "border": "none" }}
+    ]}
+  ]
+}
+\`\`\`
+
+---
+
+### RESTAURANT / FOOD
+Required Sections:
+1. **Hero**: Restaurant ambiance image, tagline, "Reserve a Table" + "View Menu" CTAs
+2. **About/Story**: Chef photo or interior, restaurant story, signature dishes mention
+3. **Menu Highlights**: 6-8 dishes with image, name, description, price
+4. **Full Menu Categories**: Categorized menu (Starters, Mains, Desserts, Drinks)
+5. **Reviews**: 3-4 customer reviews with food mentions
+6. **Location & Hours**: Address, map reference, opening hours, phone
+7. **Reservation CTA**: Form or prominent button to book
+8. **Footer**: Social links, contact
+
+**Menu Item Structure:**
+\`\`\`json
+{
+  "type": "Div", "styles": { "display": "flex", "gap": "16px", "padding": "16px", "borderBottom": "1px solid #E2E8F0" },
+  "children": [
+    { "type": "Image", "props": { "src": "https://images.unsplash.com/photo-1546964124-0cce460f38ef?w=400&h=400&fit=crop", "alt": "Grilled Salmon" }, "styles": { "width": "80px", "height": "80px", "borderRadius": "8px", "objectFit": "cover" }},
+    { "type": "Div", "styles": { "flex": "1" }, "children": [
+      { "type": "Div", "styles": { "display": "flex", "justifyContent": "space-between" }, "children": [
+        { "type": "Text", "props": { "children": "Grilled Salmon" }, "styles": { "fontWeight": "600", "fontSize": "16px", "color": "#0F172A" }},
+        { "type": "Text", "props": { "children": "$28" }, "styles": { "fontWeight": "700", "color": "#EF4444" }}
+      ]},
+      { "type": "Text", "props": { "children": "Fresh Atlantic salmon with herbs, lemon butter sauce, and seasonal vegetables" }, "styles": { "color": "#64748B", "fontSize": "14px", "marginTop": "4px" }}
+    ]}
+  ]
+}
+\`\`\`
+
+---
+
+### FITNESS / GYM
+Required Sections:
+1. **Hero**: Energetic gym image, motivational headline, "Start Free Trial" CTA
+2. **Classes Grid**: 6 class types with images (Yoga, HIIT, Spin, Strength, etc.)
+3. **Membership Plans**: 3 pricing tiers with features list
+4. **Trainers**: 4 trainer cards with photo, name, specialty, certifications
+5. **Facility Gallery**: 4-6 gym/studio photos in grid
+6. **Success Stories**: Member testimonials or transformation stories
+7. **Location & Schedule**: Address, class schedule preview
+8. **CTA**: Free trial or membership signup
+
+**Class Card Structure:**
+\`\`\`json
+{
+  "type": "Div", "styles": { "position": "relative", "borderRadius": "16px", "overflow": "hidden" },
+  "children": [
+    { "type": "Image", "props": { "src": "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=400&h=400&fit=crop", "alt": "Yoga Class" }, "styles": { "width": "100%", "height": "200px", "objectFit": "cover" }},
+    { "type": "Div", "styles": { "position": "absolute", "bottom": "0", "left": "0", "right": "0", "padding": "16px", "background": "linear-gradient(transparent, rgba(0,0,0,0.8))" }, "children": [
+      { "type": "Text", "props": { "children": "Yoga Flow" }, "styles": { "color": "#FFFFFF", "fontWeight": "600", "fontSize": "18px" }},
+      { "type": "Text", "props": { "children": "Mon, Wed, Fri • 7:00 AM" }, "styles": { "color": "rgba(255,255,255,0.8)", "fontSize": "14px" }}
+    ]}
+  ]
+}
+\`\`\`
+
+---
+
+### REAL ESTATE / PROPERTY
+Required Sections:
+1. **Hero**: Search interface, property types (Buy/Rent/Sell), featured listing
+2. **Featured Listings**: 4-6 property cards with image, price, beds/baths, sqft, location
+3. **Property Types**: Categories (Apartments, Houses, Condos, Commercial)
+4. **Why Choose Us**: Agent expertise, local knowledge, success stats
+5. **Testimonials**: Client success stories
+6. **Agents**: Team photos with contact info
+7. **Contact Form**: Property inquiry form
+
+**Property Card Structure:**
+\`\`\`json
+{
+  "type": "Div", "styles": { "backgroundColor": "#FFFFFF", "borderRadius": "16px", "overflow": "hidden", "boxShadow": "0 4px 20px rgba(0,0,0,0.08)" },
+  "children": [
+    { "type": "Div", "styles": { "position": "relative" }, "children": [
+      { "type": "Image", "props": { "src": "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&h=600&fit=crop", "alt": "Modern Home" }, "styles": { "width": "100%", "height": "200px", "objectFit": "cover" }},
+      { "type": "Div", "styles": { "position": "absolute", "top": "12px", "left": "12px", "backgroundColor": "#10B981", "padding": "6px 12px", "borderRadius": "6px" }, "children": [
+        { "type": "Text", "props": { "children": "For Sale" }, "styles": { "color": "#FFFFFF", "fontSize": "12px", "fontWeight": "600" }}
+      ]}
+    ]},
+    { "type": "Div", "styles": { "padding": "20px" }, "children": [
+      { "type": "Text", "props": { "children": "$850,000" }, "styles": { "fontSize": "24px", "fontWeight": "700", "color": "#0F172A" }},
+      { "type": "Text", "props": { "children": "Modern Family Home" }, "styles": { "fontSize": "16px", "fontWeight": "500", "color": "#334155", "marginTop": "4px" }},
+      { "type": "Text", "props": { "children": "123 Oak Street, Beverly Hills" }, "styles": { "fontSize": "14px", "color": "#64748B", "marginTop": "4px" }},
+      { "type": "Div", "styles": { "display": "flex", "gap": "16px", "marginTop": "16px", "paddingTop": "16px", "borderTop": "1px solid #E2E8F0" }, "children": [
+        { "type": "Text", "props": { "children": "🛏 4 Beds" }, "styles": { "fontSize": "14px", "color": "#64748B" }},
+        { "type": "Text", "props": { "children": "🛁 3 Baths" }, "styles": { "fontSize": "14px", "color": "#64748B" }},
+        { "type": "Text", "props": { "children": "📐 2,500 sqft" }, "styles": { "fontSize": "14px", "color": "#64748B" }}
+      ]}
+    ]}
+  ]
+}
+\`\`\`
+
+---
+
+### SAAS / SOFTWARE
+Required Sections:
+1. **Hero**: Product screenshot, badge, headline, 2 CTAs, stats row
+2. **Logos/Trust Bar**: "Trusted by" with company logos
+3. **Features Grid**: 6 features with icons and descriptions
+4. **How It Works**: 3-step process visualization
+5. **Pricing**: 3 tiers (Starter, Pro, Enterprise) with feature lists
+6. **Testimonials**: 3 reviews with company logos
+7. **FAQ**: 5-6 common questions with answers
+8. **CTA**: Final signup push
+9. **Footer**: Links, legal, social
+
+---
+
+### AGENCY / CREATIVE
+Required Sections:
+1. **Hero**: Bold statement, portfolio preview thumbnails, "View Work" CTA
+2. **Services**: 4-6 services offered with descriptions
+3. **Selected Work**: 4-6 case study cards with project images
+4. **Process**: How you work (Discovery → Design → Develop → Launch)
+5. **Clients**: Logo bar of past clients
+6. **Team**: Team member photos and roles
+7. **Contact**: Contact form or booking link
+
+---
+
+### PORTFOLIO / PERSONAL
+Required Sections:
+1. **Hero**: Name, title, photo, tagline, contact CTA
+2. **About**: Personal story, background, approach
+3. **Skills**: Technology stack or expertise areas
+4. **Projects**: 4-6 project cards with images and descriptions
+5. **Experience**: Work history timeline
+6. **Testimonials**: Client or colleague reviews
+7. **Contact**: Contact form with social links
+`;
+}
+
 export function buildAIContext(): string {
   return [
     generateComponentDocs(),
+    generateIndustryBlueprints(),
     generateHeroGuidelines(),
     generateImageGuidelines(),
     generateContentGuidelines(),
