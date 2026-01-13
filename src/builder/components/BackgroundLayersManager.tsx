@@ -275,7 +275,11 @@ export const BackgroundLayersManager: React.FC<BackgroundLayersManagerProps> = (
     const newLayer: BackgroundLayerItem = {
       id: generateId(),
       type,
-      value: type === 'fill' ? '#ffffff' : '',
+      value: type === 'fill' 
+        ? '#ffffff' 
+        : type === 'gradient'
+        ? 'linear-gradient(180deg, #ffffff 0%, #000000 100%)'
+        : '',
       ...(type === 'media' && {
         size: 'cover',
         position: 'center',
