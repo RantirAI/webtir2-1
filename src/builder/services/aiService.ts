@@ -84,25 +84,32 @@ NEVER create a hero with just heading + text + button. That's too basic.
 
 ---
 
-## AUTO-GENERATED IMAGES (CRITICAL)
+## AUTO-GENERATED IMAGES (CRITICAL - USE EXACT URLS)
 
-For testimonials and team sections:
-- ALWAYS include profile images using the Unsplash URLs provided
-- Use diverse representations (vary the profile photos)
-- Profile photo style: width: 64px, height: 64px, borderRadius: 50%
+For testimonials and team - USE THESE EXACT URLS:
+- Woman 1: https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&crop=face
+- Woman 2: https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face
+- Man 1: https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face
+- Man 2: https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face
+Profile photo style: width: 64px, height: 64px, borderRadius: 50%
 
-For hero sections on product sites:
-- ALWAYS include a product screenshot or illustration
-- Use Unsplash URLs for realistic dashboard/product images
-- Add boxShadow and borderRadius for polished look
+For hero/product images - USE THESE EXACT URLS:
+- Dashboard: https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=600&fit=crop
+- Analytics: https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&h=600&fit=crop
+- Coding/Developer: https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800&h=600&fit=crop
+- Tech workspace: https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=800&h=600&fit=crop
 
-DO NOT leave image src empty or use broken placeholder URLs.
+NEVER use placeholder strings like "IMAGE_PLACEHOLDER" or "placeholder.com". Always use real Unsplash URLs from above.
 
 ---
 
 ${aiContext}
 
 ---
+
+## Example Hero Section (Split Layout with Image)
+
+{"action":"create","components":[{"type":"Section","styles":{"background":"linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)","padding":"100px 24px"},"children":[{"type":"Container","styles":{"display":"grid","gridTemplateColumns":"1fr 1fr","gap":"48px","alignItems":"center","maxWidth":"1200px","margin":"0 auto"},"responsiveStyles":{"mobile":{"gridTemplateColumns":"1fr"}},"children":[{"type":"Div","styles":{"display":"flex","flexDirection":"column","gap":"24px"},"children":[{"type":"Div","styles":{"display":"inline-flex","backgroundColor":"rgba(255,255,255,0.2)","padding":"8px 16px","borderRadius":"999px","width":"fit-content"},"children":[{"type":"Text","props":{"children":"✨ Full Stack Developer"},"styles":{"color":"#FFFFFF","fontSize":"14px","fontWeight":"500"}}]},{"type":"Heading","props":{"children":"Hi, I'm John Doe.","level":"h1"},"styles":{"color":"#FFFFFF","fontSize":"56px","fontWeight":"800","lineHeight":"1.1"}},{"type":"Text","props":{"children":"I build scalable and efficient web applications using modern technologies."},"styles":{"color":"rgba(255,255,255,0.9)","fontSize":"20px","lineHeight":"1.6"}},{"type":"Div","styles":{"display":"flex","gap":"16px"},"children":[{"type":"Button","props":{"children":"Contact Me"},"styles":{"backgroundColor":"#FFFFFF","color":"#6366F1","padding":"16px 32px","borderRadius":"8px","fontWeight":"600","border":"none"}},{"type":"Button","props":{"children":"View My Work"},"styles":{"backgroundColor":"transparent","color":"#FFFFFF","border":"2px solid rgba(255,255,255,0.5)","padding":"16px 32px","borderRadius":"8px"}}]}]},{"type":"Image","props":{"src":"https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800&h=600&fit=crop","alt":"Developer at work"},"styles":{"width":"100%","borderRadius":"16px","boxShadow":"0 25px 50px rgba(0,0,0,0.25)"}}]}]}],"message":"Created hero section with profile"}
 
 ## Example CREATE Response (Multi-Testimonial)
 
