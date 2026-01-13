@@ -631,15 +631,13 @@ const PreviewFrame: React.FC<PreviewFrameProps> = ({
           });
         `;
         
-        // Build the complete preview HTML
+        // Build the complete preview HTML - CSS is injected AFTER base reset so exported styles take precedence
         const previewHTML = `<!DOCTYPE html>
 <html>
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-      * { box-sizing: border-box; margin: 0; padding: 0; }
-      body { font-family: system-ui, -apple-system, sans-serif; }
       ${cssCode}
     </style>
   </head>
