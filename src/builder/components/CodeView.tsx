@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 import { exportHTML, exportCSS, exportJS, exportAstro } from '../utils/codeExport';
+import { extractUsedFonts, generateGoogleFontsLink } from '../utils/export';
 import { discoverComponents, getComponentCode, flattenComponents } from '../utils/componentCodeExport';
 import { parseHTMLToInstance, parseHTMLPreservingLinks } from '../utils/codeImport';
 import { parseCSSToStyleStore, validateCSS } from '../utils/cssImport';
@@ -631,12 +632,17 @@ const PreviewFrame: React.FC<PreviewFrameProps> = ({
           });
         `;
         
+        // Extract used fonts and generate Google Fonts link
+        const usedFonts = extractUsedFonts();
+        const googleFontsLink = generateGoogleFontsLink(usedFonts);
+        
         // Build the complete preview HTML - CSS is injected AFTER base reset so exported styles take precedence
         const previewHTML = `<!DOCTYPE html>
 <html>
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    ${googleFontsLink}
     <style>
       ${cssCode}
     </style>
