@@ -160,6 +160,122 @@ export function generateIndustryDesignSystems(): string {
 - Generous whitespace
 - Minimal UI, let images breathe
 - Subtle animations and transitions
+
+---
+
+### HEALTHCARE / MEDICAL / WELLNESS
+**Typography:**
+- Headings: Inter, system-ui - clean, trustworthy, professional
+- Body: system-ui - highly readable
+- Use medium weights (500-600) for headings, not too bold
+- Heading sizes: 40-48px for main, 28-32px for sections
+
+**Color Palette:**
+- Primary: #0EA5E9 (sky-500), #0284C7 (sky-600) - calming, clinical
+- Secondary: #14B8A6 (teal-500), #10B981 (emerald-500)
+- Accent: #6366F1 (indigo) for CTAs
+- Background: #F0F9FF (sky-50), #FFFFFF
+- Trust colors: #059669 (green for positive), #3B82F6 (blue)
+- Text: #0F172A (slate-900), #475569 (slate-600)
+
+**Visual Elements:**
+- Rounded corners (12-16px) for friendly feel
+- Soft shadows, no harsh edges
+- Trust badges and certifications prominent
+- Clean iconography (medical symbols, checkmarks)
+- Generous whitespace for readability
+
+**Card Style:**
+- White cards with subtle borders
+- Icon at top (in colored circle)
+- Clear, reassuring language
+
+---
+
+### EDUCATION / LEARNING / COURSES
+**Typography:**
+- Headings: Inter, system-ui - modern, approachable
+- Body: system-ui with generous line-height (1.7)
+- Use bold weights (600-700) for emphasis
+- Heading sizes: 44-52px for main, 28-36px for sections
+
+**Color Palette:**
+- Primary: #3B82F6 (blue-500), #2563EB (blue-600) - knowledge, trust
+- Secondary: #F59E0B (amber-500), #EAB308 (yellow-500) - energy, optimism
+- Accent: #8B5CF6 (violet), #EC4899 (pink) for highlights
+- Background: #FFFFFF, #FEF3C7 (amber-50), #F8FAFC
+- Text: #1E293B (slate-800), #475569 (slate-600)
+
+**Visual Elements:**
+- Playful but professional
+- Rounded corners (12px)
+- Progress indicators and achievement badges
+- Course cards with thumbnail, instructor, rating
+- Category tags with bright colors
+
+**Card Style:**
+- Course thumbnail (16:9 ratio)
+- Instructor avatar and name
+- Star rating and student count
+- Price or "Free" badge
+
+---
+
+### NONPROFIT / CHARITY / FOUNDATION
+**Typography:**
+- Headings: Georgia, serif OR Inter - warm, human
+- Body: system-ui - accessible, readable
+- Emotional headlines with medium weight (500)
+- Heading sizes: 44-56px for impact statements
+
+**Color Palette:**
+- Primary: #059669 (emerald-600), #10B981 (emerald-500) - growth, hope
+- Secondary: #F97316 (orange-500), #EAB308 (yellow-500) - warmth, urgency
+- Accent: #EC4899 (pink) for donate CTAs
+- Background: #FFFFFF, #F0FDF4 (green-50), #FEF3C7 (warm)
+- Text: #1C1917 (stone-900), #57534E (stone-600)
+
+**Visual Elements:**
+- Emotional photography (people, impact)
+- Impact statistics prominently displayed
+- Progress bars for fundraising goals
+- Donor testimonials with photos
+- Clear, prominent "Donate" CTAs
+
+**Card Style:**
+- Cause/campaign cards with progress
+- Impact numbers with icons
+- Volunteer/team member cards
+
+---
+
+### WEDDING / EVENT / CELEBRATION
+**Typography:**
+- Headings: Georgia, "Playfair Display", serif - romantic, elegant
+- Script fonts mentioned in descriptions (Parisienne feel)
+- Body: system-ui - clean supporting text
+- Heading sizes: 48-64px with loose letter-spacing (1-2px)
+
+**Color Palette:**
+- Primary: #F9A8D4 (pink-300), #FDA4AF (rose-300) - romantic
+- Secondary: #D4AF37 (gold), #A16207 (amber-700)
+- Accent: #4ADE80 (green for nature), #6366F1 (purple)
+- Background: #FFFBEB (cream), #FFF1F2 (rose-50), #FFFFFF
+- Text: #1C1917 (stone-900), #78716C (stone-500)
+
+**Visual Elements:**
+- Elegant serif typography
+- Soft, romantic color palette
+- Photo galleries with couples/venues
+- Countdown timers
+- RSVP forms
+- Timeline/schedule visualization
+- Floral and decorative accents
+
+**Card Style:**
+- Venue cards with large images
+- Vendor cards with services and pricing
+- Gallery with lightbox preview
 `;
 }
 
@@ -183,6 +299,10 @@ DO NOT default to black/white/gray. Infer colors from context and create VIBRANT
 | Kids/Education | #3B82F6 (Blue) | #FACC15 (Yellow) | #EF4444 (Red) | #FFFFFF, #FEF3C7 |
 | Fitness/Sports | #EF4444 (Red) | #F97316 (Orange) | #22C55E (Green) | #18181B, #FAFAFA |
 | Fashion/Beauty | #1C1917 (Stone-900) | #78716C (Stone-500) | #C2410C (Orange) | #FAF9F7, #18181B |
+| Healthcare/Medical | #0EA5E9 (Sky) | #14B8A6 (Teal) | #6366F1 (Indigo) | #F0F9FF, #FFFFFF |
+| Education/Learning | #3B82F6 (Blue) | #F59E0B (Amber) | #8B5CF6 (Violet) | #FFFFFF, #FEF3C7 |
+| Nonprofit/Charity | #059669 (Emerald) | #F97316 (Orange) | #EC4899 (Pink) | #F0FDF4, #FFFBEB |
+| Wedding/Event | #F9A8D4 (Pink) | #D4AF37 (Gold) | #6366F1 (Purple) | #FFFBEB, #FFF1F2 |
 
 ### Gradient Backgrounds (Use for Hero sections, CTAs, Feature cards)
 - **Sunset**: linear-gradient(135deg, #F97316 0%, #EC4899 100%)
@@ -754,6 +874,45 @@ Diverse, high-quality Unsplash profile photos:
 - Modern home: https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&h=600&fit=crop
 - Luxury home: https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&h=600&fit=crop
 
+**Healthcare/Medical:**
+- Doctor female: https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=200&h=200&fit=crop&crop=face
+- Doctor male: https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=200&h=200&fit=crop&crop=face
+- Medical team: https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=800&h=600&fit=crop
+- Clinic interior: https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=800&h=600&fit=crop
+- Patient care: https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=800&h=600&fit=crop
+- Medical equipment: https://images.unsplash.com/photo-1516549655169-df83a0774514?w=800&h=600&fit=crop
+- Stethoscope: https://images.unsplash.com/photo-1584982751601-97dcc096659c?w=400&h=400&fit=crop
+- Healthcare reception: https://images.unsplash.com/photo-1629909613654-28e377c37b09?w=800&h=600&fit=crop
+
+**Education/Learning:**
+- Students learning: https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&h=600&fit=crop
+- Online course: https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=225&fit=crop
+- Classroom: https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=800&h=600&fit=crop
+- Laptop study: https://images.unsplash.com/photo-1501504905252-473c47e087f8?w=800&h=600&fit=crop
+- Instructor female: https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&h=200&fit=crop&crop=face
+- Instructor male: https://images.unsplash.com/photo-1568602471122-7832951cc4c5?w=200&h=200&fit=crop&crop=face
+- Books: https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=400&h=400&fit=crop
+- Graduation: https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&h=600&fit=crop
+
+**Nonprofit/Charity:**
+- Volunteers: https://images.unsplash.com/photo-1593113630400-ea4288922497?w=800&h=600&fit=crop
+- Community help: https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=800&h=600&fit=crop
+- Children education: https://images.unsplash.com/photo-1497486751825-1233686d5d80?w=800&h=600&fit=crop
+- Food donation: https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?w=800&h=600&fit=crop
+- Hands helping: https://images.unsplash.com/photo-1469571486292-0ba58a3f068b?w=800&h=600&fit=crop
+- Charity event: https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=800&h=600&fit=crop
+- Team volunteering: https://images.unsplash.com/photo-1509099836639-18ba1795216d?w=800&h=600&fit=crop
+
+**Wedding/Event:**
+- Couple portrait: https://images.unsplash.com/photo-1519741497674-611481863552?w=600&h=800&fit=crop
+- Wedding venue: https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=800&h=600&fit=crop
+- Wedding flowers: https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=400&h=400&fit=crop
+- Ceremony: https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=800&h=600&fit=crop
+- Reception: https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=800&h=600&fit=crop
+- Rings: https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?w=400&h=400&fit=crop
+- Wedding cake: https://images.unsplash.com/photo-1535254973040-607b474cb50d?w=400&h=400&fit=crop
+- Table setting: https://images.unsplash.com/photo-1478146896981-b80fe463b330?w=800&h=600&fit=crop
+
 ### Example Testimonial WITH Profile Image
 {
   "type": "Div",
@@ -794,6 +953,10 @@ When user requests a page, IDENTIFY the site type and follow its blueprint:
 | "saas", "software", "app", "platform", "tool", "dashboard" | SAAS | Features, pricing, integrations |
 | "agency", "studio", "creative", "design", "marketing" | AGENCY | Portfolio, services, process |
 | "portfolio", "personal", "freelance", "resume", "developer" | PORTFOLIO | Projects, skills, about, contact |
+| "healthcare", "medical", "clinic", "doctor", "hospital", "wellness" | HEALTHCARE | Services, doctors, appointments |
+| "education", "school", "course", "learning", "university", "training" | EDUCATION | Courses, instructors, enrollment |
+| "nonprofit", "charity", "foundation", "donate", "ngo", "cause" | NONPROFIT | Impact, donate, volunteer |
+| "wedding", "event", "party", "celebration", "planner" | WEDDING/EVENT | Gallery, RSVP, timeline |
 
 FOLLOW THE INDUSTRY BLUEPRINT - include ALL required sections.
 Do NOT create shallow pages with just hero + features + CTA.
@@ -1035,6 +1198,246 @@ Required Sections:
 5. **Experience**: Work history timeline
 6. **Testimonials**: Client or colleague reviews
 7. **Contact**: Contact form with social links
+
+---
+
+### HEALTHCARE / MEDICAL / CLINIC
+Required Sections:
+1. **Navigation**: Logo, Services dropdown, About, Contact, "Book Appointment" CTA button (sky-500 bg)
+2. **Hero**: 
+   - Reassuring headline ("Caring for You and Your Family")
+   - Professional image of medical staff or clinic
+   - Two CTAs: "Book Appointment" + "Our Services"
+   - Trust badges (certifications, ratings)
+   - Background: #F0F9FF (sky-50) or white
+3. **Services Grid**: 6 medical services with icon, name, description
+4. **Why Choose Us**: 3-4 trust factors (Experience, Certified Doctors, Modern Technology, Personalized Care)
+5. **Doctors/Team**: 4 doctor cards with photo, name, specialty, credentials
+6. **Testimonials**: 3-4 patient reviews
+7. **Insurance/Partners**: Logo bar of accepted insurance providers
+8. **Location & Hours**: Address, map reference, hours, emergency contact
+9. **CTA**: Appointment booking section
+10. **Footer**: Contact info, services links, emergency numbers
+
+**Doctor Card Example:**
+\`\`\`json
+{
+  "type": "Div", "styles": { "backgroundColor": "#FFFFFF", "borderRadius": "16px", "padding": "24px", "textAlign": "center", "border": "1px solid #E2E8F0" },
+  "children": [
+    { "type": "Image", "props": { "src": "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=200&h=200&fit=crop&crop=face", "alt": "Dr. Sarah Johnson" }, "styles": { "width": "120px", "height": "120px", "borderRadius": "50%", "objectFit": "cover", "margin": "0 auto 16px" }},
+    { "type": "Text", "props": { "children": "Dr. Sarah Johnson" }, "styles": { "fontWeight": "600", "fontSize": "18px", "color": "#0F172A" }},
+    { "type": "Text", "props": { "children": "Cardiologist" }, "styles": { "color": "#0EA5E9", "fontSize": "14px", "fontWeight": "500", "marginTop": "4px" }},
+    { "type": "Text", "props": { "children": "MD, FACC • 15+ Years Experience" }, "styles": { "color": "#64748B", "fontSize": "14px", "marginTop": "8px" }},
+    { "type": "Button", "props": { "children": "Book Appointment" }, "styles": { "marginTop": "16px", "backgroundColor": "#0EA5E9", "color": "#FFFFFF", "padding": "10px 20px", "borderRadius": "8px", "border": "none", "fontSize": "14px" }}
+  ]
+}
+\`\`\`
+
+**Healthcare Service Card Example:**
+\`\`\`json
+{
+  "type": "Div", "styles": { "backgroundColor": "#FFFFFF", "borderRadius": "16px", "padding": "32px", "textAlign": "center", "border": "1px solid #E2E8F0" },
+  "children": [
+    { "type": "Div", "styles": { "width": "64px", "height": "64px", "borderRadius": "50%", "backgroundColor": "#F0F9FF", "display": "flex", "alignItems": "center", "justifyContent": "center", "margin": "0 auto 16px" }, "children": [
+      { "type": "Text", "props": { "children": "🫀" }, "styles": { "fontSize": "28px" }}
+    ]},
+    { "type": "Text", "props": { "children": "Cardiology" }, "styles": { "fontWeight": "600", "fontSize": "18px", "color": "#0F172A", "marginBottom": "8px" }},
+    { "type": "Text", "props": { "children": "Comprehensive heart care including diagnostics, treatment, and preventive cardiology services." }, "styles": { "color": "#64748B", "fontSize": "14px", "lineHeight": "1.6" }}
+  ]
+}
+\`\`\`
+
+---
+
+### EDUCATION / LEARNING / COURSES
+Required Sections:
+1. **Navigation**: Logo, Courses dropdown, Instructors, Pricing, "Start Learning" CTA (blue-500 bg)
+2. **Hero**:
+   - Empowering headline ("Master New Skills, Transform Your Career")
+   - Student/learning imagery or illustration
+   - Search bar for courses (optional)
+   - Stats: Students enrolled, Courses available, Expert instructors
+   - Background: #FFFFFF or #F8FAFC
+3. **Featured Courses**: 6-8 course cards with thumbnail, title, instructor, rating, price
+4. **Categories**: 6 category cards (Development, Design, Business, Marketing, Photography, Music)
+5. **How It Works**: 3-step process (Browse Courses → Enroll & Learn → Get Certified)
+6. **Instructors**: 4 instructor cards with photo, name, expertise, course count
+7. **Testimonials**: 3 student success stories
+8. **Pricing/Plans**: Free vs Pro membership comparison (optional)
+9. **CTA**: Start learning or browse courses
+10. **Footer**: Course categories, support links, legal
+
+**Course Card Example:**
+\`\`\`json
+{
+  "type": "Div", "styles": { "backgroundColor": "#FFFFFF", "borderRadius": "12px", "overflow": "hidden", "boxShadow": "0 4px 12px rgba(0,0,0,0.08)" },
+  "children": [
+    { "type": "Image", "props": { "src": "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=225&fit=crop", "alt": "Web Development Course" }, "styles": { "width": "100%", "height": "160px", "objectFit": "cover" }},
+    { "type": "Div", "styles": { "padding": "16px" }, "children": [
+      { "type": "Div", "styles": { "display": "flex", "gap": "8px", "marginBottom": "8px" }, "children": [
+        { "type": "Text", "props": { "children": "Development" }, "styles": { "fontSize": "11px", "backgroundColor": "#DBEAFE", "color": "#2563EB", "padding": "4px 8px", "borderRadius": "4px", "fontWeight": "500" }},
+        { "type": "Text", "props": { "children": "Bestseller" }, "styles": { "fontSize": "11px", "backgroundColor": "#FEF3C7", "color": "#D97706", "padding": "4px 8px", "borderRadius": "4px", "fontWeight": "500" }}
+      ]},
+      { "type": "Text", "props": { "children": "Complete Web Development Bootcamp" }, "styles": { "fontWeight": "600", "fontSize": "16px", "color": "#0F172A", "marginBottom": "8px" }},
+      { "type": "Div", "styles": { "display": "flex", "alignItems": "center", "gap": "8px", "marginBottom": "12px" }, "children": [
+        { "type": "Image", "props": { "src": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=32&h=32&fit=crop&crop=face", "alt": "John Smith" }, "styles": { "width": "24px", "height": "24px", "borderRadius": "50%", "objectFit": "cover" }},
+        { "type": "Text", "props": { "children": "John Smith" }, "styles": { "fontSize": "13px", "color": "#64748B" }}
+      ]},
+      { "type": "Div", "styles": { "display": "flex", "justifyContent": "space-between", "alignItems": "center" }, "children": [
+        { "type": "Div", "styles": { "display": "flex", "alignItems": "center", "gap": "4px" }, "children": [
+          { "type": "Text", "props": { "children": "★ 4.8" }, "styles": { "color": "#F59E0B", "fontSize": "14px", "fontWeight": "600" }},
+          { "type": "Text", "props": { "children": "(2.4k)" }, "styles": { "color": "#94A3B8", "fontSize": "13px" }}
+        ]},
+        { "type": "Text", "props": { "children": "$49.99" }, "styles": { "fontWeight": "700", "fontSize": "18px", "color": "#0F172A" }}
+      ]}
+    ]}
+  ]
+}
+\`\`\`
+
+---
+
+### NONPROFIT / CHARITY / FOUNDATION
+Required Sections:
+1. **Navigation**: Logo, About, Programs, Impact, Get Involved, "Donate" CTA (prominent, pink/emerald bg)
+2. **Hero**:
+   - Emotional, impact-focused headline ("Together, We Can End Hunger")
+   - Powerful imagery of people being helped
+   - Primary "Donate Now" + Secondary "Learn More" CTAs
+   - Quick stats: Lives Impacted, Funds Raised, Active Volunteers
+   - Background: #FFFFFF or emerald gradient
+3. **Mission Statement**: What we do, why it matters, our vision
+4. **Programs/Causes**: 3-4 program cards with image, description, "Learn More" link
+5. **Impact Numbers**: Large statistics section with icons (meals served, families helped, etc.)
+6. **How to Help**: Donate, Volunteer, Fundraise, Share options
+7. **Stories/Testimonials**: 2-3 impact stories with photos of real beneficiaries
+8. **Partners/Sponsors**: Logo bar of corporate supporters
+9. **Donate CTA**: Final prominent donation section with suggested amounts ($25, $50, $100, Custom)
+10. **Footer**: Contact, programs, transparency/financial reports links
+
+**Impact Stats Section Example:**
+\`\`\`json
+{
+  "type": "Section", "styles": { "backgroundColor": "#059669", "padding": "64px 24px" },
+  "children": [{
+    "type": "Container", "styles": { "maxWidth": "1200px", "margin": "0 auto" },
+    "children": [{
+      "type": "Div", "styles": { "display": "grid", "gridTemplateColumns": "repeat(4, 1fr)", "gap": "32px", "textAlign": "center" },
+      "responsiveStyles": { "mobile": { "gridTemplateColumns": "repeat(2, 1fr)" } },
+      "children": [
+        { "type": "Div", "children": [
+          { "type": "Text", "props": { "children": "1M+" }, "styles": { "fontSize": "48px", "fontWeight": "700", "color": "#FFFFFF" }},
+          { "type": "Text", "props": { "children": "Meals Served" }, "styles": { "fontSize": "16px", "color": "rgba(255,255,255,0.9)", "marginTop": "8px" }}
+        ]},
+        { "type": "Div", "children": [
+          { "type": "Text", "props": { "children": "50K+" }, "styles": { "fontSize": "48px", "fontWeight": "700", "color": "#FFFFFF" }},
+          { "type": "Text", "props": { "children": "Families Helped" }, "styles": { "fontSize": "16px", "color": "rgba(255,255,255,0.9)", "marginTop": "8px" }}
+        ]},
+        { "type": "Div", "children": [
+          { "type": "Text", "props": { "children": "200+" }, "styles": { "fontSize": "48px", "fontWeight": "700", "color": "#FFFFFF" }},
+          { "type": "Text", "props": { "children": "Communities" }, "styles": { "fontSize": "16px", "color": "rgba(255,255,255,0.9)", "marginTop": "8px" }}
+        ]},
+        { "type": "Div", "children": [
+          { "type": "Text", "props": { "children": "$10M" }, "styles": { "fontSize": "48px", "fontWeight": "700", "color": "#FFFFFF" }},
+          { "type": "Text", "props": { "children": "Funds Raised" }, "styles": { "fontSize": "16px", "color": "rgba(255,255,255,0.9)", "marginTop": "8px" }}
+        ]}
+      ]
+    }]
+  }]
+}
+\`\`\`
+
+**Donate CTA Section Example:**
+\`\`\`json
+{
+  "type": "Section", "styles": { "backgroundColor": "#F0FDF4", "padding": "80px 24px" },
+  "children": [{
+    "type": "Container", "styles": { "maxWidth": "600px", "margin": "0 auto", "textAlign": "center" },
+    "children": [
+      { "type": "Heading", "props": { "children": "Make a Difference Today", "level": "h2" }, "styles": { "fontSize": "40px", "fontWeight": "700", "color": "#0F172A", "marginBottom": "16px" }},
+      { "type": "Text", "props": { "children": "Your donation helps provide food, shelter, and education to those in need." }, "styles": { "fontSize": "18px", "color": "#475569", "marginBottom": "32px" }},
+      { "type": "Div", "styles": { "display": "flex", "gap": "12px", "justifyContent": "center", "flexWrap": "wrap", "marginBottom": "24px" }, "children": [
+        { "type": "Button", "props": { "children": "$25" }, "styles": { "padding": "16px 32px", "border": "2px solid #059669", "backgroundColor": "transparent", "color": "#059669", "borderRadius": "8px", "fontSize": "18px", "fontWeight": "600" }},
+        { "type": "Button", "props": { "children": "$50" }, "styles": { "padding": "16px 32px", "border": "2px solid #059669", "backgroundColor": "#059669", "color": "#FFFFFF", "borderRadius": "8px", "fontSize": "18px", "fontWeight": "600" }},
+        { "type": "Button", "props": { "children": "$100" }, "styles": { "padding": "16px 32px", "border": "2px solid #059669", "backgroundColor": "transparent", "color": "#059669", "borderRadius": "8px", "fontSize": "18px", "fontWeight": "600" }},
+        { "type": "Button", "props": { "children": "Custom" }, "styles": { "padding": "16px 32px", "border": "2px solid #059669", "backgroundColor": "transparent", "color": "#059669", "borderRadius": "8px", "fontSize": "18px", "fontWeight": "600" }}
+      ]},
+      { "type": "Button", "props": { "children": "Donate Now" }, "styles": { "padding": "18px 48px", "backgroundColor": "#EC4899", "color": "#FFFFFF", "borderRadius": "8px", "border": "none", "fontSize": "18px", "fontWeight": "600" }}
+    ]
+  }]
+}
+\`\`\`
+
+---
+
+### WEDDING / EVENT / CELEBRATION
+Required Sections (for Wedding Website):
+1. **Navigation**: Couple names or monogram, Our Story, Gallery, RSVP, Registry, Accommodations
+2. **Hero**:
+   - Couple names in elegant serif font (48-64px, letterSpacing: 2px)
+   - Wedding date prominently displayed
+   - Beautiful couple photo or venue image
+   - "RSVP Now" CTA
+   - Optional: Countdown timer to event
+   - Background: #FFFBEB (cream) or #FFF1F2 (rose-50)
+3. **Our Story**: How we met, relationship timeline, proposal story
+4. **Event Details**: Ceremony date/time/location, Reception venue, Dress code
+5. **Photo Gallery**: 6-8 couple photos in masonry or grid layout
+6. **Wedding Party**: Bridesmaids and groomsmen cards with photos and roles
+7. **Registry**: Links to gift registries with store logos
+8. **RSVP Form**: Name, email, attendance (Accept/Decline), meal preference, +1 option
+9. **Accommodations**: Hotel recommendations with booking links and room blocks
+10. **Footer**: Couple names, wedding date, hashtag
+
+**For Event Planners (alternative):**
+1. **Hero**: "Creating Unforgettable Moments" with stunning event imagery
+2. **Services**: Wedding, Corporate Events, Birthday Parties, Anniversary Celebrations
+3. **Portfolio**: Past event galleries organized by type
+4. **Pricing Packages**: Bronze, Silver, Gold tiers
+5. **Testimonials**: Client reviews with event photos
+6. **Contact Form**: Event inquiry with date picker
+
+**Wedding Hero Example:**
+\`\`\`json
+{
+  "type": "Section", "styles": { "backgroundColor": "#FFFBEB", "padding": "120px 24px", "textAlign": "center" },
+  "children": [{
+    "type": "Container", "styles": { "maxWidth": "800px", "margin": "0 auto" },
+    "children": [
+      { "type": "Text", "props": { "children": "WE'RE GETTING MARRIED" }, "styles": { "fontSize": "14px", "letterSpacing": "4px", "color": "#A16207", "marginBottom": "24px" }},
+      { "type": "Heading", "props": { "children": "Sarah & James", "level": "h1" }, "styles": { "fontSize": "72px", "fontFamily": "Georgia, serif", "fontWeight": "400", "color": "#1C1917", "marginBottom": "16px", "letterSpacing": "2px" }},
+      { "type": "Text", "props": { "children": "June 15, 2025 • Napa Valley, California" }, "styles": { "fontSize": "20px", "color": "#78716C", "marginBottom": "40px" }},
+      { "type": "Image", "props": { "src": "https://images.unsplash.com/photo-1519741497674-611481863552?w=600&h=400&fit=crop", "alt": "Sarah and James" }, "styles": { "width": "100%", "maxWidth": "500px", "borderRadius": "8px", "margin": "0 auto 40px", "boxShadow": "0 20px 40px rgba(0,0,0,0.1)" }},
+      { "type": "Button", "props": { "children": "RSVP Now" }, "styles": { "backgroundColor": "#BE185D", "color": "#FFFFFF", "padding": "16px 48px", "borderRadius": "0", "border": "none", "fontSize": "14px", "letterSpacing": "2px" }}
+    ]
+  }]
+}
+\`\`\`
+
+**RSVP Form Example:**
+\`\`\`json
+{
+  "type": "Section", "styles": { "backgroundColor": "#FFF1F2", "padding": "80px 24px" },
+  "children": [{
+    "type": "Container", "styles": { "maxWidth": "500px", "margin": "0 auto", "textAlign": "center" },
+    "children": [
+      { "type": "Text", "props": { "children": "Will You Join Us?" }, "styles": { "fontSize": "14px", "letterSpacing": "3px", "color": "#9D174D", "marginBottom": "16px" }},
+      { "type": "Heading", "props": { "children": "RSVP", "level": "h2" }, "styles": { "fontSize": "48px", "fontFamily": "Georgia, serif", "fontWeight": "400", "color": "#1C1917", "marginBottom": "32px" }},
+      { "type": "Div", "styles": { "backgroundColor": "#FFFFFF", "padding": "40px", "borderRadius": "16px", "boxShadow": "0 4px 20px rgba(0,0,0,0.08)", "textAlign": "left" }, "children": [
+        { "type": "Form", "children": [
+          { "type": "InputLabel", "props": { "children": "Your Name" }, "styles": { "marginBottom": "8px", "fontWeight": "500" }},
+          { "type": "TextInput", "props": { "placeholder": "Full Name" }, "styles": { "marginBottom": "20px", "width": "100%", "padding": "14px", "border": "1px solid #E2E8F0", "borderRadius": "8px" }},
+          { "type": "InputLabel", "props": { "children": "Email Address" }, "styles": { "marginBottom": "8px", "fontWeight": "500" }},
+          { "type": "TextInput", "props": { "placeholder": "email@example.com" }, "styles": { "marginBottom": "20px", "width": "100%", "padding": "14px", "border": "1px solid #E2E8F0", "borderRadius": "8px" }},
+          { "type": "InputLabel", "props": { "children": "Will you attend?" }, "styles": { "marginBottom": "8px", "fontWeight": "500" }},
+          { "type": "Select", "props": { "options": ["Joyfully Accept", "Regretfully Decline"] }, "styles": { "marginBottom": "24px", "width": "100%" }},
+          { "type": "FormButton", "props": { "children": "Submit RSVP" }, "styles": { "backgroundColor": "#BE185D", "color": "#FFFFFF", "padding": "16px 32px", "borderRadius": "8px", "border": "none", "fontSize": "16px", "width": "100%", "fontWeight": "600" }}
+        ]}
+      ]}
+    ]
+  }]
+}
+\`\`\`
 `;
 }
 
