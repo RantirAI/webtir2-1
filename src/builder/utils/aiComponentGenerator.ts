@@ -40,6 +40,42 @@ export interface AIResponse {
 
 const generateId = () => Math.random().toString(36).substring(2, 11);
 
+// Fallback image URLs
+const FALLBACK_IMAGES = {
+  default: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=600&fit=crop',
+  profile: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&crop=face',
+  dashboard: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=600&fit=crop',
+  developer: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800&h=600&fit=crop',
+  analytics: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&h=600&fit=crop',
+};
+
+// Sanitize image src - convert placeholders to real URLs
+function sanitizeImageSrc(src: string | undefined, alt?: string): string {
+  if (!src) return FALLBACK_IMAGES.default;
+  
+  // If it's a placeholder string, replace with real URL
+  const srcLower = src.toLowerCase();
+  if (srcLower.includes('placeholder') || src.startsWith('IMAGE_') || srcLower.includes('via.placeholder')) {
+    // Try to determine type from the src or alt text
+    const context = `${srcLower} ${(alt || '').toLowerCase()}`;
+    if (context.includes('profile') || context.includes('headshot') || context.includes('avatar') || context.includes('photo')) {
+      return FALLBACK_IMAGES.profile;
+    }
+    if (context.includes('dashboard') || context.includes('product') || context.includes('screenshot')) {
+      return FALLBACK_IMAGES.dashboard;
+    }
+    if (context.includes('developer') || context.includes('coding') || context.includes('code')) {
+      return FALLBACK_IMAGES.developer;
+    }
+    if (context.includes('analytics') || context.includes('chart') || context.includes('data')) {
+      return FALLBACK_IMAGES.analytics;
+    }
+    return FALLBACK_IMAGES.default;
+  }
+  
+  return src;
+}
+
 // Validate and normalize component spec from AI
 function normalizeComponentSpec(spec: AIComponentSpec): AIComponentSpec {
   const type = spec.type || 'Div';
@@ -49,10 +85,15 @@ function normalizeComponentSpec(spec: AIComponentSpec): AIComponentSpec {
   const validType = componentRegistry[type] ? type : 'Div';
   
   // Merge with defaults, AI props take precedence
-  const normalizedProps = {
+  let normalizedProps = {
     ...meta.defaultProps,
     ...spec.props,
   };
+  
+  // Sanitize image src for Image components
+  if (validType === 'Image' && normalizedProps.src !== undefined) {
+    normalizedProps.src = sanitizeImageSrc(normalizedProps.src as string, normalizedProps.alt as string);
+  }
   
   // Normalize styles - ensure CSS variables are properly formatted
   const normalizedStyles = normalizeStyles({
