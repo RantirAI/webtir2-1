@@ -10,7 +10,7 @@ export interface AIComponentSpec {
     tablet?: Record<string, string>;
     mobile?: Record<string, string>;
   };
-  children?: AIComponentSpec[];
+  children?: AIComponentSpec[] | AIComponentSpec | string;
 }
 
 export interface AIUpdateSpec {
@@ -69,8 +69,26 @@ function normalizeComponentSpec(spec: AIComponentSpec): AIComponentSpec {
     normalizedResponsiveStyles.mobile = normalizeStyles(spec.responsiveStyles.mobile);
   }
   
-  // Recursively normalize children
-  const normalizedChildren = (spec.children || []).map(normalizeComponentSpec);
+  // Recursively normalize children - handle array, single object, or string
+  let normalizedChildren: AIComponentSpec[] = [];
+
+  if (spec.children) {
+    if (Array.isArray(spec.children)) {
+      // Normal case: array of child specs
+      normalizedChildren = spec.children.map(normalizeComponentSpec);
+    } else if (typeof spec.children === 'object' && spec.children !== null) {
+      // Single child object (AI returned object instead of array)
+      normalizedChildren = [normalizeComponentSpec(spec.children as AIComponentSpec)];
+    } else if (typeof spec.children === 'string') {
+      // AI returned a string as children - convert to Text component
+      normalizedChildren = [{
+        type: 'Text',
+        props: { children: spec.children },
+        styles: {},
+        children: [],
+      }];
+    }
+  }
   
   return {
     type: validType,
@@ -211,8 +229,30 @@ function normalizeAIObject(obj: Record<string, unknown>): Record<string, unknown
   if (obj.updates && !Array.isArray(obj.updates) && typeof obj.updates === 'object') {
     obj.updates = [obj.updates];
   }
+
+  // Pre-normalize children in components to handle single objects
+  if (Array.isArray(obj.components)) {
+    obj.components = (obj.components as AIComponentSpec[]).map(comp => normalizeChildrenDeep(comp));
+  }
   
   return obj;
+}
+
+// Recursively normalize children throughout the component tree
+function normalizeChildrenDeep(comp: AIComponentSpec): AIComponentSpec {
+  if (!comp.children) return comp;
+  
+  // Convert single object children to array
+  if (!Array.isArray(comp.children) && typeof comp.children === 'object' && comp.children !== null) {
+    comp.children = [comp.children as AIComponentSpec];
+  }
+  
+  // Recursively process array children
+  if (Array.isArray(comp.children)) {
+    comp.children = comp.children.map(child => normalizeChildrenDeep(child));
+  }
+  
+  return comp;
 }
 
 export function parseAIResponse(text: string): AIResponse | null {
