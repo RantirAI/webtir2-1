@@ -650,8 +650,8 @@ export const StylePanel: React.FC<StylePanelProps> = ({
   }, [selectedInstance?.id, computedStyles.backgroundColor, computedStyles.backgroundGradient, computedStyles.backgroundImage, computedStyles.backgroundSize, computedStyles.backgroundPosition, computedStyles.backgroundRepeat]);
 
   // Handle background layers change
-  const handleBackgroundLayersChange = (layers: BackgroundLayerItem[]) => {
-    setBackgroundLayers(layers);
+  const handleBackgroundLayersChange = (newLayers: BackgroundLayerItem[]) => {
+    setBackgroundLayers(newLayers);
     
     // Reset all background properties first
     updateStyle("backgroundColor", "");
@@ -661,23 +661,46 @@ export const StylePanel: React.FC<StylePanelProps> = ({
     updateStyle("backgroundPosition", "");
     updateStyle("backgroundRepeat", "");
     
-    // Apply layers in order (CSS renders bottom to top, but we apply in array order)
-    layers.forEach((layer) => {
+    // Compose all layers into CSS background-image format
+    // CSS layers are rendered top-to-bottom (first in array = topmost layer)
+    const bgImages: string[] = [];
+    const bgSizes: string[] = [];
+    const bgPositions: string[] = [];
+    const bgRepeats: string[] = [];
+    
+    newLayers.forEach((layer) => {
+      if (!layer.value) return;
+      
       switch (layer.type) {
         case 'fill':
-          updateStyle("backgroundColor", layer.value);
+          // Convert solid color to gradient for layering
+          bgImages.push(`linear-gradient(${layer.value}, ${layer.value})`);
+          bgSizes.push('100% 100%');
+          bgPositions.push('center');
+          bgRepeats.push('no-repeat');
           break;
         case 'gradient':
-          updateStyle("backgroundGradient", layer.value);
+          bgImages.push(layer.value);
+          bgSizes.push('100% 100%');
+          bgPositions.push('center');
+          bgRepeats.push('no-repeat');
           break;
         case 'media':
-          updateStyle("backgroundImage", layer.value);
-          if (layer.size) updateStyle("backgroundSize", layer.size);
-          if (layer.position) updateStyle("backgroundPosition", layer.position);
-          if (layer.repeat) updateStyle("backgroundRepeat", layer.repeat);
+          bgImages.push(layer.value);
+          bgSizes.push(layer.size || 'cover');
+          bgPositions.push(layer.position || 'center');
+          bgRepeats.push(layer.repeat || 'no-repeat');
           break;
       }
     });
+    
+    // Apply as combined background-image (all layers in one property)
+    if (bgImages.length > 0) {
+      updateStyle("backgroundImage", bgImages.join(', '));
+      updateStyle("backgroundSize", bgSizes.join(', '));
+      updateStyle("backgroundPosition", bgPositions.join(', '));
+      updateStyle("backgroundRepeat", bgRepeats.join(', '));
+    }
   };
 
   const handlePageClick = (page: string) => {
