@@ -4,6 +4,50 @@ import { useStyleStore } from '../store/useStyleStore';
 import { componentRegistry } from '../primitives/registry';
 import { compileMetadataToCSS } from './cssCompiler';
 
+// List of Google Fonts that can be loaded
+const GOOGLE_FONT_NAMES = [
+  'Inter', 'Roboto', 'Open Sans', 'Lato', 'Montserrat', 'Poppins',
+  'Playfair Display', 'Raleway', 'Merriweather', 'Source Sans Pro',
+  'Nunito', 'Ubuntu', 'Oswald', 'PT Sans', 'Work Sans', 'Instrument Sans',
+  'Figtree', 'Manrope', 'Plus Jakarta Sans', 'DM Sans', 'Space Grotesk',
+  'Outfit', 'Sora', 'Rubik', 'Urbanist', 'Lexend', 'Onest', 'Geist',
+  'Albert Sans', 'Red Hat Display', 'Bebas Neue', 'Caveat', 'Quicksand',
+  'Noto Sans', 'Noto Serif', 'Fira Sans', 'Barlow', 'IBM Plex Sans',
+  'IBM Plex Serif', 'Josefin Sans', 'Crimson Text', 'Libre Baskerville'
+];
+
+// Extract used Google Fonts from all styles
+export function extractUsedFonts(): string[] {
+  const { styles } = useStyleStore.getState();
+  const usedFonts = new Set<string>();
+  
+  // Scan all styles for fontFamily properties
+  Object.entries(styles).forEach(([key, value]) => {
+    if (key.includes(':fontFamily') || key.includes(':font-family')) {
+      // Extract font name from value like '"Poppins", sans-serif' or 'Poppins, sans-serif'
+      const fontMatch = value.match(/["']?([^"',]+)["']?/);
+      if (fontMatch) {
+        const fontName = fontMatch[1].trim();
+        if (GOOGLE_FONT_NAMES.includes(fontName)) {
+          usedFonts.add(fontName);
+        }
+      }
+    }
+  });
+  
+  return Array.from(usedFonts);
+}
+
+// Generate Google Fonts link tag for the given fonts
+export function generateGoogleFontsLink(fonts: string[]): string {
+  if (fonts.length === 0) return '';
+  
+  const families = fonts.map(f => 
+    `family=${f.replace(/ /g, '+')}:wght@400;500;600;700`
+  ).join('&');
+  
+  return `<link href="https://fonts.googleapis.com/css2?${families}&display=swap" rel="stylesheet">`;
+}
 // Map custom property names to valid CSS property names
 const propertyAliases: Record<string, string> = {
   backgroundGradient: 'background-image',
