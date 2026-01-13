@@ -776,13 +776,33 @@ export const MediaPanel: React.FC = () => {
             </div>
           )}
           
-          <DialogFooter>
-            <Button variant="outline" size="sm" onClick={() => setDetailAsset(null)}>
-              Cancel
+          <DialogFooter className="flex-row gap-2 sm:justify-between">
+            <Button 
+              variant="destructive" 
+              size="sm" 
+              className="gap-1"
+              onClick={() => {
+                if (detailAsset) {
+                  removeAssets([detailAsset.id]);
+                  setDetailAsset(null);
+                  toast({ 
+                    title: 'Asset Deleted', 
+                    description: `Removed ${detailAsset.name}` 
+                  });
+                }
+              }}
+            >
+              <Trash2 className="w-3 h-3" />
+              Delete
             </Button>
-            <Button size="sm" onClick={saveAltText}>
-              Save
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={() => setDetailAsset(null)}>
+                Cancel
+              </Button>
+              <Button size="sm" onClick={saveAltText}>
+                Save
+              </Button>
+            </div>
           </DialogFooter>
         </DialogContent>
       </Dialog>
