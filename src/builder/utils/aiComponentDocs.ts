@@ -1441,21 +1441,11 @@ Required Sections (for Wedding Website):
 `;
 }
 
+// Optimized: Return only essential context to prevent prompt size issues
 export function buildAIContext(): string {
   return [
     generateComponentDocs(),
-    generateIndustryDesignSystems(), // Industry-specific visual languages
-    generateIndustryBlueprints(),
-    generateHeroGuidelines(),
-    generateImageGuidelines(),
-    generateContentGuidelines(),
-    generateVisualHierarchyGuidelines(),
     generateColorPalettes(),
     generateDesignTokens(),
-    generateSpacingGuidelines(),
-    generateResponsiveGuidelines(),
-    generateLayoutGuidelines(),
-    generateCSSReference(),
-    generatePrebuiltExamples(),
   ].join('\n\n');
 }
