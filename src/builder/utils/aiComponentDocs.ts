@@ -498,10 +498,164 @@ NEVER use the same background for consecutive sections. Create VISUAL RHYTHM.
 `;
 }
 
-// Build complete AI context
+
+// Generate hero section guidelines
+export function generateHeroGuidelines(): string {
+  return `## Hero Section Guidelines (CRITICAL)
+
+### Hero sections MUST be detailed and visually rich - NOT just heading + text + button
+
+#### Required Elements (minimum 4):
+| Element | Description | Example |
+|---------|-------------|---------|
+| Badge/Label | Small tag above headline | "✨ New Feature", "v2.0 Released", "Trusted by 10k+" |
+| Headline (H1) | Main headline, 5-10 words | "Build Stunning Websites in Minutes" |
+| Subheadline | Supporting text, 15-25 words | "Our drag-and-drop builder..." |
+| CTA Buttons | 1-2 action buttons | "Get Started Free", "Watch Demo →" |
+
+#### Recommended Additional Elements (include 2-3):
+| Element | When to Include |
+|---------|----------------|
+| Hero Image/Screenshot | ALWAYS for product/SaaS sites |
+| Stats Row | "10k+ users", "99.9% uptime", "4.9★ rating" |
+| Trust Logos | SaaS, Enterprise, B2B sites |
+| Social Proof | "Join 50,000+ professionals" |
+| Feature Pills | Small tags showing key features |
+
+#### Hero Layout Patterns
+
+**1. Split Layout (RECOMMENDED for products):**
+Left side: Badge → Headline → Subheadline → Buttons → Stats row
+Right side: Product screenshot or illustration
+Use: gridTemplateColumns: "1fr 1fr", gap: "48px"
+
+**2. Centered Layout:**
+Badge → Headline → Subheadline → Buttons (all centered)
+Stats row or trust logos below
+Hero image below content
+
+#### Hero Image Requirements
+- Product sites: Show dashboard, app UI, or interface screenshot
+- Use Unsplash URLs for realistic images
+- Add boxShadow and borderRadius for polish
+
+#### Example Hero with Badge + Stats + Image
+{
+  "type": "Section",
+  "styles": { "background": "linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)", "padding": "100px 24px" },
+  "children": [
+    {
+      "type": "Container",
+      "styles": { "display": "grid", "gridTemplateColumns": "1fr 1fr", "gap": "48px", "alignItems": "center", "maxWidth": "1200px", "margin": "0 auto" },
+      "responsiveStyles": { "mobile": { "gridTemplateColumns": "1fr" } },
+      "children": [
+        {
+          "type": "Div",
+          "styles": { "display": "flex", "flexDirection": "column", "gap": "24px" },
+          "children": [
+            { "type": "Div", "styles": { "display": "inline-flex", "backgroundColor": "rgba(255,255,255,0.2)", "padding": "8px 16px", "borderRadius": "999px", "width": "fit-content" }, 
+              "children": [{ "type": "Text", "props": { "children": "✨ Now with AI Features" }, "styles": { "color": "#FFFFFF", "fontSize": "14px", "fontWeight": "500" }}]
+            },
+            { "type": "Heading", "props": { "children": "Build Websites 10x Faster", "level": "h1" }, "styles": { "color": "#FFFFFF", "fontSize": "56px", "fontWeight": "800", "lineHeight": "1.1" }},
+            { "type": "Text", "props": { "children": "The visual builder that turns your ideas into production-ready websites in minutes, not weeks." }, "styles": { "color": "rgba(255,255,255,0.9)", "fontSize": "20px", "lineHeight": "1.6" }},
+            { "type": "Div", "styles": { "display": "flex", "gap": "16px", "flexWrap": "wrap" },
+              "children": [
+                { "type": "Button", "props": { "children": "Start Free Trial" }, "styles": { "backgroundColor": "#FFFFFF", "color": "#6366F1", "padding": "16px 32px", "borderRadius": "8px", "fontWeight": "600" }},
+                { "type": "Button", "props": { "children": "Watch Demo →" }, "styles": { "backgroundColor": "transparent", "color": "#FFFFFF", "border": "2px solid rgba(255,255,255,0.3)", "padding": "16px 32px", "borderRadius": "8px" }}
+              ]
+            },
+            { "type": "Div", "styles": { "display": "flex", "gap": "32px", "marginTop": "16px" },
+              "children": [
+                { "type": "Div", "children": [
+                  { "type": "Text", "props": { "children": "10,000+" }, "styles": { "color": "#FFFFFF", "fontSize": "24px", "fontWeight": "700" }},
+                  { "type": "Text", "props": { "children": "Active Users" }, "styles": { "color": "rgba(255,255,255,0.7)", "fontSize": "14px" }}
+                ]},
+                { "type": "Div", "children": [
+                  { "type": "Text", "props": { "children": "99.9%" }, "styles": { "color": "#FFFFFF", "fontSize": "24px", "fontWeight": "700" }},
+                  { "type": "Text", "props": { "children": "Uptime" }, "styles": { "color": "rgba(255,255,255,0.7)", "fontSize": "14px" }}
+                ]},
+                { "type": "Div", "children": [
+                  { "type": "Text", "props": { "children": "4.9★" }, "styles": { "color": "#FFFFFF", "fontSize": "24px", "fontWeight": "700" }},
+                  { "type": "Text", "props": { "children": "Rating" }, "styles": { "color": "rgba(255,255,255,0.7)", "fontSize": "14px" }}
+                ]}
+              ]
+            }
+          ]
+        },
+        {
+          "type": "Image",
+          "props": { "src": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=600&fit=crop", "alt": "Product Dashboard" },
+          "styles": { "width": "100%", "borderRadius": "16px", "boxShadow": "0 25px 50px rgba(0,0,0,0.25)" }
+        }
+      ]
+    }
+  ]
+}
+`;
+}
+
+// Generate image guidelines for profile pics and hero images
+export function generateImageGuidelines(): string {
+  return `## Auto-Generated Images (CRITICAL)
+
+### ALWAYS Include Images in These Sections:
+| Section | Image Type | Required |
+|---------|------------|----------|
+| Testimonials | Profile photos | YES - one per review |
+| Team | Team member photos | YES - one per member |
+| Hero | Product screenshot/illustration | YES for product sites |
+| About | Company/team photos | Recommended |
+
+### Profile Image URLs (Use These for Testimonials & Team)
+Diverse, high-quality Unsplash profile photos:
+
+**Women:**
+- https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&crop=face
+- https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face
+- https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop&crop=face
+- https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&h=150&fit=crop&crop=face
+- https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=150&h=150&fit=crop&crop=face
+
+**Men:**
+- https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face
+- https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face
+- https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face
+- https://images.unsplash.com/photo-1560250097-0b93528c311a?w=150&h=150&fit=crop&crop=face
+- https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150&h=150&fit=crop&crop=face
+
+### Hero/Product Image URLs
+- https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=600&fit=crop (dashboard)
+- https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&h=600&fit=crop (analytics)
+- https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=800&h=600&fit=crop (coding)
+- https://images.unsplash.com/photo-1531297484001-80022131f5a1?w=800&h=600&fit=crop (tech)
+
+### Example Testimonial WITH Profile Image
+{
+  "type": "Div",
+  "styles": { "backgroundColor": "#FFFFFF", "padding": "32px", "borderRadius": "16px", "boxShadow": "0 4px 20px rgba(0,0,0,0.08)" },
+  "children": [
+    { "type": "Image", 
+      "props": { "src": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&crop=face", "alt": "Sarah Chen" },
+      "styles": { "width": "64px", "height": "64px", "borderRadius": "50%", "marginBottom": "16px", "objectFit": "cover" }
+    },
+    { "type": "Text", "props": { "children": "Since implementing this platform, our team productivity increased by 40%. The intuitive interface meant zero training time." }, "styles": { "fontSize": "16px", "lineHeight": "1.7", "color": "#334155", "marginBottom": "16px" }},
+    { "type": "Text", "props": { "children": "Sarah Chen" }, "styles": { "fontWeight": "600", "color": "#0F172A" }},
+    { "type": "Text", "props": { "children": "VP of Operations, TechFlow" }, "styles": { "fontSize": "14px", "color": "#64748B" }}
+  ]
+}
+
+### Image Styling Rules
+- Profile photos: width/height 48-80px, borderRadius: 50%, objectFit: cover
+- Hero images: width: 100%, borderRadius: 12-16px, boxShadow for depth
+- Always include meaningful alt text
+`;
+}
+
 export function buildAIContext(): string {
   return [
     generateComponentDocs(),
+    generateHeroGuidelines(),
+    generateImageGuidelines(),
     generateContentGuidelines(),
     generateVisualHierarchyGuidelines(),
     generateColorPalettes(),
