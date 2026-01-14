@@ -255,12 +255,12 @@ export const LockedCodeEditor: React.FC<LockedCodeEditorProps> = ({
       )}
 
       {/* Editor */}
-      <div className="flex-1 relative flex">
+      <div className="flex-1 relative flex overflow-hidden">
         {/* Line Numbers with Lock Indicators */}
         <div
           ref={lineNumbersRef}
-          className="w-12 flex-shrink-0 bg-muted/20 border-r border-border overflow-hidden select-none"
-          style={{ paddingTop: '1rem' }}
+          className="w-12 flex-shrink-0 bg-muted/20 border-r border-border select-none"
+          style={{ paddingTop: '1rem', overflowY: 'hidden', overflowX: 'hidden' }}
         >
           {lineNumbers.map(({ number, isLocked, isEditable }) => (
             <div
@@ -278,15 +278,17 @@ export const LockedCodeEditor: React.FC<LockedCodeEditorProps> = ({
         </div>
 
         {/* Code Area */}
-        <div className="flex-1 relative overflow-hidden">
+        <div className="flex-1 relative">
           {/* Syntax Highlighted Display */}
           <pre
             ref={preRef}
-            className="absolute inset-0 p-4 m-0 pointer-events-none overflow-auto font-mono text-sm leading-6 bg-transparent"
+            className="absolute inset-0 p-4 m-0 pointer-events-none font-mono text-sm leading-6 bg-transparent"
             style={{
               tabSize: 2,
               whiteSpace: 'pre',
               wordWrap: 'normal',
+              overflowY: 'auto',
+              overflowX: 'auto',
             }}
           />
 
@@ -329,6 +331,8 @@ export const LockedCodeEditor: React.FC<LockedCodeEditorProps> = ({
               tabSize: 2,
               whiteSpace: 'pre',
               wordWrap: 'normal',
+              overflowY: 'auto',
+              overflowX: 'auto',
               caretColor: isCursorInLockedRegion ? 'transparent' : 'hsl(var(--foreground))',
             }}
           />
