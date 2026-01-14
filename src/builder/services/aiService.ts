@@ -500,7 +500,7 @@ async function streamOpenAI({
     model,
     messages,
     stream: true,
-    max_tokens: 32768, // Increased to 32k to prevent truncation on full pages
+    max_tokens: 16384, // Max supported by gpt-4o
   };
 
   // Enable JSON mode for build requests (OpenAI API feature)
