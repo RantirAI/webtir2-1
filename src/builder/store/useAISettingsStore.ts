@@ -16,20 +16,22 @@ export const AI_PROVIDERS: AIProviderConfig[] = [
     name: 'OpenAI',
     baseUrl: 'https://api.openai.com/v1/chat/completions',
     models: [
+      // GPT-5 family - 128K output (BEST for full pages)
+      'gpt-5.2',
       'gpt-5',
-      'gpt-5-mini', 
+      'gpt-5-mini',
       'gpt-5-nano',
+      // Reasoning models - 100K output
       'o3',
       'o3-mini',
       'o4-mini',
+      // GPT-4.1 - 32K output
       'gpt-4.1',
       'gpt-4.1-mini',
       'gpt-4.1-nano',
+      // GPT-4o - 16K output
       'gpt-4o',
       'gpt-4o-mini',
-      'gpt-4-turbo',
-      'codex-davinci-002',
-      'codex-cushman-002',
     ],
   },
   {
@@ -37,11 +39,15 @@ export const AI_PROVIDERS: AIProviderConfig[] = [
     name: 'Anthropic',
     baseUrl: 'https://api.anthropic.com/v1/messages',
     models: [
+      // Claude 4.5 - 64K output (newest)
+      'claude-opus-4-5-20251101',
+      'claude-sonnet-4-5-20250929',
+      // Claude 4 - 32K output
       'claude-sonnet-4-20250514',
       'claude-opus-4-20250514',
+      // Claude 3.5/3 legacy
       'claude-3-5-sonnet-20241022',
       'claude-3-opus-20240229',
-      'claude-3-haiku-20240307',
     ],
   },
   {
@@ -49,11 +55,10 @@ export const AI_PROVIDERS: AIProviderConfig[] = [
     name: 'Google Gemini',
     baseUrl: 'https://generativelanguage.googleapis.com/v1beta/models',
     models: [
+      // Gemini 2.5 - 65K output
       'gemini-2.5-pro',
       'gemini-2.5-flash',
       'gemini-2.0-flash',
-      'gemini-1.5-pro',
-      'gemini-1.5-flash',
     ],
   },
   {
@@ -88,7 +93,7 @@ export const useAISettingsStore = create<AISettingsStore>()(
     (set, get) => ({
       provider: 'openai',
       apiKey: '',
-      model: 'gpt-4o',
+      model: 'gpt-5',
       customEndpoint: '',
       customModel: '',
       lastChatMode: 'build',
@@ -128,7 +133,7 @@ export const useAISettingsStore = create<AISettingsStore>()(
         set({
           provider: 'openai',
           apiKey: '',
-          model: 'gpt-4o',
+          model: 'gpt-5',
           customEndpoint: '',
           customModel: '',
           lastChatMode: 'build',

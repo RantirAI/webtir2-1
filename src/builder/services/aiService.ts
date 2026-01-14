@@ -1,6 +1,49 @@
 import { AIProvider, AI_PROVIDERS } from '../store/useAISettingsStore';
 import { buildAIContext } from '../utils/aiComponentDocs';
 
+// Model-specific max output tokens mapping
+const MODEL_MAX_TOKENS: Record<string, number> = {
+  // GPT-5 family - 128K max output
+  'gpt-5': 128000,
+  'gpt-5.2': 128000,
+  'gpt-5-mini': 128000,
+  'gpt-5-nano': 128000,
+  
+  // Reasoning models - 100K max output
+  'o3': 100000,
+  'o3-mini': 100000,
+  'o4-mini': 100000,
+  
+  // GPT-4.1 - 32K max output
+  'gpt-4.1': 32768,
+  'gpt-4.1-mini': 32768,
+  'gpt-4.1-nano': 32768,
+  
+  // GPT-4o - 16K max output
+  'gpt-4o': 16384,
+  'gpt-4o-mini': 16384,
+  
+  // Claude 4.5 - 64K max output
+  'claude-opus-4-5-20251101': 64000,
+  'claude-sonnet-4-5-20250929': 32000,
+  
+  // Claude 4 - 32K max output
+  'claude-sonnet-4-20250514': 32000,
+  'claude-opus-4-20250514': 32000,
+  'claude-3-5-sonnet-20241022': 8192,
+  'claude-3-opus-20240229': 4096,
+  
+  // Gemini 2.5 - 65K max output
+  'gemini-2.5-pro': 65535,
+  'gemini-2.5-flash': 65535,
+  'gemini-2.0-flash': 65535,
+};
+
+// Helper to get max tokens for a model
+export const getModelMaxTokens = (model: string): number => {
+  return MODEL_MAX_TOKENS[model] || 16384; // Default fallback
+};
+
 export interface AIMessage {
   role: 'user' | 'assistant' | 'system';
   content: string;
@@ -496,11 +539,13 @@ async function streamOpenAI({
   onDelta: (text: string) => void;
   onDone: () => void;
 }) {
+  const maxTokens = getModelMaxTokens(model);
+  
   const body: Record<string, unknown> = {
     model,
     messages,
     stream: true,
-    max_tokens: 16384, // Max supported by gpt-4o
+    max_tokens: maxTokens,
   };
 
   // Enable JSON mode for build requests (OpenAI API feature)
@@ -552,7 +597,7 @@ async function streamAnthropic({
     },
     body: JSON.stringify({
       model,
-      max_tokens: 16384, // Increased to 16k to prevent truncation on full pages
+      max_tokens: getModelMaxTokens(model),
       system: systemMessage,
       messages: chatMessages.map((m) => ({
         role: m.role,
@@ -604,7 +649,7 @@ async function streamGemini({
         contents,
         systemInstruction: systemInstruction ? { parts: [{ text: systemInstruction }] } : undefined,
         generationConfig: {
-          maxOutputTokens: 16384, // Increased to 16k to prevent truncation on full pages
+          maxOutputTokens: getModelMaxTokens(model),
         },
       }),
     }
