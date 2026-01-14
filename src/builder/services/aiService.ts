@@ -29,6 +29,18 @@ For UPDATE (modifying existing):
 For IMAGE (generating images):
 {"action":"generate-image","imageSpec":{"prompt":"...","type":"logo"},"message":"..."}
 
+### OUTPUT COMPLETENESS (CRITICAL - PREVENT TRUNCATION)
+
+Your JSON MUST be complete and valid. NEVER truncate your response.
+- Every opening { must have a closing }
+- Every opening [ must have a closing ]
+- If a page has many sections (>5), prioritize quality over quantity
+- ALWAYS complete the current component/section before ending
+- End with a valid JSON that can be parsed, including the closing "message" field
+
+If you cannot fit all sections, output what you CAN complete fully:
+{"action":"create","components":[/* complete components only */],"message":"Page created. Some sections may need to be added separately."}
+
 ---
 
 ## Design Philosophy

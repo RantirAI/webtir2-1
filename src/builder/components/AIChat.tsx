@@ -354,9 +354,10 @@ When user says "change the heading color" or "update the button text", find the 
               const getSemanticClassName = (componentType: string, label?: string): string => {
                 // Generate semantic name based on component type (e.g., "section-1", "heading-2")
                 const name = getNextAutoClassName(componentType);
-                // IMMEDIATELY create the style source so subsequent calls see it and avoid duplicates
-                createStyleSourceFn('local', name);
-                return name;
+                // IMMEDIATELY create the style source and return the ACTUAL ID used
+                // This is critical: createStyleSource may return a different ID if there's a collision
+                const actualId = createStyleSourceFn('local', name);
+                return actualId;
               };
               
               for (const componentSpec of parsed.components) {

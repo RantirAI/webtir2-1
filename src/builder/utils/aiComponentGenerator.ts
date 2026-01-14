@@ -307,6 +307,25 @@ function normalizeChildrenDeep(comp: AIComponentSpec): AIComponentSpec {
   return comp;
 }
 
+// Validate that a component spec is complete (not truncated)
+function isCompleteComponentSpec(spec: AIComponentSpec): boolean {
+  // Must have a type
+  if (!spec.type || typeof spec.type !== 'string') return false;
+  
+  // If it has children, validate they're complete too
+  if (spec.children && Array.isArray(spec.children)) {
+    for (const child of spec.children) {
+      if (typeof child === 'object' && child !== null) {
+        if (!isCompleteComponentSpec(child as AIComponentSpec)) {
+          return false;
+        }
+      }
+    }
+  }
+  
+  return true;
+}
+
 export function parseAIResponse(text: string): AIResponse | null {
   const jsonStr = extractJSON(text);
   
@@ -335,7 +354,25 @@ export function parseAIResponse(text: string): AIResponse | null {
     if (action === 'create') {
       const components = parsed.components as AIComponentSpec[] | undefined;
       if (components && Array.isArray(components) && components.length > 0) {
-        const normalizedComponents = components.map(normalizeComponentSpec);
+        // Filter out incomplete/truncated components and warn
+        const validComponents = components.filter(comp => {
+          const isComplete = isCompleteComponentSpec(comp);
+          if (!isComplete) {
+            console.warn('Filtering out incomplete component:', comp.type || 'unknown');
+          }
+          return isComplete;
+        });
+        
+        if (validComponents.length < components.length) {
+          console.warn(`${components.length - validComponents.length} components were truncated and filtered out`);
+        }
+        
+        if (validComponents.length === 0) {
+          console.error('All components were truncated - AI response incomplete');
+          return null;
+        }
+        
+        const normalizedComponents = validComponents.map(normalizeComponentSpec);
         return {
           action: 'create',
           components: normalizedComponents,
