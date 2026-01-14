@@ -349,6 +349,13 @@ When user says "change the heading color" or "update the button text", find the 
                 detail: `Found ${parsed.components.length} component${parsed.components.length > 1 ? 's' : ''} to create`,
               });
               
+              // Create semantic class name generator using style store
+              const { getNextAutoClassName } = useStyleStore.getState();
+              const getSemanticClassName = (componentType: string, label?: string): string => {
+                // Generate semantic name based on component type (e.g., "section-1", "heading-2")
+                return getNextAutoClassName(componentType);
+              };
+              
               for (const componentSpec of parsed.components) {
                 try {
                   // Add step for creating this component
@@ -358,7 +365,11 @@ When user says "change the heading color" or "update the button text", find the 
                     target: componentSpec.label || componentSpec.type,
                   });
                   
-                  const { instances, styleSources: newStyleSources, rootInstanceId } = flattenInstances(componentSpec, 'root');
+                  const { instances, styleSources: newStyleSources, rootInstanceId } = flattenInstances(
+                    componentSpec, 
+                    'root',
+                    getSemanticClassName
+                  );
                   console.log('Flattened instances:', instances.length, 'Root ID:', rootInstanceId);
 
                   // Add step for applying styles
