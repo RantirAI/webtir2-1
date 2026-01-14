@@ -58,8 +58,12 @@ export const BuildSummaryCard: React.FC<BuildSummaryCardProps> = ({ summary }) =
     return step.description;
   };
 
+  // Safely handle potentially undefined arrays (for backwards compatibility)
+  const steps = summary.steps || [];
+  const edits = summary.edits || [];
+
   // Combine edits and steps for the collapsible section
-  const totalItems = summary.edits.length + summary.steps.length;
+  const totalItems = edits.length + steps.length;
 
   return (
     <div className="rounded-lg bg-background/80 border border-border/50 overflow-hidden">
@@ -83,7 +87,7 @@ export const BuildSummaryCard: React.FC<BuildSummaryCardProps> = ({ summary }) =
                   <ChevronRight className="w-3 h-3 text-muted-foreground" />
                 )}
                 <span className="font-medium text-[9px]">
-                  {summary.edits.length} edit{summary.edits.length !== 1 ? 's' : ''} made
+                  {edits.length} edit{edits.length !== 1 ? 's' : ''} made
                 </span>
               </div>
               <span className="text-muted-foreground text-[8px]">
@@ -94,7 +98,7 @@ export const BuildSummaryCard: React.FC<BuildSummaryCardProps> = ({ summary }) =
           <CollapsibleContent>
             <div className="px-3 py-2 space-y-1 border-b border-border/30">
               {/* Show steps first */}
-              {summary.steps.map((step, index) => (
+              {steps.map((step, index) => (
                 <div
                   key={`step-${index}`}
                   className="flex items-start gap-1.5 py-0.5 px-1.5 rounded bg-muted/30 text-[9px]"
@@ -111,7 +115,7 @@ export const BuildSummaryCard: React.FC<BuildSummaryCardProps> = ({ summary }) =
               ))}
               
               {/* Then show edits */}
-              {summary.edits.map((edit, index) => (
+              {edits.map((edit, index) => (
                 <div
                   key={`edit-${index}`}
                   className="flex items-center gap-1.5 py-0.5 px-1.5 rounded bg-muted/30 text-[9px]"
