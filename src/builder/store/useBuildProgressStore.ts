@@ -6,9 +6,18 @@ export interface BuildEdit {
   action: 'created' | 'updated' | 'deleted';
 }
 
+export interface BuildStep {
+  type: 'analyzing' | 'reading' | 'creating' | 'styling' | 'generating';
+  description: string;
+  detail?: string;
+  target?: string;
+  completed: boolean;
+}
+
 export interface BuildSummary {
   duration: number;
   edits: BuildEdit[];
+  steps: BuildStep[];
   taskTitle: string;
   message: string;
 }
@@ -19,6 +28,7 @@ interface BuildProgressState {
   taskTitle: string;
   taskDescription: string;
   edits: BuildEdit[];
+  steps: BuildStep[];
   // Completed build summary for display
   lastBuildSummary: BuildSummary | null;
 }
@@ -27,6 +37,8 @@ interface BuildProgressActions {
   startBuild: (taskTitle: string) => void;
   setTaskDescription: (description: string) => void;
   addEdit: (edit: BuildEdit) => void;
+  addStep: (step: Omit<BuildStep, 'completed'>) => void;
+  completeLastStep: () => void;
   finishBuild: () => BuildSummary;
   reset: () => void;
   clearLastSummary: () => void;
@@ -41,6 +53,7 @@ export const useBuildProgressStore = create<BuildProgressStore>((set, get) => ({
   taskTitle: '',
   taskDescription: '',
   edits: [],
+  steps: [],
   lastBuildSummary: null,
 
   // Actions
@@ -50,6 +63,12 @@ export const useBuildProgressStore = create<BuildProgressStore>((set, get) => ({
     taskTitle,
     taskDescription: 'Analyzing request...',
     edits: [],
+    steps: [{
+      type: 'analyzing',
+      description: 'Analyzing your request',
+      detail: 'Understanding what to build...',
+      completed: false,
+    }],
     lastBuildSummary: null,
   }),
 
@@ -61,12 +80,34 @@ export const useBuildProgressStore = create<BuildProgressStore>((set, get) => ({
     edits: [...state.edits, edit],
   })),
 
+  addStep: (step: Omit<BuildStep, 'completed'>) => set((state) => {
+    // Complete the previous step if it exists
+    const updatedSteps = state.steps.map((s, i) => 
+      i === state.steps.length - 1 ? { ...s, completed: true } : s
+    );
+    return {
+      steps: [...updatedSteps, { ...step, completed: false }],
+      taskDescription: step.description,
+    };
+  }),
+
+  completeLastStep: () => set((state) => ({
+    steps: state.steps.map((s, i) => 
+      i === state.steps.length - 1 ? { ...s, completed: true } : s
+    ),
+  })),
+
   finishBuild: () => {
     const state = get();
     const duration = state.startTime ? Math.floor((Date.now() - state.startTime) / 1000) : 0;
+    
+    // Complete all steps
+    const completedSteps = state.steps.map(s => ({ ...s, completed: true }));
+    
     const summary: BuildSummary = {
       duration,
       edits: [...state.edits],
+      steps: completedSteps,
       taskTitle: state.taskTitle,
       message: '', // Will be set by AIChat when adding the message
     };
@@ -74,6 +115,7 @@ export const useBuildProgressStore = create<BuildProgressStore>((set, get) => ({
     set({
       isBuilding: false,
       taskDescription: 'Complete',
+      steps: completedSteps,
       lastBuildSummary: summary,
     });
     
@@ -86,6 +128,7 @@ export const useBuildProgressStore = create<BuildProgressStore>((set, get) => ({
     taskTitle: '',
     taskDescription: '',
     edits: [],
+    steps: [],
     lastBuildSummary: null,
   }),
 
