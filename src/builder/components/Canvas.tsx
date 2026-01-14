@@ -886,7 +886,12 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
       }
 
       case 'Accordion': {
-        const items = instance.props?.items || [];
+        // Check for children-based structure first (AccordionItem children)
+        const childItems = instance.children.filter(c => c.type === 'AccordionItem');
+        const hasChildItems = childItems.length > 0;
+        
+        // Use children if available, otherwise fall back to data-driven items
+        const items = hasChildItems ? [] : (instance.props?.items || []);
         const accordionStyles = instance.props?.accordionStyles || {};
         const collapseMode = accordionStyles.collapseMode || 'single';
         const orientation = accordionStyles.orientation || 'vertical';
@@ -956,7 +961,18 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
 
         // In preview mode, render a fully interactive accordion using the shadcn/Radix component
         if (isPreviewMode) {
-          const defaultOpenValues = items
+          // Combine data items and child items for preview
+          const allItems = hasChildItems 
+            ? childItems.map((child, index) => ({
+                id: child.id,
+                title: child.props?.title || `Item ${index + 1}`,
+                content: child.children.length > 0 ? child : (child.props?.content || 'Content'),
+                defaultOpen: child.props?.defaultOpen || false,
+                isChildBased: true,
+              }))
+            : items;
+            
+          const defaultOpenValues = allItems
             .filter((item: any) => item.defaultOpen)
             .map((item: any, index: number) => String(item.id ?? `item-${index}`));
 
@@ -976,7 +992,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
                 className={`w-full accordion-items-container`}
                 {...(collapseMode === 'single' ? { collapsible: true } : {})}
               >
-                {items.map((item: any, index: number) => {
+                {allItems.map((item: any, index: number) => {
                   const value = String(item.id ?? `item-${index}`);
                   return (
                     <AccordionItem key={value} value={value} className="accordion-item">
@@ -984,15 +1000,17 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
                         {item.title || `Item ${index + 1}`}
                       </AccordionTrigger>
                       <AccordionContent className="accordion-content">
-                        {item.content || 'Accordion content'}
+                        {item.isChildBased && item.content?.children?.length > 0
+                          ? item.content.children.map((child: ComponentInstance, idx: number) => renderInstance(child, item.content, idx))
+                          : (typeof item.content === 'string' ? item.content : 'Accordion content')}
                       </AccordionContent>
                     </AccordionItem>
                   );
                 })}
               </ShadcnAccordion>
-              {items.length === 0 && (
+              {allItems.length === 0 && (
                 <div className="py-4 text-sm text-muted-foreground italic">
-                  No accordion items. Add items in the Data tab.
+                  No accordion items. Add items in the Data tab or drag AccordionItem components.
                 </div>
               )}
             </div>
@@ -1001,7 +1019,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
           return wrapWithDraggable(content);
         }
 
-        // In edit mode, render a static representation that reflects the orientation and styles
+        // In edit mode, render with droppable support for children
         const content = (
           <div
             data-instance-id={instance.id}
@@ -1021,7 +1039,11 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
           >
             <style>{accordionCss}</style>
             <div className="accordion-items-container">
-              {items.map((item: any, index: number) => (
+              {/* Render child AccordionItems if present */}
+              {hasChildItems && childItems.map((child, idx) => renderInstance(child, instance, idx))}
+              
+              {/* Fall back to data-driven items */}
+              {!hasChildItems && items.map((item: any, index: number) => (
                 <div 
                   key={item.id || index} 
                   className="accordion-item"
@@ -1040,15 +1062,19 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
                 </div>
               ))}
             </div>
-            {items.length === 0 && (
+            {items.length === 0 && !hasChildItems && (
               <div className="py-4 text-sm text-muted-foreground italic">
-                No accordion items. Add items in the Data tab.
+                No accordion items. Add items in the Data tab or drag AccordionItem components.
               </div>
             )}
           </div>
         );
 
-        return wrapWithDraggable(content);
+        return isPreviewMode ? content : (
+          <DroppableContainer key={instance.id} instance={instance} {...commonProps}>
+            {content}
+          </DroppableContainer>
+        );
       }
 
       case 'Carousel': {
@@ -1526,6 +1552,255 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
           </div>
         );
         return wrapWithDraggable(content);
+      }
+
+      case 'Separator':
+      case 'Divider': {
+        const orientation = instance.props?.orientation || 'horizontal';
+        const variant = instance.props?.variant || 'solid';
+        const thickness = parseInt(instance.props?.thickness || '1');
+        const color = instance.props?.color || 'hsl(var(--border))';
+        const spacing = parseInt(instance.props?.spacing || '16');
+
+        const content = (
+          <div
+            data-instance-id={instance.id}
+            className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
+            style={{
+              ...getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties,
+              height: orientation === 'horizontal' ? `${thickness}px` : '100%',
+              width: orientation === 'horizontal' ? '100%' : `${thickness}px`,
+              minHeight: orientation === 'vertical' ? '24px' : undefined,
+              backgroundColor: variant === 'solid' ? color : 'transparent',
+              borderTop: orientation === 'horizontal' && variant !== 'solid' 
+                ? `${thickness}px ${variant} ${color}` : undefined,
+              borderLeft: orientation === 'vertical' && variant !== 'solid'
+                ? `${thickness}px ${variant} ${color}` : undefined,
+              margin: orientation === 'horizontal' 
+                ? `${spacing}px 0` 
+                : `0 ${spacing}px`,
+            }}
+            onClick={isPreviewMode ? undefined : () => setSelectedInstanceId(instance.id)}
+            onMouseEnter={isPreviewMode ? undefined : () => setHoveredInstanceId(instance.id)}
+            onMouseLeave={isPreviewMode ? undefined : () => setHoveredInstanceId(null)}
+            onContextMenu={isPreviewMode ? undefined : (e) => handleContextMenu(e, instance)}
+          />
+        );
+        return wrapWithDraggable(content);
+      }
+
+      // Table child primitives
+      case 'TableRow': {
+        const isHeader = instance.props?.isHeader || false;
+        const RowTag = isHeader ? 'thead' : 'tbody';
+        const content = (
+          <RowTag
+            data-instance-id={instance.id}
+            style={getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties}
+            onClick={isPreviewMode ? undefined : (e) => { e.stopPropagation(); setSelectedInstanceId(instance.id); }}
+            onMouseEnter={isPreviewMode ? undefined : () => setHoveredInstanceId(instance.id)}
+            onMouseLeave={isPreviewMode ? undefined : () => setHoveredInstanceId(null)}
+            onContextMenu={isPreviewMode ? undefined : (e) => handleContextMenu(e, instance)}
+          >
+            <tr>
+              {instance.children.map((child, idx) => renderInstance(child, instance, idx))}
+            </tr>
+          </RowTag>
+        );
+        return isPreviewMode ? content : (
+          <DroppableContainer key={instance.id} instance={instance} {...commonProps}>
+            {content}
+          </DroppableContainer>
+        );
+      }
+
+      case 'TableHeaderCell': {
+        const content = (
+          <th
+            data-instance-id={instance.id}
+            style={{
+              ...getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties,
+              padding: '12px',
+              fontWeight: '600',
+              textAlign: 'left',
+              backgroundColor: 'hsl(var(--muted))',
+            }}
+            onClick={isPreviewMode ? undefined : (e) => { e.stopPropagation(); setSelectedInstanceId(instance.id); }}
+            onMouseEnter={isPreviewMode ? undefined : () => setHoveredInstanceId(instance.id)}
+            onMouseLeave={isPreviewMode ? undefined : () => setHoveredInstanceId(null)}
+            onContextMenu={isPreviewMode ? undefined : (e) => handleContextMenu(e, instance)}
+          >
+            {instance.children.length > 0 
+              ? instance.children.map((child, idx) => renderInstance(child, instance, idx))
+              : (instance.props?.content || 'Header')}
+          </th>
+        );
+        return isPreviewMode ? content : (
+          <DroppableContainer key={instance.id} instance={instance} {...commonProps}>
+            {content}
+          </DroppableContainer>
+        );
+      }
+
+      case 'TableCell': {
+        const content = (
+          <td
+            data-instance-id={instance.id}
+            style={{
+              ...getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties,
+              padding: '12px',
+            }}
+            onClick={isPreviewMode ? undefined : (e) => { e.stopPropagation(); setSelectedInstanceId(instance.id); }}
+            onMouseEnter={isPreviewMode ? undefined : () => setHoveredInstanceId(instance.id)}
+            onMouseLeave={isPreviewMode ? undefined : () => setHoveredInstanceId(null)}
+            onContextMenu={isPreviewMode ? undefined : (e) => handleContextMenu(e, instance)}
+          >
+            {instance.children.length > 0 
+              ? instance.children.map((child, idx) => renderInstance(child, instance, idx))
+              : (instance.props?.content || '')}
+          </td>
+        );
+        return isPreviewMode ? content : (
+          <DroppableContainer key={instance.id} instance={instance} {...commonProps}>
+            {content}
+          </DroppableContainer>
+        );
+      }
+
+      // Tab Panel child primitive
+      case 'TabPanel': {
+        const content = (
+          <div
+            data-instance-id={instance.id}
+            className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
+            style={{
+              ...getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties,
+              width: '100%',
+              minHeight: '100px',
+              padding: '16px',
+            }}
+            onClick={isPreviewMode ? undefined : (e) => { e.stopPropagation(); setSelectedInstanceId(instance.id); }}
+            onMouseEnter={isPreviewMode ? undefined : () => setHoveredInstanceId(instance.id)}
+            onMouseLeave={isPreviewMode ? undefined : () => setHoveredInstanceId(null)}
+            onContextMenu={isPreviewMode ? undefined : (e) => handleContextMenu(e, instance)}
+          >
+            {instance.children.length > 0 
+              ? instance.children.map((child, idx) => renderInstance(child, instance, idx))
+              : <div className="text-muted-foreground text-sm italic">Drop content here</div>}
+          </div>
+        );
+        return isPreviewMode ? content : (
+          <DroppableContainer key={instance.id} instance={instance} {...commonProps}>
+            {content}
+          </DroppableContainer>
+        );
+      }
+
+      // Accordion Item child primitive
+      case 'AccordionItem': {
+        const title = instance.props?.title || 'Accordion Item';
+        const isOpen = instance.props?.defaultOpen || false;
+        const content = (
+          <div
+            data-instance-id={instance.id}
+            className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
+            style={{
+              ...getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties,
+              borderBottom: '1px solid hsl(var(--border))',
+            }}
+            onClick={isPreviewMode ? undefined : (e) => { e.stopPropagation(); setSelectedInstanceId(instance.id); }}
+            onMouseEnter={isPreviewMode ? undefined : () => setHoveredInstanceId(instance.id)}
+            onMouseLeave={isPreviewMode ? undefined : () => setHoveredInstanceId(null)}
+            onContextMenu={isPreviewMode ? undefined : (e) => handleContextMenu(e, instance)}
+          >
+            <div className="flex items-center justify-between py-4 text-sm font-medium cursor-pointer">
+              {title}
+              <svg className={`h-4 w-4 shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9l6 6 6-6"/></svg>
+            </div>
+            {(isOpen || !isPreviewMode) && (
+              <div className="pb-4 text-sm text-muted-foreground">
+                {instance.children.length > 0 
+                  ? instance.children.map((child, idx) => renderInstance(child, instance, idx))
+                  : <div className="italic">Drop content here</div>}
+              </div>
+            )}
+          </div>
+        );
+        return isPreviewMode ? content : (
+          <DroppableContainer key={instance.id} instance={instance} {...commonProps}>
+            {content}
+          </DroppableContainer>
+        );
+      }
+
+      // Breadcrumb Item child primitive
+      case 'BreadcrumbItem': {
+        const label = instance.props?.label || 'Page';
+        const href = instance.props?.href || '#';
+        const isCurrentPage = instance.props?.isCurrentPage || false;
+        const content = (
+          <span
+            data-instance-id={instance.id}
+            style={{
+              ...getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties,
+              color: isCurrentPage ? 'hsl(var(--foreground))' : 'hsl(var(--muted-foreground))',
+              fontWeight: isCurrentPage ? '500' : '400',
+              cursor: isPreviewMode && href && !isCurrentPage ? 'pointer' : 'default',
+            }}
+            onClick={isPreviewMode ? (href && !isCurrentPage ? () => window.location.href = href : undefined) : (e) => { e.stopPropagation(); setSelectedInstanceId(instance.id); }}
+            onMouseEnter={isPreviewMode ? undefined : () => setHoveredInstanceId(instance.id)}
+            onMouseLeave={isPreviewMode ? undefined : () => setHoveredInstanceId(null)}
+            onContextMenu={isPreviewMode ? undefined : (e) => handleContextMenu(e, instance)}
+          >
+            {instance.children.length > 0 
+              ? instance.children.map((child, idx) => renderInstance(child, instance, idx))
+              : label}
+          </span>
+        );
+        return wrapWithDraggable(content);
+      }
+
+      // Carousel Slide child primitive
+      case 'CarouselSlide': {
+        const imageUrl = instance.props?.imageUrl || 'https://via.placeholder.com/800x400';
+        const alt = instance.props?.alt || 'Slide';
+        const title = instance.props?.title || '';
+        const description = instance.props?.description || '';
+        const content = (
+          <div
+            data-instance-id={instance.id}
+            className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
+            style={{
+              ...getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties,
+              width: '100%',
+              minHeight: '200px',
+              position: 'relative',
+            }}
+            onClick={isPreviewMode ? undefined : (e) => { e.stopPropagation(); setSelectedInstanceId(instance.id); }}
+            onMouseEnter={isPreviewMode ? undefined : () => setHoveredInstanceId(instance.id)}
+            onMouseLeave={isPreviewMode ? undefined : () => setHoveredInstanceId(null)}
+            onContextMenu={isPreviewMode ? undefined : (e) => handleContextMenu(e, instance)}
+          >
+            {instance.children.length > 0 ? (
+              instance.children.map((child, idx) => renderInstance(child, instance, idx))
+            ) : (
+              <>
+                {imageUrl && <img src={imageUrl} alt={alt} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
+                {(title || description) && (
+                  <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '16px', background: 'linear-gradient(transparent, rgba(0,0,0,0.7))', color: 'white' }}>
+                    {title && <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '600' }}>{title}</h3>}
+                    {description && <p style={{ margin: '4px 0 0', fontSize: '14px', opacity: 0.9 }}>{description}</p>}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        );
+        return isPreviewMode ? content : (
+          <DroppableContainer key={instance.id} instance={instance} {...commonProps}>
+            {content}
+          </DroppableContainer>
+        );
       }
 
       default:
