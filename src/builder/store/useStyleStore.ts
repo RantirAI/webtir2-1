@@ -33,6 +33,17 @@ export const useStyleStore = create<StyleStore>((set, get) => ({
     separator: '-',
     noneFirst: false,
   },
+  rawCssOverrides: '', // CSS rules that can't be parsed into style sources (element selectors, complex selectors, etc.)
+
+  // Set raw CSS overrides (element selectors, complex selectors, etc.)
+  setRawCssOverrides: (css: string) => {
+    set({ rawCssOverrides: css });
+  },
+
+  // Clear raw CSS overrides
+  clearRawCssOverrides: () => {
+    set({ rawCssOverrides: '' });
+  },
 
   // Legacy method - kept for backward compatibility
   nextLocalClassName: (componentType: string) => {
