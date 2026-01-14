@@ -4,20 +4,24 @@ import { buildAIContext } from '../utils/aiComponentDocs';
 // Model-specific max output tokens mapping
 // Using safe, proven limits that prevent network timeouts (same as working GPT-4o)
 const MODEL_MAX_TOKENS: Record<string, number> = {
-  // All OpenAI models - use safe 16K limit (prevents timeout, auto-continue handles longer)
-  'gpt-5': 16384,
-  'gpt-5.2': 16384,
-  'gpt-5-mini': 16384,
-  'gpt-5-nano': 16384,
-  'o3': 16384,
-  'o3-mini': 16384,
-  'o4-mini': 16384,
+  // OpenAI models
+  // GPT-5/o-series can be slower and more prone to mid-stream disconnects in-browser,
+  // so we cap them lower and rely on auto-continue for long builds.
+  'gpt-5': 8192,
+  'gpt-5.2': 8192,
+  'gpt-5-mini': 8192,
+  'gpt-5-nano': 8192,
+  'o3': 8192,
+  'o3-mini': 8192,
+  'o4-mini': 8192,
+
+  // GPT-4 family (known-stable at 16K)
   'gpt-4.1': 16384,
   'gpt-4.1-mini': 16384,
   'gpt-4.1-nano': 16384,
   'gpt-4o': 16384,
   'gpt-4o-mini': 16384,
-  
+
   // Claude models - safe 8K limit
   'claude-opus-4-5-20251101': 8192,
   'claude-sonnet-4-5-20250929': 8192,
@@ -25,7 +29,7 @@ const MODEL_MAX_TOKENS: Record<string, number> = {
   'claude-opus-4-20250514': 8192,
   'claude-3-5-sonnet-20241022': 8192,
   'claude-3-opus-20240229': 4096,
-  
+
   // Gemini models - safe 8K limit
   'gemini-2.5-pro': 8192,
   'gemini-2.5-flash': 8192,
@@ -554,6 +558,8 @@ async function streamOpenAI({
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      Accept: 'text/event-stream',
+      'Cache-Control': 'no-cache',
       Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify(body),
@@ -671,11 +677,9 @@ async function processSSEStream(
   const decoder = new TextDecoder();
   let buffer = '';
 
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-
-    buffer += decoder.decode(value, { stream: true });
+  const flushBuffer = () => {
+    // Ensure the last line gets processed even if the stream ended without a trailing newline.
+    if (!buffer.endsWith('\n')) buffer += '\n';
 
     let newlineIndex: number;
     while ((newlineIndex = buffer.indexOf('\n')) !== -1) {
@@ -689,19 +693,50 @@ async function processSSEStream(
       const jsonStr = line.slice(6).trim();
       if (jsonStr === '[DONE]') {
         onDone();
-        return;
+        return true;
       }
 
       try {
         const parsed = JSON.parse(jsonStr);
-        const content = parsed.choices?.[0]?.delta?.content;
-        if (content) onDelta(content);
+        const delta = parsed.choices?.[0]?.delta;
+        const content = delta?.content;
+
+        if (typeof content === 'string') {
+          onDelta(content);
+        } else if (Array.isArray(content)) {
+          for (const part of content) {
+            const text = (part && typeof part === 'object' && 'text' in part) ? (part as any).text : undefined;
+            if (typeof text === 'string') onDelta(text);
+          }
+        }
       } catch {
         // Incomplete JSON, wait for more data
       }
     }
+
+    return false;
+  };
+
+  while (true) {
+    let readResult: ReadableStreamReadResult<Uint8Array>;
+    try {
+      readResult = await reader.read();
+    } catch {
+      // Treat mid-stream disconnects as a graceful end so the UI can
+      // parse what it already received and trigger auto-continue if needed.
+      flushBuffer();
+      break;
+    }
+
+    const { done, value } = readResult;
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+    const finished = flushBuffer();
+    if (finished) return;
   }
 
+  flushBuffer();
   onDone();
 }
 
@@ -716,11 +751,8 @@ async function processAnthropicStream(
   const decoder = new TextDecoder();
   let buffer = '';
 
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-
-    buffer += decoder.decode(value, { stream: true });
+  const flushBuffer = () => {
+    if (!buffer.endsWith('\n')) buffer += '\n';
 
     let newlineIndex: number;
     while ((newlineIndex = buffer.indexOf('\n')) !== -1) {
@@ -740,14 +772,34 @@ async function processAnthropicStream(
           if (text) onDelta(text);
         } else if (parsed.type === 'message_stop') {
           onDone();
-          return;
+          return true;
         }
       } catch {
         // Incomplete JSON
       }
     }
+
+    return false;
+  };
+
+  while (true) {
+    let readResult: ReadableStreamReadResult<Uint8Array>;
+    try {
+      readResult = await reader.read();
+    } catch {
+      flushBuffer();
+      break;
+    }
+
+    const { done, value } = readResult;
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+    const finished = flushBuffer();
+    if (finished) return;
   }
 
+  flushBuffer();
   onDone();
 }
 
@@ -762,11 +814,8 @@ async function processGeminiStream(
   const decoder = new TextDecoder();
   let buffer = '';
 
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-
-    buffer += decoder.decode(value, { stream: true });
+  const flushBuffer = () => {
+    if (!buffer.endsWith('\n')) buffer += '\n';
 
     let newlineIndex: number;
     while ((newlineIndex = buffer.indexOf('\n')) !== -1) {
@@ -787,7 +836,24 @@ async function processGeminiStream(
         // Incomplete JSON
       }
     }
+  };
+
+  while (true) {
+    let readResult: ReadableStreamReadResult<Uint8Array>;
+    try {
+      readResult = await reader.read();
+    } catch {
+      flushBuffer();
+      break;
+    }
+
+    const { done, value } = readResult;
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+    flushBuffer();
   }
 
+  flushBuffer();
   onDone();
 }
