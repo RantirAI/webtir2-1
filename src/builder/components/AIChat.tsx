@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { MarkdownRenderer } from './MarkdownRenderer';
 import { BuildProgressCard } from './BuildProgressCard';
+import { BuildSummaryCard } from './BuildSummaryCard';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
@@ -560,21 +561,23 @@ When user says "change the heading color" or "update the button text", find the 
             }
           }
 
-          // Add assistant message to store
+          // Finish build progress tracking and get summary
+          let buildSummary = undefined;
+          if (modeAtSend === 'build') {
+            buildSummary = finishBuild();
+          }
+
+          // Add assistant message to store with build summary
           addMessage({
             role: 'assistant',
             content: displayMessage,
             timestamp: Date.now(),
             mode: modeAtSend,
+            buildSummary,
           });
 
           setStreamingContent('');
           setIsLoading(false);
-          
-          // Finish build progress tracking
-          if (modeAtSend === 'build') {
-            finishBuild();
-          }
         },
         onError: (error) => {
           console.error('AI Error:', error);
@@ -793,7 +796,12 @@ When user says "change the heading color" or "update the button text", find the 
                         }`}
                     >
                       {message.role === 'assistant' ? (
-                        <MarkdownRenderer content={message.content} />
+                        <>
+                          <MarkdownRenderer content={message.content} />
+                          {message.buildSummary && (
+                            <BuildSummaryCard summary={message.buildSummary} />
+                          )}
+                        </>
                       ) : (
                         <p className="whitespace-pre-wrap break-all">{message.content}</p>
                       )}
@@ -806,8 +814,8 @@ When user says "change the heading color" or "update the button text", find the 
                   )}
                 </>
               )}
-              {/* Build mode: show BuildProgressCard */}
-              {chatMode === 'build' && <BuildProgressCard />}
+              {/* Build mode: show BuildProgressCard only while loading */}
+              {chatMode === 'build' && isLoading && <BuildProgressCard />}
               
               {/* Loading indicator for discuss mode */}
               {isLoading && !streamingContent && chatMode === 'discuss' && (

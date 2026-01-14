@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useBuildProgressStore, BuildEdit } from '../store/useBuildProgressStore';
-import { ChevronDown, ChevronRight, Check, Loader2, Package, Palette, Settings2, Image } from 'lucide-react';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { useBuildProgressStore } from '../store/useBuildProgressStore';
+import { Loader2 } from 'lucide-react';
 
 export const BuildProgressCard: React.FC = () => {
   const {
@@ -9,9 +8,6 @@ export const BuildProgressCard: React.FC = () => {
     startTime,
     taskTitle,
     taskDescription,
-    edits,
-    isExpanded,
-    toggleExpanded,
   } = useBuildProgressStore();
 
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
@@ -30,31 +26,7 @@ export const BuildProgressCard: React.FC = () => {
     return () => clearInterval(interval);
   }, [isBuilding, startTime]);
 
-  const getEditIcon = (type: BuildEdit['type']) => {
-    switch (type) {
-      case 'component':
-        return <Package className="w-3 h-3" />;
-      case 'style':
-        return <Palette className="w-3 h-3" />;
-      case 'prop':
-        return <Settings2 className="w-3 h-3" />;
-      case 'image':
-        return <Image className="w-3 h-3" />;
-      default:
-        return <Check className="w-3 h-3" />;
-    }
-  };
-
-  const getEditLabel = (edit: BuildEdit) => {
-    const actionLabels = {
-      created: 'Created',
-      updated: 'Updated',
-      deleted: 'Deleted',
-    };
-    return `${actionLabels[edit.action]} ${edit.name}`;
-  };
-
-  if (!isBuilding && edits.length === 0) {
+  if (!isBuilding) {
     return null;
   }
 
@@ -62,13 +34,9 @@ export const BuildProgressCard: React.FC = () => {
     <div className="text-[10px] rounded-lg bg-muted mr-4 overflow-hidden animate-fade-in">
       {/* Thinking timer */}
       <div className="flex items-center gap-2 px-3 py-2 border-b border-border/50">
-        {isBuilding ? (
-          <Loader2 className="w-3 h-3 animate-spin text-primary" />
-        ) : (
-          <Check className="w-3 h-3 text-green-500" />
-        )}
+        <Loader2 className="w-3 h-3 animate-spin text-primary" />
         <span className="text-muted-foreground">
-          {isBuilding ? `Thinking for ${elapsedSeconds}s` : `Thought for ${elapsedSeconds}s`}
+          Thinking for {elapsedSeconds}s
         </span>
       </div>
 
@@ -83,40 +51,6 @@ export const BuildProgressCard: React.FC = () => {
             </div>
           </div>
         </div>
-      )}
-
-      {/* Edits section */}
-      {edits.length > 0 && (
-        <Collapsible open={isExpanded} onOpenChange={toggleExpanded}>
-          <CollapsibleTrigger asChild>
-            <button className="w-full flex items-center justify-between px-3 py-2 hover:bg-background/30 transition-colors">
-              <div className="flex items-center gap-2">
-                {isExpanded ? (
-                  <ChevronDown className="w-3 h-3 text-muted-foreground" />
-                ) : (
-                  <ChevronRight className="w-3 h-3 text-muted-foreground" />
-                )}
-                <span className="font-medium">{edits.length} edit{edits.length !== 1 ? 's' : ''} made</span>
-              </div>
-              <span className="text-muted-foreground text-[9px]">
-                {isExpanded ? 'Hide' : 'Show all'}
-              </span>
-            </button>
-          </CollapsibleTrigger>
-          <CollapsibleContent>
-            <div className="px-3 pb-2 space-y-1">
-              {edits.map((edit, index) => (
-                <div
-                  key={index}
-                  className="flex items-center gap-2 py-1 px-2 rounded bg-background/30"
-                >
-                  <span className="text-muted-foreground">{getEditIcon(edit.type)}</span>
-                  <span className="text-foreground/80 truncate">{getEditLabel(edit)}</span>
-                </div>
-              ))}
-            </div>
-          </CollapsibleContent>
-        </Collapsible>
       )}
     </div>
   );
