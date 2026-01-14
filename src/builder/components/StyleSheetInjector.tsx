@@ -5,22 +5,46 @@ import { compileMetadataToCSS } from '../utils/cssCompiler';
 
 // Map custom property names to valid CSS property names
 const propertyAliases: Record<string, string> = {
-  // backgroundGradient is now handled via combined backgroundImage layers
+  backgroundGradient: 'background-image', // Map gradient to background-image
 };
 
 function toCssProp(prop: string) {
-  // Skip backgroundGradient - it's now composed into backgroundImage
-  if (prop === 'backgroundGradient') {
-    return null; // Signal to skip this property
-  }
   if (propertyAliases[prop]) {
     return propertyAliases[prop];
   }
   return prop.replace(/([A-Z])/g, '-$1').toLowerCase();
 }
 
-// Background layers are now pre-composed in StylePanel.handleBackgroundLayersChange
-// so we no longer need to combine them here - they come as a single backgroundImage value
+// Combine background layers: color + gradient + image into proper CSS
+function combineBackgroundLayers(props: Record<string, string>): Record<string, string> {
+  const result = { ...props };
+  
+  const bgColor = props['background-color'];
+  const bgImage = props['background-image'];
+  
+  // If we have both a fill color AND an image/gradient, layer them
+  if (bgColor && bgColor !== 'transparent' && bgImage) {
+    // Create a solid color gradient layer to sit on top
+    const colorOverlay = `linear-gradient(${bgColor}, ${bgColor})`;
+    
+    // Combine layers: overlay first (top), then image (bottom)
+    result['background-image'] = `${colorOverlay}, ${bgImage}`;
+    
+    // Remove background-color since it's now part of background-image layers
+    delete result['background-color'];
+    
+    // Adjust background-size/position/repeat for multiple layers
+    const existingSize = props['background-size'] || 'cover';
+    const existingPosition = props['background-position'] || 'center';
+    const existingRepeat = props['background-repeat'] || 'no-repeat';
+    
+    result['background-size'] = `${existingSize}, ${existingSize}`;
+    result['background-position'] = `${existingPosition}, ${existingPosition}`;
+    result['background-repeat'] = `${existingRepeat}, ${existingRepeat}`;
+  }
+  
+  return result;
+}
 
 export const StyleSheetInjector: React.FC = () => {
   const { styleSources, styles, breakpoints } = useStyleStore();
@@ -56,7 +80,7 @@ export const StyleSheetInjector: React.FC = () => {
             const [id, bp, st, prop] = parts;
             if (id === source.id && bp === 'base' && st === state && value) {
               const cssProp = toCssProp(prop);
-              if (cssProp) { // Skip null (filtered properties like backgroundGradient)
+              if (cssProp) {
                 baseProps[cssProp] = value;
               }
             }
@@ -71,7 +95,10 @@ export const StyleSheetInjector: React.FC = () => {
           });
         }
         
-        const baseCss = Object.entries(baseProps)
+        // Combine background layers before generating CSS
+        const finalBaseProps = combineBackgroundLayers(baseProps);
+        
+        const baseCss = Object.entries(finalBaseProps)
           .map(([k, v]) => `${k}: ${v};`)
           .join(' ');
         if (baseCss) rules.push(`${stateSelector} { ${baseCss} }`);
@@ -87,14 +114,17 @@ export const StyleSheetInjector: React.FC = () => {
                 const [id, bid, st, prop] = parts;
                 if (id === source.id && bid === bp.id && st === state && value) {
                   const cssProp = toCssProp(prop);
-                  if (cssProp) { // Skip null (filtered properties like backgroundGradient)
+                  if (cssProp) {
                     bpProps[cssProp] = value;
                   }
                 }
               }
             });
             
-            const bpCss = Object.entries(bpProps)
+            // Combine background layers for breakpoint styles too
+            const finalBpProps = combineBackgroundLayers(bpProps);
+            
+            const bpCss = Object.entries(finalBpProps)
               .map(([k, v]) => `${k}: ${v};`)
               .join(' ');
             if (bpCss) {
