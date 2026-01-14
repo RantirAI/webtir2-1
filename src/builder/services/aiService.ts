@@ -541,11 +541,15 @@ async function streamOpenAI({
 }) {
   const maxTokens = getModelMaxTokens(model);
   
+  // Newer OpenAI models (gpt-5, o3, gpt-4.1, etc.) use max_completion_tokens
+  // Older models (gpt-4o, gpt-4-turbo, gpt-3.5) use max_tokens
+  const usesNewTokenParam = model.startsWith('gpt-5') || model.startsWith('o3') || model.startsWith('o4') || model.startsWith('gpt-4.1');
+  
   const body: Record<string, unknown> = {
     model,
     messages,
     stream: true,
-    max_tokens: maxTokens,
+    ...(usesNewTokenParam ? { max_completion_tokens: maxTokens } : { max_tokens: maxTokens }),
   };
 
   // Enable JSON mode for build requests (OpenAI API feature)
