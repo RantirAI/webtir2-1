@@ -36,6 +36,9 @@ export interface AIResponse {
   updates?: AIUpdateSpec[];
   imageSpec?: AIImageSpec;
   message: string;
+  // Truncation info for auto-continue
+  wasTruncated?: boolean;
+  truncatedCount?: number;
 }
 
 const generateId = () => Math.random().toString(36).substring(2, 11);
@@ -372,11 +375,16 @@ export function parseAIResponse(text: string): AIResponse | null {
           return null;
         }
         
+        const truncatedCount = components.length - validComponents.length;
+        const wasTruncated = truncatedCount > 0;
+        
         const normalizedComponents = validComponents.map(normalizeComponentSpec);
         return {
           action: 'create',
           components: normalizedComponents,
           message: (parsed.message as string) || 'Components created successfully!',
+          wasTruncated,
+          truncatedCount,
         };
       }
     }
