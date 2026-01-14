@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { MarkdownRenderer } from './MarkdownRenderer';
+import { BuildProgressCard } from './BuildProgressCard';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
@@ -12,6 +13,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useAISettingsStore, AI_PROVIDERS, AIProvider } from '../store/useAISettingsStore';
 import { useChatStore } from '../store/useChatStore';
+import { useBuildProgressStore } from '../store/useBuildProgressStore';
 import { streamChat, AIMessage } from '../services/aiService';
 import { parseAIResponse, flattenInstances, AIUpdateSpec } from '../utils/aiComponentGenerator';
 import { useStyleStore } from '../store/useStyleStore';
@@ -70,6 +72,15 @@ export const AIChat: React.FC = () => {
 
   // Media Store
   const { addAsset } = useMediaStore();
+
+  // Build Progress Store
+  const {
+    startBuild,
+    setTaskDescription,
+    addEdit,
+    finishBuild,
+    reset: resetBuildProgress,
+  } = useBuildProgressStore();
 
   const [chatMode, setChatMode] = useState<ChatMode>(lastChatMode);
   const currentSession = sessions.find(s => s.id === currentSessionId) || null;
@@ -182,6 +193,61 @@ When user says "change the heading color" or "update the button text", find the 
     
     return findMatch(rootInstance as Parameters<typeof findMatch>[0]);
   };
+
+  // Generate a concise task title from the user message
+  const generateTaskTitle = (message: string): string => {
+    const lowerMsg = message.toLowerCase();
+    
+    // Detect common patterns
+    if (lowerMsg.includes('create') || lowerMsg.includes('build') || lowerMsg.includes('add')) {
+      const match = message.match(/(?:create|build|add)\s+(?:a\s+)?(.{5,40}?)(?:\.|$|,|\s+with|\s+that)/i);
+      if (match) return `Creating ${match[1]}`;
+    }
+    if (lowerMsg.includes('update') || lowerMsg.includes('change') || lowerMsg.includes('modify')) {
+      const match = message.match(/(?:update|change|modify)\s+(?:the\s+)?(.{5,30}?)(?:\.|$|,|\s+to)/i);
+      if (match) return `Updating ${match[1]}`;
+    }
+    if (lowerMsg.includes('style') || lowerMsg.includes('color') || lowerMsg.includes('font')) {
+      return 'Applying styles';
+    }
+    if (lowerMsg.includes('image') || lowerMsg.includes('photo') || lowerMsg.includes('picture')) {
+      return 'Generating image';
+    }
+    
+    // Fallback: truncate message
+    return message.length > 35 ? message.slice(0, 32) + '...' : message;
+  };
+
+  // Update build description based on partial JSON parsing
+  const updateBuildDescription = (partialJson: string) => {
+    try {
+      // Try to detect action type
+      if (partialJson.includes('"action"')) {
+        if (partialJson.includes('"create"')) {
+          setTaskDescription('Creating components...');
+        } else if (partialJson.includes('"update"')) {
+          setTaskDescription('Updating styles...');
+        } else if (partialJson.includes('"generate-image"')) {
+          setTaskDescription('Generating image...');
+        }
+      }
+      
+      // Try to detect component types being created
+      const typeMatches = partialJson.match(/"type"\s*:\s*"([^"]+)"/g);
+      if (typeMatches && typeMatches.length > 0) {
+        const types = typeMatches
+          .map(m => m.match(/"type"\s*:\s*"([^"]+)"/)?.[1])
+          .filter(Boolean)
+          .slice(0, 3);
+        if (types.length > 0) {
+          setTaskDescription(`Building ${types.join(', ')}...`);
+        }
+      }
+    } catch {
+      // Ignore parse errors - partial JSON is expected
+    }
+  };
+
   // Sync chat mode to store
   useEffect(() => {
     setLastChatMode(chatMode);
@@ -209,6 +275,13 @@ When user says "change the heading color" or "update the button text", find the 
     setInput('');
     setIsLoading(true);
     setStreamingContent('');
+    
+    // Start build progress tracking for build mode
+    if (modeAtSend === 'build') {
+      // Generate task title from user message
+      const taskTitle = generateTaskTitle(userMessageContent);
+      startBuild(taskTitle);
+    }
 
     // Add user message
     addMessage({
@@ -243,9 +316,11 @@ When user says "change the heading color" or "update the button text", find the 
         mode: modeAtSend,
         onDelta: (text) => {
           fullResponse += text;
-          // In build mode, don't show raw JSON streaming - show placeholder
+          // In build mode, show progress card instead of raw JSON
           if (modeAtSend === 'build') {
-            setStreamingContent('🔨 Building components...');
+            // Try to detect what's being built from partial JSON
+            updateBuildDescription(fullResponse);
+            // Don't show streaming content in build mode - BuildProgressCard handles display
           } else {
             setStreamingContent(fullResponse);
           }
@@ -302,6 +377,13 @@ When user says "change the heading color" or "update the button text", find the 
                     setSelectedInstanceId(rootInstanceId);
                     componentsBuilt = true;
                     console.log('Added root instance to canvas:', rootInstance.type);
+                    
+                    // Track the edit
+                    addEdit({
+                      type: 'component',
+                      name: componentSpec.type || 'Component',
+                      action: 'created',
+                    });
                   }
                 } catch (err) {
                   console.error('Error processing component:', err);
@@ -351,6 +433,13 @@ When user says "change the heading color" or "update the button text", find the 
                     setStyle(styleSourceId, property, value, 'base', 'default');
                   }
                   updatesApplied++;
+                  
+                  // Track the style edit
+                  addEdit({
+                    type: 'style',
+                    name: targetId,
+                    action: 'updated',
+                  });
                 }
                 
                 // Apply tablet styles
@@ -373,6 +462,13 @@ When user says "change the heading color" or "update the button text", find the 
                   if (instance) {
                     updateInstance(instanceId, { props: { ...instance.props, ...props } });
                     updatesApplied++;
+                    
+                    // Track the prop edit
+                    addEdit({
+                      type: 'prop',
+                      name: instance.type || targetId,
+                      action: 'updated',
+                    });
                   }
                 }
               }
@@ -474,6 +570,11 @@ When user says "change the heading color" or "update the button text", find the 
 
           setStreamingContent('');
           setIsLoading(false);
+          
+          // Finish build progress tracking
+          if (modeAtSend === 'build') {
+            finishBuild();
+          }
         },
         onError: (error) => {
           console.error('AI Error:', error);
@@ -485,6 +586,11 @@ When user says "change the heading color" or "update the button text", find the 
           });
           setStreamingContent('');
           setIsLoading(false);
+          
+          // Reset build progress on error
+          if (modeAtSend === 'build') {
+            resetBuildProgress();
+          }
         },
       });
     } catch (error) {
@@ -700,7 +806,11 @@ When user says "change the heading color" or "update the button text", find the 
                   )}
                 </>
               )}
-              {isLoading && !streamingContent && (
+              {/* Build mode: show BuildProgressCard */}
+              {chatMode === 'build' && <BuildProgressCard />}
+              
+              {/* Loading indicator for discuss mode */}
+              {isLoading && !streamingContent && chatMode === 'discuss' && (
                 <div className="text-[10px] text-muted-foreground italic p-2 bg-muted rounded-lg mr-4 max-w-full overflow-hidden">
                   <span className="inline-flex items-center gap-1">
                     <span className="animate-pulse">●</span>
