@@ -16,7 +16,7 @@ import { useAISettingsStore, AI_PROVIDERS, AIProvider } from '../store/useAISett
 import { useChatStore } from '../store/useChatStore';
 import { useBuildProgressStore } from '../store/useBuildProgressStore';
 import { streamChat, AIMessage } from '../services/aiService';
-import { parseAIResponse, flattenInstances, AIUpdateSpec } from '../utils/aiComponentGenerator';
+import { parseAIResponse, flattenInstances, AIUpdateSpec, detectIncompletePage, detectTruncatedJSON } from '../utils/aiComponentGenerator';
 import { useStyleStore } from '../store/useStyleStore';
 import { useBuilderStore } from '../store/useBuilderStore';
 import { useMediaStore } from '../store/useMediaStore';
@@ -34,6 +34,8 @@ export const AIChat: React.FC = () => {
   const [showSettingsDialog, setShowSettingsDialog] = useState(false);
   const [showApiKey, setShowApiKey] = useState(false);
   const [streamingContent, setStreamingContent] = useState('');
+  const [originalRequest, setOriginalRequest] = useState('');
+  const [pendingContinuation, setPendingContinuation] = useState(false);
 
   // AI Settings Store
   const {
@@ -242,6 +244,29 @@ When continuing a build, add NEW sections after these. Do NOT recreate existing 
     }
   }, [messages, streamingContent]);
 
+  // Handle pending continuation for incomplete pages
+  useEffect(() => {
+    if (pendingContinuation && !isLoading) {
+      const rootInstance = useBuilderStore.getState().rootInstance;
+      const existingSections = rootInstance.children.map((c: { label?: string; type: string }) => c.label || c.type).join(', ');
+      
+      const continueMessage = `Continue building the remaining sections. Currently on canvas: ${existingSections}. 
+Do NOT recreate any existing sections - only add NEW sections that weren't created yet.
+Add what's missing: Features, Testimonials, Pricing, CTA, Footer, etc.`;
+      
+      console.log('Executing pending continuation...');
+      toast.info('Continuing to build remaining sections...');
+      setPendingContinuation(false);
+      setInput(continueMessage);
+      
+      // Trigger send after state updates
+      setTimeout(() => {
+        const sendButton = document.querySelector('[data-send-button]') as HTMLButtonElement;
+        if (sendButton) sendButton.click();
+      }, 200);
+    }
+  }, [pendingContinuation, isLoading]);
+
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
 
@@ -253,6 +278,11 @@ When continuing a build, add NEW sections after these. Do NOT recreate existing 
     const userMessageContent = input.trim();
     // Capture mode at send time to prevent issues if user toggles during stream
     const modeAtSend = chatMode;
+    
+    // Store original request for page completeness check
+    if (!userMessageContent.toLowerCase().includes('continue building')) {
+      setOriginalRequest(userMessageContent);
+    }
     
     setInput('');
     setIsLoading(true);
@@ -417,23 +447,21 @@ When continuing a build, add NEW sections after these. Do NOT recreate existing 
               // This now also handles cases where JSON was cut mid-stream
               const shouldAutoContinue = parsed.wasTruncated && parsed.truncatedCount && parsed.truncatedCount > 0;
               
-              if (shouldAutoContinue) {
-                console.log(`Detected truncation (${parsed.truncatedCount} incomplete), triggering auto-continue...`);
-                setTruncated(true, parsed.truncatedCount);
+              // Also check page completeness for full-page requests
+              const rootInstance = useBuilderStore.getState().rootInstance;
+              const sectionCount = rootInstance.children.length;
+              const sectionLabels = rootInstance.children.map((c: { label?: string; type: string }) => c.label || c.type);
+              const pageCheck = detectIncompletePage(originalRequest, sectionCount, sectionLabels);
+              
+              if (shouldAutoContinue || pageCheck.isIncomplete) {
+                const reason = shouldAutoContinue 
+                  ? `Truncated (${parsed.truncatedCount} incomplete)` 
+                  : pageCheck.reason;
+                console.log(`Auto-continue triggered: ${reason}`);
+                setTruncated(true, parsed.truncatedCount || 1);
                 
-                // Auto-continue after a short delay
-                setTimeout(() => {
-                  const continueMessage = "Continue building the remaining sections. Do NOT recreate any existing sections - only add NEW sections that weren't created yet. Look at the Current Page Sections table and add what's missing (e.g., if you only have Nav+Hero, add Features, Testimonials, CTA, Footer).";
-                  toast.info('Continuing to build remaining sections...');
-                  
-                  // Trigger continuation by simulating a new message
-                  setInput(continueMessage);
-                  // Use a ref-based approach to trigger send
-                  setTimeout(() => {
-                    const sendButton = document.querySelector('[data-send-button]') as HTMLButtonElement;
-                    if (sendButton) sendButton.click();
-                  }, 100);
-                }, 500);
+                // Use pending continuation state for reliable auto-continue
+                setPendingContinuation(true);
               } else {
                 setTruncated(false, 0);
               }
@@ -599,25 +627,15 @@ When continuing a build, add NEW sections after these. Do NOT recreate existing 
             
             // If we couldn't parse a valid action in build mode
             else if (!parsed) {
-              // Import the truncation detector
-              const { detectTruncatedJSON } = await import('../utils/aiComponentGenerator');
+              // detectTruncatedJSON is now imported at top of file
               const wasTruncatedMidStream = detectTruncatedJSON(fullResponse);
               
               if (wasTruncatedMidStream) {
-                // JSON was cut mid-stream - auto-continue
+                // JSON was cut mid-stream - use pending continuation
                 console.warn('AI response was truncated mid-JSON, triggering auto-continue...');
                 displayMessage = 'Response was truncated. Continuing...';
                 setTruncated(true, 1);
-                
-                setTimeout(() => {
-                  const continueMessage = "Continue building. Your previous response was cut off. Do NOT recreate existing sections - only output the REMAINING sections that weren't created yet.";
-                  toast.info('Continuing build...');
-                  setInput(continueMessage);
-                  setTimeout(() => {
-                    const sendButton = document.querySelector('[data-send-button]') as HTMLButtonElement;
-                    if (sendButton) sendButton.click();
-                  }, 100);
-                }, 500);
+                setPendingContinuation(true);
               } else {
                 // Check if response looks like JSON (failed parse) vs conversation
                 const looksLikeJSON = fullResponse.includes('"action"') || fullResponse.includes('"components"');
@@ -923,6 +941,39 @@ When continuing a build, add NEW sections after these. Do NOT recreate existing 
               <div ref={scrollAnchorRef} />
             </div>
           </ScrollArea>
+
+          {/* Continue Building Button - shows when page is incomplete */}
+          {!isLoading && chatMode === 'build' && messages.length > 0 && (() => {
+            const rootInstance = useBuilderStore.getState().rootInstance;
+            const sectionCount = rootInstance.children.length;
+            const sectionLabels = rootInstance.children.map((c: { label?: string; type: string }) => c.label || c.type);
+            const pageCheck = detectIncompletePage(originalRequest, sectionCount, sectionLabels);
+            
+            if (pageCheck.isIncomplete && sectionCount > 0 && sectionCount < 6) {
+              return (
+                <div className="px-2 pb-1">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const existingSections = sectionLabels.join(', ');
+                      const continueMsg = `Continue building the remaining sections. Currently: ${existingSections}. Add: ${pageCheck.missingSections.join(', ')}. Do NOT recreate existing sections.`;
+                      setInput(continueMsg);
+                      setTimeout(() => {
+                        const sendButton = document.querySelector('[data-send-button]') as HTMLButtonElement;
+                        if (sendButton) sendButton.click();
+                      }, 100);
+                    }}
+                    className="w-full h-7 text-[10px] gap-1"
+                  >
+                    <Sparkles className="w-3 h-3" />
+                    Continue Building ({sectionCount} sections, missing: {pageCheck.missingSections.slice(0, 2).join(', ')})
+                  </Button>
+                </div>
+              );
+            }
+            return null;
+          })()}
 
           {/* Bottom Input Bar - Only in Chat Tab */}
           <div className="p-2 border-t flex-shrink-0">

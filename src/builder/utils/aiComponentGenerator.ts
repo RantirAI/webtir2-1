@@ -372,6 +372,59 @@ export function detectTruncatedJSON(text: string): boolean {
   return braceDepth !== 0 || bracketDepth !== 0;
 }
 
+// Detect if a page build request is incomplete (missing sections/footer)
+export function detectIncompletePage(
+  userMessage: string, 
+  sectionsBuilt: number,
+  sectionLabels: string[]
+): { isIncomplete: boolean; reason: string; missingSections: string[] } {
+  const lowerMsg = userMessage.toLowerCase();
+  
+  // Check if this was a "full page" request
+  const fullPageKeywords = ['landing page', 'full page', 'complete page', 'website', 'home page', 'homepage', 'sections', 'entire page', 'whole page'];
+  const isFullPageRequest = fullPageKeywords.some(kw => lowerMsg.includes(kw));
+  
+  if (!isFullPageRequest) {
+    return { isIncomplete: false, reason: '', missingSections: [] };
+  }
+  
+  const missingSections: string[] = [];
+  
+  // For full page requests, check minimum sections (typically 5-7)
+  const minSections = 5;
+  if (sectionsBuilt < minSections) {
+    // Determine what's missing based on what we have
+    const lowerLabels = sectionLabels.map(l => l.toLowerCase());
+    
+    if (!lowerLabels.some(l => l.includes('footer'))) missingSections.push('Footer');
+    if (!lowerLabels.some(l => l.includes('testimonial') || l.includes('review'))) missingSections.push('Testimonials');
+    if (!lowerLabels.some(l => l.includes('feature'))) missingSections.push('Features');
+    if (!lowerLabels.some(l => l.includes('cta') || l.includes('call to action'))) missingSections.push('CTA');
+    if (!lowerLabels.some(l => l.includes('pricing'))) missingSections.push('Pricing');
+    
+    return { 
+      isIncomplete: true, 
+      reason: `Only ${sectionsBuilt} sections built. Full pages typically need ${minSections}+ sections.`,
+      missingSections
+    };
+  }
+  
+  // Check if footer exists (critical for landing pages)
+  const lowerLabels = sectionLabels.map(l => l.toLowerCase());
+  const hasFooter = lowerLabels.some(l => l.includes('footer') || l.includes('contact'));
+  
+  if (!hasFooter) {
+    missingSections.push('Footer');
+    return { 
+      isIncomplete: true, 
+      reason: 'Missing footer or contact section.',
+      missingSections
+    };
+  }
+  
+  return { isIncomplete: false, reason: '', missingSections: [] };
+}
+
 export function parseAIResponse(text: string): AIResponse | null {
   // First check if this looks like truncated JSON
   const isTruncatedJSON = detectTruncatedJSON(text);
