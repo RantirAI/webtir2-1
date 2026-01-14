@@ -392,7 +392,8 @@ export interface BreakpointStyles {
 
 export function flattenInstances(
   spec: AIComponentSpec,
-  parentId: string = 'root'
+  parentId: string = 'root',
+  getClassName?: (componentType: string, label?: string) => string
 ): {
   instances: ComponentInstance[];
   styleSources: Record<string, BreakpointStyles>;
@@ -406,7 +407,8 @@ export function flattenInstances(
     const meta = componentRegistry[type] || componentRegistry['Div'];
 
     const instanceId = generateId();
-    const styleSourceId = `style_${instanceId}`;
+    // Use semantic class name if callback provided, otherwise fallback to random id
+    const styleSourceId = getClassName ? getClassName(type, spec.label) : `style_${instanceId}`;
 
     // Props and styles are already normalized from parseAIResponse
     const props = spec.props || meta.defaultProps;
