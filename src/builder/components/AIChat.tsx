@@ -564,7 +564,14 @@ When user says "change the heading color" or "update the button text", find the 
           // Finish build progress tracking and get summary
           let buildSummary = undefined;
           if (modeAtSend === 'build') {
-            buildSummary = finishBuild();
+            const summary = finishBuild();
+            // Store the success message in the summary, clear displayMessage for build mode
+            buildSummary = {
+              ...summary,
+              message: displayMessage.replace(/^[✓⚠️]\s*/, '') || 'Build completed successfully!',
+            };
+            // For build mode, we don't show the message text - the summary card handles it
+            displayMessage = '';
           }
 
           // Add assistant message to store with build summary
@@ -796,12 +803,13 @@ When user says "change the heading color" or "update the button text", find the 
                         }`}
                     >
                       {message.role === 'assistant' ? (
-                        <>
+                        message.buildSummary ? (
+                          // Build mode: show ONLY the unified summary card
+                          <BuildSummaryCard summary={message.buildSummary} />
+                        ) : (
+                          // Discuss mode: show markdown content
                           <MarkdownRenderer content={message.content} />
-                          {message.buildSummary && (
-                            <BuildSummaryCard summary={message.buildSummary} />
-                          )}
-                        </>
+                        )
                       ) : (
                         <p className="whitespace-pre-wrap break-all">{message.content}</p>
                       )}

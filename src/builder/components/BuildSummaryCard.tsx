@@ -34,53 +34,61 @@ export const BuildSummaryCard: React.FC<BuildSummaryCardProps> = ({ summary }) =
     return `${actionLabels[edit.action]} ${edit.name}`;
   };
 
-  if (summary.edits.length === 0) {
-    return null;
-  }
-
   return (
-    <div className="mt-2 rounded-md bg-background/50 border border-border/50 overflow-hidden">
-      {/* Header with duration */}
-      <div className="flex items-center gap-2 px-2 py-1.5 border-b border-border/30">
+    <div className="rounded-lg bg-background/80 border border-border/50 overflow-hidden">
+      {/* Success Header */}
+      <div className="flex items-center gap-2 px-3 py-2 bg-green-500/10 border-b border-border/30">
+        <div className="w-4 h-4 rounded-full bg-green-500/20 flex items-center justify-center">
+          <Check className="w-2.5 h-2.5 text-green-500" />
+        </div>
+        <span className="text-[10px] font-medium text-foreground">
+          {summary.message || 'Build completed successfully!'}
+        </span>
+      </div>
+
+      {/* Duration */}
+      <div className="flex items-center gap-2 px-3 py-1.5 border-b border-border/30">
         <Check className="w-3 h-3 text-green-500" />
-        <span className="text-muted-foreground text-[9px]">
+        <span className="text-[9px] text-muted-foreground">
           Built in {summary.duration}s
         </span>
       </div>
 
-      {/* Edits section */}
-      <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
-        <CollapsibleTrigger asChild>
-          <button className="w-full flex items-center justify-between px-2 py-1.5 hover:bg-muted/30 transition-colors">
-            <div className="flex items-center gap-1.5">
-              {isExpanded ? (
-                <ChevronDown className="w-3 h-3 text-muted-foreground" />
-              ) : (
-                <ChevronRight className="w-3 h-3 text-muted-foreground" />
-              )}
-              <span className="font-medium text-[9px]">
-                {summary.edits.length} edit{summary.edits.length !== 1 ? 's' : ''} made
-              </span>
-            </div>
-            <span className="text-muted-foreground text-[8px]">
-              {isExpanded ? 'Hide' : 'Show all'}
-            </span>
-          </button>
-        </CollapsibleTrigger>
-        <CollapsibleContent>
-          <div className="px-2 pb-1.5 space-y-0.5">
-            {summary.edits.map((edit, index) => (
-              <div
-                key={index}
-                className="flex items-center gap-1.5 py-0.5 px-1.5 rounded bg-muted/30 text-[9px]"
-              >
-                <span className="text-muted-foreground">{getEditIcon(edit.type)}</span>
-                <span className="text-foreground/80 truncate">{getEditLabel(edit)}</span>
+      {/* Edits section - only show if there are edits */}
+      {summary.edits.length > 0 && (
+        <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
+          <CollapsibleTrigger asChild>
+            <button className="w-full flex items-center justify-between px-3 py-1.5 hover:bg-muted/30 transition-colors">
+              <div className="flex items-center gap-1.5">
+                {isExpanded ? (
+                  <ChevronDown className="w-3 h-3 text-muted-foreground" />
+                ) : (
+                  <ChevronRight className="w-3 h-3 text-muted-foreground" />
+                )}
+                <span className="font-medium text-[9px]">
+                  {summary.edits.length} edit{summary.edits.length !== 1 ? 's' : ''} made
+                </span>
               </div>
-            ))}
-          </div>
-        </CollapsibleContent>
-      </Collapsible>
+              <span className="text-muted-foreground text-[8px]">
+                {isExpanded ? 'Hide' : 'Show all'}
+              </span>
+            </button>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <div className="px-3 pb-2 space-y-0.5">
+              {summary.edits.map((edit, index) => (
+                <div
+                  key={index}
+                  className="flex items-center gap-1.5 py-0.5 px-1.5 rounded bg-muted/30 text-[9px]"
+                >
+                  <span className="text-muted-foreground">{getEditIcon(edit.type)}</span>
+                  <span className="text-foreground/80 truncate">{getEditLabel(edit)}</span>
+                </div>
+              ))}
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+      )}
     </div>
   );
 };
