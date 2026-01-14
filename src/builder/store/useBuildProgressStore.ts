@@ -10,6 +10,7 @@ export interface BuildSummary {
   duration: number;
   edits: BuildEdit[];
   taskTitle: string;
+  message: string;
 }
 
 interface BuildProgressState {
@@ -67,6 +68,7 @@ export const useBuildProgressStore = create<BuildProgressStore>((set, get) => ({
       duration,
       edits: [...state.edits],
       taskTitle: state.taskTitle,
+      message: '', // Will be set by AIChat when adding the message
     };
     
     set({
