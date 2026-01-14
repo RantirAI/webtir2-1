@@ -574,7 +574,36 @@ async function streamOpenAI({
   if (!response.ok) {
     const errorText = await response.text();
     console.error(`[AI Service] OpenAI API error for model ${model}:`, response.status, errorText);
-    throw new Error(`API error: ${response.status} - ${errorText}`);
+    
+    // Parse OpenAI error for better user feedback
+    let userMessage = `API error: ${response.status}`;
+    try {
+      const errorJson = JSON.parse(errorText);
+      if (errorJson.error?.message) {
+        userMessage = errorJson.error.message;
+      }
+      // Check for model not found errors (404 or specific error codes)
+      if (response.status === 404 || errorJson.error?.code === 'model_not_found' || errorJson.error?.code === 'invalid_model') {
+        userMessage = `Model "${model}" is not available. This model may require special API access, be in limited preview, or use a different name format. Try using "gpt-5" or "gpt-4o" instead.`;
+      }
+      // Check for rate limiting
+      if (response.status === 429) {
+        userMessage = `Rate limit exceeded for model "${model}". Please wait a moment and try again.`;
+      }
+      // Check for authentication errors
+      if (response.status === 401) {
+        userMessage = `Invalid API key. Please check your OpenAI API key in settings.`;
+      }
+      // Check for insufficient quota
+      if (errorJson.error?.code === 'insufficient_quota') {
+        userMessage = `Your OpenAI account has insufficient quota. Please check your billing settings at platform.openai.com.`;
+      }
+    } catch {
+      // If we can't parse JSON, use raw error text
+      userMessage = errorText || `API error: ${response.status}`;
+    }
+    
+    throw new Error(userMessage);
   }
 
   await processSSEStream(response, onDelta, onDone);
