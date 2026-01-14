@@ -500,7 +500,7 @@ async function streamOpenAI({
     model,
     messages,
     stream: true,
-    max_tokens: 16384, // Allow larger responses to prevent truncation
+    max_tokens: 32768, // Increased to 32k to prevent truncation on full pages
   };
 
   // Enable JSON mode for build requests (OpenAI API feature)
@@ -552,7 +552,7 @@ async function streamAnthropic({
     },
     body: JSON.stringify({
       model,
-      max_tokens: 8192, // Increased from 4096 to prevent truncation
+      max_tokens: 16384, // Increased to 16k to prevent truncation on full pages
       system: systemMessage,
       messages: chatMessages.map((m) => ({
         role: m.role,
@@ -604,7 +604,7 @@ async function streamGemini({
         contents,
         systemInstruction: systemInstruction ? { parts: [{ text: systemInstruction }] } : undefined,
         generationConfig: {
-          maxOutputTokens: 8192, // Allow larger responses to prevent truncation
+          maxOutputTokens: 16384, // Increased to 16k to prevent truncation on full pages
         },
       }),
     }
