@@ -121,7 +121,7 @@ function styleObjectToCSS(styles: StyleDeclaration | Record<string, string>): st
 
 // Generate CSS stylesheet from all style sources
 export function exportStylesheet(): string {
-  const { styleSources, styles, breakpoints } = useStyleStore.getState();
+  const { styleSources, styles, breakpoints, rawCssOverrides } = useStyleStore.getState();
   let css = `/* Auto-generated styles from Visual Builder */
 /* Bootstrap 4 Compatible */
 
@@ -236,6 +236,11 @@ body {
       });
     });
   });
+
+  // Append raw CSS overrides at the end
+  if (rawCssOverrides && rawCssOverrides.trim()) {
+    css += `/* Raw CSS Overrides */\n${rawCssOverrides}\n`;
+  }
 
   return css;
 }

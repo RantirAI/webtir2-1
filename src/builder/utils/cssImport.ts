@@ -203,6 +203,87 @@ export function parseCSSToStyleStore(cssText: string): {
   };
 }
 
+// Extract supported (class-only) and unsupported (element/id/complex) CSS rules
+export function extractCSSRules(cssText: string): { supportedCSS: string; unsupportedCSS: string } {
+  // Remove comments first
+  let cleanCSS = cssText.replace(/\/\*[\s\S]*?\*\//g, '');
+  
+  const supportedRules: string[] = [];
+  const unsupportedRules: string[] = [];
+  
+  // Pattern for simple class selectors: .className or .className:pseudo
+  const simpleClassPattern = /^\.[a-zA-Z_-][a-zA-Z0-9_-]*(?::[a-zA-Z-]+)?$/;
+  
+  // Parse all rules (including media queries)
+  // First handle media queries
+  const mediaQueryPattern = /@media\s*\([^)]+\)\s*\{([\s\S]*?)\}/g;
+  const processedMediaQueries = new Set<string>();
+  
+  let mediaMatch;
+  while ((mediaMatch = mediaQueryPattern.exec(cleanCSS)) !== null) {
+    const fullMatch = mediaMatch[0];
+    const mediaCondition = fullMatch.match(/@media\s*\([^)]+\)/)?.[0] || '@media';
+    const innerContent = mediaMatch[1];
+    
+    processedMediaQueries.add(fullMatch);
+    
+    // Parse rules inside media query
+    const innerRulePattern = /([^{}]+)\s*\{([^}]*)\}/g;
+    let innerMatch;
+    const supportedInner: string[] = [];
+    const unsupportedInner: string[] = [];
+    
+    while ((innerMatch = innerRulePattern.exec(innerContent)) !== null) {
+      const selector = innerMatch[1].trim();
+      const declarations = innerMatch[2];
+      
+      if (simpleClassPattern.test(selector)) {
+        supportedInner.push(`  ${selector} { ${declarations.trim()} }`);
+      } else {
+        unsupportedInner.push(`  ${selector} { ${declarations.trim()} }`);
+      }
+    }
+    
+    if (supportedInner.length > 0) {
+      supportedRules.push(`${mediaCondition} {\n${supportedInner.join('\n')}\n}`);
+    }
+    if (unsupportedInner.length > 0) {
+      unsupportedRules.push(`${mediaCondition} {\n${unsupportedInner.join('\n')}\n}`);
+    }
+  }
+  
+  // Remove processed media queries from cleanCSS
+  for (const mq of processedMediaQueries) {
+    cleanCSS = cleanCSS.replace(mq, '');
+  }
+  
+  // Parse base rules (outside media queries)
+  const baseRulePattern = /([^{}@]+)\s*\{([^}]*)\}/g;
+  let baseMatch;
+  
+  while ((baseMatch = baseRulePattern.exec(cleanCSS)) !== null) {
+    const selector = baseMatch[1].trim();
+    const declarations = baseMatch[2];
+    
+    // Skip :root, *, and other global selectors
+    if (selector === ':root' || selector === '*' || selector.startsWith('@')) {
+      unsupportedRules.push(`${selector} { ${declarations.trim()} }`);
+      continue;
+    }
+    
+    if (simpleClassPattern.test(selector)) {
+      supportedRules.push(`${selector} { ${declarations.trim()} }`);
+    } else {
+      unsupportedRules.push(`${selector} { ${declarations.trim()} }`);
+    }
+  }
+  
+  return {
+    supportedCSS: supportedRules.join('\n\n'),
+    unsupportedCSS: unsupportedRules.join('\n\n'),
+  };
+}
+
 // Validate CSS syntax (basic validation)
 export function validateCSS(cssText: string): { valid: boolean; errors: string[] } {
   const errors: string[] = [];

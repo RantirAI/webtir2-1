@@ -10,7 +10,7 @@ import { exportHTML, exportCSS, exportJS, exportAstro } from '../utils/codeExpor
 import { extractUsedFonts, generateGoogleFontsLink } from '../utils/export';
 import { discoverComponents, getComponentCode, flattenComponents } from '../utils/componentCodeExport';
 import { parseHTMLToInstance, parseHTMLPreservingLinks } from '../utils/codeImport';
-import { parseCSSToStyleStore, validateCSS } from '../utils/cssImport';
+import { parseCSSToStyleStore, validateCSS, extractCSSRules } from '../utils/cssImport';
 import { Copy, Check, Monitor, Tablet, Smartphone, Upload, Lock, Sparkles } from 'lucide-react';
 import { ImportModal } from './ImportModal';
 import { FileTree } from './FileTree';
@@ -230,15 +230,23 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
           console.warn('CSS validation warnings:', validation.errors);
         }
         
-        // Parse and apply CSS to style store
-        const result = parseCSSToStyleStore(cssCode);
+        // Extract supported (class selectors) and unsupported (element/id/complex) rules
+        const { supportedCSS, unsupportedCSS } = extractCSSRules(cssCode);
         
-        const description = `Updated ${result.classesUpdated} classes, created ${result.classesCreated} new classes, set ${result.propertiesSet} properties.`;
+        // Parse and apply class-based CSS to style store
+        const result = parseCSSToStyleStore(supportedCSS);
+        
+        // Store unsupported CSS as raw overrides
+        const { setRawCssOverrides } = useStyleStore.getState();
+        setRawCssOverrides(unsupportedCSS);
+        
+        const classDesc = `Updated ${result.classesUpdated} classes, created ${result.classesCreated} new classes, set ${result.propertiesSet} properties.`;
+        const rawDesc = unsupportedCSS.trim() ? ` Injected raw CSS for element/complex selectors.` : '';
         toast({
           title: 'CSS applied',
           description: !validation.valid 
-            ? `${description} (Some rules may have been skipped)`
-            : description,
+            ? `${classDesc}${rawDesc} (Some rules may have been skipped)`
+            : `${classDesc}${rawDesc}`,
         });
       }
       
@@ -510,10 +518,10 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
                 }}
               >
                 <div className="w-full h-full overflow-auto">
-                  {/* Always use full exported CSS for preview, not just current tab's CSS */}
+                  {/* Use edited CSS when user has made changes, otherwise use exported CSS */}
                   <PreviewFrame 
                     htmlCode={htmlCode} 
-                    cssCode={exportCSS()} 
+                    cssCode={editedTabs.css ? cssCode : exportCSS()} 
                     jsCode={jsCode}
                     allPages={allProjectPages}
                     currentPage={currentPreviewPage}

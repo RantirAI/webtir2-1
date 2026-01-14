@@ -233,6 +233,9 @@ export interface StyleStore {
   // Styles (key: styleSourceId:breakpointId:state:property)
   styles: Record<string, string>;
   
+  // Raw CSS overrides (element selectors, complex selectors, etc.)
+  rawCssOverrides: string;
+  
   // Breakpoints
   breakpoints: Breakpoint[];
   currentBreakpointId: string;
@@ -258,6 +261,10 @@ export interface StyleStore {
   setCurrentBreakpoint: (id: string) => void;
   setCurrentPseudoState: (state: PseudoState) => void;
   resetStyles: (styleSourceId: string, breakpointId?: string, state?: PseudoState) => void;
+  
+  // Raw CSS overrides actions
+  setRawCssOverrides: (css: string) => void;
+  clearRawCssOverrides: () => void;
   
   // Metadata actions
   setStyleMetadata: (styleSourceId: string, metadata: Partial<StyleMetadata>) => void;

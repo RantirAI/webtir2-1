@@ -47,7 +47,7 @@ function combineBackgroundLayers(props: Record<string, string>): Record<string, 
 }
 
 export const StyleSheetInjector: React.FC = () => {
-  const { styleSources, styles, breakpoints } = useStyleStore();
+  const { styleSources, styles, breakpoints, rawCssOverrides } = useStyleStore();
 
   useEffect(() => {
     const styleElId = 'builder-styles';
@@ -138,8 +138,14 @@ export const StyleSheetInjector: React.FC = () => {
       });
     });
 
-    styleEl.textContent = rules.join('\n');
-  }, [styleSources, styles, breakpoints]);
+    // Append raw CSS overrides (element selectors, complex selectors, etc.)
+    let finalCSS = rules.join('\n');
+    if (rawCssOverrides && rawCssOverrides.trim()) {
+      finalCSS += '\n\n/* Raw CSS Overrides */\n' + rawCssOverrides;
+    }
+
+    styleEl.textContent = finalCSS;
+  }, [styleSources, styles, breakpoints, rawCssOverrides]);
 
   return null;
 };
