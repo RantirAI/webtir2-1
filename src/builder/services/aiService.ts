@@ -2,46 +2,39 @@ import { AIProvider, AI_PROVIDERS } from '../store/useAISettingsStore';
 import { buildAIContext } from '../utils/aiComponentDocs';
 
 // Model-specific max output tokens mapping
+// Using safe, proven limits that prevent network timeouts (same as working GPT-4o)
 const MODEL_MAX_TOKENS: Record<string, number> = {
-  // GPT-5 family - 128K max output
-  'gpt-5': 128000,
-  'gpt-5.2': 128000,
-  'gpt-5-mini': 128000,
-  'gpt-5-nano': 128000,
-  
-  // Reasoning models - 100K max output
-  'o3': 100000,
-  'o3-mini': 100000,
-  'o4-mini': 100000,
-  
-  // GPT-4.1 - 32K max output
-  'gpt-4.1': 32768,
-  'gpt-4.1-mini': 32768,
-  'gpt-4.1-nano': 32768,
-  
-  // GPT-4o - 16K max output
+  // All OpenAI models - use safe 16K limit (prevents timeout, auto-continue handles longer)
+  'gpt-5': 16384,
+  'gpt-5.2': 16384,
+  'gpt-5-mini': 16384,
+  'gpt-5-nano': 16384,
+  'o3': 16384,
+  'o3-mini': 16384,
+  'o4-mini': 16384,
+  'gpt-4.1': 16384,
+  'gpt-4.1-mini': 16384,
+  'gpt-4.1-nano': 16384,
   'gpt-4o': 16384,
   'gpt-4o-mini': 16384,
   
-  // Claude 4.5 - 64K max output
-  'claude-opus-4-5-20251101': 64000,
-  'claude-sonnet-4-5-20250929': 32000,
-  
-  // Claude 4 - 32K max output
-  'claude-sonnet-4-20250514': 32000,
-  'claude-opus-4-20250514': 32000,
+  // Claude models - safe 8K limit
+  'claude-opus-4-5-20251101': 8192,
+  'claude-sonnet-4-5-20250929': 8192,
+  'claude-sonnet-4-20250514': 8192,
+  'claude-opus-4-20250514': 8192,
   'claude-3-5-sonnet-20241022': 8192,
   'claude-3-opus-20240229': 4096,
   
-  // Gemini 2.5 - 65K max output
-  'gemini-2.5-pro': 65535,
-  'gemini-2.5-flash': 65535,
-  'gemini-2.0-flash': 65535,
+  // Gemini models - safe 8K limit
+  'gemini-2.5-pro': 8192,
+  'gemini-2.5-flash': 8192,
+  'gemini-2.0-flash': 8192,
 };
 
 // Helper to get max tokens for a model
 export const getModelMaxTokens = (model: string): number => {
-  return MODEL_MAX_TOKENS[model] || 16384; // Default fallback
+  return MODEL_MAX_TOKENS[model] || 8192; // Safe 8K fallback
 };
 
 export interface AIMessage {
@@ -542,8 +535,8 @@ async function streamOpenAI({
   const maxTokens = getModelMaxTokens(model);
   
   // Newer OpenAI models (gpt-5, o3, gpt-4.1, etc.) use max_completion_tokens
-  // Older models (gpt-4o, gpt-4-turbo, gpt-3.5) use max_tokens
-  const usesNewTokenParam = model.startsWith('gpt-5') || model.startsWith('o3') || model.startsWith('o4') || model.startsWith('gpt-4.1');
+  // Uses includes() to catch all variants like gpt-5.2-2025-01-01, o3-mini-high, etc.
+  const usesNewTokenParam = model.includes('gpt-5') || model.includes('gpt-4.1') || model.startsWith('o3') || model.startsWith('o4');
   
   const body: Record<string, unknown> = {
     model,
