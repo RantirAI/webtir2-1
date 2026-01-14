@@ -329,11 +329,68 @@ function isCompleteComponentSpec(spec: AIComponentSpec): boolean {
   return true;
 }
 
+// Detect if text looks like truncated JSON (cut mid-stream)
+export function detectTruncatedJSON(text: string): boolean {
+  // Must contain some JSON-like content
+  if (!text.includes('"action"') && !text.includes('"components"')) {
+    return false;
+  }
+  
+  // Check for unbalanced braces/brackets
+  let braceDepth = 0;
+  let bracketDepth = 0;
+  let inString = false;
+  let escape = false;
+  
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+    
+    if (escape) {
+      escape = false;
+      continue;
+    }
+    
+    if (char === '\\' && inString) {
+      escape = true;
+      continue;
+    }
+    
+    if (char === '"' && !escape) {
+      inString = !inString;
+      continue;
+    }
+    
+    if (!inString) {
+      if (char === '{') braceDepth++;
+      if (char === '}') braceDepth--;
+      if (char === '[') bracketDepth++;
+      if (char === ']') bracketDepth--;
+    }
+  }
+  
+  // If braces/brackets are unbalanced, JSON was truncated
+  return braceDepth !== 0 || bracketDepth !== 0;
+}
+
 export function parseAIResponse(text: string): AIResponse | null {
+  // First check if this looks like truncated JSON
+  const isTruncatedJSON = detectTruncatedJSON(text);
+  
   const jsonStr = extractJSON(text);
   
   if (!jsonStr) {
     console.log('No valid JSON found in AI response');
+    // If it looked like JSON but failed to extract, it was likely truncated
+    if (isTruncatedJSON) {
+      console.warn('AI response appears to be truncated mid-JSON');
+      return {
+        action: 'create',
+        components: [],
+        message: 'Response was truncated. Continuing...',
+        wasTruncated: true,
+        truncatedCount: 1, // At least one component was truncated
+      };
+    }
     return null;
   }
 
@@ -370,13 +427,31 @@ export function parseAIResponse(text: string): AIResponse | null {
           console.warn(`${components.length - validComponents.length} components were truncated and filtered out`);
         }
         
-        if (validComponents.length === 0) {
-          console.error('All components were truncated - AI response incomplete');
-          return null;
-        }
+        // Check if message indicates more sections needed
+        const messageIndicatesMore = ((parsed.message as string) || '').toLowerCase().includes('remaining') ||
+          ((parsed.message as string) || '').toLowerCase().includes('continue') ||
+          ((parsed.message as string) || '').toLowerCase().includes('more sections');
         
         const truncatedCount = components.length - validComponents.length;
-        const wasTruncated = truncatedCount > 0;
+        const wasTruncated = truncatedCount > 0 || messageIndicatesMore || isTruncatedJSON;
+        
+        // Even if all components were truncated, return with wasTruncated flag
+        // so auto-continue can kick in
+        if (validComponents.length === 0 && wasTruncated) {
+          console.warn('All components were truncated, triggering auto-continue');
+          return {
+            action: 'create',
+            components: [],
+            message: (parsed.message as string) || 'Response was truncated. Continuing...',
+            wasTruncated: true,
+            truncatedCount: truncatedCount || 1,
+          };
+        }
+        
+        if (validComponents.length === 0) {
+          console.error('All components were invalid');
+          return null;
+        }
         
         const normalizedComponents = validComponents.map(normalizeComponentSpec);
         return {
@@ -384,7 +459,7 @@ export function parseAIResponse(text: string): AIResponse | null {
           components: normalizedComponents,
           message: (parsed.message as string) || 'Components created successfully!',
           wasTruncated,
-          truncatedCount,
+          truncatedCount: wasTruncated ? Math.max(truncatedCount, 1) : 0,
         };
       }
     }
@@ -425,6 +500,16 @@ export function parseAIResponse(text: string): AIResponse | null {
     return null;
   } catch (error) {
     console.error('Failed to parse AI JSON:', error);
+    // If parsing failed but we detected truncation, signal for auto-continue
+    if (isTruncatedJSON) {
+      return {
+        action: 'create',
+        components: [],
+        message: 'Response was truncated. Continuing...',
+        wasTruncated: true,
+        truncatedCount: 1,
+      };
+    }
     return null;
   }
 }

@@ -119,56 +119,34 @@ When updating this component, use targetId: "${styleSourceId}" in the update act
 `;
   };
 
-  // Build page tree context - shows all components on the page
+  // Build page tree context - COMPACT version: only top-level sections to save tokens
   const buildPageTreeContext = (): string => {
     const rootInstance = useBuilderStore.getState().rootInstance;
     if (!rootInstance || rootInstance.children.length === 0) return '';
     
-    const components: Array<{
-      id: string;
-      type: string;
-      label: string;
-      styleSourceId: string;
-      textContent?: string;
-      path: string;
-    }> = [];
-    
-    const traverse = (instance: { id: string; type: string; label?: string; styleSourceIds: string[]; props: Record<string, unknown>; children: unknown[] }, path: string = '') => {
-      const currentPath = path ? `${path} > ${instance.label || instance.type}` : instance.label || instance.type;
-      
-      const textContent = typeof instance.props.children === 'string' 
-        ? instance.props.children.slice(0, 50) 
-        : undefined;
-      
-      components.push({
-        id: instance.id,
+    // Only include top-level sections (direct children of root)
+    const sections = rootInstance.children.map((child: unknown, index: number) => {
+      const instance = child as { id: string; type: string; label?: string; styleSourceIds: string[]; props: Record<string, unknown>; children: unknown[] };
+      const childCount = Array.isArray(instance.children) ? instance.children.length : 0;
+      return {
+        index: index + 1,
         type: instance.type,
         label: instance.label || instance.type,
         styleSourceId: instance.styleSourceIds[0] || '',
-        textContent,
-        path: currentPath,
-      });
-      
-      if (Array.isArray(instance.children)) {
-        instance.children.forEach((child: unknown) => traverse(child as typeof instance, currentPath));
-      }
-    };
+        childCount,
+      };
+    });
     
-    rootInstance.children.forEach((child: unknown) => traverse(child as Parameters<typeof traverse>[0]));
-    
-    if (components.length === 0) return '';
+    if (sections.length === 0) return '';
     
     return `
-## Current Page Components
+## Current Page Sections (${sections.length} total)
 
-Here are all components currently on the page. Use styleSourceId as targetId for style changes, or id for prop changes:
+| # | Type | Label | StyleSourceId | Children |
+|---|------|-------|---------------|----------|
+${sections.map(s => `| ${s.index} | ${s.type} | ${s.label} | ${s.styleSourceId} | ${s.childCount} |`).join('\n')}
 
-| Type | Label | StyleSourceId | Content Preview |
-|------|-------|---------------|-----------------|
-${components.slice(0, 50).map(c => `| ${c.type} | ${c.label} | ${c.styleSourceId} | ${c.textContent || '-'} |`).join('\n')}
-${components.length > 50 ? `\n... and ${components.length - 50} more components` : ''}
-
-When user says "change the heading color" or "update the button text", find the matching component above and use UPDATE action.
+When continuing a build, add NEW sections after these. Do NOT recreate existing sections.
 `;
   };
 
@@ -436,13 +414,16 @@ When user says "change the heading color" or "update the button text", find the 
                 : `⚠️ Failed to build components. Please try again.`;
               
               // Check for truncation and trigger auto-continue
-              if (componentsBuilt && parsed.wasTruncated && parsed.truncatedCount && parsed.truncatedCount > 0) {
-                console.log(`Detected ${parsed.truncatedCount} truncated components, triggering auto-continue...`);
+              // This now also handles cases where JSON was cut mid-stream
+              const shouldAutoContinue = parsed.wasTruncated && parsed.truncatedCount && parsed.truncatedCount > 0;
+              
+              if (shouldAutoContinue) {
+                console.log(`Detected truncation (${parsed.truncatedCount} incomplete), triggering auto-continue...`);
                 setTruncated(true, parsed.truncatedCount);
                 
                 // Auto-continue after a short delay
                 setTimeout(() => {
-                  const continueMessage = "Continue building the remaining sections. Do NOT recreate any existing sections - only add NEW sections that weren't created yet. Review the current page components above and add what's missing.";
+                  const continueMessage = "Continue building the remaining sections. Do NOT recreate any existing sections - only add NEW sections that weren't created yet. Look at the Current Page Sections table and add what's missing (e.g., if you only have Nav+Hero, add Features, Testimonials, CTA, Footer).";
                   toast.info('Continuing to build remaining sections...');
                   
                   // Trigger continuation by simulating a new message
@@ -618,19 +599,40 @@ When user says "change the heading color" or "update the button text", find the 
             
             // If we couldn't parse a valid action in build mode
             else if (!parsed) {
-              // Check if response looks like JSON (failed parse) vs conversation
-              const looksLikeJSON = fullResponse.includes('"action"') || fullResponse.includes('"components"');
-              const hasMarkdownCodeBlock = fullResponse.includes('```');
+              // Import the truncation detector
+              const { detectTruncatedJSON } = await import('../utils/aiComponentGenerator');
+              const wasTruncatedMidStream = detectTruncatedJSON(fullResponse);
               
-              if (looksLikeJSON || hasMarkdownCodeBlock) {
-                console.warn('AI returned malformed JSON or wrapped in markdown:', fullResponse.substring(0, 200));
-                displayMessage = '⚠️ I had trouble processing that request. Please try again with a simpler request.';
+              if (wasTruncatedMidStream) {
+                // JSON was cut mid-stream - auto-continue
+                console.warn('AI response was truncated mid-JSON, triggering auto-continue...');
+                displayMessage = 'Response was truncated. Continuing...';
+                setTruncated(true, 1);
+                
+                setTimeout(() => {
+                  const continueMessage = "Continue building. Your previous response was cut off. Do NOT recreate existing sections - only output the REMAINING sections that weren't created yet.";
+                  toast.info('Continuing build...');
+                  setInput(continueMessage);
+                  setTimeout(() => {
+                    const sendButton = document.querySelector('[data-send-button]') as HTMLButtonElement;
+                    if (sendButton) sendButton.click();
+                  }, 100);
+                }, 500);
               } else {
-                // It's a conversational response - the AI ignored JSON instruction
-                console.warn('AI returned conversational text instead of JSON in build mode');
-                displayMessage = '⚠️ Let me try that again. Please describe what you want to build.';
+                // Check if response looks like JSON (failed parse) vs conversation
+                const looksLikeJSON = fullResponse.includes('"action"') || fullResponse.includes('"components"');
+                const hasMarkdownCodeBlock = fullResponse.includes('```');
+                
+                if (looksLikeJSON || hasMarkdownCodeBlock) {
+                  console.warn('AI returned malformed JSON or wrapped in markdown:', fullResponse.substring(0, 200));
+                  displayMessage = '⚠️ I had trouble processing that request. Please try again with a simpler request.';
+                } else {
+                  // It's a conversational response - the AI ignored JSON instruction
+                  console.warn('AI returned conversational text instead of JSON in build mode');
+                  displayMessage = '⚠️ Let me try that again. Please describe what you want to build.';
+                }
+                toast.error('Failed to build - try again');
               }
-              toast.error('Failed to build - try again');
             }
           } else {
             // Discuss mode - check if AI accidentally returned JSON

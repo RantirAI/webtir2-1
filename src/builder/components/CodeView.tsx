@@ -39,6 +39,9 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
   const allProjectPages = getAllPages();
   const globalComponents = getGlobalComponents();
   
+  // Calculate export stats for debugging truncation issues
+  const sectionCount = rootInstance?.children?.length || 0;
+  
   const [activeTab, setActiveTab] = useState('html');
   const [copiedTab, setCopiedTab] = useState<string | null>(null);
   const [previewSize, setPreviewSize] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
@@ -375,29 +378,49 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
           {isMediaFile ? (
             <CodeViewMediaPanel selectedPath={selectedFile} />
           ) : (
-            <div className="h-full border-r border-border overflow-hidden">
-              <div className="h-10 border-b border-border flex items-center px-3 bg-muted/20">
+            <div className="h-full border-r border-border overflow-hidden flex flex-col">
+              {/* File path + Export Stats */}
+              <div className="h-10 border-b border-border flex items-center justify-between px-3 bg-muted/20">
                 <span className="text-xs font-mono text-muted-foreground">{selectedFile}</span>
+                <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
+                  <span title="Top-level sections on canvas">
+                    📦 {sectionCount} section{sectionCount !== 1 ? 's' : ''}
+                  </span>
+                  <span title="HTML character count">
+                    HTML: {htmlCode.length.toLocaleString()} chars
+                  </span>
+                  <span title="CSS character count">
+                    CSS: {cssCode.length.toLocaleString()} chars
+                  </span>
+                </div>
               </div>
-              <LockedCodeEditor 
-                code={getCode(activeTab)} 
-                language={activeTab === 'astro' || activeTab === 'html' ? 'html' : activeTab === 'react' ? 'jsx' : activeTab}
-                onChange={(newCode) => {
-                  setIsCodeEdited(true);
-                  // Mark this tab as edited so it won't be overwritten
-                  setEditedTabs(prev => ({ ...prev, [activeTab]: true }));
-                  switch (activeTab) {
-                    case 'html': setHtmlCode(newCode); break;
-                    case 'css': setCssCode(newCode); break;
-                    case 'react': setJsCode(newCode); break;
-                    case 'astro': setAstroCode(newCode); break;
-                  }
-                }}
-                enforceLocking={activeTab === 'react' || isComponentFile}
-                onLockedEditAttempt={handleLockedEditAttempt}
-                allowUnlock={true}
-                filePath={selectedFile}
-              />
+              {/* Warning banner for incomplete pages */}
+              {sectionCount > 0 && sectionCount < 3 && (
+                <div className="px-3 py-1.5 bg-yellow-500/10 border-b border-yellow-500/20 text-xs text-yellow-600 dark:text-yellow-400">
+                  ⚠️ Page has only {sectionCount} section{sectionCount !== 1 ? 's' : ''}. Complete pages typically have 5+ sections (Nav, Hero, Features, etc.)
+                </div>
+              )}
+              <div className="flex-1 overflow-hidden">
+                <LockedCodeEditor 
+                  code={getCode(activeTab)} 
+                  language={activeTab === 'astro' || activeTab === 'html' ? 'html' : activeTab === 'react' ? 'jsx' : activeTab}
+                  onChange={(newCode) => {
+                    setIsCodeEdited(true);
+                    // Mark this tab as edited so it won't be overwritten
+                    setEditedTabs(prev => ({ ...prev, [activeTab]: true }));
+                    switch (activeTab) {
+                      case 'html': setHtmlCode(newCode); break;
+                      case 'css': setCssCode(newCode); break;
+                      case 'react': setJsCode(newCode); break;
+                      case 'astro': setAstroCode(newCode); break;
+                    }
+                  }}
+                  enforceLocking={activeTab === 'react' || isComponentFile}
+                  onLockedEditAttempt={handleLockedEditAttempt}
+                  allowUnlock={true}
+                  filePath={selectedFile}
+                />
+              </div>
             </div>
           )}
         </ResizablePanel>
