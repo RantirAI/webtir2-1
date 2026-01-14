@@ -32,7 +32,7 @@ export function canDropInside(instanceType: string, draggedType?: string): boole
   }
   
   // Rich text leaf elements cannot contain other elements
-  const leafTypes = ['Blockquote', 'OrderedList', 'UnorderedList', 'CodeBlock', 'Text', 'Heading', 'Image', 'Button', 'Link'];
+  const leafTypes = ['Blockquote', 'OrderedList', 'UnorderedList', 'CodeBlock', 'Text', 'Heading', 'Image', 'Button', 'Link', 'Separator', 'Divider', 'BreadcrumbItem'];
   if (leafTypes.includes(instanceType)) {
     return false;
   }
@@ -40,15 +40,30 @@ export function canDropInside(instanceType: string, draggedType?: string): boole
   // Determine which components can have children
   // All container/composite components can accept any child component
   const containerTypes = [
+    // Core layout containers
     'Div', 
     'Container', 
     'Section', 
     'Box', 
     'Navigation', 
     'Form', 
-    'Table', 
-    'Dropdown',
     'RichText',
+    
+    // Prebuilt component roots that can accept children
+    'Accordion',
+    'Tabs',
+    'Carousel',
+    'Breadcrumb',
+    'Table',
+    'Dropdown',
+    
+    // Child primitives that can accept nested content
+    'AccordionItem',
+    'TabPanel',
+    'CarouselSlide',
+    'TableRow',
+    'TableHeaderCell',
+    'TableCell',
     'Cell'
   ];
   return containerTypes.includes(instanceType);

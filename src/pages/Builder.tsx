@@ -16,7 +16,7 @@ import { useBuilderStore } from '@/builder/store/useBuilderStore';
 import { usePageStore } from '@/builder/store/usePageStore';
 import { componentRegistry } from '@/builder/primitives/registry';
 import { ComponentInstance, ComponentType } from '@/builder/store/types';
-import { generateId } from '@/builder/utils/instance';
+import { generateId, canDropInside } from '@/builder/utils/instance';
 import { useStyleStore } from '@/builder/store/useStyleStore';
 import { useKeyboardShortcuts } from '@/builder/hooks/useKeyboardShortcuts';
 import { DropIndicator } from '@/builder/components/DropIndicator';
@@ -152,8 +152,8 @@ const Builder: React.FC = () => {
           targetIndex = rootInstance.children.findIndex(c => c.id === overId);
           if (targetIndex === -1) targetIndex = rootInstance.children.length;
         } else {
-          // If dropping on a container, add to it
-          if (overInstance.type === 'Div' || overInstance.type === 'Container' || overInstance.type === 'Section') {
+          // If dropping on a container (use canDropInside), add to it
+          if (canDropInside(overInstance.type, existingInstance.type)) {
             targetParentId = overId;
             targetIndex = overInstance.children.length;
           } else {
@@ -184,13 +184,13 @@ const Builder: React.FC = () => {
           parentId = (over as any).data.current?.instanceId || 'root';
         } else if (over.id === 'canvas-drop-zone') {
           const selectedType = useBuilderStore.getState().getSelectedInstance()?.type;
-          if (selectedInstanceId && (selectedType === 'Div' || selectedType === 'Container' || selectedType === 'Section' || selectedType === 'Box')) {
+          if (selectedInstanceId && selectedType && canDropInside(selectedType)) {
             parentId = selectedInstanceId;
           }
         } else {
           const overInstance = findInstance(overId);
           if (overInstance) {
-            if (overInstance.type === 'Div' || overInstance.type === 'Container' || overInstance.type === 'Section' || overInstance.type === 'Box') {
+            if (canDropInside(overInstance.type)) {
               parentId = overId;
             } else {
               // If dropping on a non-container, find its parent
@@ -267,13 +267,13 @@ const Builder: React.FC = () => {
           parentId = (over as any).data.current?.instanceId || 'root';
         } else if (over.id === 'canvas-drop-zone') {
           const selectedType = useBuilderStore.getState().getSelectedInstance()?.type;
-          if (selectedInstanceId && (selectedType === 'Div' || selectedType === 'Container' || selectedType === 'Section')) {
+          if (selectedInstanceId && selectedType && canDropInside(selectedType)) {
             parentId = selectedInstanceId;
           }
         } else {
           const overInstance = findInstance(overId);
           if (overInstance) {
-            if (overInstance.type === 'Div' || overInstance.type === 'Container' || overInstance.type === 'Section') {
+            if (canDropInside(overInstance.type)) {
               parentId = overId;
             }
           }
@@ -306,13 +306,13 @@ const Builder: React.FC = () => {
           parentId = targetInstanceId;
         } else if (over.id === 'canvas-drop-zone') {
           const selectedType = useBuilderStore.getState().getSelectedInstance()?.type;
-          if (selectedInstanceId && (selectedType === 'Div' || selectedType === 'Container' || selectedType === 'Section')) {
+          if (selectedInstanceId && selectedType && canDropInside(selectedType)) {
             parentId = selectedInstanceId;
           }
         } else {
           const overInstance = findInstance(overId);
           if (overInstance) {
-            if (overInstance.type === 'Div' || overInstance.type === 'Container' || overInstance.type === 'Section') {
+            if (canDropInside(overInstance.type)) {
               parentId = overId;
             } else {
               const findParent = (tree: ComponentInstance, childId: string): ComponentInstance | null => {

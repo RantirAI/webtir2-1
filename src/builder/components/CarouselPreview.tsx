@@ -8,6 +8,9 @@ interface CarouselSlide {
   buttonText?: string;
   buttonLink?: string;
   altText?: string;
+  alt?: string;
+  hasChildren?: boolean;
+  childContent?: any[];
 }
 
 interface CarouselPreviewProps {
@@ -20,6 +23,8 @@ interface CarouselPreviewProps {
   showDots?: boolean;
   loop?: boolean;
   isPreviewMode?: boolean;
+  renderInstance?: (instance: any, parent?: any, index?: number) => React.ReactNode;
+  parentInstance?: any;
 }
 
 export const CarouselPreview: React.FC<CarouselPreviewProps> = ({
