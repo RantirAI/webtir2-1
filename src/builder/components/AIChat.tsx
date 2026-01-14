@@ -83,6 +83,7 @@ export const AIChat: React.FC = () => {
     completeLastStep,
     finishBuild,
     reset: resetBuildProgress,
+    setTruncated,
   } = useBuildProgressStore();
 
   const [chatMode, setChatMode] = useState<ChatMode>(lastChatMode);
@@ -433,6 +434,28 @@ When user says "change the heading color" or "update the button text", find the 
               displayMessage = componentsBuilt 
                 ? `✓ ${parsed.message || 'Components created successfully!'}`
                 : `⚠️ Failed to build components. Please try again.`;
+              
+              // Check for truncation and trigger auto-continue
+              if (componentsBuilt && parsed.wasTruncated && parsed.truncatedCount && parsed.truncatedCount > 0) {
+                console.log(`Detected ${parsed.truncatedCount} truncated components, triggering auto-continue...`);
+                setTruncated(true, parsed.truncatedCount);
+                
+                // Auto-continue after a short delay
+                setTimeout(() => {
+                  const continueMessage = "Continue building the remaining sections. Do NOT recreate any existing sections - only add NEW sections that weren't created yet. Review the current page components above and add what's missing.";
+                  toast.info('Continuing to build remaining sections...');
+                  
+                  // Trigger continuation by simulating a new message
+                  setInput(continueMessage);
+                  // Use a ref-based approach to trigger send
+                  setTimeout(() => {
+                    const sendButton = document.querySelector('[data-send-button]') as HTMLButtonElement;
+                    if (sendButton) sendButton.click();
+                  }, 100);
+                }, 500);
+              } else {
+                setTruncated(false, 0);
+              }
               
               if (componentsBuilt) {
                 toast.success('Components built on canvas!');
@@ -967,6 +990,7 @@ When user says "change the heading color" or "update the button text", find the 
                 <button
                   onClick={handleSend}
                   disabled={!input.trim() || isLoading}
+                  data-send-button
                   className={`p-1.5 rounded-full transition-colors ${input.trim() && !isLoading
                     ? 'bg-foreground text-background hover:bg-foreground/90'
                     : 'bg-muted text-muted-foreground cursor-not-allowed'

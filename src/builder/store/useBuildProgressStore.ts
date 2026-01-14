@@ -31,6 +31,9 @@ interface BuildProgressState {
   steps: BuildStep[];
   // Completed build summary for display
   lastBuildSummary: BuildSummary | null;
+  // Truncation tracking for auto-continue
+  isTruncated: boolean;
+  truncatedComponentsCount: number;
 }
 
 interface BuildProgressActions {
@@ -42,6 +45,7 @@ interface BuildProgressActions {
   finishBuild: () => BuildSummary;
   reset: () => void;
   clearLastSummary: () => void;
+  setTruncated: (isTruncated: boolean, count?: number) => void;
 }
 
 type BuildProgressStore = BuildProgressState & BuildProgressActions;
@@ -55,6 +59,8 @@ export const useBuildProgressStore = create<BuildProgressStore>((set, get) => ({
   edits: [],
   steps: [],
   lastBuildSummary: null,
+  isTruncated: false,
+  truncatedComponentsCount: 0,
 
   // Actions
   startBuild: (taskTitle: string) => set({
@@ -130,9 +136,16 @@ export const useBuildProgressStore = create<BuildProgressStore>((set, get) => ({
     edits: [],
     steps: [],
     lastBuildSummary: null,
+    isTruncated: false,
+    truncatedComponentsCount: 0,
   }),
 
   clearLastSummary: () => set({
     lastBuildSummary: null,
+  }),
+
+  setTruncated: (isTruncated: boolean, count?: number) => set({
+    isTruncated,
+    truncatedComponentsCount: count || 0,
   }),
 }));

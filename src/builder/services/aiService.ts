@@ -41,6 +41,18 @@ Your JSON MUST be complete and valid. NEVER truncate your response.
 If you cannot fit all sections, output what you CAN complete fully:
 {"action":"create","components":[/* complete components only */],"message":"Page created. Some sections may need to be added separately."}
 
+### CONTINUATION PROTOCOL (CRITICAL)
+
+When the user asks to "continue" building or add "remaining sections":
+1. DO NOT recreate components that already exist on the page
+2. Review the "Current Page Components" in the context to see what exists
+3. Only output NEW sections that weren't created yet
+4. Start your components array with the NEXT logical section
+5. If Nav + Hero exist, continue with Features, Testimonials, Footer, etc.
+
+Example continuation response:
+{"action":"create","components":[/* only NEW sections */],"message":"Added remaining sections to complete the page."}
+
 ---
 
 ## Design Philosophy
@@ -488,6 +500,7 @@ async function streamOpenAI({
     model,
     messages,
     stream: true,
+    max_tokens: 16384, // Allow larger responses to prevent truncation
   };
 
   // Enable JSON mode for build requests (OpenAI API feature)
@@ -539,7 +552,7 @@ async function streamAnthropic({
     },
     body: JSON.stringify({
       model,
-      max_tokens: 4096,
+      max_tokens: 8192, // Increased from 4096 to prevent truncation
       system: systemMessage,
       messages: chatMessages.map((m) => ({
         role: m.role,
@@ -590,6 +603,9 @@ async function streamGemini({
       body: JSON.stringify({
         contents,
         systemInstruction: systemInstruction ? { parts: [{ text: systemInstruction }] } : undefined,
+        generationConfig: {
+          maxOutputTokens: 8192, // Allow larger responses to prevent truncation
+        },
       }),
     }
   );
