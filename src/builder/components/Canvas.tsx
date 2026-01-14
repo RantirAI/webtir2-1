@@ -60,13 +60,30 @@ const TabsComponent: React.FC<{
   setSelectedInstanceId: (id: string | null) => void;
   setHoveredInstanceId: (id: string | null) => void;
   handleContextMenu: (e: React.MouseEvent, instance: ComponentInstance) => void;
-}> = ({ instance, tabs, defaultTab, isPreviewMode, getComputedStyles, setSelectedInstanceId, setHoveredInstanceId, handleContextMenu }) => {
-  const [activeTab, setActiveTab] = useState(defaultTab);
+  renderInstance?: (instance: ComponentInstance, parent?: ComponentInstance, index?: number) => React.ReactNode;
+}> = ({ instance, tabs, defaultTab, isPreviewMode, getComputedStyles, setSelectedInstanceId, setHoveredInstanceId, handleContextMenu, renderInstance }) => {
+  // Check for TabPanel children first
+  const childPanels = instance.children.filter(c => c.type === 'TabPanel');
+  const hasChildPanels = childPanels.length > 0;
+  
+  // Combine data tabs with child panels
+  const allTabs = hasChildPanels 
+    ? childPanels.map((child, index) => ({
+        id: child.id,
+        label: child.props?.label || `Tab ${index + 1}`,
+        content: child,
+        isChildBased: true,
+      }))
+    : tabs;
+  
+  const [activeTab, setActiveTab] = useState(hasChildPanels ? (allTabs[0]?.id || '') : defaultTab);
 
   // Reset active tab when defaultTab changes
   useEffect(() => {
-    setActiveTab(defaultTab);
-  }, [defaultTab]);
+    if (!hasChildPanels) {
+      setActiveTab(defaultTab);
+    }
+  }, [defaultTab, hasChildPanels]);
 
   // Get tabsStyles from instance props
   const tabsStyles = instance.props?.tabsStyles || {
@@ -113,6 +130,9 @@ const TabsComponent: React.FC<{
     }
   };
 
+  // Find active tab content
+  const activeTabData = allTabs.find((t: any) => t.id === activeTab);
+
   return (
     <div
       data-instance-id={instance.id}
@@ -148,7 +168,7 @@ const TabsComponent: React.FC<{
           marginLeft: isVertical && isReversed ? '16px' : undefined,
         }}
       >
-        {tabs.map((tab: any) => {
+        {allTabs.map((tab: any) => {
           const isActive = tab.id === activeTab;
           return (
             <button
@@ -183,14 +203,17 @@ const TabsComponent: React.FC<{
           borderRadius: `${tabsStyles.contentBorderRadius}px`,
           fontSize: '14px',
           color: 'hsl(var(--muted-foreground))',
+          minHeight: '60px',
         }}
       >
-        {tabs.find((t: any) => t.id === activeTab)?.content || 'Tab content'}
+        {activeTabData?.isChildBased && renderInstance
+          ? renderInstance(activeTabData.content, instance, 0)
+          : (activeTabData?.content || 'Tab content')}
       </div>
       
-      {tabs.length === 0 && (
+      {allTabs.length === 0 && (
         <div className="py-4 text-sm text-muted-foreground italic">
-          No tabs. Add tabs in the Data tab.
+          No tabs. Add tabs in the Data tab or drag TabPanel components.
         </div>
       )}
     </div>
@@ -1078,6 +1101,10 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
       }
 
       case 'Carousel': {
+        // Check for CarouselSlide children first
+        const childSlides = instance.children.filter(c => c.type === 'CarouselSlide');
+        const hasChildSlides = childSlides.length > 0;
+        
         const slides = instance.props?.slides || [];
         const styles = instance.props?.carouselStyles || {};
         const showArrows = instance.props?.showArrows ?? true;
@@ -1086,6 +1113,39 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
         const autoPlayInterval = instance.props?.autoPlayInterval ?? 3000;
         const pauseOnHover = instance.props?.pauseOnHover ?? true;
         const loop = instance.props?.loop ?? true;
+        
+        // In edit mode with child slides, show them directly for editing
+        if (!isPreviewMode && hasChildSlides) {
+          const content = (
+            <div
+              data-instance-id={instance.id}
+              className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
+              style={{
+                ...getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '8px',
+                minHeight: '100px',
+              }}
+              onClick={() => setSelectedInstanceId(instance.id)}
+              onMouseEnter={() => setHoveredInstanceId(instance.id)}
+              onMouseLeave={() => setHoveredInstanceId(null)}
+              onContextMenu={(e) => handleContextMenu(e, instance)}
+            >
+              {childSlides.map((child, idx) => renderInstance(child, instance, idx))}
+              {childSlides.length === 0 && (
+                <div className="py-4 text-sm text-muted-foreground italic text-center">
+                  Drop CarouselSlide components here
+                </div>
+              )}
+            </div>
+          );
+          return (
+            <DroppableContainer key={instance.id} instance={instance} {...commonProps}>
+              {content}
+            </DroppableContainer>
+          );
+        }
         
         const content = (
           <div
@@ -1098,7 +1158,15 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
             onContextMenu={isPreviewMode ? undefined : (e) => handleContextMenu(e, instance)}
           >
             <CarouselPreview
-              slides={slides}
+              slides={hasChildSlides ? childSlides.map((child, i) => ({
+                id: child.id,
+                imageUrl: child.props?.imageUrl || 'https://via.placeholder.com/800x400',
+                alt: child.props?.alt || `Slide ${i + 1}`,
+                title: child.props?.title || '',
+                description: child.props?.description || '',
+                hasChildren: child.children.length > 0,
+                childContent: child.children,
+              })) : slides}
               styles={styles}
               autoPlay={autoPlay}
               autoPlayInterval={autoPlayInterval}
@@ -1107,10 +1175,17 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
               showDots={showDots}
               loop={loop}
               isPreviewMode={isPreviewMode}
+              renderInstance={renderInstance}
+              parentInstance={instance}
             />
           </div>
         );
-        return wrapWithDraggable(content);
+        // Wrap in DroppableContainer in edit mode so CarouselSlide children can be dropped
+        return isPreviewMode ? wrapWithDraggable(content) : (
+          <DroppableContainer key={instance.id} instance={instance} {...commonProps}>
+            {content}
+          </DroppableContainer>
+        );
       }
 
       case 'Tabs': {
@@ -1127,9 +1202,15 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
             setSelectedInstanceId={setSelectedInstanceId}
             setHoveredInstanceId={setHoveredInstanceId}
             handleContextMenu={handleContextMenu}
+            renderInstance={renderInstance}
           />
         );
-        return wrapWithDraggable(content);
+        // Wrap in DroppableContainer in edit mode so TabPanel children can be dropped
+        return isPreviewMode ? wrapWithDraggable(content) : (
+          <DroppableContainer key={instance.id} instance={instance} {...commonProps}>
+            {content}
+          </DroppableContainer>
+        );
       }
 
       case 'AlertDialog': {
@@ -1426,6 +1507,10 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
       }
 
       case 'Breadcrumb': {
+        // Check for BreadcrumbItem children first
+        const childItems = instance.children.filter(c => c.type === 'BreadcrumbItem');
+        const hasChildItems = childItems.length > 0;
+        
         const items = instance.props?.items || [];
         const styles = instance.props?.breadcrumbStyles || {};
         const settings = instance.props?.breadcrumbSettings || {};
@@ -1458,6 +1543,18 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
           ? itemPadding.split(' ').map((p: string) => `${p}px`).join(' ')
           : undefined;
 
+        // Combine data items with child items
+        const allItems = hasChildItems 
+          ? childItems.map((child, index) => ({
+              id: child.id,
+              label: child.props?.label || `Page ${index + 1}`,
+              href: child.props?.href || '#',
+              isCurrentPage: child.props?.isCurrentPage || false,
+              isChildBased: true,
+              instance: child,
+            }))
+          : items.map((item: any) => ({ ...item, isChildBased: false }));
+
         const content = (
           <div
             data-instance-id={instance.id}
@@ -1471,57 +1568,67 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
               backgroundColor: styles.backgroundColor || 'transparent',
               padding: paddingValue,
               borderRadius: styles.borderRadius ? `${styles.borderRadius}px` : undefined,
+              minHeight: '40px',
             }}
             onClick={isPreviewMode ? undefined : () => setSelectedInstanceId(instance.id)}
             onMouseEnter={isPreviewMode ? undefined : () => setHoveredInstanceId(instance.id)}
             onMouseLeave={isPreviewMode ? undefined : () => setHoveredInstanceId(null)}
             onContextMenu={isPreviewMode ? undefined : (e) => handleContextMenu(e, instance)}
           >
-            {items.map((item: any, index: number) => {
+            {allItems.map((item: any, index: number) => {
               const isActive = item.isCurrentPage;
               const isFirst = index === 0;
               
               return (
                 <React.Fragment key={item.id || index}>
                   {index > 0 && <span className="flex items-center">{getSeparator()}</span>}
-                  <span
-                    style={{
-                      color: isActive 
-                        ? (styles.activeTextColor || 'hsl(var(--foreground))') 
-                        : (styles.textColor || 'hsl(var(--muted-foreground))'),
-                      fontSize: `${styles.fontSize || 14}px`,
-                      fontWeight: isActive ? (styles.fontWeight || '500') : (styles.fontWeight || '400'),
-                      backgroundColor: isActive && styles.activeBackgroundColor
-                        ? styles.activeBackgroundColor
-                        : (styles.itemBackgroundColor || 'transparent'),
-                      padding: itemPaddingValue,
-                      borderRadius: styles.borderRadius ? `${styles.borderRadius}px` : undefined,
-                      textDecoration: isActive && styles.activeUnderline ? 'underline' : 'none',
-                      textUnderlineOffset: '4px',
-                      cursor: isPreviewMode && item.href ? 'pointer' : 'default',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                    }}
-                    onClick={isPreviewMode && item.href ? () => window.location.href = item.href : undefined}
-                  >
-                    {isFirst && settings.showHomeIcon && (
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-                        <polyline points="9 22 9 12 15 12 15 22"/>
-                      </svg>
-                    )}
-                    {item.label}
-                  </span>
+                  {item.isChildBased ? (
+                    renderInstance(item.instance, instance, index)
+                  ) : (
+                    <span
+                      style={{
+                        color: isActive 
+                          ? (styles.activeTextColor || 'hsl(var(--foreground))') 
+                          : (styles.textColor || 'hsl(var(--muted-foreground))'),
+                        fontSize: `${styles.fontSize || 14}px`,
+                        fontWeight: isActive ? (styles.fontWeight || '500') : (styles.fontWeight || '400'),
+                        backgroundColor: isActive && styles.activeBackgroundColor
+                          ? styles.activeBackgroundColor
+                          : (styles.itemBackgroundColor || 'transparent'),
+                        padding: itemPaddingValue,
+                        borderRadius: styles.borderRadius ? `${styles.borderRadius}px` : undefined,
+                        textDecoration: isActive && styles.activeUnderline ? 'underline' : 'none',
+                        textUnderlineOffset: '4px',
+                        cursor: isPreviewMode && item.href ? 'pointer' : 'default',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                      }}
+                      onClick={isPreviewMode && item.href ? () => window.location.href = item.href : undefined}
+                    >
+                      {isFirst && settings.showHomeIcon && (
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                          <polyline points="9 22 9 12 15 12 15 22"/>
+                        </svg>
+                      )}
+                      {item.label}
+                    </span>
+                  )}
                 </React.Fragment>
               );
             })}
-            {items.length === 0 && (
-              <span className="text-muted-foreground italic text-sm">No breadcrumb items</span>
+            {allItems.length === 0 && (
+              <span className="text-muted-foreground italic text-sm">No breadcrumb items. Add in Data tab or drag BreadcrumbItem.</span>
             )}
           </div>
         );
-        return wrapWithDraggable(content);
+        // Wrap in DroppableContainer in edit mode so BreadcrumbItem children can be dropped
+        return isPreviewMode ? wrapWithDraggable(content) : (
+          <DroppableContainer key={instance.id} instance={instance} {...commonProps}>
+            {content}
+          </DroppableContainer>
+        );
       }
 
       case 'Drawer': 

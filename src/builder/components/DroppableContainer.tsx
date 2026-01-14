@@ -2,6 +2,7 @@ import React from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { ComponentInstance } from '../store/types';
+import { canDropInside } from '../utils/instance';
 
 interface DroppableContainerProps {
   instance: ComponentInstance;
@@ -28,7 +29,12 @@ export const DroppableContainer: React.FC<DroppableContainerProps> = ({
   });
 
   // Full-width container types should take full width
-  const isFullWidthContainer = ['Div', 'Section', 'Container', 'Navigation'].includes(instance.type);
+  // Use canDropInside to include all container-like components
+  const fullWidthTypes = ['Div', 'Section', 'Container', 'Navigation', 'Accordion', 'Tabs', 'Carousel', 'Breadcrumb', 'Table'];
+  const isFullWidthContainer = fullWidthTypes.includes(instance.type);
+  
+  // Check if this is a droppable container (for min-height when empty)
+  const isDroppableContainer = canDropInside(instance.type);
 
   // Get child IDs for sortable context
   const childIds = instance.children.map(child => child.id);
@@ -45,7 +51,8 @@ export const DroppableContainer: React.FC<DroppableContainerProps> = ({
         width: isFullWidthContainer ? '100%' : undefined,
         minWidth: isFullWidthContainer ? '100%' : undefined,
         flexBasis: isFullWidthContainer ? '100%' : undefined,
-        minHeight: isFullWidthContainer && instance.children.length === 0 ? '100px' : undefined,
+        // Give empty droppable containers a minimum height so they can receive drops
+        minHeight: isDroppableContainer && instance.children.length === 0 ? '60px' : undefined,
       }}
       onClick={(e) => {
         const target = e.target as HTMLElement;

@@ -1,5 +1,6 @@
 import { ClientRect, CollisionDetection, CollisionDescriptor } from '@dnd-kit/core';
 import { Coordinates } from '@dnd-kit/utilities';
+import { canDropInside } from './instance';
 
 /**
  * Custom collision detection that prioritizes the deepest nested droppable
@@ -36,7 +37,10 @@ export const deepestContainerCollision: CollisionDetection = ({
 
       // Get the instance type to prioritize actual containers over canvas
       const instanceType = droppableContainer.data.current?.type;
-      const isActualContainer = ['Div', 'Container', 'Section'].includes(instanceType || '');
+      
+      // Use canDropInside to determine if this is a valid container
+      // This includes all prebuilt components and their child primitives
+      const isActualContainer = canDropInside(instanceType || '');
       
       // Boost depth for actual container components to ensure they're prioritized
       const adjustedDepth = isActualContainer ? depth + 100 : depth;
