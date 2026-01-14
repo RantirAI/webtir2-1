@@ -15,7 +15,7 @@ export const AI_PROVIDERS: AIProviderConfig[] = [
     id: 'openai',
     name: 'OpenAI',
     baseUrl: 'https://api.openai.com/v1/chat/completions',
-    models: ['gpt-4o', 'gpt-4o-mini', 'o3', 'gpt-4-turbo', 'gpt-3.5-turbo'],
+    models: ['gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo', 'gpt-3.5-turbo'],
   },
   {
     id: 'anthropic',
