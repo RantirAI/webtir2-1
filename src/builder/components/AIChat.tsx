@@ -79,6 +79,8 @@ export const AIChat: React.FC = () => {
     startBuild,
     setTaskDescription,
     addEdit,
+    addStep,
+    completeLastStep,
     finishBuild,
     reset: resetBuildProgress,
   } = useBuildProgressStore();
@@ -340,11 +342,34 @@ When user says "change the heading color" or "update the button text", find the 
             if (parsed && parsed.action === 'create' && parsed.components && parsed.components.length > 0) {
               console.log('Processing CREATE action with', parsed.components.length, 'components');
               
+              // Add step for reading component structure
+              addStep({
+                type: 'reading',
+                description: 'Reading component structure',
+                detail: `Found ${parsed.components.length} component${parsed.components.length > 1 ? 's' : ''} to create`,
+              });
+              
               for (const componentSpec of parsed.components) {
                 try {
+                  // Add step for creating this component
+                  addStep({
+                    type: 'creating',
+                    description: `Creating ${componentSpec.type || 'component'}`,
+                    target: componentSpec.label || componentSpec.type,
+                  });
+                  
                   const { instances, styleSources: newStyleSources, rootInstanceId } = flattenInstances(componentSpec, 'root');
                   console.log('Flattened instances:', instances.length, 'Root ID:', rootInstanceId);
 
+                  // Add step for applying styles
+                  if (Object.keys(newStyleSources).length > 0) {
+                    addStep({
+                      type: 'styling',
+                      description: 'Applying styles',
+                      detail: `${Object.keys(newStyleSources).length} style source${Object.keys(newStyleSources).length > 1 ? 's' : ''}`,
+                    });
+                  }
+                  
                   // Add style sources with breakpoint support
                   for (const [styleSourceId, breakpointStyles] of Object.entries(newStyleSources)) {
                     createStyleSource('local', styleSourceId);
@@ -405,6 +430,13 @@ When user says "change the heading color" or "update the button text", find the 
               console.log('Processing UPDATE action with', parsed.updates.length, 'updates');
               let updatesApplied = 0;
               
+              // Add step for processing updates
+              addStep({
+                type: 'reading',
+                description: 'Processing style updates',
+                detail: `${parsed.updates.length} update${parsed.updates.length > 1 ? 's' : ''} to apply`,
+              });
+              
               for (const update of parsed.updates) {
                 const { targetId, styles, responsiveStyles, props } = update;
                 
@@ -430,6 +462,13 @@ When user says "change the heading color" or "update the button text", find the 
                 
                 // Apply base styles
                 if (styles && styleSourceId && styleSources[styleSourceId]) {
+                  // Add step for this specific update
+                  addStep({
+                    type: 'styling',
+                    description: 'Updating styles',
+                    target: targetId,
+                  });
+                  
                   for (const [property, value] of Object.entries(styles)) {
                     setStyle(styleSourceId, property, value, 'base', 'default');
                   }
@@ -488,6 +527,13 @@ When user says "change the heading color" or "update the button text", find the 
             // Handle IMAGE GENERATION action
             else if (parsed && parsed.action === 'generate-image' && parsed.imageSpec) {
               const { prompt, type, style, targetComponent } = parsed.imageSpec;
+              
+              // Add step for image generation
+              addStep({
+                type: 'generating',
+                description: 'Generating AI image',
+                detail: prompt.substring(0, 50) + (prompt.length > 50 ? '...' : ''),
+              });
               
               displayMessage = parsed.message || 'Generating image...';
               
