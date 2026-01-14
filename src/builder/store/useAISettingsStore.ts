@@ -16,20 +16,24 @@ export const AI_PROVIDERS: AIProviderConfig[] = [
     name: 'OpenAI',
     baseUrl: 'https://api.openai.com/v1/chat/completions',
     models: [
-      // GPT-5 family - 128K output (BEST for full pages)
+      // GPT-5 family
       'gpt-5.2',
+      'gpt-5.2-pro',
+      'gpt-5.1',
       'gpt-5',
       'gpt-5-mini',
       'gpt-5-nano',
-      // Reasoning models - 100K output
+      'gpt-5-pro',
+      // Reasoning models
       'o3',
       'o3-mini',
+      'o3-pro',
       'o4-mini',
-      // GPT-4.1 - 32K output
+      // GPT-4.1 family
       'gpt-4.1',
       'gpt-4.1-mini',
       'gpt-4.1-nano',
-      // GPT-4o - 16K output
+      // GPT-4o family (proven stable)
       'gpt-4o',
       'gpt-4o-mini',
     ],
