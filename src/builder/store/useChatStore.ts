@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { BuildSummary } from './useBuildProgressStore';
 
 export interface ChatMessage {
   id: string;
@@ -7,6 +8,7 @@ export interface ChatMessage {
   content: string;
   timestamp: number;
   mode: 'build' | 'discuss';
+  buildSummary?: BuildSummary;
   metadata?: {
     componentsCreated?: string[];
     action?: 'create' | 'update' | 'delete';
@@ -37,7 +39,7 @@ interface ChatStore {
 
   createSession: () => string;
   addMessage: (message: Omit<ChatMessage, 'id'>) => void;
-  updateLastAssistantMessage: (content: string) => void;
+  updateLastAssistantMessage: (content: string, buildSummary?: BuildSummary) => void;
   deleteSession: (id: string) => void;
   setCurrentSession: (id: string | null) => void;
   getCurrentSession: () => ChatSession | null;
@@ -115,7 +117,7 @@ export const useChatStore = create<ChatStore>()(
         }));
       },
 
-      updateLastAssistantMessage: (content) => {
+      updateLastAssistantMessage: (content, buildSummary) => {
         const state = get();
         const sessionId = state.currentSessionId;
         if (!sessionId) return;
@@ -131,6 +133,7 @@ export const useChatStore = create<ChatStore>()(
               messages[lastIndex] = {
                 ...messages[lastIndex],
                 content,
+                ...(buildSummary && { buildSummary }),
               };
             } else {
               // Create new assistant message if last isn't assistant
@@ -140,6 +143,7 @@ export const useChatStore = create<ChatStore>()(
                 content,
                 timestamp: Date.now(),
                 mode: 'build',
+                ...(buildSummary && { buildSummary }),
               });
             }
 

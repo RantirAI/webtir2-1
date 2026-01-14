@@ -6,34 +6,41 @@ export interface BuildEdit {
   action: 'created' | 'updated' | 'deleted';
 }
 
+export interface BuildSummary {
+  duration: number;
+  edits: BuildEdit[];
+  taskTitle: string;
+}
+
 interface BuildProgressState {
   isBuilding: boolean;
   startTime: number | null;
   taskTitle: string;
   taskDescription: string;
   edits: BuildEdit[];
-  isExpanded: boolean;
+  // Completed build summary for display
+  lastBuildSummary: BuildSummary | null;
 }
 
 interface BuildProgressActions {
   startBuild: (taskTitle: string) => void;
   setTaskDescription: (description: string) => void;
   addEdit: (edit: BuildEdit) => void;
-  finishBuild: () => void;
+  finishBuild: () => BuildSummary;
   reset: () => void;
-  toggleExpanded: () => void;
+  clearLastSummary: () => void;
 }
 
 type BuildProgressStore = BuildProgressState & BuildProgressActions;
 
-export const useBuildProgressStore = create<BuildProgressStore>((set) => ({
+export const useBuildProgressStore = create<BuildProgressStore>((set, get) => ({
   // Initial state
   isBuilding: false,
   startTime: null,
   taskTitle: '',
   taskDescription: '',
   edits: [],
-  isExpanded: false,
+  lastBuildSummary: null,
 
   // Actions
   startBuild: (taskTitle: string) => set({
@@ -42,7 +49,7 @@ export const useBuildProgressStore = create<BuildProgressStore>((set) => ({
     taskTitle,
     taskDescription: 'Analyzing request...',
     edits: [],
-    isExpanded: false,
+    lastBuildSummary: null,
   }),
 
   setTaskDescription: (description: string) => set({
@@ -53,10 +60,23 @@ export const useBuildProgressStore = create<BuildProgressStore>((set) => ({
     edits: [...state.edits, edit],
   })),
 
-  finishBuild: () => set({
-    isBuilding: false,
-    taskDescription: 'Complete',
-  }),
+  finishBuild: () => {
+    const state = get();
+    const duration = state.startTime ? Math.floor((Date.now() - state.startTime) / 1000) : 0;
+    const summary: BuildSummary = {
+      duration,
+      edits: [...state.edits],
+      taskTitle: state.taskTitle,
+    };
+    
+    set({
+      isBuilding: false,
+      taskDescription: 'Complete',
+      lastBuildSummary: summary,
+    });
+    
+    return summary;
+  },
 
   reset: () => set({
     isBuilding: false,
@@ -64,10 +84,10 @@ export const useBuildProgressStore = create<BuildProgressStore>((set) => ({
     taskTitle: '',
     taskDescription: '',
     edits: [],
-    isExpanded: false,
+    lastBuildSummary: null,
   }),
 
-  toggleExpanded: () => set((state) => ({
-    isExpanded: !state.isExpanded,
-  })),
+  clearLastSummary: () => set({
+    lastBuildSummary: null,
+  }),
 }));
