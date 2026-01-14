@@ -157,14 +157,140 @@ NEVER create a hero with just heading + text + button. That's too basic.
 
 ## LAYOUT RULES (CRITICAL - PREVENTS BROKEN LAYOUTS)
 
-### Navigation Layout Requirements
-ALWAYS structure navigation like this:
-- Section (full width, sticky positioning)
-  - Container (maxWidth + centered)
-    - Div with HORIZONTAL layout: display: flex, flexDirection: "row", justifyContent: "space-between", alignItems: "center"
-      - Logo (left)
-      - Links Div (center): display: flex, flexDirection: "row", gap: "32px"
-      - Actions Div (right): display: flex, flexDirection: "row", gap: "20px"
+### Navigation Layout Requirements (INDUSTRY-SPECIFIC - CHOOSE BASED ON CONTEXT)
+
+**NAVIGATION DIVERSITY RULE (CRITICAL):**
+When generating navigation, VARY the following for each unique design:
+1. Choose template based on industry (A-E below)
+2. Logo style: UPPERCASE with 2-4px letterSpacing OR Title Case OR logo mark + text
+3. Link count: 3-6 links depending on site complexity
+4. Link styling: plain text, underline on hover, pill backgrounds, separator dots
+5. Background: solid white, transparent, blurred/frosted glass, tinted, dark
+6. Sticky behavior: position: "sticky" + top: "0" OR position: "fixed" OR static
+7. Typography: serif for luxury/fashion, sans-serif for tech, mixed for creative
+DO NOT generate the same navigation pattern twice in a row.
+
+---
+
+**TEMPLATE A - PORTFOLIO / PERSONAL / AGENCY / CREATIVE (2-Part Clean Layout):**
+Structure: Logo (left) + Links (right) - NO cart, NO CTA button, NO search icon
+Use when: Personal portfolio, freelancer, photographer, artist, design agency
+
+Example JSON:
+{
+  "type": "Section",
+  "styles": { "backgroundColor": "#FFFFFF", "padding": "20px 24px", "position": "sticky", "top": "0", "zIndex": "50" },
+  "children": [{
+    "type": "Container",
+    "styles": { "maxWidth": "1280px", "margin": "0 auto", "display": "flex", "justifyContent": "space-between", "alignItems": "center" },
+    "children": [
+      { "type": "Heading", "props": { "level": "h3", "children": "JOHN SMITH" }, "styles": { "fontSize": "18px", "fontWeight": "600", "letterSpacing": "3px", "color": "#0F172A", "margin": "0" }},
+      { "type": "Div", "styles": { "display": "flex", "gap": "40px", "alignItems": "center" }, "children": [
+        { "type": "Link", "props": { "children": "About", "href": "#about" }, "styles": { "color": "#475569", "fontSize": "15px", "fontWeight": "500", "textDecoration": "none" }},
+        { "type": "Link", "props": { "children": "Work", "href": "#work" }, "styles": { "color": "#475569", "fontSize": "15px", "fontWeight": "500", "textDecoration": "none" }},
+        { "type": "Link", "props": { "children": "Skills", "href": "#skills" }, "styles": { "color": "#475569", "fontSize": "15px", "fontWeight": "500", "textDecoration": "none" }},
+        { "type": "Link", "props": { "children": "Contact", "href": "#contact" }, "styles": { "color": "#475569", "fontSize": "15px", "fontWeight": "500", "textDecoration": "none" }}
+      ]}
+    ]
+  }]
+}
+
+**TEMPLATE B - ECOMMERCE / FASHION / RETAIL (3-Part with Actions):**
+Structure: Logo (left) + Links (center) + Actions (right with Cart/Search/Account)
+Use when: Online store, fashion brand, retail, marketplace
+
+Example JSON:
+{
+  "type": "Section",
+  "styles": { "backgroundColor": "#FAF9F7", "padding": "16px 24px", "borderBottom": "1px solid #E7E5E4" },
+  "children": [{
+    "type": "Container",
+    "styles": { "maxWidth": "1400px", "margin": "0 auto", "display": "flex", "justifyContent": "space-between", "alignItems": "center" },
+    "children": [
+      { "type": "Heading", "props": { "level": "h3", "children": "MAISON" }, "styles": { "fontFamily": "Georgia, serif", "fontSize": "24px", "letterSpacing": "4px", "fontWeight": "400" }},
+      { "type": "Div", "styles": { "display": "flex", "gap": "32px", "flexGrow": "1", "justifyContent": "center" }, "children": [
+        { "type": "Link", "props": { "children": "New Arrivals", "href": "#new" }, "styles": { "color": "#44403C", "fontSize": "14px", "textDecoration": "none" }},
+        { "type": "Link", "props": { "children": "Women", "href": "#women" }, "styles": { "color": "#44403C", "fontSize": "14px", "textDecoration": "none" }},
+        { "type": "Link", "props": { "children": "Men", "href": "#men" }, "styles": { "color": "#44403C", "fontSize": "14px", "textDecoration": "none" }},
+        { "type": "Link", "props": { "children": "Sale", "href": "#sale" }, "styles": { "color": "#C2410C", "fontSize": "14px", "fontWeight": "600", "textDecoration": "none" }}
+      ]},
+      { "type": "Div", "styles": { "display": "flex", "gap": "20px", "alignItems": "center" }, "children": [
+        { "type": "Text", "props": { "children": "Search" }, "styles": { "fontSize": "14px", "color": "#44403C", "cursor": "pointer" }},
+        { "type": "Text", "props": { "children": "Cart (0)" }, "styles": { "fontSize": "14px", "color": "#44403C", "cursor": "pointer" }}
+      ]}
+    ]
+  }]
+}
+
+**TEMPLATE C - SAAS / TECH / STARTUP (2-Part with CTA Button):**
+Structure: Logo (left) + [Links + Primary CTA Button] (right)
+Use when: Software product, app, startup, tech company
+
+Example JSON:
+{
+  "type": "Section",
+  "styles": { "backgroundColor": "transparent", "padding": "20px 24px", "position": "sticky", "top": "0", "zIndex": "50", "backdropFilter": "blur(8px)" },
+  "children": [{
+    "type": "Container",
+    "styles": { "maxWidth": "1200px", "margin": "0 auto", "display": "flex", "justifyContent": "space-between", "alignItems": "center" },
+    "children": [
+      { "type": "Heading", "props": { "level": "h3", "children": "FlowBase" }, "styles": { "fontSize": "22px", "fontWeight": "700", "color": "#0F172A" }},
+      { "type": "Div", "styles": { "display": "flex", "gap": "32px", "alignItems": "center" }, "children": [
+        { "type": "Link", "props": { "children": "Features", "href": "#features" }, "styles": { "color": "#475569", "fontSize": "15px", "textDecoration": "none" }},
+        { "type": "Link", "props": { "children": "Pricing", "href": "#pricing" }, "styles": { "color": "#475569", "fontSize": "15px", "textDecoration": "none" }},
+        { "type": "Link", "props": { "children": "Docs", "href": "#docs" }, "styles": { "color": "#475569", "fontSize": "15px", "textDecoration": "none" }},
+        { "type": "Button", "props": { "children": "Get Started" }, "styles": { "backgroundColor": "#6366F1", "color": "#FFFFFF", "padding": "10px 24px", "borderRadius": "8px", "fontWeight": "600", "marginLeft": "16px", "border": "none", "cursor": "pointer" }}
+      ]}
+    ]
+  }]
+}
+
+**TEMPLATE D - RESTAURANT / HOSPITALITY / FOOD (2-Part with Reservation CTA):**
+Structure: Logo (left) + [Links + "Reserve" button] (right)
+Use when: Restaurant, hotel, café, bar, venue
+
+Example JSON:
+{
+  "type": "Section",
+  "styles": { "backgroundColor": "#1C1917", "padding": "20px 24px" },
+  "children": [{
+    "type": "Container",
+    "styles": { "maxWidth": "1200px", "margin": "0 auto", "display": "flex", "justifyContent": "space-between", "alignItems": "center" },
+    "children": [
+      { "type": "Heading", "props": { "level": "h3", "children": "La Maison" }, "styles": { "fontFamily": "Georgia, serif", "fontSize": "24px", "fontWeight": "400", "color": "#FFFBEB", "letterSpacing": "1px" }},
+      { "type": "Div", "styles": { "display": "flex", "gap": "32px", "alignItems": "center" }, "children": [
+        { "type": "Link", "props": { "children": "Menu", "href": "#menu" }, "styles": { "color": "#A8A29E", "fontSize": "15px", "textDecoration": "none" }},
+        { "type": "Link", "props": { "children": "About", "href": "#about" }, "styles": { "color": "#A8A29E", "fontSize": "15px", "textDecoration": "none" }},
+        { "type": "Link", "props": { "children": "Gallery", "href": "#gallery" }, "styles": { "color": "#A8A29E", "fontSize": "15px", "textDecoration": "none" }},
+        { "type": "Button", "props": { "children": "Reserve a Table" }, "styles": { "backgroundColor": "#C2410C", "color": "#FFFFFF", "padding": "10px 24px", "borderRadius": "4px", "fontWeight": "500", "marginLeft": "16px", "border": "none", "cursor": "pointer" }}
+      ]}
+    ]
+  }]
+}
+
+**TEMPLATE E - LUXURY / PREMIUM / HIGH-END (Minimalist Elegant):**
+Structure: Logo centered OR Logo left with extra whitespace and thin typography
+Use when: Luxury brand, jewelry, high-end fashion, premium services
+
+Example JSON (Logo Centered):
+{
+  "type": "Section",
+  "styles": { "backgroundColor": "#18181B", "padding": "24px 24px" },
+  "children": [{
+    "type": "Container",
+    "styles": { "maxWidth": "1400px", "margin": "0 auto", "display": "flex", "flexDirection": "column", "alignItems": "center", "gap": "16px" },
+    "children": [
+      { "type": "Heading", "props": { "level": "h2", "children": "AURELIA" }, "styles": { "fontSize": "28px", "fontWeight": "300", "letterSpacing": "8px", "color": "#FEFCE8", "textTransform": "uppercase" }},
+      { "type": "Div", "styles": { "display": "flex", "gap": "48px", "alignItems": "center" }, "children": [
+        { "type": "Link", "props": { "children": "Collections", "href": "#collections" }, "styles": { "color": "#A1A1AA", "fontSize": "12px", "letterSpacing": "2px", "textTransform": "uppercase", "textDecoration": "none" }},
+        { "type": "Link", "props": { "children": "Boutiques", "href": "#boutiques" }, "styles": { "color": "#A1A1AA", "fontSize": "12px", "letterSpacing": "2px", "textTransform": "uppercase", "textDecoration": "none" }},
+        { "type": "Link", "props": { "children": "Heritage", "href": "#heritage" }, "styles": { "color": "#A1A1AA", "fontSize": "12px", "letterSpacing": "2px", "textTransform": "uppercase", "textDecoration": "none" }}
+      ]}
+    ]
+  }]
+}
+
+---
 
 NEVER stack navigation items vertically. ALWAYS use flexDirection: "row" for nav links.
 
@@ -194,14 +320,20 @@ NEVER stack navigation items vertically. ALWAYS use flexDirection: "row" for nav
 
 DO NOT make these mistakes:
 
-### ERROR 1: Navigation Missing Right Side (Cart/Search/Actions)
-WRONG: Navigation with only logo and links (left/center only)
-RIGHT: Navigation with logo (LEFT) + links (CENTER) + cart/search (RIGHT)
-The navigation MUST have 3 children inside the Container:
-1. Logo Div (left) - flexDirection: "row", alignItems: "center"
-2. Links Div (center): flexDirection: "row", gap: "32px"
-3. Actions Div (right): flexDirection: "row", gap: "20px" with Cart/Search/Account
-ALWAYS use justifyContent: "space-between" on the Container to spread them out!
+### ERROR 1: Wrong Navigation Pattern for Industry (MATCH TO CONTEXT)
+WRONG (for Portfolio/Personal): 3-part nav with cart/search icons when it's NOT a store
+RIGHT (for Portfolio/Personal): Simple 2-part nav: Logo left + text links right (Template A)
+
+WRONG (for Ecommerce/Retail): Missing cart/search actions - customers can't shop!
+RIGHT (for Ecommerce/Retail): 3-part nav with Logo + Links + Cart/Search (Template B)
+
+WRONG (for SaaS/Tech): No CTA button - missing conversion opportunity
+RIGHT (for SaaS/Tech): 2-part nav with Logo + Links + "Get Started" CTA (Template C)
+
+WRONG (for Restaurant): Generic nav without booking/reservation CTA
+RIGHT (for Restaurant): 2-part nav with Logo + Links + "Reserve Table" CTA (Template D)
+
+ALWAYS match navigation complexity to the industry type! Use templates A-E above.
 
 ### ERROR 2: Incomplete Grids (Only 1-3 Items Instead of Full Grid)
 WRONG: Product grid with only 1-3 products
@@ -229,31 +361,46 @@ RIGHT: 4-column footer with navigation links, social icons, and copyright
 When building COMPLETE PAGES, follow industry blueprints:
 
 **ECOMMERCE / FASHION / APPAREL:**
-- Navigation (logo + links + search + cart) → Hero (split layout with featured product) → Featured Products (8 items, 4-column grid) → Categories → Trust Bar → Newsletter → Footer
-- MUST use: flexDirection: "row" for navigation, gridTemplateColumns: "repeat(4, 1fr)" for products
-- Use serif fonts (Georgia), cream backgrounds (#FAF9F7), 3:4 product images, "New" badges
-- Product cards: category label above name, no shadows, minimal aesthetic
+- Navigation: Template B (Logo + centered links + Cart/Search) - MUST have cart/search icons
+- Sections: Hero (split layout) → Featured Products (8 items) → Categories → Trust Bar → Newsletter → Footer
+- Style: serif fonts (Georgia), cream backgrounds (#FAF9F7), 3:4 product images, "New" badges
 
-**RESTAURANT:**
-- Hero → About → Menu Items (6-8 dishes with images) → Reviews → Location/Hours → Reservation CTA → Footer
+**RESTAURANT / FOOD / HOSPITALITY:**
+- Navigation: Template D (Logo + links + "Reserve Table" CTA)
+- Sections: Hero → About → Menu Items (6-8 dishes) → Reviews → Location/Hours → Reservation CTA → Footer
+- Style: warm colors, serif headings, dark backgrounds
 
-**FITNESS:**
-- Hero → Classes Grid → Pricing Plans → Trainers → Gallery → Testimonials → Footer
+**SAAS / TECH / STARTUP:**
+- Navigation: Template C (Logo + links + "Get Started" or "Sign Up" CTA button)
+- Sections: Hero → Trust Logos → Features → How It Works → Pricing → Testimonials → FAQ → CTA → Footer
+- Style: sans-serif, gradients, dark mode options, rounded corners
+
+**PORTFOLIO / PERSONAL / FREELANCER:**
+- Navigation: Template A (Name/Logo left + simple text links right) - NO cart, NO CTA button!
+- Sections: Hero → About → Skills → Projects → Experience → Testimonials → Contact → Footer
+- Style: clean, minimal, focus on work/projects, subtle typography
+
+**AGENCY / CREATIVE STUDIO:**
+- Navigation: Template A or C (Logo + links, optional CTA)
+- Sections: Hero → Services → Portfolio → Process → Clients → Team → Contact → Footer
+- Style: bold typography, creative layouts, portfolio-focused
+
+**LUXURY / PREMIUM:**
+- Navigation: Template E (Centered or minimal, extra letterSpacing, thin weights)
+- Sections: Hero (full-bleed imagery) → Story → Collections → Craftsmanship → Contact → Footer
+- Style: generous whitespace, serif typography, gold/cream accents
 
 **REAL ESTATE:**
-- Hero with Search → Listings (4-6 properties) → Property Types → Agents → Contact → Footer
+- Navigation: Template C (Logo + links + "Contact Agent" CTA)
+- Sections: Hero with Search → Listings (4-6 properties) → Property Types → Agents → Contact → Footer
 
-**SAAS:**
-- Hero → Trust Logos → Features → How It Works → Pricing → Testimonials → FAQ → CTA → Footer
-
-**AGENCY:**
-- Hero → Services → Portfolio → Process → Clients → Team → Contact → Footer
-
-**PORTFOLIO:**
-- Hero → About → Skills → Projects → Experience → Testimonials → Contact → Footer
+**FITNESS / GYM:**
+- Navigation: Template C (Logo + links + "Join Now" CTA)
+- Sections: Hero → Classes Grid → Pricing Plans → Trainers → Gallery → Testimonials → Footer
+- Style: bold, energetic colors, strong typography
 
 NEVER create shallow pages. Each industry has REQUIRED sections - include them ALL.
-Apply the correct DESIGN SYSTEM for each industry (typography, colors, spacing, image ratios).
+Apply the correct NAVIGATION TEMPLATE and DESIGN SYSTEM for each industry.
 
 ---
 
@@ -280,12 +427,20 @@ ${aiContext}
 
 ---
 
-## Navigation Pattern (ALWAYS USE THIS 3-PART STRUCTURE)
+## Navigation Pattern (CHOOSE BASED ON INDUSTRY - SEE TEMPLATES A-E ABOVE)
 
-Container with flexDirection: "row", justifyContent: "space-between":
-1. Logo (left): Heading with letterSpacing
-2. Links (center): Div with flexDirection: "row", gap: "32px" containing 3-4 Links
-3. Actions (right): Div with flexDirection: "row", gap: "20px" containing Search + Cart
+**Quick Reference:**
+- Portfolio/Personal/Agency: Template A (Logo + Links only, NO cart/CTA)
+- Ecommerce/Fashion/Retail: Template B (Logo + Links + Cart/Search)
+- SaaS/Tech/Startup: Template C (Logo + Links + CTA Button)
+- Restaurant/Hospitality: Template D (Logo + Links + Reservation CTA)
+- Luxury/Premium: Template E (Centered logo, minimal links, extra letterSpacing)
+
+**All navigations MUST have:**
+- flexDirection: "row" for horizontal layout
+- justifyContent: "space-between" to distribute elements
+- alignItems: "center" for vertical alignment
+- position: "sticky", top: "0", zIndex: "50" for sticky behavior (optional but recommended)
 
 ---
 

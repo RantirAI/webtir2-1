@@ -279,6 +279,56 @@ export function generateIndustryDesignSystems(): string {
 `;
 }
 
+// Generate navigation style variations for diverse nav designs
+export function generateNavigationStyles(): string {
+  return `## Navigation Style Variations (CRITICAL - AVOID PREDICTABLE DESIGNS)
+
+### PORTFOLIO / PERSONAL NAVIGATION STYLES
+1. **Clean Minimal**: Name in UPPERCASE (letterSpacing: 3px) + right-aligned links (gap: 40px)
+2. **Creative Bold**: Colored logo/name + links with hover underline animations
+3. **Dark Header**: backgroundColor: #0F172A, white/gray text links
+4. **Transparent Overlay**: backgroundColor: transparent, position: fixed over hero
+5. **Name + Title**: "JOHN SMITH" + smaller "DEVELOPER" text stacked left, links right
+
+### ECOMMERCE / FASHION NAVIGATION STYLES
+1. **Classic Fashion**: Serif logo (Georgia) centered, links split left/right, icons far right
+2. **Modern Minimal**: Sans-serif logo left, links center with flexGrow: 1, cart/search right
+3. **Two-Row**: Top bar (free shipping promo) + main nav below
+4. **Dark Luxe**: Dark background, gold or cream text, thin typography
+5. **Mega Menu Ready**: Extra padding, hover states for dropdown menus
+
+### SAAS / TECH NAVIGATION STYLES
+1. **Standard**: Logo + 3-4 links + colored CTA button (backgroundColor: #6366F1)
+2. **Docs-Style**: Logo + "Products" dropdown + "Docs" + "Sign In" + "Get Started" button
+3. **Frosted Glass**: backdropFilter: blur(8px), semi-transparent background over gradient hero
+4. **Dark Mode**: backgroundColor: #0F172A, light links, bright CTA
+5. **Minimal**: Logo + 2 links + single CTA, lots of whitespace
+
+### RESTAURANT / HOSPITALITY NAVIGATION STYLES
+1. **Warm Elegant**: Serif logo, cream background, "Reserve" button in accent color
+2. **Dark Moody**: Dark background, warm gold links, elegant typography
+3. **Modern Bistro**: Clean sans-serif, minimal links, prominent booking CTA
+4. **Split Design**: Logo centered, "Menu" left, "Reservations" right
+
+### LUXURY / PREMIUM NAVIGATION STYLES
+1. **Centered Logo**: Large logo centered, links below in row, extra letterSpacing (6-8px)
+2. **Ultra Minimal**: Small logo left, 2-3 links right, fontWeight: 300
+3. **Full Dark**: backgroundColor: #18181B, cream or gold text, uppercase links
+4. **Stacked**: Logo on top centered, links in row below centered
+5. **Invisible**: Transparent with position: fixed, only visible on scroll
+
+### NAVIGATION VARIATION RULES
+When generating navigation, NEVER repeat the same pattern. Vary:
+- Logo treatment: all caps vs title case vs logo mark
+- Link count: 3, 4, 5, or 6 links
+- Link styling: plain, underline on hover, pill background on active
+- Background: white, cream, dark, transparent, gradient
+- Spacing: compact (gap: 24px) vs airy (gap: 48px)
+- Typography: serif vs sans-serif vs mixed
+`;
+}
+
+
 // Generate color palettes for vibrant designs
 export function generateColorPalettes(): string {
   return `## Color Palettes for Dynamic Designs
@@ -1445,6 +1495,7 @@ Required Sections (for Wedding Website):
 export function buildAIContext(): string {
   return [
     generateComponentDocs(),
+    generateNavigationStyles(),
     generateColorPalettes(),
     generateDesignTokens(),
   ].join('\n\n');
