@@ -6,11 +6,15 @@ import { buildAIContext } from '../utils/aiComponentDocs';
 const MODEL_MAX_TOKENS: Record<string, number> = {
   // All OpenAI models - use safe 16K limit (prevents timeout, auto-continue handles longer)
   'gpt-5': 16384,
+  'gpt-5.1': 16384,
   'gpt-5.2': 16384,
   'gpt-5-mini': 16384,
   'gpt-5-nano': 16384,
+  'gpt-5-pro': 16384,
+  'gpt-5.2-pro': 16384,
   'o3': 16384,
   'o3-mini': 16384,
+  'o3-pro': 16384,
   'o4-mini': 16384,
   'gpt-4.1': 16384,
   'gpt-4.1-mini': 16384,
@@ -30,6 +34,13 @@ const MODEL_MAX_TOKENS: Record<string, number> = {
   'gemini-2.5-pro': 8192,
   'gemini-2.5-flash': 8192,
   'gemini-2.0-flash': 8192,
+};
+
+// Check if model supports JSON response format
+// o3/o4 reasoning models don't support response_format json_object
+const supportsJsonMode = (model: string): boolean => {
+  if (model.startsWith('o3') || model.startsWith('o4')) return false;
+  return true;
 };
 
 // Helper to get max tokens for a model
@@ -546,7 +557,8 @@ async function streamOpenAI({
   };
 
   // Enable JSON mode for build requests (OpenAI API feature)
-  if (enforceJson) {
+  // o3/o4 reasoning models don't support json_object response format
+  if (enforceJson && supportsJsonMode(model)) {
     body.response_format = { type: 'json_object' };
   }
 
@@ -561,6 +573,7 @@ async function streamOpenAI({
 
   if (!response.ok) {
     const errorText = await response.text();
+    console.error(`[AI Service] OpenAI API error for model ${model}:`, response.status, errorText);
     throw new Error(`API error: ${response.status} - ${errorText}`);
   }
 
