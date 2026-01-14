@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useBuilderStore } from "../store/useBuilderStore";
 import { useStyleStore } from "../store/useStyleStore";
 import { usePageStore } from "../store/usePageStore";
@@ -516,6 +516,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({
   const [redirect, setRedirect] = useState("");
   const [language, setLanguage] = useState("en-US");
   const [backgroundLayers, setBackgroundLayers] = useState<BackgroundLayerItem[]>([]);
+  const lastBackgroundSignatureRef = useRef<string>("");
   // Initialize label input and active class when selectedInstance changes
   useEffect(() => {
     if (selectedInstance) {
@@ -607,100 +608,286 @@ export const StylePanel: React.FC<StylePanelProps> = ({
     }
   }, [selectedInstance?.id, selectedInstance?.label, selectedInstance?.type]);
 
-  // Sync background layers from computed styles
-  useEffect(() => {
-    if (!selectedInstance) {
-      setBackgroundLayers([]);
-      return;
-    }
-    
-    const layers: BackgroundLayerItem[] = [];
-    
-    // Check for background color (fill)
-    if (computedStyles.backgroundColor && computedStyles.backgroundColor !== 'transparent') {
-      layers.push({
-        id: `fill-${selectedInstance.id}`,
-        type: 'fill',
-        value: computedStyles.backgroundColor,
-      });
-    }
-    
-    // Check for gradient
-    if (computedStyles.backgroundGradient && computedStyles.backgroundGradient !== 'none') {
-      layers.push({
-        id: `gradient-${selectedInstance.id}`,
-        type: 'gradient',
-        value: computedStyles.backgroundGradient,
-      });
-    }
-    
-    // Check for background image (media)
-    if (computedStyles.backgroundImage && computedStyles.backgroundImage !== 'none') {
-      layers.push({
-        id: `media-${selectedInstance.id}`,
-        type: 'media',
-        value: computedStyles.backgroundImage,
-        size: computedStyles.backgroundSize || 'cover',
-        position: computedStyles.backgroundPosition || 'center',
-        repeat: computedStyles.backgroundRepeat || 'no-repeat',
-      });
-    }
-    
-    setBackgroundLayers(layers);
-  }, [selectedInstance?.id, computedStyles.backgroundColor, computedStyles.backgroundGradient, computedStyles.backgroundImage, computedStyles.backgroundSize, computedStyles.backgroundPosition, computedStyles.backgroundRepeat]);
+  // ---- Background layers (fill / gradient / media) ----
+  const splitCssTopLevelCommas = (input?: string): string[] => {
+    if (!input) return [];
+    const str = String(input).trim();
+    if (!str) return [];
 
-  // Handle background layers change
-  const handleBackgroundLayersChange = (newLayers: BackgroundLayerItem[]) => {
-    setBackgroundLayers(newLayers);
-    
-    // Reset all background properties first
-    updateStyle("backgroundColor", "");
-    updateStyle("backgroundGradient", "");
-    updateStyle("backgroundImage", "");
-    updateStyle("backgroundSize", "");
-    updateStyle("backgroundPosition", "");
-    updateStyle("backgroundRepeat", "");
-    
-    // Compose all layers into CSS background-image format
-    // CSS layers are rendered top-to-bottom (first in array = topmost layer)
+    const out: string[] = [];
+    let current = "";
+    let depth = 0;
+    let inSingle = false;
+    let inDouble = false;
+
+    for (let i = 0; i < str.length; i++) {
+      const ch = str[i];
+
+      if (ch === "'" && !inDouble) {
+        inSingle = !inSingle;
+        current += ch;
+        continue;
+      }
+      if (ch === '"' && !inSingle) {
+        inDouble = !inDouble;
+        current += ch;
+        continue;
+      }
+
+      if (!inSingle && !inDouble) {
+        if (ch === "(") depth++;
+        if (ch === ")" && depth > 0) depth--;
+
+        if (ch === "," && depth === 0) {
+          const trimmed = current.trim();
+          if (trimmed) out.push(trimmed);
+          current = "";
+          continue;
+        }
+      }
+
+      current += ch;
+    }
+
+    const trimmed = current.trim();
+    if (trimmed) out.push(trimmed);
+    return out;
+  };
+
+  const getFillColorFromLinearGradient = (layerValue: string): string | null => {
+    const m = layerValue.match(/^linear-gradient\((.*)\)$/i);
+    if (!m) return null;
+
+    const args = splitCssTopLevelCommas(m[1]);
+    if (args.length !== 2) return null;
+
+    const a = args[0].trim();
+    const b = args[1].trim();
+    if (!a || !b) return null;
+
+    return a === b ? a : null;
+  };
+
+  const getBackgroundSignature = (instanceId: string, stylesObj: any): string => {
+    const imageRaw = (stylesObj?.backgroundImage ?? "") as string;
+    const image = imageRaw && imageRaw !== "none" ? imageRaw : "";
+
+    if (image) {
+      return [
+        instanceId,
+        image,
+        stylesObj?.backgroundSize ?? "",
+        stylesObj?.backgroundPosition ?? "",
+        stylesObj?.backgroundRepeat ?? "",
+      ].join("|||");
+    }
+
+    // Legacy single-value backgrounds (when no background-image exists)
+    return [instanceId, "", stylesObj?.backgroundColor ?? "", stylesObj?.backgroundGradient ?? ""].join("|||");
+  };
+
+  const areBackgroundLayersEqual = (a: BackgroundLayerItem[], b: BackgroundLayerItem[]) => {
+    if (a.length !== b.length) return false;
+    for (let i = 0; i < a.length; i++) {
+      const aa = a[i];
+      const bb = b[i];
+      if (aa.type !== bb.type) return false;
+      if ((aa.value ?? "") !== (bb.value ?? "")) return false;
+      if ((aa.size ?? "") !== (bb.size ?? "")) return false;
+      if ((aa.position ?? "") !== (bb.position ?? "")) return false;
+      if ((aa.repeat ?? "") !== (bb.repeat ?? "")) return false;
+    }
+    return true;
+  };
+
+  const parseBackgroundLayersFromComputed = (instanceId: string, stylesObj: any): BackgroundLayerItem[] => {
+    const layers: BackgroundLayerItem[] = [];
+
+    const bgImageRaw = (stylesObj?.backgroundImage ?? "") as string;
+    const bgImage = bgImageRaw && bgImageRaw !== "none" ? bgImageRaw : "";
+
+    // Primary path: parse combined background-image layers
+    if (bgImage) {
+      const images = splitCssTopLevelCommas(bgImage);
+      const sizes = splitCssTopLevelCommas(stylesObj?.backgroundSize ?? "");
+      const positions = splitCssTopLevelCommas(stylesObj?.backgroundPosition ?? "");
+      const repeats = splitCssTopLevelCommas(stylesObj?.backgroundRepeat ?? "");
+
+      images.forEach((img, index) => {
+        const value = img.trim();
+        if (!value) return;
+
+        if (/^url\(/i.test(value)) {
+          layers.push({
+            id: `bg-${instanceId}-${index}`,
+            type: "media",
+            value,
+            size: (sizes[index] ?? sizes[sizes.length - 1] ?? "cover").trim() || "cover",
+            position: (positions[index] ?? positions[positions.length - 1] ?? "center").trim() || "center",
+            repeat: (repeats[index] ?? repeats[repeats.length - 1] ?? "no-repeat").trim() || "no-repeat",
+          });
+          return;
+        }
+
+        if (/gradient\(/i.test(value)) {
+          const fillColor = getFillColorFromLinearGradient(value);
+          if (fillColor) {
+            layers.push({
+              id: `bg-${instanceId}-${index}`,
+              type: "fill",
+              value: fillColor,
+            });
+          } else {
+            layers.push({
+              id: `bg-${instanceId}-${index}`,
+              type: "gradient",
+              value,
+            });
+          }
+          return;
+        }
+
+        // Fallback: treat unknown value as media-like
+        layers.push({
+          id: `bg-${instanceId}-${index}`,
+          type: "media",
+          value,
+          size: (sizes[index] ?? sizes[sizes.length - 1] ?? "cover").trim() || "cover",
+          position: (positions[index] ?? positions[positions.length - 1] ?? "center").trim() || "center",
+          repeat: (repeats[index] ?? repeats[repeats.length - 1] ?? "no-repeat").trim() || "no-repeat",
+        });
+      });
+
+      return layers;
+    }
+
+    // Legacy path (if some components still use these separate properties)
+    if (stylesObj?.backgroundColor && stylesObj.backgroundColor !== "transparent") {
+      layers.push({
+        id: `fill-${instanceId}`,
+        type: "fill",
+        value: stylesObj.backgroundColor,
+      });
+    }
+
+    if (stylesObj?.backgroundGradient && stylesObj.backgroundGradient !== "none") {
+      layers.push({
+        id: `gradient-${instanceId}`,
+        type: "gradient",
+        value: stylesObj.backgroundGradient,
+      });
+    }
+
+    return layers;
+  };
+
+  const composeBackgroundFromLayers = (layers: BackgroundLayerItem[]) => {
+    // CSS renders background-image layers top-to-bottom (first = topmost)
     const bgImages: string[] = [];
     const bgSizes: string[] = [];
     const bgPositions: string[] = [];
     const bgRepeats: string[] = [];
-    
-    newLayers.forEach((layer) => {
+
+    layers.forEach((layer) => {
       if (!layer.value) return;
-      
-      switch (layer.type) {
-        case 'fill':
-          // Convert solid color to gradient for layering
-          bgImages.push(`linear-gradient(${layer.value}, ${layer.value})`);
-          bgSizes.push('100% 100%');
-          bgPositions.push('center');
-          bgRepeats.push('no-repeat');
-          break;
-        case 'gradient':
-          bgImages.push(layer.value);
-          bgSizes.push('100% 100%');
-          bgPositions.push('center');
-          bgRepeats.push('no-repeat');
-          break;
-        case 'media':
-          bgImages.push(layer.value);
-          bgSizes.push(layer.size || 'cover');
-          bgPositions.push(layer.position || 'center');
-          bgRepeats.push(layer.repeat || 'no-repeat');
-          break;
+
+      if (layer.type === "fill") {
+        bgImages.push(`linear-gradient(${layer.value}, ${layer.value})`);
+        bgSizes.push("100% 100%");
+        bgPositions.push("center");
+        bgRepeats.push("no-repeat");
+        return;
+      }
+
+      if (layer.type === "gradient") {
+        bgImages.push(layer.value);
+        bgSizes.push("100% 100%");
+        bgPositions.push("center");
+        bgRepeats.push("no-repeat");
+        return;
+      }
+
+      if (layer.type === "media") {
+        bgImages.push(layer.value);
+        bgSizes.push(layer.size || "cover");
+        bgPositions.push(layer.position || "center");
+        bgRepeats.push(layer.repeat || "no-repeat");
       }
     });
-    
-    // Apply as combined background-image (all layers in one property)
-    if (bgImages.length > 0) {
-      updateStyle("backgroundImage", bgImages.join(', '));
-      updateStyle("backgroundSize", bgSizes.join(', '));
-      updateStyle("backgroundPosition", bgPositions.join(', '));
-      updateStyle("backgroundRepeat", bgRepeats.join(', '));
+
+    return {
+      image: bgImages.join(", "),
+      size: bgSizes.join(", "),
+      position: bgPositions.join(", "),
+      repeat: bgRepeats.join(", "),
+    };
+  };
+
+  // Sync background layers from computed styles (only when the underlying CSS changed externally)
+  useEffect(() => {
+    if (!selectedInstance) {
+      setBackgroundLayers([]);
+      lastBackgroundSignatureRef.current = "";
+      return;
     }
+
+    const signature = getBackgroundSignature(selectedInstance.id, computedStyles as any);
+
+    // If we just wrote these styles ourselves, don't clobber local layer IDs/order.
+    if (signature && signature === lastBackgroundSignatureRef.current) return;
+
+    const parsed = parseBackgroundLayersFromComputed(selectedInstance.id, computedStyles as any);
+
+    setBackgroundLayers((prev) => {
+      if (areBackgroundLayersEqual(prev, parsed)) return prev;
+
+      // Preserve existing IDs where possible (stabilizes drag/drop + open popovers)
+      return parsed.map((layer, i) => {
+        const prevLayer = prev[i];
+        if (prevLayer && prevLayer.type === layer.type && (prevLayer.value ?? "") === (layer.value ?? "")) {
+          return { ...layer, id: prevLayer.id };
+        }
+        return layer;
+      });
+    });
+
+    lastBackgroundSignatureRef.current = signature;
+  }, [
+    selectedInstance?.id,
+    (computedStyles as any).backgroundImage,
+    (computedStyles as any).backgroundSize,
+    (computedStyles as any).backgroundPosition,
+    (computedStyles as any).backgroundRepeat,
+    (computedStyles as any).backgroundColor,
+    (computedStyles as any).backgroundGradient,
+  ]);
+
+  // Handle background layers change
+  const handleBackgroundLayersChange = (newLayers: BackgroundLayerItem[]) => {
+    setBackgroundLayers(newLayers);
+
+    if (!selectedInstance) return;
+
+    const composed = composeBackgroundFromLayers(newLayers);
+
+    if (!composed.image) {
+      lastBackgroundSignatureRef.current = [selectedInstance.id, "", "", ""].join("|||");
+      updateStyle("backgroundImage", "");
+      updateStyle("backgroundSize", "");
+      updateStyle("backgroundPosition", "");
+      updateStyle("backgroundRepeat", "");
+      updateStyle("backgroundColor", "");
+      updateStyle("backgroundGradient", "");
+      return;
+    }
+
+    const signature = [selectedInstance.id, composed.image, composed.size, composed.position, composed.repeat].join("|||");
+    lastBackgroundSignatureRef.current = signature;
+
+    updateStyle("backgroundImage", composed.image);
+    updateStyle("backgroundSize", composed.size);
+    updateStyle("backgroundPosition", composed.position);
+    updateStyle("backgroundRepeat", composed.repeat);
   };
 
   const handlePageClick = (page: string) => {
