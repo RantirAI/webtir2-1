@@ -16,7 +16,7 @@ import { useBuilderStore } from '@/builder/store/useBuilderStore';
 import { usePageStore } from '@/builder/store/usePageStore';
 import { componentRegistry } from '@/builder/primitives/registry';
 import { ComponentInstance, ComponentType } from '@/builder/store/types';
-import { generateId, canDropInside } from '@/builder/utils/instance';
+import { generateId, canDropInside, createPrebuiltChildren, shouldAutoConvertToChildren } from '@/builder/utils/instance';
 import { useStyleStore } from '@/builder/store/useStyleStore';
 import { useKeyboardShortcuts } from '@/builder/hooks/useKeyboardShortcuts';
 import { DropIndicator } from '@/builder/components/DropIndicator';
@@ -863,13 +863,19 @@ const Builder: React.FC = () => {
         });
       }
 
+      // Auto-convert data items to children for prebuilt components
+      let autoChildren: ComponentInstance[] = [];
+      if (shouldAutoConvertToChildren(componentType)) {
+        autoChildren = createPrebuiltChildren(componentType, meta.defaultProps) as ComponentInstance[];
+      }
+
       const newInstance: ComponentInstance = {
         id: newId,
         type: meta.type,
         label: meta.label,
         props: { ...meta.defaultProps },
         styleSourceIds: [styleSourceId],
-        children: defaultChildren,
+        children: autoChildren.length > 0 ? autoChildren : defaultChildren,
       };
 
       // Determine parent - Sections always go to root

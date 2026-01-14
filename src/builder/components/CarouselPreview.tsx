@@ -37,6 +37,8 @@ export const CarouselPreview: React.FC<CarouselPreviewProps> = ({
   showDots = true,
   loop = true,
   isPreviewMode = false,
+  renderInstance,
+  parentInstance,
 }) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
@@ -186,89 +188,107 @@ export const CarouselPreview: React.FC<CarouselPreviewProps> = ({
       <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden' }}>
         {slides.map((slide, index) => (
           <div key={slide.id || index} style={getSlideStyle(index)}>
-            {slide.imageUrl && (
-              <img
-                src={slide.imageUrl}
-                alt={slide.altText || slide.title || `Slide ${index + 1}`}
-                style={{
-                  position: 'absolute',
-                  inset: 0,
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover',
-                }}
-              />
-            )}
-            {/* Overlay */}
-            {styles.overlayColor && (
-              <div
-                style={{
-                  position: 'absolute',
-                  inset: 0,
-                  background: styles.overlayColor,
-                }}
-              />
-            )}
-            {/* Content */}
-            <div
-              style={{
-                position: 'relative',
-                zIndex: 1,
-                padding: '24px',
-                textAlign: (styles.contentAlignment as React.CSSProperties['textAlign']) || 'center',
-              }}
-            >
-              {slide.title && (
-                <h3
-                  style={{
-                    fontSize: `${styles.titleSize || 24}px`,
-                    fontWeight: styles.titleWeight || '600',
-                    color: styles.titleColor || 'hsl(var(--foreground))',
-                    marginBottom: '8px',
-                    margin: 0,
-                    marginBlockEnd: '8px',
-                  }}
-                >
-                  {slide.title}
-                </h3>
-              )}
-              {slide.description && (
-                <p
-                  style={{
-                    fontSize: `${styles.subtitleSize || 14}px`,
-                    color: styles.subtitleColor || 'hsl(var(--muted-foreground))',
-                    marginBottom: slide.buttonText ? '16px' : '0',
-                    margin: 0,
-                    marginBlockEnd: slide.buttonText ? '16px' : '0',
-                  }}
-                >
-                  {slide.description}
-                </p>
-              )}
-              {slide.buttonText && (
-                <a
-                  href={isPreviewMode ? slide.buttonLink || '#' : undefined}
-                  onClick={!isPreviewMode ? (e) => e.preventDefault() : undefined}
-                  style={{
-                    display: 'inline-block',
-                    padding: '8px 20px',
-                    backgroundColor: 'hsl(var(--primary))',
-                    color: 'hsl(var(--primary-foreground))',
-                    borderRadius: '6px',
-                    fontSize: '14px',
-                    fontWeight: '500',
-                    textDecoration: 'none',
-                    cursor: 'pointer',
-                  }}
-                >
-                  {slide.buttonText}
-                </a>
-              )}
-            </div>
-            {!slide.imageUrl && !slide.title && (
-              <div style={{ color: 'hsl(var(--muted-foreground))', textAlign: 'center' }}>
-                Slide {index + 1}
+            {/* If slide has nested children, render them */}
+            {slide.hasChildren && slide.childContent && slide.childContent.length > 0 && renderInstance ? (
+              <div style={{ 
+                position: 'relative', 
+                zIndex: 1, 
+                width: '100%', 
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: positionMap[styles.contentPosition || 'center'],
+                alignItems: alignmentMap[styles.contentAlignment || 'center'],
+              }}>
+                {slide.childContent.map((child: any, idx: number) => renderInstance(child, parentInstance, idx))}
               </div>
+            ) : (
+              <>
+                {slide.imageUrl && (
+                  <img
+                    src={slide.imageUrl}
+                    alt={slide.altText || slide.title || `Slide ${index + 1}`}
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                    }}
+                  />
+                )}
+                {/* Overlay */}
+                {styles.overlayColor && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      background: styles.overlayColor,
+                    }}
+                  />
+                )}
+                {/* Content */}
+                <div
+                  style={{
+                    position: 'relative',
+                    zIndex: 1,
+                    padding: '24px',
+                    textAlign: (styles.contentAlignment as React.CSSProperties['textAlign']) || 'center',
+                  }}
+                >
+                  {slide.title && (
+                    <h3
+                      style={{
+                        fontSize: `${styles.titleSize || 24}px`,
+                        fontWeight: styles.titleWeight || '600',
+                        color: styles.titleColor || 'hsl(var(--foreground))',
+                        marginBottom: '8px',
+                        margin: 0,
+                        marginBlockEnd: '8px',
+                      }}
+                    >
+                      {slide.title}
+                    </h3>
+                  )}
+                  {slide.description && (
+                    <p
+                      style={{
+                        fontSize: `${styles.subtitleSize || 14}px`,
+                        color: styles.subtitleColor || 'hsl(var(--muted-foreground))',
+                        marginBottom: slide.buttonText ? '16px' : '0',
+                        margin: 0,
+                        marginBlockEnd: slide.buttonText ? '16px' : '0',
+                      }}
+                    >
+                      {slide.description}
+                    </p>
+                  )}
+                  {slide.buttonText && (
+                    <a
+                      href={isPreviewMode ? slide.buttonLink || '#' : undefined}
+                      onClick={!isPreviewMode ? (e) => e.preventDefault() : undefined}
+                      style={{
+                        display: 'inline-block',
+                        padding: '8px 20px',
+                        backgroundColor: 'hsl(var(--primary))',
+                        color: 'hsl(var(--primary-foreground))',
+                        borderRadius: '6px',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        textDecoration: 'none',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      {slide.buttonText}
+                    </a>
+                  )}
+                </div>
+                {!slide.imageUrl && !slide.title && (
+                  <div style={{ color: 'hsl(var(--muted-foreground))', textAlign: 'center' }}>
+                    Slide {index + 1}
+                  </div>
+                )}
+              </>
             )}
           </div>
         ))}

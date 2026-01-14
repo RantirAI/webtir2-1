@@ -211,6 +211,16 @@ const TabsComponent: React.FC<{
           : (activeTabData?.content || 'Tab content')}
       </div>
       
+      {/* Render generic children (Text, Button, etc.) that were dropped directly into Tabs */}
+      {(() => {
+        const otherChildren = instance.children.filter(c => c.type !== 'TabPanel');
+        return otherChildren.length > 0 && renderInstance ? (
+          <div style={{ padding: `${tabsStyles.contentPadding}px`, borderTop: '1px dashed hsl(var(--border))' }}>
+            {otherChildren.map((child, idx) => renderInstance(child, instance, idx))}
+          </div>
+        ) : null;
+      })()}
+      
       {allTabs.length === 0 && (
         <div className="py-4 text-sm text-muted-foreground italic">
           No tabs. Add tabs in the Data tab or drag TabPanel components.
@@ -1085,7 +1095,16 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
                 </div>
               ))}
             </div>
-            {items.length === 0 && !hasChildItems && (
+            {/* Render generic children (Text, Button, etc.) that were dropped directly */}
+            {(() => {
+              const otherChildren = instance.children.filter(c => c.type !== 'AccordionItem');
+              return otherChildren.length > 0 ? (
+                <div className="p-4 border-t border-dashed border-border">
+                  {otherChildren.map((child, idx) => renderInstance(child, instance, idx))}
+                </div>
+              ) : null;
+            })()}
+            {items.length === 0 && !hasChildItems && instance.children.length === 0 && (
               <div className="py-4 text-sm text-muted-foreground italic">
                 No accordion items. Add items in the Data tab or drag AccordionItem components.
               </div>
@@ -1116,6 +1135,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
         
         // In edit mode with child slides, show them directly for editing
         if (!isPreviewMode && hasChildSlides) {
+          const otherChildren = instance.children.filter(c => c.type !== 'CarouselSlide');
           const content = (
             <div
               data-instance-id={instance.id}
@@ -1133,7 +1153,13 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
               onContextMenu={(e) => handleContextMenu(e, instance)}
             >
               {childSlides.map((child, idx) => renderInstance(child, instance, idx))}
-              {childSlides.length === 0 && (
+              {/* Render generic children that were dropped directly */}
+              {otherChildren.length > 0 && (
+                <div className="p-4 border-t border-dashed border-border">
+                  {otherChildren.map((child, idx) => renderInstance(child, instance, idx))}
+                </div>
+              )}
+              {childSlides.length === 0 && otherChildren.length === 0 && (
                 <div className="py-4 text-sm text-muted-foreground italic text-center">
                   Drop CarouselSlide components here
                 </div>
@@ -1146,6 +1172,9 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
             </DroppableContainer>
           );
         }
+        
+        // Also check for generic children when no child slides
+        const otherChildren = instance.children.filter(c => c.type !== 'CarouselSlide');
         
         const content = (
           <div
@@ -1178,6 +1207,12 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
               renderInstance={renderInstance}
               parentInstance={instance}
             />
+            {/* Render generic children that were dropped directly */}
+            {otherChildren.length > 0 && !isPreviewMode && (
+              <div className="p-4 border-t border-dashed border-border">
+                {otherChildren.map((child, idx) => renderInstance(child, instance, idx))}
+              </div>
+            )}
           </div>
         );
         // Wrap in DroppableContainer in edit mode so CarouselSlide children can be dropped
@@ -1543,6 +1578,9 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
           ? itemPadding.split(' ').map((p: string) => `${p}px`).join(' ')
           : undefined;
 
+        // Check for generic children (non-BreadcrumbItem)
+        const otherChildren = instance.children.filter(c => c.type !== 'BreadcrumbItem');
+
         // Combine data items with child items
         const allItems = hasChildItems 
           ? childItems.map((child, index) => ({
@@ -1618,8 +1656,14 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
                 </React.Fragment>
               );
             })}
-            {allItems.length === 0 && (
+            {allItems.length === 0 && otherChildren.length === 0 && (
               <span className="text-muted-foreground italic text-sm">No breadcrumb items. Add in Data tab or drag BreadcrumbItem.</span>
+            )}
+            {/* Render generic children (Text, Button, etc.) that were dropped directly */}
+            {otherChildren.length > 0 && (
+              <div className="p-2 border-l border-dashed border-border ml-2">
+                {otherChildren.map((child, idx) => renderInstance(child, instance, idx))}
+              </div>
             )}
           </div>
         );
