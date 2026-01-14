@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useBuilderStore } from '../store/useBuilderStore';
 import { usePageStore } from '../store/usePageStore';
+import { useStyleStore } from '../store/useStyleStore';
+import { useDebounce } from '@/hooks/useDebounce';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
@@ -38,6 +40,23 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
   const customCode = currentPage ? getPageCustomCode(currentPage.id) : { header: '', body: '', footer: '' };
   const allProjectPages = getAllPages();
   const globalComponents = getGlobalComponents();
+  
+  // Subscribe to style store changes for CSS export sync
+  const styles = useStyleStore((state) => state.styles);
+  const styleSources = useStyleStore((state) => state.styleSources);
+  
+  // Create a stable version number that changes when styles change
+  // This triggers CSS regeneration without excessive re-renders
+  const styleVersion = useMemo(() => {
+    const stylesCount = Object.keys(styles).length;
+    const sourcesCount = Object.keys(styleSources).length;
+    // Include a hash of style content for more granular change detection
+    const contentHash = Object.values(styles).reduce((acc, s) => acc + JSON.stringify(s).length, 0);
+    return `${stylesCount}-${sourcesCount}-${contentHash}`;
+  }, [styles, styleSources]);
+  
+  // Debounce style changes to prevent excessive regeneration during AI builds
+  const debouncedStyleVersion = useDebounce(styleVersion, 300);
   
   // Calculate export stats for debugging truncation issues
   const sectionCount = rootInstance?.children?.length || 0;
@@ -170,7 +189,8 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
     }
     if (!editedTabs.react) setJsCode(exportJS(rootInstance));
     if (!editedTabs.astro) setAstroCode(exportAstro(rootInstance));
-  }, [rootInstance, selectedFile, isComponentFile, componentCode, customCode]);
+    // Note: debouncedStyleVersion triggers CSS regeneration when styles change
+  }, [rootInstance, selectedFile, isComponentFile, componentCode, customCode, debouncedStyleVersion]);
 
   const handleCopy = (code: string, tab: string) => {
     navigator.clipboard.writeText(code);
