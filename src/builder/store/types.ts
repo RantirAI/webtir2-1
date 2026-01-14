@@ -8,6 +8,8 @@ export type ComponentType =
   | 'RichText' | 'Blockquote' | 'OrderedList' | 'UnorderedList' | 'CodeBlock'
   // Commonly Used
   | 'Table' | 'Cell' | 'NumberInput' | 'TabbedContainer' | 'MixedChart' | 'KeyValue' | 'Navigation' | 'Dropdown'
+  // Table child primitives
+  | 'TableRow' | 'TableHeaderCell' | 'TableCell'
   // Text Inputs
   | 'EditableText' | 'EditableTextArea' | 'Email' | 'JSONEditor' | 'Password' | 'RichTextEditor' | 'TextArea' | 'TextInput' | 'URL'
   // Charts
@@ -21,7 +23,15 @@ export type ComponentType =
   // Radix/Shadcn UI Components
   | 'Sheet' | 'NavigationMenu' | 'Tabs' | 'Accordion' | 'Dialog' | 'Collapsible' | 'Popover' | 'Tooltip' | 'Switch' | 'Label'
   | 'Carousel' | 'Slider' | 'AlertDialog' | 'Breadcrumb' | 'Badge' | 'Drawer' | 'Toggle' | 'ToggleGroup' | 'Pagination' | 'OTPInput'
-  | 'HoverCard' | 'ContextMenu' | 'CommandPalette' | 'ScrollArea' | 'Separator' | 'Skeleton' | 'ResizablePanels' | 'Progress';
+  | 'HoverCard' | 'ContextMenu' | 'CommandPalette' | 'ScrollArea' | 'Separator' | 'Skeleton' | 'ResizablePanels' | 'Progress'
+  // Tabs child primitives
+  | 'TabPanel'
+  // Accordion child primitives
+  | 'AccordionItem'
+  // Breadcrumb child primitives
+  | 'BreadcrumbItem'
+  // Carousel child primitives
+  | 'CarouselSlide';
 
 export type StyleSourceType = 'local' | 'token' | 'preset';
 
@@ -211,7 +221,7 @@ export interface ComponentMeta {
 export interface PropDefinition {
   type: 'string' | 'number' | 'boolean' | 'select';
   label: string;
-  control: 'text' | 'textarea' | 'select' | 'number' | 'checkbox';
+  control: 'text' | 'textarea' | 'select' | 'number' | 'checkbox' | 'color';
   options?: string[];
   defaultValue?: any;
 }

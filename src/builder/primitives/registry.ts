@@ -486,6 +486,64 @@ export const componentRegistry: Record<string, ComponentMeta> = {
       },
     },
   },
+  // Table child primitives
+  TableRow: {
+    type: 'TableRow',
+    label: 'Table Row',
+    icon: 'Rows3',
+    defaultProps: {
+      isHeader: false,
+    },
+    defaultStyles: {},
+    propsDefinition: {
+      isHeader: {
+        type: 'boolean',
+        label: 'Header Row',
+        control: 'checkbox',
+        defaultValue: false,
+      },
+    },
+  },
+  TableHeaderCell: {
+    type: 'TableHeaderCell',
+    label: 'Header Cell',
+    icon: 'Hash',
+    defaultProps: {
+      content: 'Header',
+    },
+    defaultStyles: {
+      padding: '12px',
+      fontWeight: '600',
+      textAlign: 'left',
+    },
+    propsDefinition: {
+      content: {
+        type: 'string',
+        label: 'Content',
+        control: 'text',
+        defaultValue: 'Header',
+      },
+    },
+  },
+  TableCell: {
+    type: 'TableCell',
+    label: 'Table Cell',
+    icon: 'Square',
+    defaultProps: {
+      content: '',
+    },
+    defaultStyles: {
+      padding: '12px',
+    },
+    propsDefinition: {
+      content: {
+        type: 'string',
+        label: 'Content',
+        control: 'text',
+        defaultValue: '',
+      },
+    },
+  },
   Cell: {
     type: 'Cell',
     label: 'Cell',
@@ -1115,9 +1173,99 @@ export const componentRegistry: Record<string, ComponentMeta> = {
     type: 'Divider',
     label: 'Divider',
     icon: 'Minus',
-    defaultProps: {},
-    defaultStyles: {},
-    propsDefinition: {},
+    defaultProps: {
+      orientation: 'horizontal',
+      variant: 'solid',
+      thickness: '1',
+      color: 'hsl(var(--border))',
+      spacing: '16',
+    },
+    defaultStyles: {
+      width: '100%',
+    },
+    propsDefinition: {
+      orientation: {
+        type: 'select',
+        label: 'Orientation',
+        control: 'select',
+        options: ['horizontal', 'vertical'],
+        defaultValue: 'horizontal',
+      },
+      variant: {
+        type: 'select',
+        label: 'Style',
+        control: 'select',
+        options: ['solid', 'dashed', 'dotted'],
+        defaultValue: 'solid',
+      },
+      thickness: {
+        type: 'string',
+        label: 'Thickness (px)',
+        control: 'text',
+        defaultValue: '1',
+      },
+      color: {
+        type: 'string',
+        label: 'Color',
+        control: 'color',
+        defaultValue: 'hsl(var(--border))',
+      },
+      spacing: {
+        type: 'string',
+        label: 'Spacing (px)',
+        control: 'text',
+        defaultValue: '16',
+      },
+    },
+  },
+  Separator: {
+    type: 'Separator',
+    label: 'Separator',
+    icon: 'Minus',
+    defaultProps: {
+      orientation: 'horizontal',
+      variant: 'solid',
+      thickness: '1',
+      color: 'hsl(var(--border))',
+      spacing: '16',
+    },
+    defaultStyles: {
+      width: '100%',
+    },
+    propsDefinition: {
+      orientation: {
+        type: 'select',
+        label: 'Orientation',
+        control: 'select',
+        options: ['horizontal', 'vertical'],
+        defaultValue: 'horizontal',
+      },
+      variant: {
+        type: 'select',
+        label: 'Style',
+        control: 'select',
+        options: ['solid', 'dashed', 'dotted'],
+        defaultValue: 'solid',
+      },
+      thickness: {
+        type: 'string',
+        label: 'Thickness (px)',
+        control: 'text',
+        defaultValue: '1',
+      },
+      color: {
+        type: 'string',
+        label: 'Color',
+        control: 'color',
+        defaultValue: 'hsl(var(--border))',
+      },
+      spacing: {
+        type: 'string',
+        label: 'Spacing (px)',
+        control: 'text',
+        defaultValue: '16',
+      },
+    },
   },
   EventList: {
     type: 'EventList',
@@ -1239,17 +1387,84 @@ export const componentRegistry: Record<string, ComponentMeta> = {
     type: 'Tabs',
     label: 'Tabs',
     icon: 'Tabs',
-    defaultProps: {},
-    defaultStyles: {},
+    defaultProps: {
+      tabs: [
+        { id: '1', label: 'Tab 1', content: 'Content for tab 1' },
+        { id: '2', label: 'Tab 2', content: 'Content for tab 2' },
+        { id: '3', label: 'Tab 3', content: 'Content for tab 3' },
+      ],
+      defaultTab: '1',
+    },
+    defaultStyles: {
+      width: '100%',
+    },
     propsDefinition: {},
+  },
+  // Tabs child primitive
+  TabPanel: {
+    type: 'TabPanel',
+    label: 'Tab Panel',
+    icon: 'PanelTop',
+    defaultProps: {
+      label: 'Tab',
+      tabId: '',
+    },
+    defaultStyles: {
+      width: '100%',
+      minHeight: '100px',
+      padding: '16px',
+    },
+    propsDefinition: {
+      label: {
+        type: 'string',
+        label: 'Tab Label',
+        control: 'text',
+        defaultValue: 'Tab',
+      },
+    },
   },
   Accordion: {
     type: 'Accordion',
     label: 'Accordion',
     icon: 'ChevronRight',
-    defaultProps: {},
-    defaultStyles: {},
+    defaultProps: {
+      items: [
+        { id: '1', title: 'Section 1', content: 'Content for section 1', defaultOpen: false },
+        { id: '2', title: 'Section 2', content: 'Content for section 2', defaultOpen: false },
+        { id: '3', title: 'Section 3', content: 'Content for section 3', defaultOpen: false },
+      ],
+    },
+    defaultStyles: {
+      width: '100%',
+    },
     propsDefinition: {},
+  },
+  // Accordion child primitives
+  AccordionItem: {
+    type: 'AccordionItem',
+    label: 'Accordion Item',
+    icon: 'ChevronDown',
+    defaultProps: {
+      title: 'Accordion Item',
+      defaultOpen: false,
+    },
+    defaultStyles: {
+      width: '100%',
+    },
+    propsDefinition: {
+      title: {
+        type: 'string',
+        label: 'Title',
+        control: 'text',
+        defaultValue: 'Accordion Item',
+      },
+      defaultOpen: {
+        type: 'boolean',
+        label: 'Default Open',
+        control: 'checkbox',
+        defaultValue: false,
+      },
+    },
   },
   Dialog: {
     type: 'Dialog',
@@ -1290,5 +1505,79 @@ export const componentRegistry: Record<string, ComponentMeta> = {
     defaultProps: {},
     defaultStyles: {},
     propsDefinition: {},
+  },
+  // Breadcrumb child primitive
+  BreadcrumbItem: {
+    type: 'BreadcrumbItem',
+    label: 'Breadcrumb Item',
+    icon: 'ChevronRight',
+    defaultProps: {
+      label: 'Page',
+      href: '#',
+      isCurrentPage: false,
+    },
+    defaultStyles: {},
+    propsDefinition: {
+      label: {
+        type: 'string',
+        label: 'Label',
+        control: 'text',
+        defaultValue: 'Page',
+      },
+      href: {
+        type: 'string',
+        label: 'URL',
+        control: 'text',
+        defaultValue: '#',
+      },
+      isCurrentPage: {
+        type: 'boolean',
+        label: 'Current Page',
+        control: 'checkbox',
+        defaultValue: false,
+      },
+    },
+  },
+  // Carousel child primitive
+  CarouselSlide: {
+    type: 'CarouselSlide',
+    label: 'Carousel Slide',
+    icon: 'Frame',
+    defaultProps: {
+      imageUrl: 'https://via.placeholder.com/800x400',
+      alt: 'Slide image',
+      title: '',
+      description: '',
+    },
+    defaultStyles: {
+      width: '100%',
+      minHeight: '200px',
+    },
+    propsDefinition: {
+      imageUrl: {
+        type: 'string',
+        label: 'Image URL',
+        control: 'text',
+        defaultValue: 'https://via.placeholder.com/800x400',
+      },
+      alt: {
+        type: 'string',
+        label: 'Alt Text',
+        control: 'text',
+        defaultValue: 'Slide image',
+      },
+      title: {
+        type: 'string',
+        label: 'Title',
+        control: 'text',
+        defaultValue: '',
+      },
+      description: {
+        type: 'string',
+        label: 'Description',
+        control: 'textarea',
+        defaultValue: '',
+      },
+    },
   },
 };
