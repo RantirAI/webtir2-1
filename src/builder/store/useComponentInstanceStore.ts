@@ -126,7 +126,7 @@ const convertSystemPrebuiltToPrebuilt = (
   const now = Date.now();
   const styles: PrebuiltComponent['styles'] = {};
   
-  // Convert default styles to the PrebuiltComponent styles format
+  // Convert default styles to the PrebuiltComponent styles format (base breakpoint)
   for (const [styleId, styleValues] of Object.entries(systemPrebuilt.defaultStyles)) {
     styles[styleId] = {
       source: {
@@ -138,6 +138,36 @@ const convertSystemPrebuiltToPrebuilt = (
         Object.entries(styleValues).map(([prop, value]) => [`${styleId}:base:default:${prop}`, value])
       ),
     };
+  }
+  
+  // Add tablet breakpoint styles if defined
+  if (systemPrebuilt.tabletStyles) {
+    for (const [styleId, styleValues] of Object.entries(systemPrebuilt.tabletStyles)) {
+      if (!styles[styleId]) {
+        styles[styleId] = {
+          source: { id: styleId, type: 'local', name: styleId.replace('style-', '') },
+          styleValues: {},
+        };
+      }
+      for (const [prop, value] of Object.entries(styleValues)) {
+        styles[styleId].styleValues[`${styleId}:tablet:default:${prop}`] = value;
+      }
+    }
+  }
+  
+  // Add mobile breakpoint styles if defined
+  if (systemPrebuilt.mobileStyles) {
+    for (const [styleId, styleValues] of Object.entries(systemPrebuilt.mobileStyles)) {
+      if (!styles[styleId]) {
+        styles[styleId] = {
+          source: { id: styleId, type: 'local', name: styleId.replace('style-', '') },
+          styleValues: {},
+        };
+      }
+      for (const [prop, value] of Object.entries(styleValues)) {
+        styles[styleId].styleValues[`${styleId}:mobile:default:${prop}`] = value;
+      }
+    }
   }
   
   return {

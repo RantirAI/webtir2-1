@@ -650,6 +650,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
             instance={instance}
             isPreviewMode={isPreviewMode}
             currentBreakpoint={currentBreakpoint}
+            canvasWidth={displayWidth}
           >
             {sectionContent}
           </ResponsiveNavWrapper>
