@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { MarkdownRenderer } from './MarkdownRenderer';
-import { BuildProgressCard } from './BuildProgressCard';
-import { BuildSummaryCard } from './BuildSummaryCard';
+import { AgenticProgressCard } from './AgenticProgressCard';
+import { AgenticSummaryCard } from './AgenticSummaryCard';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
@@ -87,6 +87,8 @@ export const AIChat: React.FC = () => {
     finishBuild,
     reset: resetBuildProgress,
     setTruncated,
+    addAgentMessage,
+    setStreamingIntent,
   } = useBuildProgressStore();
 
   const [chatMode, setChatMode] = useState<ChatMode>(lastChatMode);
@@ -203,17 +205,94 @@ When continuing a build, add NEW sections after these. Do NOT recreate existing 
     return message.length > 35 ? message.slice(0, 32) + '...' : message;
   };
 
+  // Generate agentic intent message based on user request
+  const generateIntentMessage = (message: string): string => {
+    const lowerMsg = message.toLowerCase();
+    
+    // Landing page / full page
+    if (lowerMsg.includes('landing page') || lowerMsg.includes('homepage') || lowerMsg.includes('full page')) {
+      const pageMatch = message.match(/(?:landing page|homepage|page)\s+(?:for\s+)?(.{3,30}?)(?:\.|$|,|\s+with)/i);
+      const pageName = pageMatch ? pageMatch[1] : 'the page';
+      return `I'll create a complete ${pageName} with hero section, features, testimonials, and more.`;
+    }
+    
+    // Specific section creation
+    if (lowerMsg.includes('hero section') || lowerMsg.includes('hero')) {
+      return "I'll build a hero section with headline, description, and call-to-action buttons.";
+    }
+    if (lowerMsg.includes('feature') || lowerMsg.includes('features section')) {
+      return "I'll create a features section showcasing your key benefits with icons and descriptions.";
+    }
+    if (lowerMsg.includes('testimonial')) {
+      return "I'll design a testimonials section with customer quotes and avatars.";
+    }
+    if (lowerMsg.includes('pricing')) {
+      return "I'll build a pricing section with plan comparisons and CTAs.";
+    }
+    if (lowerMsg.includes('footer')) {
+      return "I'll create a footer with navigation links, social icons, and copyright.";
+    }
+    if (lowerMsg.includes('navigation') || lowerMsg.includes('navbar') || lowerMsg.includes('header')) {
+      return "I'll build a navigation bar with logo, links, and action buttons.";
+    }
+    
+    // Updates and styling
+    if (lowerMsg.includes('update') || lowerMsg.includes('change') || lowerMsg.includes('modify')) {
+      return "I'll update the component with your requested changes.";
+    }
+    if (lowerMsg.includes('style') || lowerMsg.includes('color') || lowerMsg.includes('font')) {
+      return "I'll apply the style changes to match your requirements.";
+    }
+    
+    // Image generation
+    if (lowerMsg.includes('image') || lowerMsg.includes('generate') && lowerMsg.includes('photo')) {
+      return "I'll generate an image based on your description.";
+    }
+    
+    // Continue building
+    if (lowerMsg.includes('continue')) {
+      return "I'll continue building the remaining sections.";
+    }
+    
+    // Generic fallback
+    return "I'll analyze your request and build the components you need.";
+  };
+
+  // Track which messages we've already added to avoid duplicates
+  const addedMessagesRef = useRef<Set<string>>(new Set());
+
   // Update build description based on partial JSON parsing
   const updateBuildDescription = (partialJson: string) => {
     try {
-      // Try to detect action type
+      // Try to detect action type and add agentic messages
       if (partialJson.includes('"action"')) {
-        if (partialJson.includes('"create"')) {
+        if (partialJson.includes('"create"') && !addedMessagesRef.current.has('create')) {
           setTaskDescription('Creating components...');
-        } else if (partialJson.includes('"update"')) {
+          addAgentMessage('Building the component structure...');
+          addedMessagesRef.current.add('create');
+        } else if (partialJson.includes('"update"') && !addedMessagesRef.current.has('update')) {
           setTaskDescription('Updating styles...');
-        } else if (partialJson.includes('"generate-image"')) {
+          addAgentMessage('Applying your style changes...');
+          addedMessagesRef.current.add('update');
+        } else if (partialJson.includes('"generate-image"') && !addedMessagesRef.current.has('image')) {
           setTaskDescription('Generating image...');
+          addAgentMessage('Creating the image you described...');
+          addedMessagesRef.current.add('image');
+        }
+      }
+      
+      // Try to detect section types being created
+      const labelMatches = partialJson.match(/"label"\s*:\s*"([^"]+)"/g);
+      if (labelMatches && labelMatches.length > 0) {
+        const labels = labelMatches
+          .map(m => m.match(/"label"\s*:\s*"([^"]+)"/)?.[1])
+          .filter(Boolean)
+          .filter(l => l && l.toLowerCase().includes('section'))
+          .slice(-1);
+        if (labels.length > 0 && !addedMessagesRef.current.has(labels[0] || '')) {
+          const sectionName = labels[0];
+          addAgentMessage(`Creating ${sectionName}...`);
+          addedMessagesRef.current.add(sectionName || '');
         }
       }
       
@@ -232,6 +311,13 @@ When continuing a build, add NEW sections after these. Do NOT recreate existing 
       // Ignore parse errors - partial JSON is expected
     }
   };
+  
+  // Reset the added messages tracker when starting a new build
+  useEffect(() => {
+    if (!isLoading) {
+      addedMessagesRef.current.clear();
+    }
+  }, [isLoading]);
 
   // Sync chat mode to store
   useEffect(() => {
@@ -291,9 +377,10 @@ Add what's missing: Features, Testimonials, Pricing, CTA, Footer, etc.`;
     
     // Start build progress tracking for build mode
     if (modeAtSend === 'build') {
-      // Generate task title from user message
+      // Generate task title and intent message
       const taskTitle = generateTaskTitle(userMessageContent);
-      startBuild(taskTitle);
+      const intentMessage = generateIntentMessage(userMessageContent);
+      startBuild(taskTitle, intentMessage);
     }
 
     // Add user message
@@ -708,11 +795,26 @@ Add what's missing: Features, Testimonials, Pricing, CTA, Footer, etc.`;
           // Finish build progress tracking and get summary
           let buildSummary = undefined;
           if (modeAtSend === 'build') {
-            const summary = finishBuild();
+            // Generate summary lines based on what was built
+            const summaryLines: string[] = [];
+            const summaryMessage = displayMessage.replace(/^[✓⚠️]\s*/, '');
+            
+            if (componentsBuilt) {
+              summaryLines.push('Successfully created the components you requested.');
+              if (summaryMessage) {
+                summaryLines.push(summaryMessage);
+              }
+            } else if (summaryMessage) {
+              summaryLines.push(summaryMessage);
+            } else {
+              summaryLines.push('Build completed successfully!');
+            }
+            
+            const summary = finishBuild(summaryLines);
             // Store the success message in the summary, clear displayMessage for build mode
             buildSummary = {
               ...summary,
-              message: displayMessage.replace(/^[✓⚠️]\s*/, '') || 'Build completed successfully!',
+              message: summaryMessage || 'Build completed successfully!',
             };
             // For build mode, we don't show the message text - the summary card handles it
             displayMessage = '';
@@ -948,8 +1050,8 @@ Add what's missing: Features, Testimonials, Pricing, CTA, Footer, etc.`;
                     >
                       {message.role === 'assistant' ? (
                         message.buildSummary ? (
-                          // Build mode: show ONLY the unified summary card
-                          <BuildSummaryCard summary={message.buildSummary} />
+                          // Build mode: show agentic summary card
+                          <AgenticSummaryCard summary={message.buildSummary} />
                         ) : (
                           // Discuss mode: show markdown content
                           <MarkdownRenderer content={message.content} />
@@ -966,8 +1068,8 @@ Add what's missing: Features, Testimonials, Pricing, CTA, Footer, etc.`;
                   )}
                 </>
               )}
-              {/* Build mode: show BuildProgressCard only while loading */}
-              {chatMode === 'build' && isLoading && <BuildProgressCard />}
+              {/* Build mode: show AgenticProgressCard only while loading */}
+              {chatMode === 'build' && isLoading && <AgenticProgressCard />}
               
               {/* Loading indicator for discuss mode */}
               {isLoading && !streamingContent && chatMode === 'discuss' && (
