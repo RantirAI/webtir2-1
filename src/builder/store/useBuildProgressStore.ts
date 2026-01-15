@@ -20,6 +20,7 @@ export interface BuildSummary {
   steps: BuildStep[];
   taskTitle: string;
   message: string;
+  agentSummary: string[]; // Line-by-line summary messages
 }
 
 interface BuildProgressState {
@@ -34,18 +35,25 @@ interface BuildProgressState {
   // Truncation tracking for auto-continue
   isTruncated: boolean;
   truncatedComponentsCount: number;
+  // Agentic streaming messages
+  agentMessages: string[];
+  streamingIntent: string;
 }
 
 interface BuildProgressActions {
-  startBuild: (taskTitle: string) => void;
+  startBuild: (taskTitle: string, intentMessage?: string) => void;
   setTaskDescription: (description: string) => void;
   addEdit: (edit: BuildEdit) => void;
   addStep: (step: Omit<BuildStep, 'completed'>) => void;
   completeLastStep: () => void;
-  finishBuild: () => BuildSummary;
+  finishBuild: (summaryLines?: string[]) => BuildSummary;
   reset: () => void;
   clearLastSummary: () => void;
   setTruncated: (isTruncated: boolean, count?: number) => void;
+  // Agentic message actions
+  addAgentMessage: (message: string) => void;
+  setStreamingIntent: (intent: string) => void;
+  appendToStreamingIntent: (text: string) => void;
 }
 
 type BuildProgressStore = BuildProgressState & BuildProgressActions;
@@ -61,9 +69,11 @@ export const useBuildProgressStore = create<BuildProgressStore>((set, get) => ({
   lastBuildSummary: null,
   isTruncated: false,
   truncatedComponentsCount: 0,
+  agentMessages: [],
+  streamingIntent: '',
 
   // Actions
-  startBuild: (taskTitle: string) => set({
+  startBuild: (taskTitle: string, intentMessage?: string) => set({
     isBuilding: true,
     startTime: Date.now(),
     taskTitle,
@@ -76,6 +86,8 @@ export const useBuildProgressStore = create<BuildProgressStore>((set, get) => ({
       completed: false,
     }],
     lastBuildSummary: null,
+    agentMessages: intentMessage ? [intentMessage] : [],
+    streamingIntent: '',
   }),
 
   setTaskDescription: (description: string) => set({
@@ -103,7 +115,7 @@ export const useBuildProgressStore = create<BuildProgressStore>((set, get) => ({
     ),
   })),
 
-  finishBuild: () => {
+  finishBuild: (summaryLines?: string[]) => {
     const state = get();
     const duration = state.startTime ? Math.floor((Date.now() - state.startTime) / 1000) : 0;
     
@@ -116,6 +128,7 @@ export const useBuildProgressStore = create<BuildProgressStore>((set, get) => ({
       steps: completedSteps,
       taskTitle: state.taskTitle,
       message: '', // Will be set by AIChat when adding the message
+      agentSummary: summaryLines || state.agentMessages,
     };
     
     set({
@@ -123,6 +136,8 @@ export const useBuildProgressStore = create<BuildProgressStore>((set, get) => ({
       taskDescription: 'Complete',
       steps: completedSteps,
       lastBuildSummary: summary,
+      agentMessages: [],
+      streamingIntent: '',
     });
     
     return summary;
@@ -138,6 +153,8 @@ export const useBuildProgressStore = create<BuildProgressStore>((set, get) => ({
     lastBuildSummary: null,
     isTruncated: false,
     truncatedComponentsCount: 0,
+    agentMessages: [],
+    streamingIntent: '',
   }),
 
   clearLastSummary: () => set({
@@ -148,4 +165,17 @@ export const useBuildProgressStore = create<BuildProgressStore>((set, get) => ({
     isTruncated,
     truncatedComponentsCount: count || 0,
   }),
+
+  // Agentic message actions
+  addAgentMessage: (message: string) => set((state) => ({
+    agentMessages: [...state.agentMessages, message],
+  })),
+
+  setStreamingIntent: (intent: string) => set({
+    streamingIntent: intent,
+  }),
+
+  appendToStreamingIntent: (text: string) => set((state) => ({
+    streamingIntent: state.streamingIntent + text,
+  })),
 }));
