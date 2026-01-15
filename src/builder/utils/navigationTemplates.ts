@@ -31,6 +31,7 @@ export interface TemplateConfig {
     order: number;
     justifyContent: string;
     flexGrow?: number;
+    minWidth?: string;
     marginLeft?: string;
     marginRight?: string;
   };
@@ -62,6 +63,7 @@ export const navigationTemplates: Record<NavigationTemplate, TemplateConfig> = {
       order: 2,
       justifyContent: 'flex-end',
       flexGrow: 1,
+      minWidth: '0',
     },
     buttonBox: {
       order: 3,
@@ -90,6 +92,7 @@ export const navigationTemplates: Record<NavigationTemplate, TemplateConfig> = {
       order: 1,
       justifyContent: 'flex-start',
       flexGrow: 1,
+      minWidth: '0',
     },
     buttonBox: {
       order: 2,
@@ -119,6 +122,7 @@ export const navigationTemplates: Record<NavigationTemplate, TemplateConfig> = {
     linksBox: {
       order: 1,
       justifyContent: 'flex-start',
+      minWidth: '0',
     },
     buttonBox: {
       order: 3,
@@ -145,6 +149,7 @@ export const navigationTemplates: Record<NavigationTemplate, TemplateConfig> = {
     linksBox: {
       order: 2,
       justifyContent: 'center',
+      minWidth: '0',
     },
     buttonBox: {
       order: 3,
@@ -173,6 +178,7 @@ export const navigationTemplates: Record<NavigationTemplate, TemplateConfig> = {
     linksBox: {
       order: 3,
       justifyContent: 'flex-end',
+      minWidth: '0',
     },
     buttonBox: {
       order: 1,
@@ -200,6 +206,7 @@ export const navigationTemplates: Record<NavigationTemplate, TemplateConfig> = {
       order: 2,
       justifyContent: 'center',
       flexGrow: 1,
+      minWidth: '0',
     },
     buttonBox: {
       order: 3,
@@ -227,6 +234,7 @@ export const navigationTemplates: Record<NavigationTemplate, TemplateConfig> = {
       order: 2,
       justifyContent: 'flex-end',
       flexGrow: 1,
+      minWidth: '0',
     },
     buttonBox: {
       order: 3,
@@ -254,6 +262,7 @@ export const navigationTemplates: Record<NavigationTemplate, TemplateConfig> = {
       order: 2,
       justifyContent: 'center',
       flexGrow: 1,
+      minWidth: '0',
     },
     buttonBox: {
       order: 3,
@@ -294,17 +303,38 @@ export function applyTemplateToStyles(
     setStyle(logoBoxStyleId, 'marginRight', config.logoBox.marginRight);
   }
 
+  // Reset potentially conflicting styles before applying new template
+  // This prevents stale values from previous templates from causing layout issues
+  if (!config.logoBox.marginLeft) {
+    setStyle(logoBoxStyleId, 'marginLeft', '0');
+  }
+  if (!config.logoBox.marginRight) {
+    setStyle(logoBoxStyleId, 'marginRight', '0');
+  }
+
   // Apply links box styles
   setStyle(linksBoxStyleId, 'order', config.linksBox.order.toString());
   setStyle(linksBoxStyleId, 'justifyContent', config.linksBox.justifyContent);
+  
+  // Always apply minWidth: 0 to prevent flex overflow
+  setStyle(linksBoxStyleId, 'minWidth', config.linksBox.minWidth || '0');
+  
+  // Reset flexGrow if not specified by template, otherwise apply it
   if (config.linksBox.flexGrow !== undefined) {
     setStyle(linksBoxStyleId, 'flexGrow', config.linksBox.flexGrow.toString());
+  } else {
+    setStyle(linksBoxStyleId, 'flexGrow', '0');
   }
+  
   if (config.linksBox.marginLeft) {
     setStyle(linksBoxStyleId, 'marginLeft', config.linksBox.marginLeft);
+  } else {
+    setStyle(linksBoxStyleId, 'marginLeft', '0');
   }
   if (config.linksBox.marginRight) {
     setStyle(linksBoxStyleId, 'marginRight', config.linksBox.marginRight);
+  } else {
+    setStyle(linksBoxStyleId, 'marginRight', '0');
   }
 
   // Apply button box styles if it exists
@@ -312,6 +342,8 @@ export function applyTemplateToStyles(
     setStyle(buttonBoxStyleId, 'order', config.buttonBox.order.toString());
     if (config.buttonBox.marginLeft) {
       setStyle(buttonBoxStyleId, 'marginLeft', config.buttonBox.marginLeft);
+    } else {
+      setStyle(buttonBoxStyleId, 'marginLeft', '0');
     }
   }
 
