@@ -62,25 +62,7 @@ export const AgenticSummaryCard: React.FC<AgenticSummaryCardProps> = ({ summary 
         </span>
       </div>
 
-      {/* Agent summary message - line by line */}
-      <div className="px-3 py-2.5 space-y-1 border-b border-border/30">
-        {displayedLines.map((line, index) => (
-          <p
-            key={index}
-            className="text-[10px] text-foreground leading-relaxed animate-line-in"
-            style={{ animationDelay: `${index * 50}ms` }}
-          >
-            {line}
-          </p>
-        ))}
-        {displayedLines.length === 0 && summary.message && (
-          <p className="text-[10px] text-foreground leading-relaxed">
-            {summary.message}
-          </p>
-        )}
-      </div>
-
-      {/* Tools used - collapsible */}
+      {/* Tools used - collapsible (MOVED UP) */}
       {steps.length > 0 && (
         <Collapsible open={isToolsExpanded} onOpenChange={setIsToolsExpanded}>
           <CollapsibleTrigger asChild>
@@ -118,7 +100,7 @@ export const AgenticSummaryCard: React.FC<AgenticSummaryCardProps> = ({ summary 
         </Collapsible>
       )}
 
-      {/* Edits made - collapsible */}
+      {/* Edits made - collapsible (MOVED UP) */}
       {edits.length > 0 && (
         <Collapsible open={isEditsExpanded} onOpenChange={setIsEditsExpanded}>
           <CollapsibleTrigger asChild>
@@ -156,14 +138,29 @@ export const AgenticSummaryCard: React.FC<AgenticSummaryCardProps> = ({ summary 
         </Collapsible>
       )}
 
-      {/* Success indicator at bottom */}
-      <div className="flex items-start gap-2 px-3 py-2 bg-green-500/10">
-        <div className="w-4 h-4 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-          <Check className="w-2.5 h-2.5 text-green-500" />
+      {/* Agent summary/confirmation message - NOW AT BOTTOM */}
+      <div className="px-3 py-2.5 space-y-1 bg-green-500/10">
+        <div className="flex items-start gap-2">
+          <div className="w-4 h-4 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+            <Check className="w-2.5 h-2.5 text-green-500" />
+          </div>
+          <div className="space-y-1 flex-1">
+            {displayedLines.map((line, index) => (
+              <p
+                key={index}
+                className="text-[10px] text-foreground leading-relaxed animate-line-in"
+                style={{ animationDelay: `${index * 50}ms` }}
+              >
+                {line}
+              </p>
+            ))}
+            {displayedLines.length === 0 && summary.message && (
+              <p className="text-[10px] text-foreground leading-relaxed">
+                {summary.message}
+              </p>
+            )}
+          </div>
         </div>
-        <span className="text-[10px] font-medium text-foreground leading-tight">
-          Build completed successfully!
-        </span>
       </div>
     </div>
   );
