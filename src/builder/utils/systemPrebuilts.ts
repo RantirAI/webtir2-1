@@ -1590,7 +1590,7 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
   const navMenuItem2Id = generateId();
   const navMenuItem3Id = generateId();
   const navMenuItem4Id = generateId();
-  const navCtaId = generateId();
+  
 
   prebuilts.push({
     id: 'system-navigation',
@@ -1661,15 +1661,6 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
                 },
               ],
             },
-            // CTA Button
-            {
-              id: navCtaId,
-              type: 'Button' as ComponentType,
-              label: 'Button',
-              props: { children: 'Get Started' },
-              styleSourceIds: ['style-nav-cta'],
-              children: [],
-            },
           ],
         },
       ],
@@ -1709,14 +1700,6 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
         fontWeight: '500',
         color: 'hsl(var(--muted-foreground))',
         textDecoration: 'none',
-      }),
-      'style-nav-cta': createStyleEntry({
-        padding: '8px 20px',
-        backgroundColor: 'hsl(var(--primary))',
-        color: 'hsl(var(--primary-foreground))',
-        borderRadius: '6px',
-        fontWeight: '600',
-        fontSize: '14px',
       }),
     },
   });
