@@ -1697,6 +1697,8 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
         gap: '32px',
         flexGrow: '1',
         justifyContent: 'center',
+        minWidth: '0',
+        flexShrink: '1',
       }),
       'style-nav-link': createStyleEntry({
         fontSize: '14px',
