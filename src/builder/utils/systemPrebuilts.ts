@@ -6,7 +6,9 @@ export interface SystemPrebuiltDefinition {
   name: string;
   category: string;
   instance: ComponentInstance;
-  defaultStyles: Record<string, Record<string, string>>; // styleSourceId -> property -> value
+  defaultStyles: Record<string, Record<string, string>>; // styleSourceId -> property -> value (base breakpoint)
+  tabletStyles?: Record<string, Record<string, string>>; // styleSourceId -> property -> value (tablet breakpoint)
+  mobileStyles?: Record<string, Record<string, string>>; // styleSourceId -> property -> value (mobile breakpoint)
 }
 
 // Helper to create style entries
@@ -1687,6 +1689,7 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
         fontSize: '20px',
         fontWeight: '700',
         color: 'hsl(var(--foreground))',
+        flexShrink: '0',
       }),
       'style-nav-menu': createStyleEntry({
         display: 'flex',
@@ -1700,6 +1703,28 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
         fontWeight: '500',
         color: 'hsl(var(--muted-foreground))',
         textDecoration: 'none',
+        whiteSpace: 'nowrap',
+      }),
+    },
+    tabletStyles: {
+      'style-nav-container': createStyleEntry({
+        padding: '12px 16px',
+        gap: '16px',
+      }),
+      'style-nav-menu': createStyleEntry({
+        gap: '16px',
+      }),
+      'style-nav-link': createStyleEntry({
+        fontSize: '13px',
+      }),
+    },
+    mobileStyles: {
+      'style-nav-container': createStyleEntry({
+        padding: '12px 16px',
+        gap: '12px',
+      }),
+      'style-nav-menu': createStyleEntry({
+        display: 'none',
       }),
     },
   });

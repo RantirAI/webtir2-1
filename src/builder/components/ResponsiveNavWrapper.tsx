@@ -8,6 +8,7 @@ interface ResponsiveNavWrapperProps {
   children: React.ReactNode;
   isPreviewMode?: boolean;
   currentBreakpoint?: string;
+  canvasWidth?: number; // Current canvas width for real-time responsive updates
 }
 
 /**
@@ -30,29 +31,37 @@ export const ResponsiveNavWrapper: React.FC<ResponsiveNavWrapperProps> = ({
   children,
   isPreviewMode = false,
   currentBreakpoint = 'base',
+  canvasWidth,
 }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobileView, setIsMobileView] = useState(false);
 
+  // Use tablet breakpoint (991px) for hamburger menu trigger in builder
+  const tabletBreakpointWidth = 991;
   const mobileBreakpoint = instance.props?.mobileBreakpoint ?? 768;
   const mobileAnimation = instance.props?.mobileAnimation ?? 'slide';
   const animationDuration = instance.props?.animationDuration ?? 300;
 
-  // Determine if we should show mobile view based on breakpoint or viewport
+  // Determine if we should show mobile view based on breakpoint, canvas width, or viewport
   useEffect(() => {
     const checkViewport = () => {
       if (isPreviewMode) {
+        // In preview mode, use actual window width
         setIsMobileView(window.innerWidth < mobileBreakpoint);
+      } else if (canvasWidth !== undefined) {
+        // In builder mode with canvas width provided, use it for real-time responsiveness
+        setIsMobileView(canvasWidth <= tabletBreakpointWidth);
       } else {
-        const mobileBreakpoints = ['mobile', 'mobileLandscape'];
-        setIsMobileView(mobileBreakpoints.includes(currentBreakpoint));
+        // Fallback to breakpoint-based detection
+        const responsiveBreakpoints = ['mobile', 'mobileLandscape', 'mobile-landscape', 'tablet'];
+        setIsMobileView(responsiveBreakpoints.includes(currentBreakpoint));
       }
     };
 
     checkViewport();
     window.addEventListener('resize', checkViewport);
     return () => window.removeEventListener('resize', checkViewport);
-  }, [isPreviewMode, currentBreakpoint, mobileBreakpoint]);
+  }, [isPreviewMode, currentBreakpoint, mobileBreakpoint, canvasWidth]);
 
   // Close mobile menu when switching away from mobile view
   useEffect(() => {
