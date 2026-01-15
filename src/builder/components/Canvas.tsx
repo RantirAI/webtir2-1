@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { GripVertical } from 'lucide-react';
 import { useBuilderStore } from '../store/useBuilderStore';
 import { useStyleStore } from '../store/useStyleStore';
 import { useCommentStore } from '../store/useCommentStore';
@@ -49,6 +50,46 @@ import { DroppableContainer } from './DroppableContainer';
 import { DraggableInstance } from './DraggableInstance';
 import { Accordion as ShadcnAccordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
 import { CarouselPreview } from './CarouselPreview';
+
+// Canvas Resize Handle Component with improved UX
+interface CanvasResizeHandleProps {
+  side: 'left' | 'right';
+  isActive: boolean;
+  onMouseDown: (e: React.MouseEvent, side: 'left' | 'right') => void;
+}
+
+const CanvasResizeHandle: React.FC<CanvasResizeHandleProps> = ({ side, isActive, onMouseDown }) => {
+  const [isHovered, setIsHovered] = useState(false);
+  
+  return (
+    <div
+      className={`absolute ${side === 'left' ? 'left-0 -translate-x-1/2' : 'right-0 translate-x-1/2'} 
+        top-0 bottom-0 w-4 cursor-ew-resize z-20 flex items-center justify-center group`}
+      onMouseDown={(e) => onMouseDown(e, side)}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      {/* Visible handle bar */}
+      <div 
+        className={`h-full transition-all duration-150 rounded-full
+          ${isActive ? 'bg-blue-500 w-1.5' : isHovered ? 'bg-blue-400 w-1' : 'bg-gray-300/70 w-0.5'}
+        `}
+      />
+      
+      {/* Centered grip icon - appears on hover/active */}
+      <div 
+        className={`absolute top-1/2 -translate-y-1/2 
+          flex items-center justify-center
+          w-5 h-10 rounded-md border border-border bg-background shadow-md
+          transition-all duration-150
+          ${isActive || isHovered ? 'opacity-100 scale-100' : 'opacity-0 scale-90 pointer-events-none'}
+        `}
+      >
+        <GripVertical className="w-3.5 h-3.5 text-muted-foreground" />
+      </div>
+    </div>
+  );
+};
 
 // TabsComponent for interactive tab switching in preview mode
 const TabsComponent: React.FC<{
@@ -2191,23 +2232,19 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
 
             {/* Left Resize Handle */}
             {!isPreviewMode && (
-              <div
-                className="absolute left-0 top-0 bottom-0 w-1 cursor-ew-resize hover:bg-blue-500 transition-colors z-20"
-                style={{
-                  backgroundColor: isResizing === 'left' ? '#3b82f6' : 'transparent',
-                }}
-                onMouseDown={(e) => handleResizeStart(e, 'left')}
+              <CanvasResizeHandle
+                side="left"
+                isActive={isResizing === 'left'}
+                onMouseDown={handleResizeStart}
               />
             )}
 
             {/* Right Resize Handle */}
             {!isPreviewMode && (
-              <div
-                className="absolute right-0 top-0 bottom-0 w-1 cursor-ew-resize hover:bg-blue-500 transition-colors z-20"
-                style={{
-                  backgroundColor: isResizing === 'right' ? '#3b82f6' : 'transparent',
-                }}
-                onMouseDown={(e) => handleResizeStart(e, 'right')}
+              <CanvasResizeHandle
+                side="right"
+                isActive={isResizing === 'right'}
+                onMouseDown={handleResizeStart}
               />
             )}
 
