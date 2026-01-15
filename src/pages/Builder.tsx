@@ -17,6 +17,7 @@ import { usePageStore } from '@/builder/store/usePageStore';
 import { componentRegistry } from '@/builder/primitives/registry';
 import { ComponentInstance, ComponentType } from '@/builder/store/types';
 import { generateId, canDropInside, createPrebuiltChildren, shouldAutoConvertToChildren } from '@/builder/utils/instance';
+import { migrateNavigationRemoveGetStartedCTA } from '@/builder/utils/migrateNavigationRemoveGetStartedCTA';
 import { useStyleStore } from '@/builder/store/useStyleStore';
 import { useKeyboardShortcuts } from '@/builder/hooks/useKeyboardShortcuts';
 import { DropIndicator } from '@/builder/components/DropIndicator';
@@ -63,11 +64,22 @@ const Builder: React.FC = () => {
     initCountersFromRegistry();
   }, []);
   
-  // Sync rootInstance when page changes
+  // Sync rootInstance when page changes (apply small migrations for legacy prebuilts)
   useEffect(() => {
     if (currentPageData && currentPageData.rootInstance) {
-      setRootInstance(currentPageData.rootInstance);
+      const migrated = migrateNavigationRemoveGetStartedCTA(currentPageData.rootInstance);
+      setRootInstance(migrated.root);
       setSelectedInstanceId(null); // Clear selection when switching pages
+
+      // Also migrate global header if present
+      const pageStore = usePageStore.getState();
+      const header = pageStore.getGlobalComponent('header');
+      if (header) {
+        const migratedHeader = migrateNavigationRemoveGetStartedCTA(header);
+        if (migratedHeader.changed) {
+          pageStore.setGlobalComponent('header', migratedHeader.root);
+        }
+      }
     }
   }, [currentPageId]);
   
