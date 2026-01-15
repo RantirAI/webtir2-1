@@ -43,6 +43,101 @@ const supportsJsonMode = (model: string): boolean => {
   return true;
 };
 
+// Model capability tiers - determines how much reinforcement is needed for detailed designs
+const MODEL_CAPABILITY_TIER: Record<string, 'high' | 'medium' | 'low'> = {
+  // High capability - follows complex instructions well
+  'gpt-5': 'high',
+  'gpt-5.1': 'high',
+  'gpt-5.2': 'high',
+  'gpt-5-pro': 'high',
+  'gpt-5.2-pro': 'high',
+  'o3': 'high',
+  'o3-pro': 'high',
+  'claude-opus-4-5-20251101': 'high',
+  'claude-sonnet-4-5-20250929': 'high',
+  'gemini-2.5-pro': 'high',
+  
+  // Medium capability - needs some reinforcement
+  'gpt-5-mini': 'medium',
+  'gpt-5-nano': 'medium',
+  'o3-mini': 'medium',
+  'o4-mini': 'medium',
+  'gpt-4.1': 'medium',
+  'gpt-4.1-mini': 'medium',
+  'claude-sonnet-4-20250514': 'medium',
+  'gemini-2.5-flash': 'medium',
+  
+  // Lower capability - needs strong reinforcement for detailed output
+  'gpt-4o': 'low',
+  'gpt-4o-mini': 'low',
+  'gpt-4.1-nano': 'low',
+  'claude-3-5-sonnet-20241022': 'low',
+  'claude-3-opus-20240229': 'low',
+  'gemini-2.0-flash': 'low',
+};
+
+const getModelTier = (model: string): 'high' | 'medium' | 'low' => {
+  // Check for exact match first
+  if (MODEL_CAPABILITY_TIER[model]) {
+    return MODEL_CAPABILITY_TIER[model];
+  }
+  // Check for partial matches (e.g., gpt-5.2-2025-01-01)
+  for (const [key, tier] of Object.entries(MODEL_CAPABILITY_TIER)) {
+    if (model.includes(key)) {
+      return tier;
+    }
+  }
+  return 'medium'; // Default to medium for unknown models
+};
+
+// Design quality reinforcement for lower-tier models
+const getDesignReinforcement = (tier: 'high' | 'medium' | 'low'): string => {
+  if (tier === 'high') return '';
+  
+  const baseReinforcement = `
+
+## ⚠️ MANDATORY DESIGN REQUIREMENTS (YOU MUST FOLLOW)
+
+Before outputting JSON, verify your design includes:
+
+### CONTENT QUANTITY CHECKLIST:
+☑ Testimonials: Include 3-5 different testimonials (NOT 1-2)
+☑ Features: Include 4-6 feature cards (NOT 1-2)
+☑ Products: Include 8 items for product grids (4 columns × 2 rows)
+☑ Footer: Include 4 column footer with links (NOT just copyright)
+
+### VISUAL RICHNESS CHECKLIST:
+☑ Hero has gradient background OR dark background with accent colors
+☑ Hero includes: badge/label + heading + text + buttons + image OR stats
+☑ Sections have ALTERNATING backgrounds (never same color twice in a row)
+☑ Text contrast: white text on dark/gradient, dark text on light
+☑ Include real Unsplash image URLs (NOT placeholders)
+
+### DO NOT CREATE MINIMAL DESIGNS:
+- A hero with ONLY heading + button is WRONG
+- A features section with ONLY 1-2 cards is WRONG
+- A testimonials section with ONLY 1 quote is WRONG
+- Plain white/black backgrounds throughout is WRONG
+
+CREATE VISUALLY RICH, DETAILED, COLORFUL DESIGNS.`;
+
+  if (tier === 'low') {
+    return baseReinforcement + `
+
+### CRITICAL REMINDER FOR THIS MODEL:
+Your output will be REJECTED if:
+- Hero section lacks visual richness (no gradient, no badge, no stats)
+- Any section has fewer items than the minimum required
+- Backgrounds don't alternate between sections
+- Colors are plain black/white instead of vibrant palette
+
+THINK CAREFULLY before outputting. Quality over speed.
+COUNT your items before finishing!`;
+  }
+  
+  return baseReinforcement;
+};
+
 // Helper to get max tokens for a model
 export const getModelMaxTokens = (model: string): number => {
   return MODEL_MAX_TOKENS[model] || 8192; // Safe 8K fallback
@@ -54,8 +149,10 @@ export interface AIMessage {
 }
 
 // Generate enhanced system prompt with full component context
-export const getBuilderSystemPrompt = (mode: 'build' | 'discuss' = 'build'): string => {
+export const getBuilderSystemPrompt = (mode: 'build' | 'discuss' = 'build', model?: string): string => {
   const aiContext = buildAIContext();
+  const tier = model ? getModelTier(model) : 'high';
+  const reinforcement = mode === 'build' ? getDesignReinforcement(tier) : '';
   
   // For build mode, put JSON format rules FIRST and make them extremely clear
   if (mode === 'build') {
@@ -596,7 +693,9 @@ ALWAYS check the page components table before creating duplicates.
 4. Use HEX colors for vibrant designs, gradients for heroes
 5. Include responsiveStyles for tablet/mobile on every component
 6. Always output valid JSON - no markdown, no explanations
-7. For UPDATE: Use the styleSourceId from the page components table as targetId`;
+7. For UPDATE: Use the styleSourceId from the page components table as targetId
+
+${reinforcement}`;
   }
   
   // Discuss mode - normal conversation
@@ -633,18 +732,33 @@ export async function streamChat({
   onDone,
   onError,
 }: StreamChatOptions): Promise<void> {
-  const systemPrompt = getBuilderSystemPrompt(mode);
+  const systemPrompt = getBuilderSystemPrompt(mode, model);
+  const tier = getModelTier(model);
 
   const fullMessages: AIMessage[] = [
     { role: 'system', content: systemPrompt },
     ...messages,
   ];
 
-  // For build mode, add a reminder at the end of user message
+  // For build mode, add tier-based reinforcement at the end of user message
   if (mode === 'build' && fullMessages.length > 1) {
     const lastMsg = fullMessages[fullMessages.length - 1];
     if (lastMsg.role === 'user') {
-      lastMsg.content = lastMsg.content + '\n\n[RESPOND WITH JSON ONLY - NO TEXT]';
+      if (tier === 'low') {
+        lastMsg.content = lastMsg.content + `
+
+[RESPOND WITH JSON ONLY - NO TEXT]
+[CRITICAL: Include 3-5 testimonials, 4-6 features, alternating section backgrounds, gradient heroes]
+[VERIFY: Your hero has badge + heading + text + buttons + visual element]
+[COUNT: Verify item counts before outputting]`;
+      } else if (tier === 'medium') {
+        lastMsg.content = lastMsg.content + `
+
+[RESPOND WITH JSON ONLY - NO TEXT]
+[INCLUDE: Multiple testimonials (3+), multiple features (4+), colorful backgrounds]`;
+      } else {
+        lastMsg.content = lastMsg.content + '\n\n[RESPOND WITH JSON ONLY - NO TEXT]';
+      }
     }
   }
 

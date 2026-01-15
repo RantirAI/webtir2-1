@@ -1492,11 +1492,56 @@ Required Sections (for Wedding Website):
 }
 
 // Optimized: Return only essential context to prevent prompt size issues
+// Generate minimum content requirements for consistent designs
+export function generateMinimumContentRequirements(): string {
+  return `## MINIMUM CONTENT REQUIREMENTS (MANDATORY - ALL MODELS MUST FOLLOW)
+
+| Section Type | Minimum Items | Typical Items | Example |
+|--------------|---------------|---------------|---------|
+| Testimonials | 3 | 3-5 | 3 review cards with photo, name, role, quote |
+| Features | 4 | 4-6 | 4 feature cards with icon, title, description |
+| Pricing Plans | 3 | 3 | Free, Pro, Enterprise tiers |
+| Team Members | 4 | 4-6 | 4 team cards with photo, name, role |
+| Products (grid) | 8 | 8-12 | 4 columns × 2 rows minimum |
+| Categories | 4 | 4-6 | 4 category cards with image and title |
+| FAQ Items | 5 | 5-8 | 5 accordion items with question/answer |
+| Footer Columns | 4 | 4 | Logo/about + 3 link columns + social |
+| Stats/Metrics | 3 | 3-4 | 3 stat blocks (users, revenue, rating) |
+| Logos/Trust Bar | 4 | 4-6 | 4 company/partner logos |
+
+### CRITICAL RULES:
+1. NEVER create sections with fewer items than the minimum
+2. A single testimonial is NOT a testimonials section - you need 3+
+3. Two features is NOT a features section - you need 4+
+4. A footer with only copyright is NOT a footer - you need 4 columns
+5. When in doubt, ADD MORE CONTENT, not less
+
+### HERO SECTION MUST INCLUDE:
+- Badge/label above headline (e.g., "✨ New", "Trusted by 10k+")
+- Main headline (H1)
+- Supporting text (2-3 sentences)
+- Primary + Secondary CTA buttons
+- Visual element: hero image, illustration, stats row, or trust logos
+- Gradient or dark background with vibrant colors
+
+### ALTERNATING SECTION BACKGROUNDS:
+1. Hero: Gradient or dark (#0F172A, #1E293B)
+2. Features: Light gray (#F8FAFC, #F1F5F9)
+3. Testimonials: White or tinted (#FFFFFF, #F0F9FF)
+4. CTA: Bold color or gradient
+5. Footer: Dark (#18181B, #0F172A)
+
+NEVER use the same background color on consecutive sections!`;
+}
+
 export function buildAIContext(): string {
   return [
     generateComponentDocs(),
+    generateMinimumContentRequirements(),
     generateNavigationStyles(),
     generateColorPalettes(),
+    generateIndustryDesignSystems(),
     generateDesignTokens(),
+    generateSpacingGuidelines(),
   ].join('\n\n');
 }
