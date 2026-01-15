@@ -134,9 +134,18 @@ function normalizeComponentSpec(spec: AIComponentSpec): AIComponentSpec {
     }
   }
   
+  // Preserve AI label if it's meaningful (not same as type or generic)
+  const semanticLabel = spec.label && 
+    spec.label.toLowerCase() !== validType.toLowerCase() &&
+    spec.label.toLowerCase() !== 'div' &&
+    spec.label.toLowerCase() !== 'section' &&
+    spec.label.toLowerCase() !== 'container'
+      ? spec.label 
+      : meta.label;
+
   return {
     type: validType,
-    label: spec.label || meta.label,
+    label: semanticLabel,
     props: normalizedProps,
     styles: normalizedStyles,
     responsiveStyles: Object.keys(normalizedResponsiveStyles).length > 0 ? normalizedResponsiveStyles : undefined,

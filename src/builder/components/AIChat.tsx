@@ -17,6 +17,7 @@ import { useChatStore } from '../store/useChatStore';
 import { useBuildProgressStore } from '../store/useBuildProgressStore';
 import { streamChat, AIMessage } from '../services/aiService';
 import { parseAIResponse, flattenInstances, AIUpdateSpec, detectIncompletePage, detectTruncatedJSON } from '../utils/aiComponentGenerator';
+import { normalizeComponentBase, findMaxIndexForBase } from '../utils/autoClassSystem';
 import { useStyleStore } from '../store/useStyleStore';
 import { useBuilderStore } from '../store/useBuilderStore';
 import { useMediaStore } from '../store/useMediaStore';
@@ -359,13 +360,53 @@ Add what's missing: Features, Testimonials, Pricing, CTA, Footer, etc.`;
               });
               
               // Create semantic class name generator using style store
-              const { getNextAutoClassName, createStyleSource: createStyleSourceFn } = useStyleStore.getState();
+              const { styleSources, createStyleSource: createStyleSourceFn } = useStyleStore.getState();
+              
+              // Get existing class names for uniqueness checking
+              const existingNames = new Set(
+                Object.values(styleSources)
+                  .filter(s => s.type === 'local')
+                  .map(s => s.name)
+              );
+              
               const getSemanticClassName = (componentType: string, label?: string): string => {
-                // Generate semantic name based on component type (e.g., "section-1", "heading-2")
-                const name = getNextAutoClassName(componentType);
-                // IMMEDIATELY create the style source and return the ACTUAL ID used
-                // This is critical: createStyleSource may return a different ID if there's a collision
-                const actualId = createStyleSourceFn('local', name);
+                let baseName: string;
+                
+                // If AI provided a semantic label, use it as the base name
+                if (label && label.toLowerCase() !== componentType.toLowerCase()) {
+                  // Convert label to valid class name: "Hero Section" → "hero-section"
+                  baseName = label
+                    .toLowerCase()
+                    .trim()
+                    .replace(/[^a-z0-9\s-]/g, '') // Remove special chars
+                    .replace(/\s+/g, '-')         // Spaces to hyphens
+                    .replace(/-+/g, '-')          // Collapse multiple hyphens
+                    .replace(/^-|-$/g, '');       // Trim leading/trailing hyphens
+                  
+                  // If the semantic name is too short or generic, fall back to type-based
+                  if (baseName.length < 2) {
+                    baseName = normalizeComponentBase(componentType);
+                  }
+                } else {
+                  // Fall back to component type (e.g., "Section" → "section")
+                  baseName = normalizeComponentBase(componentType);
+                }
+                
+                // Generate unique name by finding next available index
+                // First, try the base name without a number (e.g., "hero-section")
+                if (!existingNames.has(baseName)) {
+                  existingNames.add(baseName); // Track it to prevent duplicates in same batch
+                  const actualId = createStyleSourceFn('local', baseName);
+                  return actualId;
+                }
+                
+                // If base name exists, find next available index
+                const maxIndex = findMaxIndexForBase(baseName, existingNames);
+                const nextIndex = maxIndex > 0 ? maxIndex + 1 : 2;
+                const numberedName = `${baseName}-${nextIndex}`;
+                existingNames.add(numberedName); // Track it
+                
+                const actualId = createStyleSourceFn('local', numberedName);
                 return actualId;
               };
               
