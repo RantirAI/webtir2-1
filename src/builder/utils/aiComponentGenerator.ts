@@ -180,6 +180,52 @@ function normalizeStyles(styles: Record<string, string>): Record<string, string>
   return normalized;
 }
 
+// Attempt to repair truncated JSON by finding last complete component
+function repairTruncatedJSON(partialJson: string): string | null {
+  let braceDepth = 0;
+  let bracketDepth = 0;
+  let inString = false;
+  let escape = false;
+  let lastCompleteComponentEnd = -1;
+  
+  for (let i = 0; i < partialJson.length; i++) {
+    const char = partialJson[i];
+    
+    if (escape) { escape = false; continue; }
+    if (char === '\\' && inString) { escape = true; continue; }
+    if (char === '"' && !escape) { inString = !inString; continue; }
+    
+    if (!inString) {
+      if (char === '{') braceDepth++;
+      if (char === '}') {
+        braceDepth--;
+        // Track positions where we complete a component (depth 2 = inside components array)
+        if (braceDepth === 2 && bracketDepth === 1) {
+          lastCompleteComponentEnd = i;
+        }
+      }
+      if (char === '[') bracketDepth++;
+      if (char === ']') bracketDepth--;
+    }
+  }
+  
+  if (lastCompleteComponentEnd > 0) {
+    // Truncate at last complete component and properly close the JSON
+    let repaired = partialJson.slice(0, lastCompleteComponentEnd + 1);
+    repaired += '],"message":"Partial build - some components were truncated"}';
+    
+    try {
+      JSON.parse(repaired);
+      console.log('[AI Parser] Successfully repaired truncated JSON');
+      return repaired;
+    } catch {
+      console.warn('[AI Parser] JSON repair failed after attempting to close structure');
+    }
+  }
+  
+  return null;
+}
+
 // Extract JSON from text using multiple strategies
 function extractJSON(text: string): string | null {
   // Strategy 1: All markdown code blocks - try each in order
@@ -203,6 +249,7 @@ function extractJSON(text: string): string | null {
     let depth = 0;
     let inString = false;
     let escape = false;
+    let maxDepthReached = 0;
     
     for (let i = startIdx; i < text.length; i++) {
       const char = text[i];
@@ -223,7 +270,10 @@ function extractJSON(text: string): string | null {
       }
       
       if (!inString) {
-        if (char === '{') depth++;
+        if (char === '{') {
+          depth++;
+          maxDepthReached = Math.max(maxDepthReached, depth);
+        }
         if (char === '}') {
           depth--;
           if (depth === 0) {
@@ -236,6 +286,17 @@ function extractJSON(text: string): string | null {
             }
           }
         }
+      }
+    }
+    
+    // If we started parsing but depth never reached 0, JSON is truncated
+    // Attempt to repair it
+    if (depth > 0 && maxDepthReached > 1) {
+      console.warn('[AI Parser] Detected truncated JSON (unbalanced depth:', depth, '), attempting repair...');
+      const partialJson = text.slice(startIdx);
+      const repaired = repairTruncatedJSON(partialJson);
+      if (repaired) {
+        return repaired;
       }
     }
   }
@@ -312,15 +373,42 @@ function normalizeChildrenDeep(comp: AIComponentSpec): AIComponentSpec {
 
 // Validate that a component spec is complete (not truncated)
 function isCompleteComponentSpec(spec: AIComponentSpec): boolean {
-  // Must have a type
-  if (!spec.type || typeof spec.type !== 'string') return false;
+  // Must be an object
+  if (!spec || typeof spec !== 'object') {
+    return false;
+  }
   
-  // If it has children, validate they're complete too
-  if (spec.children && Array.isArray(spec.children)) {
-    for (const child of spec.children) {
-      if (typeof child === 'object' && child !== null) {
-        if (!isCompleteComponentSpec(child as AIComponentSpec)) {
-          return false;
+  // Must have a type
+  if (!spec.type || typeof spec.type !== 'string') {
+    return false;
+  }
+  
+  // Handle children validation
+  if (spec.children) {
+    // String children are valid (text content)
+    if (typeof spec.children === 'string') {
+      return true;
+    }
+    
+    // Single object child - validate it recursively
+    if (!Array.isArray(spec.children) && typeof spec.children === 'object') {
+      return isCompleteComponentSpec(spec.children as AIComponentSpec);
+    }
+    
+    // Array children - validate each (but be lenient)
+    if (Array.isArray(spec.children)) {
+      for (const child of spec.children) {
+        // Skip null/undefined children (tolerate these)
+        if (child === null || child === undefined) continue;
+        
+        // Skip string children (text nodes are valid)
+        if (typeof child === 'string') continue;
+        
+        // Validate object children
+        if (typeof child === 'object') {
+          if (!isCompleteComponentSpec(child as AIComponentSpec)) {
+            return false;
+          }
         }
       }
     }
@@ -466,12 +554,24 @@ export function parseAIResponse(text: string): AIResponse | null {
     // Handle CREATE action
     if (action === 'create') {
       const components = parsed.components as AIComponentSpec[] | undefined;
+      
+      // Log raw components for debugging
+      console.log('[AI Parser] Raw components received:', components?.length || 0, 'components');
+      if (components && components.length > 0) {
+        console.log('[AI Parser] First component type:', components[0]?.type);
+      }
+      
       if (components && Array.isArray(components) && components.length > 0) {
-        // Filter out incomplete/truncated components and warn
+        // Filter out incomplete/truncated components and warn with detailed info
         const validComponents = components.filter(comp => {
           const isComplete = isCompleteComponentSpec(comp);
           if (!isComplete) {
-            console.warn('Filtering out incomplete component:', comp.type || 'unknown');
+            console.warn('[AI Parser] Filtering out incomplete component:', {
+              type: comp?.type || 'missing',
+              hasChildren: !!comp?.children,
+              childrenType: comp?.children ? (Array.isArray(comp.children) ? 'array' : typeof comp.children) : 'none',
+              preview: JSON.stringify(comp).slice(0, 300)
+            });
           }
           return isComplete;
         });
