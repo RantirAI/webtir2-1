@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { GripVertical } from 'lucide-react';
+import { GripHorizontal } from 'lucide-react';
 import { useBuilderStore } from '../store/useBuilderStore';
 import { useStyleStore } from '../store/useStyleStore';
 import { useCommentStore } from '../store/useCommentStore';
@@ -51,41 +51,39 @@ import { DraggableInstance } from './DraggableInstance';
 import { Accordion as ShadcnAccordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
 import { CarouselPreview } from './CarouselPreview';
 
-// Canvas Resize Handle Component with improved UX
+// Canvas Bottom Resize Handle Component with improved UX
 interface CanvasResizeHandleProps {
-  side: 'left' | 'right';
   isActive: boolean;
-  onMouseDown: (e: React.MouseEvent, side: 'left' | 'right') => void;
+  onMouseDown: (e: React.MouseEvent) => void;
 }
 
-const CanvasResizeHandle: React.FC<CanvasResizeHandleProps> = ({ side, isActive, onMouseDown }) => {
+const CanvasResizeHandle: React.FC<CanvasResizeHandleProps> = ({ isActive, onMouseDown }) => {
   const [isHovered, setIsHovered] = useState(false);
   
   return (
     <div
-      className={`absolute ${side === 'left' ? 'left-0 -translate-x-1/2' : 'right-0 translate-x-1/2'} 
-        top-0 bottom-0 w-4 cursor-ew-resize z-20 flex items-center justify-center group`}
-      onMouseDown={(e) => onMouseDown(e, side)}
+      className="absolute bottom-0 left-0 right-0 translate-y-1/2 h-4 cursor-ns-resize z-20 flex items-center justify-center group"
+      onMouseDown={onMouseDown}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* Visible handle bar */}
       <div 
-        className={`h-full transition-all duration-150 rounded-full
-          ${isActive ? 'bg-blue-500 w-1.5' : isHovered ? 'bg-blue-400 w-1' : 'bg-gray-300/70 w-0.5'}
+        className={`w-full transition-all duration-150 rounded-full
+          ${isActive ? 'bg-blue-500 h-1.5' : isHovered ? 'bg-blue-400 h-1' : 'bg-gray-300/70 h-0.5'}
         `}
       />
       
       {/* Centered grip icon - appears on hover/active */}
       <div 
-        className={`absolute top-1/2 -translate-y-1/2 
+        className={`absolute left-1/2 -translate-x-1/2 
           flex items-center justify-center
-          w-5 h-10 rounded-md border border-border bg-background shadow-md
+          h-5 w-10 rounded-md border border-border bg-background shadow-md
           transition-all duration-150
           ${isActive || isHovered ? 'opacity-100 scale-100' : 'opacity-0 scale-90 pointer-events-none'}
         `}
       >
-        <GripVertical className="w-3.5 h-3.5 text-muted-foreground" />
+        <GripHorizontal className="w-3.5 h-3.5 text-muted-foreground" />
       </div>
     </div>
   );
@@ -319,8 +317,9 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
   const [richTextAddMenu, setRichTextAddMenu] = useState<{ isOpen: boolean; position: { x: number; y: number }; instanceId: string } | null>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
   const [customWidth, setCustomWidth] = useState<number | null>(null);
-  const [isResizing, setIsResizing] = useState<'left' | 'right' | null>(null);
-  const [resizeStart, setResizeStart] = useState({ x: 0, width: 0 });
+  const [customHeight, setCustomHeight] = useState<number | null>(null);
+  const [isResizing, setIsResizing] = useState(false);
+  const [resizeStart, setResizeStart] = useState({ y: 0, height: 0 });
   const [touchStart, setTouchStart] = useState<{ x: number; y: number; distance: number } | null>(null);
   const [initialZoom, setInitialZoom] = useState<number>(100);
   const [prebuiltDialog, setPrebuiltDialog] = useState<{ open: boolean; instance: ComponentInstance | null }>({ open: false, instance: null });
@@ -409,23 +408,22 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
 
   const handleMouseUp = () => {
     setIsPanning(false);
-    setIsResizing(null);
+    setIsResizing(false);
   };
 
-  const handleResizeStart = (e: React.MouseEvent, side: 'left' | 'right') => {
+  const handleResizeStart = (e: React.MouseEvent) => {
     if (isPreviewMode) return;
     e.preventDefault();
     e.stopPropagation();
-    setIsResizing(side);
-    const currentWidth = customWidth || (typeof currentBreakpointWidth === 'number' ? currentBreakpointWidth : 960);
-    setResizeStart({ x: e.clientX, width: currentWidth });
+    setIsResizing(true);
+    setResizeStart({ y: e.clientY, height: customHeight || 1200 });
   };
 
   const handleResizeMove = (e: React.MouseEvent) => {
     if (!isResizing) return;
-    const delta = isResizing === 'right' ? (e.clientX - resizeStart.x) : (resizeStart.x - e.clientX);
-    const newWidth = Math.max(320, Math.min(1920, resizeStart.width + delta * 2));
-    setCustomWidth(newWidth);
+    const delta = e.clientY - resizeStart.y;
+    const newHeight = Math.max(400, Math.min(4000, resizeStart.height + delta));
+    setCustomHeight(newHeight);
   };
 
   // Touch event handlers
@@ -2182,10 +2180,10 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
             style={{ 
               ...pageStyles,
               width: isPreviewMode ? '100%' : `${frameWidth}px`,
-              minHeight: isPreviewMode ? '100vh' : '1200px',
-              maxHeight: isPreviewMode ? 'none' : 'calc(100vh - 8rem)',
+              minHeight: isPreviewMode ? '100vh' : `${isCurrentPage && customHeight ? customHeight : 1200}px`,
+              maxHeight: isPreviewMode ? 'none' : 'none',
               boxShadow: isPreviewMode ? 'none' : '0 2px 8px rgba(0,0,0,0.1)',
-              transition: isResizing ? 'none' : 'width 0.3s ease',
+              transition: isResizing ? 'none' : 'all 0.3s ease',
               position: 'relative',
               overflow: isPreviewMode ? 'visible' : 'auto',
               flexShrink: 0,
@@ -2230,20 +2228,10 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
               </div>
             )}
 
-            {/* Left Resize Handle */}
-            {!isPreviewMode && (
+            {/* Bottom Resize Handle */}
+            {!isPreviewMode && isCurrentPage && (
               <CanvasResizeHandle
-                side="left"
-                isActive={isResizing === 'left'}
-                onMouseDown={handleResizeStart}
-              />
-            )}
-
-            {/* Right Resize Handle */}
-            {!isPreviewMode && (
-              <CanvasResizeHandle
-                side="right"
-                isActive={isResizing === 'right'}
+                isActive={isResizing}
                 onMouseDown={handleResizeStart}
               />
             )}
