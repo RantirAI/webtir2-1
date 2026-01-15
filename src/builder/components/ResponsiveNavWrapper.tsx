@@ -36,8 +36,9 @@ export const ResponsiveNavWrapper: React.FC<ResponsiveNavWrapperProps> = ({
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobileView, setIsMobileView] = useState(false);
 
-  // Use tablet breakpoint (991px) for hamburger menu trigger in builder
-  const tabletBreakpointWidth = 991;
+  // Use tablet breakpoint (768px) for hamburger menu trigger in builder
+  // This matches the actual tablet breakpoint from PageNavigation
+  const tabletBreakpointWidth = 768;
   const mobileBreakpoint = instance.props?.mobileBreakpoint ?? 768;
   const mobileAnimation = instance.props?.mobileAnimation ?? 'slide';
   const animationDuration = instance.props?.animationDuration ?? 300;
@@ -50,7 +51,8 @@ export const ResponsiveNavWrapper: React.FC<ResponsiveNavWrapperProps> = ({
         setIsMobileView(window.innerWidth < mobileBreakpoint);
       } else if (canvasWidth !== undefined) {
         // In builder mode with canvas width provided, use it for real-time responsiveness
-        setIsMobileView(canvasWidth <= tabletBreakpointWidth);
+        // Trigger mobile view when canvas is BELOW tablet breakpoint
+        setIsMobileView(canvasWidth < tabletBreakpointWidth);
       } else {
         // Fallback to breakpoint-based detection
         const responsiveBreakpoints = ['mobile', 'mobileLandscape', 'mobile-landscape', 'tablet'];
