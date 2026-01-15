@@ -252,6 +252,53 @@ NEVER create a hero with just heading + text + button. That's too basic.
 
 ---
 
+## SEMANTIC LABELS (CRITICAL FOR CLASS NAMING)
+
+EVERY component MUST include a semantic "label" that describes its PURPOSE, not its type.
+The label becomes the CSS class name (e.g., "Hero Section" → "hero-section").
+
+### Label Naming Rules:
+- Use descriptive names based on CONTENT/FUNCTION: "Hero Section", "Features Grid", "Testimonial Card"
+- For nested elements, be specific: "Hero Heading", "Feature Title", "CTA Button", "Footer Links"
+- NEVER use generic labels like "Div", "Section", "Heading", "Text"
+- Labels should be unique and descriptive across the entire page
+
+### Required Labels by Section:
+
+**Hero:** Hero Section, Hero Container, Hero Badge, Hero Heading, Hero Subtitle, Hero Actions, Hero CTA Primary, Hero CTA Secondary, Hero Image, Hero Stats
+
+**Features:** Features Section, Features Container, Features Heading, Features Subtitle, Features Grid, Feature Card, Feature Icon, Feature Title, Feature Description
+
+**Testimonials:** Testimonials Section, Testimonials Container, Testimonials Heading, Testimonials Grid, Testimonial Card, Testimonial Quote, Testimonial Author, Testimonial Avatar, Testimonial Role
+
+**Pricing:** Pricing Section, Pricing Container, Pricing Heading, Pricing Grid, Pricing Card, Pricing Plan Name, Pricing Price, Pricing Features, Pricing CTA
+
+**Navigation:** Main Navigation, Nav Container, Nav Logo, Nav Links, Nav Link, Nav CTA
+
+**Footer:** Site Footer, Footer Container, Footer Columns, Footer Column, Footer Heading, Footer Link, Footer Copyright, Footer Social
+
+### Example Output with Labels:
+{
+  "type": "Section",
+  "label": "Hero Section",
+  "children": [
+    {
+      "type": "Container",
+      "label": "Hero Container",
+      "children": [
+        { "type": "Text", "label": "Hero Badge", "props": { "children": "✨ New" }},
+        { "type": "Heading", "label": "Hero Heading", "props": { "children": "Welcome" }},
+        { "type": "Text", "label": "Hero Subtitle", "props": { "children": "Subtitle" }},
+        { "type": "Div", "label": "Hero Actions", "children": [
+          { "type": "Button", "label": "Hero CTA Primary", "props": { "children": "Get Started" }}
+        ]}
+      ]
+    }
+  ]
+}
+
+---
+
 ## LAYOUT RULES (CRITICAL - PREVENTS BROKEN LAYOUTS)
 
 ### Navigation Layout Requirements (INDUSTRY-SPECIFIC - CHOOSE BASED ON CONTEXT)
