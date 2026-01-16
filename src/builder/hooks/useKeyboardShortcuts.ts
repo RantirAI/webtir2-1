@@ -4,7 +4,7 @@ import { ComponentInstance } from '../store/types';
 import { duplicateInstanceWithLinkage, applyDuplicationLinks } from '../utils/duplication';
 import { inspectClipboard, ClipboardPayload } from '../utils/clipboardInspector';
 import { translateWebflowToWebtir } from '../utils/webflowTranslator';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 // Global handler for external clipboard import
 let externalClipboardHandler: ((payload: ClipboardPayload) => void) | null = null;
@@ -14,8 +14,6 @@ export const setExternalClipboardHandler = (handler: ((payload: ClipboardPayload
 };
 
 export const useKeyboardShortcuts = () => {
-  const { toast } = useToast();
-
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Check if user is typing in an input field
@@ -142,34 +140,21 @@ export const useKeyboardShortcuts = () => {
             const { addInstance, rootInstance, selectedInstanceId } = useBuilderStore.getState();
             const parentId = selectedInstanceId || 'root';
             addInstance(instance, parentId);
-            toast({
-              title: 'Webflow Import',
-              description: `Successfully imported ${countNodes(instance)} components from Webflow.`,
-            });
+            toast.success(`Webflow Import: Successfully imported ${countNodes(instance)} components.`);
           } else {
-            toast({
-              title: 'Import Failed',
-              description: 'Could not parse Webflow data.',
-              variant: 'destructive',
-            });
+            toast.error('Import Failed: Could not parse Webflow data.');
           }
           return;
         }
 
         // Figma and Framer - show notification that translator is needed
         if (payload.source === 'figma') {
-          toast({
-            title: 'Figma Content Detected',
-            description: 'Figma translation coming soon. Use the Import modal for now.',
-          });
+          toast.info('Figma Content Detected: Figma translation coming soon. Use the Import modal for now.');
           return;
         }
 
         if (payload.source === 'framer') {
-          toast({
-            title: 'Framer Content Detected',
-            description: 'Framer translation coming soon. Use the Import modal for now.',
-          });
+          toast.info('Framer Content Detected: Framer translation coming soon. Use the Import modal for now.');
           return;
         }
       }
@@ -188,7 +173,7 @@ export const useKeyboardShortcuts = () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('paste', handlePaste);
     };
-  }, [toast]);
+  }, []);
 };
 
 // Helper to count nodes in an instance tree
