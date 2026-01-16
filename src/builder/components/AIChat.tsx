@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { ArrowUp, Plus, Sparkles, MessageSquare, FileCode, FileText, Image as ImageIcon, Wrench, Settings, Eye, EyeOff, X, History, Trash2, Package } from 'lucide-react';
+import { ArrowUp, Plus, Sparkles, MessageSquare, FileCode, FileText, Image as ImageIcon, Wrench, Settings, Eye, EyeOff, X, History, Trash2, Package, Upload, ClipboardPaste, ChevronRight } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -17,6 +17,8 @@ import { useChatStore } from '../store/useChatStore';
 import { useBuildProgressStore } from '../store/useBuildProgressStore';
 import { streamChat, AIMessage } from '../services/aiService';
 import { parseAIResponse, flattenInstances, AIUpdateSpec, detectIncompletePage, detectTruncatedJSON } from '../utils/aiComponentGenerator';
+import { inspectClipboard, parseWebflowData, ClipboardSource } from '../utils/clipboardInspector';
+import { translateWebflowToWebtir, getWebflowDataSummary } from '../utils/webflowTranslator';
 import { normalizeComponentBase, findMaxIndexForBase } from '../utils/autoClassSystem';
 import { useStyleStore } from '../store/useStyleStore';
 import { useBuilderStore } from '../store/useBuilderStore';
@@ -44,6 +46,8 @@ export const AIChat: React.FC = () => {
   const [streamingContent, setStreamingContent] = useState('');
   const [originalRequest, setOriginalRequest] = useState('');
   const [pendingContinuation, setPendingContinuation] = useState(false);
+  const [showPasteDialog, setShowPasteDialog] = useState<'webflow' | 'figma' | 'framer' | null>(null);
+  const [pasteCode, setPasteCode] = useState('');
 
   // AI Settings Store
   const {
@@ -881,6 +885,48 @@ Add what's missing: Features, Testimonials, Pricing, CTA, Footer, etc.`;
     }
   };
 
+  // Handle paste import for design tools (Webflow, Figma, Framer)
+  const handlePasteImport = (platform: 'webflow' | 'figma' | 'framer') => {
+    setShowPasteDialog(platform);
+    setPasteCode('');
+  };
+
+  // Convert pasted code from design tool
+  const handleConvertPaste = () => {
+    if (!pasteCode.trim() || !showPasteDialog) return;
+
+    if (showPasteDialog === 'webflow') {
+      const wfData = parseWebflowData(pasteCode);
+      if (wfData) {
+        const instance = translateWebflowToWebtir(wfData);
+        if (instance) {
+          const { rootInstance } = useBuilderStore.getState();
+          addInstance(instance, rootInstance.id);
+          const summary = getWebflowDataSummary(wfData);
+          toast.success(`Imported ${summary.nodeCount} components from Webflow`);
+          setShowPasteDialog(null);
+          setPasteCode('');
+          return;
+        }
+      }
+      toast.error('Could not parse Webflow data. Make sure you copied correctly from Webflow.');
+      return;
+    }
+
+    // Figma and Framer - coming soon
+    if (showPasteDialog === 'figma') {
+      toast.info('Figma import coming soon. For now, use a Figma-to-code plugin.');
+      setShowPasteDialog(null);
+      return;
+    }
+
+    if (showPasteDialog === 'framer') {
+      toast.info('Framer import coming soon. For now, export as code.');
+      setShowPasteDialog(null);
+      return;
+    }
+  };
+
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -975,16 +1021,23 @@ Add what's missing: Features, Testimonials, Pricing, CTA, Footer, etc.`;
 
   const providerConfig = getProviderConfig();
 
-  // Platform icons for import options - use ES6 imported images
-  const importOptions = [
+  // Design tool options (have both upload and paste)
+  const designToolOptions = [
     { id: 'webflow', label: 'Webflow', iconSrc: webflowIcon },
     { id: 'figma', label: 'Figma', iconSrc: figmaIcon },
     { id: 'framer', label: 'Framer', iconSrc: framerIcon },
+  ];
+
+  // Other import options (upload only)
+  const otherImportOptions = [
     { id: 'wordpress', label: 'WordPress', iconSrc: wordpressIcon },
     { id: 'shopify', label: 'Shopify', iconSrc: shopifyIcon },
     { id: 'image', label: 'Image', icon: ImageIcon },
     { id: 'zip', label: 'ZIP', icon: Package },
   ];
+
+  // Track which design tool submenu is open
+  const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
 
   const [activeTab, setActiveTab] = useState<'chat' | 'history'>('chat');
 
@@ -1199,10 +1252,68 @@ Add what's missing: Features, Testimonials, Pricing, CTA, Footer, etc.`;
                         <Plus className="w-3.5 h-3.5" />
                       </button>
                     </PopoverTrigger>
-                    <PopoverContent side="top" align="start" sideOffset={8} className="w-44 p-1.5 bg-popover border border-border shadow-lg z-50">
+                    <PopoverContent side="top" align="start" sideOffset={8} className="w-48 p-1.5 bg-popover border border-border shadow-lg z-50">
                       <div className="space-y-0.5">
-                        <p className="text-[9px] text-muted-foreground px-2 py-1 font-medium uppercase tracking-wider">Import from</p>
-                        {importOptions.map((option) => (
+                        <p className="text-[9px] text-muted-foreground px-2 py-1 font-medium uppercase tracking-wider">Design Tools</p>
+                        {designToolOptions.map((option) => (
+                          <div
+                            key={option.id}
+                            className="relative"
+                            onMouseEnter={() => setOpenSubmenu(option.id)}
+                            onMouseLeave={() => setOpenSubmenu(null)}
+                          >
+                            <button
+                              className="w-full flex items-center justify-between gap-2 px-2 py-2 rounded text-[11px] text-foreground hover:bg-accent transition-colors"
+                            >
+                              <div className="flex items-center gap-2.5">
+                                <img src={option.iconSrc} alt={option.label} className="w-5 h-5 object-contain rounded-sm" />
+                                <span>{option.label}</span>
+                              </div>
+                              <ChevronRight className="w-3 h-3 text-muted-foreground" />
+                            </button>
+                            
+                            {/* Submenu for Upload/Paste */}
+                            {openSubmenu === option.id && (
+                              <div className="absolute left-full top-0 ml-1 w-36 p-1 bg-popover border border-border rounded-md shadow-lg z-50">
+                                <button
+                                  onClick={() => {
+                                    handleFileUpload('zip');
+                                    setOpenSubmenu(null);
+                                  }}
+                                  className="w-full flex items-center gap-2 px-2 py-1.5 rounded text-[10px] text-foreground hover:bg-accent transition-colors"
+                                >
+                                  <Upload className="w-3.5 h-3.5 text-muted-foreground" />
+                                  <span>Upload ZIP</span>
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    handlePasteImport(option.id as 'webflow' | 'figma' | 'framer');
+                                    setOpenSubmenu(null);
+                                  }}
+                                  className="w-full flex items-center gap-2 px-2 py-1.5 rounded text-[10px] text-foreground hover:bg-accent transition-colors group relative"
+                                >
+                                  <ClipboardPaste className="w-3.5 h-3.5 text-muted-foreground" />
+                                  <span>Paste Code</span>
+                                  {/* Badge tooltip */}
+                                  <span className="absolute -right-1 -top-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <span className="relative flex h-2 w-2">
+                                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                                      <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+                                    </span>
+                                  </span>
+                                </button>
+                                <p className="text-[8px] text-muted-foreground px-2 py-1 mt-0.5 border-t border-border/50">
+                                  Paste {option.label} code directly
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                        
+                        <div className="h-px bg-border my-1" />
+                        <p className="text-[9px] text-muted-foreground px-2 py-1 font-medium uppercase tracking-wider">Other</p>
+                        
+                        {otherImportOptions.map((option) => (
                           <button
                             key={option.id}
                             onClick={() => handleFileUpload(option.id)}
@@ -1427,6 +1538,56 @@ Add what's missing: Features, Testimonials, Pricing, CTA, Footer, etc.`;
               className="h-7 text-[10px]"
             >
               Done
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Paste Code Dialog */}
+      <Dialog open={showPasteDialog !== null} onOpenChange={(open) => !open && setShowPasteDialog(null)}>
+        <DialogContent className="sm:max-w-[420px] p-4">
+          <DialogHeader className="pb-2">
+            <DialogTitle className="text-sm flex items-center gap-2">
+              {showPasteDialog === 'webflow' && <img src={webflowIcon} alt="Webflow" className="w-5 h-5 rounded" />}
+              {showPasteDialog === 'figma' && <img src={figmaIcon} alt="Figma" className="w-5 h-5 rounded" />}
+              {showPasteDialog === 'framer' && <img src={framerIcon} alt="Framer" className="w-5 h-5 rounded" />}
+              Paste {showPasteDialog ? showPasteDialog.charAt(0).toUpperCase() + showPasteDialog.slice(1) : ''} Code
+            </DialogTitle>
+            <DialogDescription className="text-[10px]">
+              Copy elements from {showPasteDialog} and paste the code below
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <Textarea
+              value={pasteCode}
+              onChange={(e) => setPasteCode(e.target.value)}
+              placeholder={`Paste your ${showPasteDialog} code here...`}
+              className="min-h-[150px] font-mono text-[10px]"
+            />
+            <div className="p-2 rounded-md bg-muted/50 border border-border">
+              <p className="text-[9px] text-muted-foreground">
+                {showPasteDialog === 'webflow' && '💡 In Webflow, select elements and use Cmd/Ctrl+C to copy. Paste the JSON data here.'}
+                {showPasteDialog === 'figma' && '💡 In Figma, select frames and copy. Alternatively, use a Figma-to-code plugin.'}
+                {showPasteDialog === 'framer' && '💡 In Framer, copy components or use export to get the code.'}
+              </p>
+            </div>
+          </div>
+          <DialogFooter className="pt-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowPasteDialog(null)}
+              className="h-7 text-[10px]"
+            >
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              onClick={handleConvertPaste}
+              disabled={!pasteCode.trim()}
+              className="h-7 text-[10px]"
+            >
+              Import
             </Button>
           </DialogFooter>
         </DialogContent>
