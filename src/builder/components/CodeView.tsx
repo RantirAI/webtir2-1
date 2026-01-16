@@ -539,6 +539,14 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
         open={showImportModal}
         onOpenChange={setShowImportModal}
         onImport={handleImport}
+        onImportComplete={() => {
+          // After import, mark code as edited so user can review and apply changes
+          setIsCodeEdited(true);
+          setEditedTabs(prev => ({ ...prev, html: true, css: true }));
+          // Force regenerate code from canvas
+          setHtmlCode(generatePageHTML());
+          setCssCode(exportCSS());
+        }}
       />
       
       <CreateComponentDialog

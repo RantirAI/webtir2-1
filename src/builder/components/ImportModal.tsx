@@ -22,6 +22,7 @@ interface ImportModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onImport: (source: string, content: string | File) => void;
+  onImportComplete?: () => void; // Called after successful import to signal CodeView
 }
 
 // Design Tools - support paste + ZIP upload
@@ -41,7 +42,7 @@ const packageSources = [
 // All platforms combined
 const allPlatforms = [...designToolSources, ...packageSources];
 
-export const ImportModal: React.FC<ImportModalProps> = ({ open, onOpenChange, onImport }) => {
+export const ImportModal: React.FC<ImportModalProps> = ({ open, onOpenChange, onImport, onImportComplete }) => {
   const [activePlatform, setActivePlatform] = useState('webflow');
   const [activeTab, setActiveTab] = useState<'paste' | 'upload'>('paste');
   const [pastedCode, setPastedCode] = useState('');
@@ -140,8 +141,10 @@ export const ImportModal: React.FC<ImportModalProps> = ({ open, onOpenChange, on
           addInstance(instance, rootInstance.id);
           toast({
             title: 'Webflow Import Success',
-            description: `Imported ${convertPreview?.nodes || 0} components with ${convertPreview?.styles || 0} styles.`,
+            description: `Imported ${convertPreview?.nodes || 0} components with ${convertPreview?.styles || 0} styles. Review and click "Apply Changes to Canvas" if needed.`,
           });
+          // Signal CodeView that import completed so it can show Apply Changes button
+          onImportComplete?.();
           resetAndClose();
           return;
         }
