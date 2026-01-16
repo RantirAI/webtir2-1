@@ -1165,7 +1165,7 @@ Add what's missing: Features, Testimonials, Pricing, CTA, Footer, etc.`;
                   <button
                     onClick={() => setChatMode(chatMode === 'build' ? 'discuss' : 'build')}
                     className={`flex items-center gap-1 px-2 py-1 rounded-full text-[10px] border transition-colors ${chatMode === 'build'
-                      ? 'bg-primary/10 text-primary border-primary/30'
+                      ? 'bg-foreground text-background border-foreground/30 dark:bg-white dark:text-black dark:border-white/30'
                       : 'bg-blue-500/10 text-blue-500 border-blue-500/30'
                       }`}
                     title={chatMode === 'build' ? 'Build Mode - AI makes changes to canvas' : 'Chat Mode - Discuss features'}
@@ -1217,9 +1217,9 @@ Add what's missing: Features, Testimonials, Pricing, CTA, Footer, etc.`;
                   onClick={handleSend}
                   disabled={!input.trim() || isLoading}
                   data-send-button
-                  className={`p-1.5 rounded-full transition-colors ${input.trim() && !isLoading
-                    ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-                    : 'bg-muted text-muted-foreground cursor-not-allowed'
+                  className={`p-1.5 rounded-full transition-all duration-200 ${input.trim() && !isLoading
+                    ? 'bg-foreground text-background dark:bg-white dark:text-black hover:opacity-90'
+                    : 'bg-foreground/30 text-background/50 dark:bg-white/30 dark:text-black/50 cursor-not-allowed'
                     }`}
                 >
                   <ArrowUp className="w-3.5 h-3.5" />
