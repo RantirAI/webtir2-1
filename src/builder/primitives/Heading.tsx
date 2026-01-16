@@ -28,7 +28,11 @@ export const Heading: React.FC<HeadingProps> = ({
   dataBindingProps = {},
 }) => {
   const { updateInstance } = useBuilderStore();
-  const level = instance.props.level || 'h1';
+  // Ensure level is a valid heading tag string (h1-h6), not a number
+  const rawLevel = instance.props.level;
+  const level = typeof rawLevel === 'number' 
+    ? `h${Math.min(Math.max(rawLevel, 1), 6)}` 
+    : (rawLevel && ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(rawLevel) ? rawLevel : 'h1');
 
   const handleTextChange = (newText: string) => {
     updateInstance(instance.id, {
