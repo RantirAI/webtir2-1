@@ -2,6 +2,59 @@ import { ComponentInstance, ComponentType } from '../store/types';
 import { useStyleStore } from '../store/useStyleStore';
 import { generateId } from './instance';
 
+// Parse inline styles and apply them to a style source
+function parseAndApplyInlineStyles(
+  inlineStyle: string,
+  styleSourceId: string,
+  setStyle: (sourceId: string, property: string, value: string, breakpoint: string, state: string) => void
+) {
+  // Parse inline style string, being careful with url() values that contain colons
+  const declarations: string[] = [];
+  let current = '';
+  let parenDepth = 0;
+  
+  for (const char of inlineStyle) {
+    if (char === '(') parenDepth++;
+    if (char === ')') parenDepth--;
+    if (char === ';' && parenDepth === 0) {
+      if (current.trim()) declarations.push(current.trim());
+      current = '';
+    } else {
+      current += char;
+    }
+  }
+  if (current.trim()) declarations.push(current.trim());
+  
+  for (const decl of declarations) {
+    // Find the first colon not inside parentheses
+    let colonIndex = -1;
+    let pDepth = 0;
+    for (let i = 0; i < decl.length; i++) {
+      if (decl[i] === '(') pDepth++;
+      if (decl[i] === ')') pDepth--;
+      if (decl[i] === ':' && pDepth === 0) {
+        colonIndex = i;
+        break;
+      }
+    }
+    
+    if (colonIndex > 0) {
+      const property = decl.substring(0, colonIndex).trim();
+      const value = decl.substring(colonIndex + 1).trim();
+      
+      // Convert to camelCase
+      const camelCaseProp = property.replace(/-([a-z])/g, (_, letter: string) => letter.toUpperCase());
+      
+      // Apply important styles like background-image to the style store
+      if (property === 'background-image' || property === 'background' || 
+          property === 'background-size' || property === 'background-position' ||
+          property === 'background-repeat') {
+        setStyle(styleSourceId, camelCaseProp, value, 'base', 'default');
+      }
+    }
+  }
+}
+
 // Parse HTML to component tree
 export function parseHTMLToInstance(html: string): ComponentInstance | null {
   // Strip component markers before parsing
@@ -64,7 +117,7 @@ function domNodeToInstancePreserving(
   node: Element, 
   existingMap: Map<string, ComponentInstance>
 ): ComponentInstance {
-  const { createStyleSource, styleSources } = useStyleStore.getState();
+  const { createStyleSource, styleSources, setStyle } = useStyleStore.getState();
   
   // Get or create style sources for classes
   const classNames = node.className.split(' ').filter(Boolean);
@@ -79,6 +132,13 @@ function domNodeToInstancePreserving(
     
     return createStyleSource('local', className);
   });
+  
+  // Extract inline styles (especially background-image)
+  const inlineStyle = node.getAttribute('style');
+  if (inlineStyle && styleSourceIds.length > 0) {
+    const primaryStyleSourceId = styleSourceIds[0];
+    parseAndApplyInlineStyles(inlineStyle, primaryStyleSourceId, setStyle);
+  }
   
   // Map HTML tags to component types
   let type: ComponentType = 'Div';
@@ -154,7 +214,8 @@ function domNodeToInstancePreserving(
   const props: Record<string, any> = existingInstance?.props || {};
   
   if (type === 'Heading') {
-    props.level = tagName;
+    // Ensure level is stored as 'h1', 'h2', etc. for consistency
+    props.level = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(tagName) ? tagName : 'h1';
   }
   
   if (type === 'Image') {
@@ -215,7 +276,7 @@ function domNodeToInstancePreserving(
 }
 
 function domNodeToInstance(node: Element): ComponentInstance {
-  const { createStyleSource } = useStyleStore.getState();
+  const { createStyleSource, setStyle } = useStyleStore.getState();
   
   // Get or create style sources for classes
   const classNames = node.className.split(' ').filter(Boolean);
@@ -233,6 +294,13 @@ function domNodeToInstance(node: Element): ComponentInstance {
     // Create new style source
     return createStyleSource('local', className);
   });
+  
+  // Extract inline styles (especially background-image)
+  const inlineStyle = node.getAttribute('style');
+  if (inlineStyle && styleSourceIds.length > 0) {
+    const primaryStyleSourceId = styleSourceIds[0];
+    parseAndApplyInlineStyles(inlineStyle, primaryStyleSourceId, setStyle);
+  }
   
   // Map HTML tags to component types
   let type: ComponentType = 'Div';
@@ -295,7 +363,8 @@ function domNodeToInstance(node: Element): ComponentInstance {
   const props: Record<string, any> = {};
   
   if (type === 'Heading') {
-    props.level = tagName;
+    // Ensure level is stored as 'h1', 'h2', etc. for consistency
+    props.level = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(tagName) ? tagName : 'h1';
   }
   
   if (type === 'Image') {

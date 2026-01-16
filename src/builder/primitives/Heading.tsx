@@ -28,11 +28,24 @@ export const Heading: React.FC<HeadingProps> = ({
   dataBindingProps = {},
 }) => {
   const { updateInstance } = useBuilderStore();
-  // Ensure level is a valid heading tag string (h1-h6), not a number
+  // Ensure level is a valid heading tag string (h1-h6)
+  // Handle both number format (1-6) and string format ('h1'-'h6')
   const rawLevel = instance.props.level;
-  const level = typeof rawLevel === 'number' 
-    ? `h${Math.min(Math.max(rawLevel, 1), 6)}` 
-    : (rawLevel && ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(rawLevel) ? rawLevel : 'h1');
+  let level: string;
+  if (typeof rawLevel === 'number') {
+    level = `h${Math.min(Math.max(rawLevel, 1), 6)}`;
+  } else if (typeof rawLevel === 'string') {
+    // Handle both 'h1' format and '1' format
+    if (['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(rawLevel)) {
+      level = rawLevel;
+    } else if (['1', '2', '3', '4', '5', '6'].includes(rawLevel)) {
+      level = `h${rawLevel}`;
+    } else {
+      level = 'h1';
+    }
+  } else {
+    level = 'h1';
+  }
 
   const handleTextChange = (newText: string) => {
     updateInstance(instance.id, {
