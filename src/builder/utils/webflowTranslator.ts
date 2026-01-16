@@ -91,13 +91,41 @@ function parseStyleLess(styleLess: string): Record<string, string> {
   if (!styleLess) return {};
   
   const styles: Record<string, string> = {};
-  const declarations = styleLess.split(';').filter(d => d.trim());
+  
+  // Handle multi-value properties like background-image that may contain colons in URLs
+  // Split by semicolons but be careful with url() values
+  const declarations: string[] = [];
+  let current = '';
+  let parenDepth = 0;
+  
+  for (const char of styleLess) {
+    if (char === '(') parenDepth++;
+    if (char === ')') parenDepth--;
+    if (char === ';' && parenDepth === 0) {
+      if (current.trim()) declarations.push(current.trim());
+      current = '';
+    } else {
+      current += char;
+    }
+  }
+  if (current.trim()) declarations.push(current.trim());
   
   for (const decl of declarations) {
-    const [prop, ...valueParts] = decl.split(':');
-    if (prop && valueParts.length > 0) {
-      const property = prop.trim();
-      const value = valueParts.join(':').trim();
+    // Find the first colon that's not inside url() or other functions
+    let colonIndex = -1;
+    let pDepth = 0;
+    for (let i = 0; i < decl.length; i++) {
+      if (decl[i] === '(') pDepth++;
+      if (decl[i] === ')') pDepth--;
+      if (decl[i] === ':' && pDepth === 0) {
+        colonIndex = i;
+        break;
+      }
+    }
+    
+    if (colonIndex > 0) {
+      const property = decl.substring(0, colonIndex).trim();
+      const value = decl.substring(colonIndex + 1).trim();
       
       // Convert property name to camelCase for React/JS
       const camelCaseProp = property.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
@@ -159,10 +187,10 @@ function extractProps(node: WebflowNode, type: ComponentType, nodeMap: Map<strin
     }
   }
   
-  // Handle heading level
+  // Handle heading level - store as 'h1', 'h2', etc. (string format)
   if (type === 'Heading') {
-    const level = node.tag?.match(/h([1-6])/)?.[1];
-    props.level = level ? parseInt(level) : 1;
+    const levelMatch = node.tag?.match(/h([1-6])/);
+    props.level = levelMatch ? `h${levelMatch[1]}` : 'h1';
   }
   
   // Handle image
