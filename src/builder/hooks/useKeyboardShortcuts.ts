@@ -2,8 +2,20 @@ import { useEffect } from 'react';
 import { useBuilderStore } from '../store/useBuilderStore';
 import { ComponentInstance } from '../store/types';
 import { duplicateInstanceWithLinkage, applyDuplicationLinks } from '../utils/duplication';
+import { inspectClipboard, ClipboardPayload } from '../utils/clipboardInspector';
+import { translateWebflowToWebtir } from '../utils/webflowTranslator';
+import { useToast } from '@/hooks/use-toast';
+
+// Global handler for external clipboard import
+let externalClipboardHandler: ((payload: ClipboardPayload) => void) | null = null;
+
+export const setExternalClipboardHandler = (handler: ((payload: ClipboardPayload) => void) | null) => {
+  externalClipboardHandler = handler;
+};
 
 export const useKeyboardShortcuts = () => {
+  const { toast } = useToast();
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Check if user is typing in an input field
@@ -46,12 +58,8 @@ export const useKeyboardShortcuts = () => {
         return;
       }
 
-      // Paste: Ctrl/Cmd + V
-      if (modifier && e.key === 'v') {
-        e.preventDefault();
-        useBuilderStore.getState().pasteClipboard();
-        return;
-      }
+      // Note: Paste (Ctrl+V) is now handled by the paste event listener below
+      // to properly access clipboardData for external content detection
 
       // Duplicate: Ctrl/Cmd + D
       if (modifier && e.key === 'd') {
@@ -102,7 +110,92 @@ export const useKeyboardShortcuts = () => {
       }
     };
 
+    // Handle paste event to intercept clipboard data from external sources
+    const handlePaste = (e: ClipboardEvent) => {
+      const target = e.target as HTMLElement;
+      const isInput = target.tagName === 'INPUT' || 
+                     target.tagName === 'TEXTAREA' || 
+                     target.isContentEditable;
+      
+      // Don't intercept if user is in an input field
+      if (isInput) return;
+
+      // Inspect the clipboard content
+      const payload = inspectClipboard(e);
+      
+      console.log('[Clipboard Inspector] Detected source:', payload.source, payload);
+
+      // Handle external design tool content
+      if (payload.source === 'webflow' || payload.source === 'figma' || payload.source === 'framer') {
+        e.preventDefault();
+        
+        // If there's an external handler registered (e.g., from AIChat), use it
+        if (externalClipboardHandler) {
+          externalClipboardHandler(payload);
+          return;
+        }
+
+        // Otherwise, handle directly
+        if (payload.source === 'webflow' && payload.data) {
+          const instance = translateWebflowToWebtir(payload.data);
+          if (instance) {
+            const { addInstance, rootInstance, selectedInstanceId } = useBuilderStore.getState();
+            const parentId = selectedInstanceId || 'root';
+            addInstance(instance, parentId);
+            toast({
+              title: 'Webflow Import',
+              description: `Successfully imported ${countNodes(instance)} components from Webflow.`,
+            });
+          } else {
+            toast({
+              title: 'Import Failed',
+              description: 'Could not parse Webflow data.',
+              variant: 'destructive',
+            });
+          }
+          return;
+        }
+
+        // Figma and Framer - show notification that translator is needed
+        if (payload.source === 'figma') {
+          toast({
+            title: 'Figma Content Detected',
+            description: 'Figma translation coming soon. Use the Import modal for now.',
+          });
+          return;
+        }
+
+        if (payload.source === 'framer') {
+          toast({
+            title: 'Framer Content Detected',
+            description: 'Framer translation coming soon. Use the Import modal for now.',
+          });
+          return;
+        }
+      }
+
+      // For internal clipboard or unknown content, use standard paste
+      if (payload.source === 'unknown' || payload.source === 'text') {
+        e.preventDefault();
+        useBuilderStore.getState().pasteClipboard();
+      }
+    };
+
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+    window.addEventListener('paste', handlePaste);
+    
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('paste', handlePaste);
+    };
+  }, [toast]);
 };
+
+// Helper to count nodes in an instance tree
+function countNodes(instance: ComponentInstance): number {
+  let count = 1;
+  for (const child of instance.children) {
+    count += countNodes(child);
+  }
+  return count;
+}
