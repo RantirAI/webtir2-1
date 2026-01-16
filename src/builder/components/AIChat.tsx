@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { ArrowUp, Plus, Sparkles, MessageSquare, FileCode, FileText, Image, Figma, Wrench, Settings, Eye, EyeOff, X, History, Trash2, Package } from 'lucide-react';
+import { ArrowUp, Plus, Sparkles, MessageSquare, FileCode, FileText, Image as ImageIcon, Wrench, Settings, Eye, EyeOff, X, History, Trash2, Package } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -23,6 +23,13 @@ import { useBuilderStore } from '../store/useBuilderStore';
 import { useMediaStore } from '../store/useMediaStore';
 import { generateImage } from '../services/aiImageService';
 import { toast } from 'sonner';
+
+// Import platform icons
+import webflowIcon from '@/assets/webflow-icon.png';
+import figmaIcon from '@/assets/figma-icon.jpg';
+import framerIcon from '@/assets/framer-icon.png';
+import wordpressIcon from '@/assets/wordpress-icon.png';
+import shopifyIcon from '@/assets/shopify-icon.png';
 
 type ChatMode = 'build' | 'discuss';
 
@@ -968,12 +975,14 @@ Add what's missing: Features, Testimonials, Pricing, CTA, Footer, etc.`;
 
   const providerConfig = getProviderConfig();
 
-  // Platform icons for import options
+  // Platform icons for import options - use ES6 imported images
   const importOptions = [
-    { id: 'webflow', label: 'Webflow', iconSrc: '/src/assets/webflow-icon.png' },
-    { id: 'figma', label: 'Figma', iconSrc: '/src/assets/figma-icon.jpg' },
-    { id: 'framer', label: 'Framer', iconSrc: '/src/assets/framer-icon.png' },
-    { id: 'image', label: 'Image', icon: Image },
+    { id: 'webflow', label: 'Webflow', iconSrc: webflowIcon },
+    { id: 'figma', label: 'Figma', iconSrc: figmaIcon },
+    { id: 'framer', label: 'Framer', iconSrc: framerIcon },
+    { id: 'wordpress', label: 'WordPress', iconSrc: wordpressIcon },
+    { id: 'shopify', label: 'Shopify', iconSrc: shopifyIcon },
+    { id: 'image', label: 'Image', icon: ImageIcon },
     { id: 'zip', label: 'ZIP', icon: Package },
   ];
 
@@ -1193,23 +1202,20 @@ Add what's missing: Features, Testimonials, Pricing, CTA, Footer, etc.`;
                     <PopoverContent side="top" align="start" sideOffset={8} className="w-44 p-1.5 bg-popover border border-border shadow-lg z-50">
                       <div className="space-y-0.5">
                         <p className="text-[9px] text-muted-foreground px-2 py-1 font-medium uppercase tracking-wider">Import from</p>
-                        {importOptions.map((option) => {
-                          const Icon = option.icon;
-                          return (
-                            <button
-                              key={option.id}
-                              onClick={() => handleFileUpload(option.id)}
-                              className="w-full flex items-center gap-2.5 px-2 py-2 rounded text-[11px] text-foreground hover:bg-accent transition-colors"
-                            >
-                              {option.iconSrc ? (
-                                <img src={option.iconSrc} alt={option.label} className="w-5 h-5 object-contain rounded-sm" />
-                              ) : Icon ? (
-                                <Icon className="w-4 h-4 text-muted-foreground" />
-                              ) : null}
-                              <span>{option.label}</span>
-                            </button>
-                          );
-                        })}
+                        {importOptions.map((option) => (
+                          <button
+                            key={option.id}
+                            onClick={() => handleFileUpload(option.id)}
+                            className="w-full flex items-center gap-2.5 px-2 py-2 rounded text-[11px] text-foreground hover:bg-accent transition-colors"
+                          >
+                            {option.iconSrc ? (
+                              <img src={option.iconSrc} alt={option.label} className="w-5 h-5 object-contain rounded-sm" />
+                            ) : option.icon ? (
+                              <option.icon className="w-4 h-4 text-muted-foreground" />
+                            ) : null}
+                            <span>{option.label}</span>
+                          </button>
+                        ))}
                       </div>
                     </PopoverContent>
                   </Popover>
