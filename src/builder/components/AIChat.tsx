@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { ArrowUp, Plus, Sparkles, MessageSquare, FileCode, FileText, Image, Figma, Wrench, Settings, Eye, EyeOff, X, History, Trash2 } from 'lucide-react';
+import { ArrowUp, Plus, Sparkles, MessageSquare, FileCode, FileText, Image, Figma, Wrench, Settings, Eye, EyeOff, X, History, Trash2, Package } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -868,7 +868,8 @@ Add what's missing: Features, Testimonials, Pricing, CTA, Footer, etc.`;
       fileInputRef.current.accept = type === 'image' ? 'image/*' :
         type === 'pdf' ? '.pdf' :
           type === 'txt' ? '.txt' :
-            type === 'html' ? '.html,.htm' : '*/*';
+            type === 'html' ? '.html,.htm' :
+              type === 'zip' ? '.zip' : '*/*';
       fileInputRef.current.click();
     }
   };
@@ -890,6 +891,34 @@ Add what's missing: Features, Testimonials, Pricing, CTA, Footer, etc.`;
           toast.success(`Image "${file.name}" attached`);
         };
         reader.readAsDataURL(file);
+      }
+      // Handle ZIP files
+      else if (fileName.endsWith('.zip')) {
+        const JSZip = (await import('jszip')).default;
+        const zip = await JSZip.loadAsync(file);
+        
+        let extractedContent = '';
+        const supportedExtensions = ['.html', '.htm', '.css', '.js', '.json', '.txt', '.md'];
+        
+        for (const [path, zipEntry] of Object.entries(zip.files)) {
+          if (!zipEntry.dir) {
+            const ext = '.' + path.split('.').pop()?.toLowerCase();
+            if (supportedExtensions.includes(ext)) {
+              const content = await zipEntry.async('string');
+              extractedContent += `\n\n[File: ${path}]:\n\`\`\`${ext.slice(1)}\n${content}\n\`\`\``;
+            }
+          }
+        }
+        
+        if (extractedContent) {
+          setInput(prev => {
+            const prefix = prev ? prev + '\n\n' : '';
+            return prefix + `[Extracted from ${file.name}]:${extractedContent}`;
+          });
+          toast.success(`ZIP "${file.name}" extracted successfully`);
+        } else {
+          toast.error(`No supported files found in ZIP`);
+        }
       }
       // Handle text files (TXT, HTML, CSS, JS)
       else if (fileName.endsWith('.txt') || fileName.endsWith('.html') || 
@@ -944,6 +973,7 @@ Add what's missing: Features, Testimonials, Pricing, CTA, Footer, etc.`;
     { id: 'framer', label: 'Framer', icon: FileCode },
     { id: 'figma', label: 'Figma', icon: Figma },
     { id: 'image', label: 'Image', icon: Image },
+    { id: 'zip', label: 'ZIP', icon: Package },
     { id: 'pdf', label: 'PDF', icon: FileText },
     { id: 'txt', label: 'TXT', icon: FileText },
     { id: 'html', label: 'HTML', icon: FileCode },
@@ -1188,7 +1218,7 @@ Add what's missing: Features, Testimonials, Pricing, CTA, Footer, etc.`;
                   disabled={!input.trim() || isLoading}
                   data-send-button
                   className={`p-1.5 rounded-full transition-colors ${input.trim() && !isLoading
-                    ? 'bg-foreground text-background hover:bg-foreground/90'
+                    ? 'bg-primary text-primary-foreground hover:bg-primary/90'
                     : 'bg-muted text-muted-foreground cursor-not-allowed'
                     }`}
                 >
