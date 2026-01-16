@@ -968,15 +968,13 @@ Add what's missing: Features, Testimonials, Pricing, CTA, Footer, etc.`;
 
   const providerConfig = getProviderConfig();
 
+  // Platform icons for import options
   const importOptions = [
-    { id: 'webflow', label: 'Webflow', icon: FileCode },
-    { id: 'framer', label: 'Framer', icon: FileCode },
-    { id: 'figma', label: 'Figma', icon: Figma },
+    { id: 'webflow', label: 'Webflow', iconSrc: '/src/assets/webflow-icon.png' },
+    { id: 'figma', label: 'Figma', iconSrc: '/src/assets/figma-icon.jpg' },
+    { id: 'framer', label: 'Framer', iconSrc: '/src/assets/framer-icon.png' },
     { id: 'image', label: 'Image', icon: Image },
     { id: 'zip', label: 'ZIP', icon: Package },
-    { id: 'pdf', label: 'PDF', icon: FileText },
-    { id: 'txt', label: 'TXT', icon: FileText },
-    { id: 'html', label: 'HTML', icon: FileCode },
   ];
 
   const [activeTab, setActiveTab] = useState<'chat' | 'history'>('chat');
@@ -1203,7 +1201,11 @@ Add what's missing: Features, Testimonials, Pricing, CTA, Footer, etc.`;
                               onClick={() => handleFileUpload(option.id)}
                               className="w-full flex items-center gap-2.5 px-2 py-2 rounded text-[11px] text-foreground hover:bg-accent transition-colors"
                             >
-                              <Icon className="w-4 h-4 text-muted-foreground" />
+                              {option.iconSrc ? (
+                                <img src={option.iconSrc} alt={option.label} className="w-5 h-5 object-contain rounded-sm" />
+                              ) : Icon ? (
+                                <Icon className="w-4 h-4 text-muted-foreground" />
+                              ) : null}
                               <span>{option.label}</span>
                             </button>
                           );
