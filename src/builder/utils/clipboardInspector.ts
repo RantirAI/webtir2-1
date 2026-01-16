@@ -90,21 +90,44 @@ export function inspectClipboard(event: ClipboardEvent): ClipboardPayload {
     return { source: 'unknown', data: null, mimeTypes: [] };
   }
 
-  // Get all available MIME types
-  const types = Array.from(clipboardData.types);
-  const textData = clipboardData.getData('text/plain');
-  const htmlData = clipboardData.getData('text/html');
+  const mimeTypes = Array.from(clipboardData.types);
 
-  // Try to detect Webflow XscpData
-  if (textData.includes('@webflow/XscpData')) {
+  const safeGet = (type: string): string => {
     try {
-      const parsed = JSON.parse(textData) as WebflowXscpData;
+      return clipboardData.getData(type) || '';
+    } catch {
+      return '';
+    }
+  };
+
+  // Some tools (Webflow/Figma/Framer) store structured data on custom MIME types.
+  // We still *prefer* text/plain, but we also scan other available types.
+  const textPlain = safeGet('text/plain');
+  const htmlData = safeGet('text/html');
+
+  const candidates = [
+    { type: 'text/plain', value: textPlain },
+    { type: 'application/json', value: safeGet('application/json') },
+    ...mimeTypes.map((t) => ({ type: t, value: safeGet(t) })),
+  ].filter((c) => c.value && c.value.trim().length > 0);
+
+  const findText = (match: (value: string, type: string) => boolean) =>
+    candidates.find((c) => match(c.value, c.type))?.value ?? '';
+
+  // --- Webflow ---
+  const webflowText = findText(
+    (v, t) => v.includes('@webflow/XscpData') || t.toLowerCase().includes('webflow')
+  );
+
+  if (webflowText) {
+    try {
+      const parsed = JSON.parse(webflowText) as WebflowXscpData;
       if (parsed.type === '@webflow/XscpData' && parsed.payload) {
         return {
           source: 'webflow',
           data: parsed,
-          rawText: textData,
-          mimeTypes: types,
+          rawText: webflowText,
+          mimeTypes,
         };
       }
     } catch (e) {
@@ -112,88 +135,106 @@ export function inspectClipboard(event: ClipboardEvent): ClipboardPayload {
     }
   }
 
-  // Detect Figma (custom MIME types or JSON structure)
-  if (types.includes('application/x-figma-design') || 
-      textData.includes('"figma"') || 
-      textData.includes('"type":"FRAME"') ||
-      textData.includes('"type":"COMPONENT"')) {
+  // --- Figma ---
+  const isFigma =
+    mimeTypes.includes('application/x-figma-design') ||
+    mimeTypes.some((t) => t.toLowerCase().includes('figma'));
+
+  const figmaText = findText(
+    (v, t) =>
+      t.toLowerCase().includes('figma') ||
+      v.includes('"figma"') ||
+      v.includes('"type":"FRAME"') ||
+      v.includes('"type":"COMPONENT"')
+  );
+
+  if (isFigma || figmaText) {
+    const raw = figmaText || textPlain;
     try {
-      const parsed = JSON.parse(textData);
+      const parsed = JSON.parse(raw);
       return {
         source: 'figma',
         data: parsed,
-        rawText: textData,
-        mimeTypes: types,
+        rawText: raw,
+        mimeTypes,
       };
     } catch {
       return {
         source: 'figma',
-        data: textData,
-        rawText: textData,
-        mimeTypes: types,
+        data: raw,
+        rawText: raw,
+        mimeTypes,
       };
     }
   }
 
-  // Detect Framer (JSON with specific structure)
-  if (textData.includes('"__class__"') || 
-      textData.includes('"framer"') || 
-      textData.includes('"componentType"') ||
-      types.some(t => t.includes('framer'))) {
+  // --- Framer ---
+  const isFramer = mimeTypes.some((t) => t.toLowerCase().includes('framer'));
+
+  const framerText = findText(
+    (v, t) =>
+      t.toLowerCase().includes('framer') ||
+      v.includes('"__class__"') ||
+      v.includes('"framer"') ||
+      v.includes('"componentType"')
+  );
+
+  if (isFramer || framerText) {
+    const raw = framerText || textPlain;
     try {
-      const parsed = JSON.parse(textData);
+      const parsed = JSON.parse(raw);
       return {
         source: 'framer',
         data: parsed,
-        rawText: textData,
-        mimeTypes: types,
+        rawText: raw,
+        mimeTypes,
       };
     } catch {
       return {
         source: 'framer',
-        data: textData,
-        rawText: textData,
-        mimeTypes: types,
+        data: raw,
+        rawText: raw,
+        mimeTypes,
       };
     }
   }
 
-  // Fallback to HTML if present
+  // --- HTML fallback ---
   if (htmlData && htmlData.trim().length > 0) {
     return {
       source: 'html',
       data: htmlData,
-      rawText: textData,
-      mimeTypes: types,
+      rawText: textPlain,
+      mimeTypes,
     };
   }
 
-  // Plain text fallback
-  if (textData && textData.trim().length > 0) {
+  // --- Plain text fallback ---
+  if (textPlain && textPlain.trim().length > 0) {
     // Check if it looks like JSON
-    if (textData.trim().startsWith('{') || textData.trim().startsWith('[')) {
+    if (textPlain.trim().startsWith('{') || textPlain.trim().startsWith('[')) {
       try {
-        const parsed = JSON.parse(textData);
+        const parsed = JSON.parse(textPlain);
         return {
           source: 'unknown',
           data: parsed,
-          rawText: textData,
-          mimeTypes: types,
+          rawText: textPlain,
+          mimeTypes,
         };
       } catch {
         // Not valid JSON, treat as text
       }
     }
-    
+
     return {
       source: 'text',
-      data: textData,
-      rawText: textData,
-      mimeTypes: types,
+      data: textPlain,
+      rawText: textPlain,
+      mimeTypes,
     };
   }
 
-  return { source: 'unknown', data: null, mimeTypes: types };
+  return { source: 'unknown', data: null, mimeTypes };
 }
 
 /**

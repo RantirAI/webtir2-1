@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Upload, CheckCircle2, Package } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { detectPastedSource, parseWebflowData, getSourceLabel, ClipboardSource } from '../utils/clipboardInspector';
+import { detectPastedSource, parseWebflowData, getSourceLabel, ClipboardSource, inspectClipboard } from '../utils/clipboardInspector';
 import { translateWebflowToWebtir, getWebflowDataSummary } from '../utils/webflowTranslator';
 import { useBuilderStore } from '../store/useBuilderStore';
 
@@ -56,17 +56,17 @@ export const ImportModal: React.FC<ImportModalProps> = ({ open, onOpenChange, on
   const supportsPaste = isDesignTool;
 
   // Handle paste detection
-  const handlePasteChange = useCallback((text: string) => {
+  const handlePasteChange = useCallback((text: string, forcedSource?: ClipboardSource) => {
     setPastedCode(text);
-    
+
     if (!text.trim()) {
       setDetectedSource(null);
       setConvertPreview(null);
       return;
     }
 
-    // Detect source
-    const source = detectPastedSource(text);
+    // Detect source (or force it if we detected via ClipboardEvent MIME types)
+    const source = forcedSource ?? detectPastedSource(text);
     setDetectedSource(source);
 
     // If Webflow, show preview
@@ -80,6 +80,39 @@ export const ImportModal: React.FC<ImportModalProps> = ({ open, onOpenChange, on
       setConvertPreview(null);
     }
   }, []);
+
+  // IMPORTANT: Design tools often put data on custom clipboard MIME types.
+  // React's onChange only sees what the browser decides to paste as text/plain.
+  // So we also read the raw ClipboardEvent here.
+  const handlePaste = useCallback((e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const payload = inspectClipboard(e.nativeEvent);
+
+    if (payload.source !== 'webflow' && payload.source !== 'figma' && payload.source !== 'framer') {
+      return; // let the browser paste normally
+    }
+
+    e.preventDefault();
+
+    let text = payload.rawText;
+    if (!text) {
+      if (typeof payload.data === 'string') text = payload.data;
+      else {
+        try {
+          text = JSON.stringify(payload.data, null, 2);
+        } catch {
+          text = '';
+        }
+      }
+    }
+
+    if (!text) return;
+
+    // If user pasted a different design tool than the currently selected one, sync the UI.
+    setActivePlatform(payload.source);
+    setActiveTab('paste');
+
+    handlePasteChange(text, payload.source);
+  }, [handlePasteChange]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -294,6 +327,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({ open, onOpenChange, on
                   id="code-input"
                   placeholder={`Copy elements from ${getPlatformLabel()} and paste here...`}
                   value={pastedCode}
+                  onPaste={handlePaste}
                   onChange={(e) => handlePasteChange(e.target.value)}
                   className="min-h-[160px] font-mono text-xs p-2"
                 />
