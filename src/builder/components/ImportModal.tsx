@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Upload, CheckCircle2 } from 'lucide-react';
+import { Upload, CheckCircle2, Package } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { detectPastedSource, parseWebflowData, getSourceLabel, ClipboardSource } from '../utils/clipboardInspector';
 import { translateWebflowToWebtir, getWebflowDataSummary } from '../utils/webflowTranslator';
@@ -24,17 +24,22 @@ interface ImportModalProps {
   onImport: (source: string, content: string | File) => void;
 }
 
-// Platform sources with icons (Design Tools & CMS)
-const platformSources = [
+// Design Tools - support paste + ZIP upload
+const designToolSources = [
   { id: 'webflow', label: 'Webflow', icon: webflowIcon },
   { id: 'figma', label: 'Figma', icon: figmaIcon },
   { id: 'framer', label: 'Framer', icon: framerIcon },
-  { id: 'wordpress', label: 'WordPress', icon: wordpressIcon },
-  { id: 'shopify', label: 'Shopify', icon: shopifyIcon },
 ];
 
-// Platforms that support paste (have structured JSON format)
-const pasteSupportedPlatforms = ['webflow', 'figma', 'framer'];
+// CMS/Package sources - ZIP upload only
+const packageSources = [
+  { id: 'wordpress', label: 'WordPress', icon: wordpressIcon },
+  { id: 'shopify', label: 'Shopify', icon: shopifyIcon },
+  { id: 'zip', label: 'ZIP File', icon: null },
+];
+
+// All platforms combined
+const allPlatforms = [...designToolSources, ...packageSources];
 
 export const ImportModal: React.FC<ImportModalProps> = ({ open, onOpenChange, onImport }) => {
   const [activePlatform, setActivePlatform] = useState('webflow');
@@ -46,8 +51,9 @@ export const ImportModal: React.FC<ImportModalProps> = ({ open, onOpenChange, on
   const { toast } = useToast();
   const { addInstance, rootInstance } = useBuilderStore();
 
-  // Check if current platform supports paste
-  const supportsPaste = pasteSupportedPlatforms.includes(activePlatform);
+  // Check if current platform supports paste (only design tools)
+  const isDesignTool = designToolSources.some(p => p.id === activePlatform);
+  const supportsPaste = isDesignTool;
 
   // Handle paste detection
   const handlePasteChange = useCallback((text: string) => {
@@ -150,7 +156,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({ open, onOpenChange, on
     onImport(activePlatform, selectedFile);
     toast({
       title: 'Import Started',
-      description: `Processing ${activePlatform} package...`,
+      description: `Processing ${getPlatformLabel()} package...`,
     });
     resetAndClose();
   };
@@ -163,13 +169,29 @@ export const ImportModal: React.FC<ImportModalProps> = ({ open, onOpenChange, on
     onOpenChange(false);
   };
 
+  const getPlatformLabel = () => {
+    const platform = allPlatforms.find(p => p.id === activePlatform);
+    return platform?.label || 'Code';
+  };
+
   // Get button label based on platform and detected source
   const getConvertButtonLabel = () => {
     if (detectedSource && detectedSource !== 'unknown' && detectedSource !== 'text') {
       return `Convert ${getSourceLabel(detectedSource)}`;
     }
-    const platform = platformSources.find(p => p.id === activePlatform);
-    return `Convert ${platform?.label || 'Code'}`;
+    return `Convert ${getPlatformLabel()}`;
+  };
+
+  // Auto-switch to upload tab when selecting non-design tool
+  const handlePlatformSelect = (platformId: string) => {
+    setActivePlatform(platformId);
+    setDetectedSource(null);
+    setConvertPreview(null);
+    
+    // If selecting a package source, switch to upload tab
+    if (packageSources.some(p => p.id === platformId)) {
+      setActiveTab('upload');
+    }
   };
 
   return (
@@ -183,27 +205,52 @@ export const ImportModal: React.FC<ImportModalProps> = ({ open, onOpenChange, on
         </DialogHeader>
 
         <div className="space-y-4 py-2">
-          {/* Platform Selection */}
+          {/* Design Tools Group */}
           <div>
-            <Label className="text-xs font-medium mb-2 block">Select Platform</Label>
-            <div className="grid grid-cols-5 gap-1.5">
-              {platformSources.map((platform) => (
+            <Label className="text-[10px] font-medium mb-1.5 block text-muted-foreground uppercase tracking-wider">
+              Design Tools
+            </Label>
+            <div className="grid grid-cols-3 gap-1.5">
+              {designToolSources.map((platform) => (
                 <Button
                   key={platform.id}
                   variant={activePlatform === platform.id ? 'default' : 'outline'}
-                  className="flex flex-col h-16 gap-1.5 text-xs px-2 py-2"
-                  onClick={() => {
-                    setActivePlatform(platform.id);
-                    // Reset state on platform change
-                    setDetectedSource(null);
-                    setConvertPreview(null);
-                  }}
+                  className="flex flex-col h-14 gap-1 text-xs px-2 py-1.5"
+                  onClick={() => handlePlatformSelect(platform.id)}
                 >
                   <img 
                     src={platform.icon} 
                     alt={platform.label}
                     className="w-5 h-5 object-contain rounded-sm"
                   />
+                  <span className="text-[10px] leading-tight">{platform.label}</span>
+                </Button>
+              ))}
+            </div>
+          </div>
+
+          {/* CMS/Package Group */}
+          <div>
+            <Label className="text-[10px] font-medium mb-1.5 block text-muted-foreground uppercase tracking-wider">
+              CMS & Packages
+            </Label>
+            <div className="grid grid-cols-3 gap-1.5">
+              {packageSources.map((platform) => (
+                <Button
+                  key={platform.id}
+                  variant={activePlatform === platform.id ? 'default' : 'outline'}
+                  className="flex flex-col h-14 gap-1 text-xs px-2 py-1.5"
+                  onClick={() => handlePlatformSelect(platform.id)}
+                >
+                  {platform.icon ? (
+                    <img 
+                      src={platform.icon} 
+                      alt={platform.label}
+                      className="w-5 h-5 object-contain rounded-sm"
+                    />
+                  ) : (
+                    <Package className="w-5 h-5" />
+                  )}
                   <span className="text-[10px] leading-tight">{platform.label}</span>
                 </Button>
               ))}
@@ -234,7 +281,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({ open, onOpenChange, on
               <div>
                 <div className="flex items-center justify-between mb-1.5">
                   <Label htmlFor="code-input" className="text-xs">
-                    Paste your {platformSources.find(p => p.id === activePlatform)?.label} code
+                    Paste your {getPlatformLabel()} code
                   </Label>
                   {detectedSource && detectedSource !== 'unknown' && detectedSource !== 'text' && (
                     <Badge variant="secondary" className="text-[10px] px-1.5 py-0.5 gap-1">
@@ -245,16 +292,16 @@ export const ImportModal: React.FC<ImportModalProps> = ({ open, onOpenChange, on
                 </div>
                 <Textarea
                   id="code-input"
-                  placeholder={`Copy elements from ${platformSources.find(p => p.id === activePlatform)?.label} and paste here...`}
+                  placeholder={`Copy elements from ${getPlatformLabel()} and paste here...`}
                   value={pastedCode}
                   onChange={(e) => handlePasteChange(e.target.value)}
-                  className="min-h-[180px] font-mono text-xs p-2"
+                  className="min-h-[160px] font-mono text-xs p-2"
                 />
               </div>
 
               {/* Conversion Preview */}
               {convertPreview && (
-                <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-3">
+                <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-2.5">
                   <p className="text-xs text-green-700 dark:text-green-400">
                     ✓ Ready to import: <strong>{convertPreview.nodes}</strong> components with <strong>{convertPreview.styles}</strong> styles
                   </p>
@@ -262,7 +309,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({ open, onOpenChange, on
               )}
 
               {/* Platform Instructions */}
-              <div className="bg-muted/50 p-2.5 rounded-lg">
+              <div className="bg-muted/50 p-2 rounded-lg">
                 <p className="text-[11px] text-muted-foreground leading-relaxed">
                   {activePlatform === 'webflow' && '📝 In Webflow, select elements and use Cmd/Ctrl+C to copy. Paste the JSON data here.'}
                   {activePlatform === 'figma' && '📝 In Figma, select frames and copy. Alternatively, use a Figma-to-code plugin.'}
@@ -271,7 +318,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({ open, onOpenChange, on
               </div>
 
               {/* Convert Button */}
-              <div className="flex justify-end gap-1.5 pt-1">
+              <div className="flex justify-end gap-1.5">
                 <Button variant="outline" onClick={resetAndClose} className="h-8 text-xs px-3">
                   Cancel
                 </Button>
@@ -287,13 +334,13 @@ export const ImportModal: React.FC<ImportModalProps> = ({ open, onOpenChange, on
 
             {/* Upload ZIP Tab */}
             <TabsContent value="upload" className="space-y-3 mt-3">
-              <div className="border-2 border-dashed border-border rounded-lg p-6 text-center">
-                <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+              <div className="border-2 border-dashed border-border rounded-lg p-5 text-center">
+                <Upload className="h-7 w-7 mx-auto mb-2 text-muted-foreground" />
                 <Label htmlFor="file-upload" className="cursor-pointer">
                   <div className="text-xs font-medium mb-1">
-                    {selectedFile ? selectedFile.name : `Upload ${platformSources.find(p => p.id === activePlatform)?.label} Package`}
+                    {selectedFile ? selectedFile.name : `Upload ${getPlatformLabel()} Package`}
                   </div>
-                  <div className="text-[10px] text-muted-foreground mb-3">
+                  <div className="text-[10px] text-muted-foreground mb-2">
                     Supported: .zip files containing HTML, CSS, and JS
                   </div>
                   <Button variant="outline" size="sm" type="button" className="h-7 text-xs px-3">
@@ -311,7 +358,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({ open, onOpenChange, on
 
               {/* Selected File Info */}
               {selectedFile && (
-                <div className="bg-primary/5 border border-primary/20 rounded-lg p-3 flex items-center justify-between">
+                <div className="bg-primary/5 border border-primary/20 rounded-lg p-2.5 flex items-center justify-between">
                   <div>
                     <p className="text-xs font-medium">{selectedFile.name}</p>
                     <p className="text-[10px] text-muted-foreground">
@@ -319,24 +366,25 @@ export const ImportModal: React.FC<ImportModalProps> = ({ open, onOpenChange, on
                     </p>
                   </div>
                   <Badge variant="outline" className="text-[10px]">
-                    {platformSources.find(p => p.id === activePlatform)?.label} Package
+                    {getPlatformLabel()} Package
                   </Badge>
                 </div>
               )}
 
               {/* Platform Instructions */}
-              <div className="bg-muted/50 p-2.5 rounded-lg">
+              <div className="bg-muted/50 p-2 rounded-lg">
                 <p className="text-[11px] text-muted-foreground leading-relaxed">
                   {activePlatform === 'webflow' && '📦 Export your Webflow site as a ZIP file and upload it here.'}
                   {activePlatform === 'figma' && '📦 Use a Figma plugin to export your design as HTML/CSS and upload the ZIP.'}
                   {activePlatform === 'framer' && '📦 Export your Framer project as code and upload the ZIP.'}
                   {activePlatform === 'wordpress' && '📦 Export your WordPress theme or page as a ZIP file.'}
                   {activePlatform === 'shopify' && '📦 Export your Shopify theme files as a ZIP.'}
+                  {activePlatform === 'zip' && '📦 Upload any ZIP file containing HTML, CSS, and JavaScript files.'}
                 </p>
               </div>
 
               {/* Upload Button */}
-              <div className="flex justify-end gap-1.5 pt-1">
+              <div className="flex justify-end gap-1.5">
                 <Button variant="outline" onClick={resetAndClose} className="h-8 text-xs px-3">
                   Cancel
                 </Button>
