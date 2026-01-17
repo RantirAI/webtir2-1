@@ -4,6 +4,7 @@ import { ComponentInstance } from '../store/types';
 import { duplicateInstanceWithLinkage, applyDuplicationLinks } from '../utils/duplication';
 import { inspectClipboard, ClipboardPayload } from '../utils/clipboardInspector';
 import { translateWebflowToWebtir } from '../utils/webflowTranslator';
+import { translateFigmaToWebtir, getFigmaDataSummary } from '../utils/figmaTranslator';
 import { toast } from 'sonner';
 
 // Global handler for external clipboard import
@@ -147,12 +148,22 @@ export const useKeyboardShortcuts = () => {
           return;
         }
 
-        // Figma and Framer - show notification that translator is needed
-        if (payload.source === 'figma') {
-          toast.info('Figma Content Detected: Figma translation coming soon. Use the Import modal for now.');
+        // Handle Figma paste
+        if (payload.source === 'figma' && payload.data) {
+          const instance = translateFigmaToWebtir(payload.data);
+          if (instance) {
+            const { addInstance, rootInstance, selectedInstanceId } = useBuilderStore.getState();
+            const parentId = selectedInstanceId || 'root';
+            addInstance(instance, parentId);
+            const summary = getFigmaDataSummary(payload.data);
+            toast.success(`Figma Import: Successfully imported ${summary.nodeCount} components with ${summary.textCount} text elements.`);
+          } else {
+            toast.error('Import Failed: Could not parse Figma data.');
+          }
           return;
         }
 
+        // Framer - show notification that translator is needed
         if (payload.source === 'framer') {
           toast.info('Framer Content Detected: Framer translation coming soon. Use the Import modal for now.');
           return;

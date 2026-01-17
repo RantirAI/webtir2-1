@@ -9,6 +9,7 @@ import { Upload, CheckCircle2, Package } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { detectPastedSource, parseWebflowData, getSourceLabel, ClipboardSource, inspectClipboard } from '../utils/clipboardInspector';
 import { translateWebflowToWebtir, getWebflowDataSummary } from '../utils/webflowTranslator';
+import { translateFigmaToWebtir, getFigmaDataSummary, isFigmaData } from '../utils/figmaTranslator';
 import { useBuilderStore } from '../store/useBuilderStore';
 
 // Import platform icons
@@ -76,6 +77,17 @@ export const ImportModal: React.FC<ImportModalProps> = ({ open, onOpenChange, on
       if (wfData) {
         const summary = getWebflowDataSummary(wfData);
         setConvertPreview({ nodes: summary.nodeCount, styles: summary.styleCount });
+      }
+    } else if (source === 'figma') {
+      // Try to parse Figma data for preview
+      try {
+        const parsed = JSON.parse(text);
+        if (isFigmaData(parsed)) {
+          const summary = getFigmaDataSummary(parsed);
+          setConvertPreview({ nodes: summary.nodeCount, styles: summary.textCount });
+        }
+      } catch {
+        setConvertPreview(null);
       }
     } else {
       setConvertPreview(null);
@@ -157,15 +169,35 @@ export const ImportModal: React.FC<ImportModalProps> = ({ open, onOpenChange, on
       return;
     }
 
-    // Figma and Framer - future implementation
+    // Handle Figma conversion
     if (detectedSource === 'figma' || activePlatform === 'figma') {
+      try {
+        const parsed = JSON.parse(pastedCode);
+        if (isFigmaData(parsed)) {
+          const instance = translateFigmaToWebtir(parsed);
+          if (instance) {
+            addInstance(instance, rootInstance.id);
+            toast({
+              title: 'Figma Import Success',
+              description: `Imported ${convertPreview?.nodes || 0} components with ${convertPreview?.styles || 0} text elements. Review and click "Apply Changes to Canvas" if needed.`,
+            });
+            onImportComplete?.();
+            resetAndClose();
+            return;
+          }
+        }
+      } catch (e) {
+        // Invalid JSON
+      }
       toast({
-        title: 'Figma Import',
-        description: 'Figma import coming soon. For now, use a Figma-to-code plugin and paste the HTML.',
+        title: 'Conversion Failed',
+        description: 'Could not parse Figma data. Make sure you copied from Figma correctly.',
+        variant: 'destructive',
       });
       return;
     }
 
+    // Framer - future implementation
     if (detectedSource === 'framer' || activePlatform === 'framer') {
       toast({
         title: 'Framer Import',

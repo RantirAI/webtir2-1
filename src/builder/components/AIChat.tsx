@@ -19,6 +19,7 @@ import { streamChat, AIMessage } from '../services/aiService';
 import { parseAIResponse, flattenInstances, AIUpdateSpec, detectIncompletePage, detectTruncatedJSON } from '../utils/aiComponentGenerator';
 import { inspectClipboard, parseWebflowData, ClipboardSource } from '../utils/clipboardInspector';
 import { translateWebflowToWebtir, getWebflowDataSummary } from '../utils/webflowTranslator';
+import { translateFigmaToWebtir, getFigmaDataSummary, isFigmaData } from '../utils/figmaTranslator';
 import { normalizeComponentBase, findMaxIndexForBase } from '../utils/autoClassSystem';
 import { useStyleStore } from '../store/useStyleStore';
 import { useBuilderStore } from '../store/useBuilderStore';
@@ -913,10 +914,26 @@ Add what's missing: Features, Testimonials, Pricing, CTA, Footer, etc.`;
       return;
     }
 
-    // Figma and Framer - coming soon
+    // Handle Figma paste
     if (showPasteDialog === 'figma') {
-      toast.info('Figma import coming soon. For now, use a Figma-to-code plugin.');
-      setShowPasteDialog(null);
+      try {
+        const parsed = JSON.parse(pasteCode);
+        if (isFigmaData(parsed)) {
+          const instance = translateFigmaToWebtir(parsed);
+          if (instance) {
+            const { rootInstance } = useBuilderStore.getState();
+            addInstance(instance, rootInstance.id);
+            const summary = getFigmaDataSummary(parsed);
+            toast.success(`Imported ${summary.nodeCount} components from Figma`);
+            setShowPasteDialog(null);
+            setPasteCode('');
+            return;
+          }
+        }
+        toast.error('Could not parse Figma data. Make sure you copied correctly from Figma.');
+      } catch (e) {
+        toast.error('Invalid JSON. Make sure you copied the Figma data correctly.');
+      }
       return;
     }
 
