@@ -13,6 +13,9 @@ export interface ClipboardPayload {
   mimeTypes: string[];
 }
 
+// Re-export Figma types for external use
+export type { FigmaNode, FigmaPaint, FigmaTextStyle, FigmaEffect, FigmaClipboardData } from './figmaTranslator';
+
 export interface WebflowXscpData {
   type: '@webflow/XscpData';
   payload: {
