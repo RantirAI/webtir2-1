@@ -1363,11 +1363,9 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
   // CAROUSEL
   // ---------------------------------------------------------------------------
   const carouselId = generateId();
-  const carouselTrackId = generateId();
   const carouselSlide1Id = generateId();
   const carouselSlide2Id = generateId();
   const carouselSlide3Id = generateId();
-  const carouselDotsId = generateId();
 
   prebuilts.push({
     id: 'system-carousel',
@@ -1378,18 +1376,38 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
       type: 'Carousel' as ComponentType,
       label: 'Carousel',
       props: {
-        slides: [
-          { id: '1', imageUrl: '', title: 'Slide 1', description: 'First slide content' },
-          { id: '2', imageUrl: '', title: 'Slide 2', description: 'Second slide content' },
-          { id: '3', imageUrl: '', title: 'Slide 3', description: 'Third slide content' },
-        ],
         autoPlay: false,
         loop: true,
         showArrows: true,
         showDots: true,
       },
       styleSourceIds: ['style-carousel'],
-      children: [],
+      children: [
+        {
+          id: carouselSlide1Id,
+          type: 'CarouselSlide' as ComponentType,
+          label: 'Slide 1',
+          props: { title: 'Slide 1', description: 'First slide content' },
+          children: [],
+          styleSourceIds: ['style-carousel-slide'],
+        },
+        {
+          id: carouselSlide2Id,
+          type: 'CarouselSlide' as ComponentType,
+          label: 'Slide 2',
+          props: { title: 'Slide 2', description: 'Second slide content' },
+          children: [],
+          styleSourceIds: ['style-carousel-slide-2'],
+        },
+        {
+          id: carouselSlide3Id,
+          type: 'CarouselSlide' as ComponentType,
+          label: 'Slide 3',
+          props: { title: 'Slide 3', description: 'Third slide content' },
+          children: [],
+          styleSourceIds: ['style-carousel-slide-3'],
+        },
+      ],
     },
     defaultStyles: {
       'style-carousel': createStyleEntry({
@@ -1398,36 +1416,26 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
         overflow: 'hidden',
         borderRadius: '12px',
       }),
-      'style-carousel-track': createStyleEntry({
-        display: 'flex',
-        gap: '16px',
-      }),
       'style-carousel-slide': createStyleEntry({
         flexShrink: '0',
         width: '100%',
-        height: '200px',
+        minHeight: '200px',
         backgroundColor: 'hsl(var(--muted))',
         borderRadius: '8px',
       }),
       'style-carousel-slide-2': createStyleEntry({
         flexShrink: '0',
         width: '100%',
-        height: '200px',
+        minHeight: '200px',
         backgroundColor: 'hsl(var(--muted))',
         borderRadius: '8px',
       }),
       'style-carousel-slide-3': createStyleEntry({
         flexShrink: '0',
         width: '100%',
-        height: '200px',
+        minHeight: '200px',
         backgroundColor: 'hsl(var(--muted))',
         borderRadius: '8px',
-      }),
-      'style-carousel-dots': createStyleEntry({
-        display: 'flex',
-        justifyContent: 'center',
-        gap: '8px',
-        marginTop: '16px',
       }),
     },
   });

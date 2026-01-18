@@ -1966,10 +1966,12 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
 
       // Carousel Slide child primitive
       case 'CarouselSlide': {
-        const imageUrl = instance.props?.imageUrl || 'https://via.placeholder.com/800x400';
+        const imageUrl = instance.props?.imageUrl;
         const alt = instance.props?.alt || 'Slide';
         const title = instance.props?.title || '';
         const description = instance.props?.description || '';
+        const hasChildren = instance.children.length > 0;
+        
         const content = (
           <div
             data-instance-id={instance.id}
@@ -1979,19 +1981,38 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
               width: '100%',
               minHeight: '200px',
               position: 'relative',
+              backgroundColor: 'hsl(var(--muted))',
+              borderRadius: '8px',
+              marginBottom: isPreviewMode ? '0' : '8px',
             }}
             onClick={isPreviewMode ? undefined : (e) => { e.stopPropagation(); setSelectedInstanceId(instance.id); }}
             onMouseEnter={isPreviewMode ? undefined : () => setHoveredInstanceId(instance.id)}
             onMouseLeave={isPreviewMode ? undefined : () => setHoveredInstanceId(null)}
             onContextMenu={isPreviewMode ? undefined : (e) => handleContextMenu(e, instance)}
           >
-            {instance.children.length > 0 ? (
-              instance.children.map((child, idx) => renderInstance(child, instance, idx))
+            {/* Slide label header in edit mode */}
+            {!isPreviewMode && (
+              <div className="absolute top-2 left-2 z-10 px-2 py-1 bg-background/80 rounded text-[10px] font-medium text-muted-foreground border border-border">
+                {instance.label || 'Slide'}
+              </div>
+            )}
+            
+            {hasChildren ? (
+              <div className="p-4">
+                {instance.children.map((child, idx) => renderInstance(child, instance, idx))}
+              </div>
             ) : (
               <>
-                {imageUrl && <img src={imageUrl} alt={alt} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
+                {/* Show placeholder or fallback content */}
+                {imageUrl ? (
+                  <img src={imageUrl} alt={alt} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '8px' }} />
+                ) : !isPreviewMode ? (
+                  <div className="flex items-center justify-center h-48 border-2 border-dashed border-blue-300 rounded-lg bg-blue-50/50 dark:bg-blue-950/20 m-4">
+                    <span className="text-sm text-blue-500 font-medium">Drop elements here</span>
+                  </div>
+                ) : null}
                 {(title || description) && (
-                  <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '16px', background: 'linear-gradient(transparent, rgba(0,0,0,0.7))', color: 'white' }}>
+                  <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '16px', background: 'linear-gradient(transparent, rgba(0,0,0,0.7))', color: 'white', borderRadius: '0 0 8px 8px' }}>
                     {title && <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '600' }}>{title}</h3>}
                     {description && <p style={{ margin: '4px 0 0', fontSize: '14px', opacity: 0.9 }}>{description}</p>}
                   </div>
