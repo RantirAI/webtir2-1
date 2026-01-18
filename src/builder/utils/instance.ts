@@ -146,22 +146,33 @@ export function createPrebuiltChildren(instanceType: string, props: Record<strin
     }
     
     case 'Carousel': {
-      const slides = props.slides || [];
-      return slides.map((slide: any, index: number) => ({
-        id: generateId(),
-        type: 'CarouselSlide',
-        name: `slide-${index + 1}`,
-        props: {
-          imageUrl: slide.imageUrl || '',
-          alt: slide.alt || `Slide ${index + 1}`,
-          title: slide.title || '',
-          description: slide.description || '',
-          buttonText: slide.buttonText || '',
-          buttonLink: slide.buttonLink || '',
+      // Always create 3 CarouselSlide children
+      return [
+        {
+          id: generateId(),
+          type: 'CarouselSlide',
+          label: 'Slide 1',
+          props: { title: 'Slide 1', description: 'First slide content' },
+          children: [],
+          styleSourceIds: [],
         },
-        children: [],
-        styleSourceIds: [],
-      }));
+        {
+          id: generateId(),
+          type: 'CarouselSlide',
+          label: 'Slide 2',
+          props: { title: 'Slide 2', description: 'Second slide content' },
+          children: [],
+          styleSourceIds: [],
+        },
+        {
+          id: generateId(),
+          type: 'CarouselSlide',
+          label: 'Slide 3',
+          props: { title: 'Slide 3', description: 'Third slide content' },
+          children: [],
+          styleSourceIds: [],
+        },
+      ];
     }
     
     case 'Breadcrumb': {
