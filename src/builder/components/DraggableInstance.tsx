@@ -41,16 +41,22 @@ export const DraggableInstance: React.FC<DraggableInstanceProps> = ({
     !!transform &&
     (transform.x !== 0 || transform.y !== 0 || transform.scaleX !== 1 || transform.scaleY !== 1);
 
-  const style: React.CSSProperties = {
-    transform: hasTransform ? CSS.Transform.toString(transform) : undefined,
-    transition: transition || 'transform 200ms cubic-bezier(0.2, 0, 0, 1)',
-    opacity: isDragging ? 0.4 : 1,
-    position: 'relative',
-    zIndex: isDragging ? 1000 : 'auto',
-    width: isFullWidth ? '100%' : undefined,
-    minWidth: isFullWidth ? '100%' : undefined,
-    flexBasis: isFullWidth ? '100%' : undefined,
-  };
+  // Use display: contents when not dragging to make wrapper invisible to CSS layout
+  // This preserves flex/grid child positioning and CSS selectors for imported components
+  const style: React.CSSProperties = isDragging
+    ? {
+        transform: hasTransform ? CSS.Transform.toString(transform) : undefined,
+        transition: transition || 'transform 200ms cubic-bezier(0.2, 0, 0, 1)',
+        opacity: 0.4,
+        position: 'relative',
+        zIndex: 1000,
+        width: isFullWidth ? '100%' : undefined,
+        minWidth: isFullWidth ? '100%' : undefined,
+        flexBasis: isFullWidth ? '100%' : undefined,
+      }
+    : {
+        display: 'contents',
+      };
 
   // Show insertion indicator when dragging over (for reordering siblings)
   const showInsertIndicator = isOver && active && active.id !== instance.id;

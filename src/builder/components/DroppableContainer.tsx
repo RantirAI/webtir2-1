@@ -42,17 +42,16 @@ export const DroppableContainer: React.FC<DroppableContainerProps> = ({
   // Check if this is the Navigation root (Section with htmlTag='nav')
   const isNavigationRoot = instance.type === 'Section' && instance.props?.htmlTag === 'nav';
 
+  const isEmpty = isDroppableContainer && instance.children.length === 0;
+
   return (
     <div
       ref={setNodeRef}
       data-droppable-id={instance.id}
       style={{
-        position: 'relative',
-        width: isFullWidthContainer ? '100%' : undefined,
-        minWidth: isFullWidthContainer ? '100%' : undefined,
-        flexBasis: isFullWidthContainer ? '100%' : undefined,
-        // Give empty droppable containers a minimum height so they can receive drops
-        minHeight: isDroppableContainer && instance.children.length === 0 ? '60px' : undefined,
+        // Use display: contents to make wrapper invisible to CSS layout
+        // This preserves flex/grid child positioning and CSS selectors for imported components
+        display: 'contents',
       }}
       onClick={(e) => {
         const target = e.target as HTMLElement;
@@ -116,7 +115,16 @@ export const DroppableContainer: React.FC<DroppableContainerProps> = ({
     >
       {/* Wrap children in SortableContext for reordering */}
       <SortableContext items={childIds} strategy={verticalListSortingStrategy}>
-        {children}
+        {isEmpty ? (
+          <div 
+            className="flex items-center justify-center border-2 border-dashed border-blue-300 rounded-lg bg-blue-50/50 dark:bg-blue-950/20"
+            style={{ minHeight: '60px', width: '100%' }}
+          >
+            <span className="text-sm text-blue-500 font-medium">Drop elements here</span>
+          </div>
+        ) : (
+          children
+        )}
       </SortableContext>
     </div>
   );
