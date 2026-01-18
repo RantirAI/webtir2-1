@@ -234,9 +234,44 @@ export function createPrebuiltChildren(instanceType: string, props: Record<strin
     }
     
     case 'Table': {
-      // For Table, we don't auto-convert since the data structure is more complex
-      // Users should use the data editor or manually add TableRow/TableCell
-      return [];
+      // Generate Table children: 1 header row + 2 data rows, each with 3 cells
+      const headerRow = {
+        id: generateId(),
+        type: 'TableRow',
+        label: 'Header Row',
+        props: { isHeader: true },
+        children: [
+          { id: generateId(), type: 'TableHeaderCell', label: 'Name', props: { content: 'Name' }, children: [], styleSourceIds: [] },
+          { id: generateId(), type: 'TableHeaderCell', label: 'Status', props: { content: 'Status' }, children: [], styleSourceIds: [] },
+          { id: generateId(), type: 'TableHeaderCell', label: 'Amount', props: { content: 'Amount' }, children: [], styleSourceIds: [] },
+        ],
+        styleSourceIds: [],
+      };
+      const dataRow1 = {
+        id: generateId(),
+        type: 'TableRow',
+        label: 'Row 1',
+        props: { isHeader: false },
+        children: [
+          { id: generateId(), type: 'TableCell', label: 'John Doe', props: { content: 'John Doe' }, children: [], styleSourceIds: [] },
+          { id: generateId(), type: 'TableCell', label: 'Active', props: { content: 'Active' }, children: [], styleSourceIds: [] },
+          { id: generateId(), type: 'TableCell', label: '$250.00', props: { content: '$250.00' }, children: [], styleSourceIds: [] },
+        ],
+        styleSourceIds: [],
+      };
+      const dataRow2 = {
+        id: generateId(),
+        type: 'TableRow',
+        label: 'Row 2',
+        props: { isHeader: false },
+        children: [
+          { id: generateId(), type: 'TableCell', label: 'Jane Smith', props: { content: 'Jane Smith' }, children: [], styleSourceIds: [] },
+          { id: generateId(), type: 'TableCell', label: 'Pending', props: { content: 'Pending' }, children: [], styleSourceIds: [] },
+          { id: generateId(), type: 'TableCell', label: '$150.00', props: { content: '$150.00' }, children: [], styleSourceIds: [] },
+        ],
+        styleSourceIds: [],
+      };
+      return [headerRow, dataRow1, dataRow2];
     }
     
     default:
@@ -246,5 +281,5 @@ export function createPrebuiltChildren(instanceType: string, props: Record<strin
 
 // Check if a prebuilt type should auto-convert its data items to children
 export function shouldAutoConvertToChildren(instanceType: string): boolean {
-  return ['Accordion', 'Tabs', 'Carousel', 'Breadcrumb'].includes(instanceType);
+  return ['Accordion', 'Tabs', 'Carousel', 'Breadcrumb', 'Table'].includes(instanceType);
 }

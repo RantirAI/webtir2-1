@@ -29,6 +29,8 @@ export { SliderDataEditor } from './SliderDataEditor';
 export { StatsCardDataEditor } from './StatsCardDataEditor';
 export { SwitchDataEditor } from './SwitchDataEditor';
 export { TableDataEditor } from './TableDataEditor';
+export { TableRowDataEditor } from './TableRowDataEditor';
+export { TableCellDataEditor } from './TableCellDataEditor';
 export { TabsDataEditor } from './TabsDataEditor';
 export { TabPanelDataEditor } from './TabPanelDataEditor';
 export { TabTriggerDataEditor } from './TabTriggerDataEditor';
