@@ -74,19 +74,33 @@ export function canDropInside(instanceType: string, draggedType?: string): boole
 export function createPrebuiltChildren(instanceType: string, props: Record<string, any> = {}): any[] {
   switch (instanceType) {
     case 'Accordion': {
-      const items = props.items || [];
-      return items.map((item: any, index: number) => ({
-        id: generateId(),
-        type: 'AccordionItem',
-        name: `item-${index + 1}`,
-        props: {
-          title: item.title || `Item ${index + 1}`,
-          content: item.content || '',
-          defaultOpen: item.defaultOpen || false,
+      // Always create 3 AccordionItem children with empty children arrays for dropping
+      return [
+        {
+          id: generateId(),
+          type: 'AccordionItem',
+          label: 'Section 1',
+          props: { title: 'Section 1', defaultOpen: true },
+          children: [],
+          styleSourceIds: [],
         },
-        children: [],
-        styleSourceIds: [],
-      }));
+        {
+          id: generateId(),
+          type: 'AccordionItem',
+          label: 'Section 2',
+          props: { title: 'Section 2', defaultOpen: false },
+          children: [],
+          styleSourceIds: [],
+        },
+        {
+          id: generateId(),
+          type: 'AccordionItem',
+          label: 'Section 3',
+          props: { title: 'Section 3', defaultOpen: false },
+          children: [],
+          styleSourceIds: [],
+        },
+      ];
     }
     
     case 'Tabs': {
