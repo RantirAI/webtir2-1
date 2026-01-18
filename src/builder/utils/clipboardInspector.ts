@@ -10,42 +10,51 @@ export type ClipboardSource = 'webflow' | 'figma' | 'framer' | 'html' | 'text' |
  * Extract Figma data from HTML clipboard content
  * Figma embeds data in two sections:
  * - <!--(figmeta)BASE64(/figmeta)--> : metadata (fileKey, pasteID, dataType) - JSON
- * - <!--(figma)BASE64(/figma)--> : actual node data - binary "fig-kiwie" format (not JSON)
- * 
- * Note: The figma section uses a proprietary binary format that cannot be parsed directly.
- * We can only extract the metadata which contains fileKey for API access.
+ * - <!--(figma)BASE64(/figma)--> : actual node data - may be JSON or binary format
  */
-function extractFigmaFromHtml(html: string): { meta: any; hasNodeData: boolean } | null {
+function extractFigmaFromHtml(html: string): any | null {
   if (!html) return null;
   
   // First check if this looks like Figma clipboard data
   const hasFigmeta = html.includes('(figmeta)') && html.includes('(/figmeta)');
-  if (!hasFigmeta) return null;
+  const hasFigma = html.includes('(figma)') && html.includes('(/figma)');
   
-  let meta: any = null;
-  let hasNodeData = false;
+  if (!hasFigmeta && !hasFigma) return null;
   
-  // Check if we have actual figma node data (even if we can't parse it)
-  const figmaMatch = html.match(/<!--\(figma\)([A-Za-z0-9+/=]+)\(\/figma\)-->/);
+  // Try to extract actual figma node data first (this is what we want)
+  const figmaMatch = html.match(/<!--\(figma\)([A-Za-z0-9+/=\s]+)\(\/figma\)-->/);
   if (figmaMatch && figmaMatch[1]) {
-    hasNodeData = true;
-    // Note: The figma section is binary "fig-kiwie" format, not JSON
-    // We cannot parse it directly - it requires Figma's proprietary decoder
-  }
-  
-  // Extract figmeta (this IS JSON and contains fileKey, pasteID, etc.)
-  const figmetaMatch = html.match(/<!--\(figmeta\)([A-Za-z0-9+/=]+)\(\/figmeta\)-->/);
-  if (figmetaMatch && figmetaMatch[1]) {
     try {
-      const decoded = atob(figmetaMatch[1]);
-      meta = JSON.parse(decoded);
+      // Remove any whitespace from the base64 string
+      const cleanBase64 = figmaMatch[1].replace(/\s/g, '');
+      const decoded = atob(cleanBase64);
+      const parsed = JSON.parse(decoded);
+      // If we got valid JSON with node data, return it directly
+      if (parsed && (parsed.nodes || parsed.type || Array.isArray(parsed))) {
+        return parsed;
+      }
     } catch (e) {
-      console.warn('Failed to decode Figma metadata:', e);
+      // The figma section might be binary or compressed - fall through to metadata
+      console.warn('Figma node data is not JSON parseable:', e);
     }
   }
   
-  if (meta) {
-    return { meta, hasNodeData };
+  // Extract figmeta (this IS JSON and contains fileKey, pasteID, etc.)
+  const figmetaMatch = html.match(/<!--\(figmeta\)([A-Za-z0-9+/=\s]+)\(\/figmeta\)-->/);
+  if (figmetaMatch && figmetaMatch[1]) {
+    try {
+      const cleanBase64 = figmetaMatch[1].replace(/\s/g, '');
+      const decoded = atob(cleanBase64);
+      const meta = JSON.parse(decoded);
+      // Return metadata with a flag indicating we only have metadata
+      return { 
+        ...meta, 
+        _isMetadataOnly: true,
+        _hasBinaryData: hasFigma // There IS figma data, just not parseable
+      };
+    } catch (e) {
+      console.warn('Failed to decode Figma metadata:', e);
+    }
   }
   
   return null;
