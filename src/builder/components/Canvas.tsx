@@ -1868,9 +1868,15 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
 
       // Accordion Item child primitive - container-based with droppable content area
       case 'AccordionItem': {
-        const title = instance.props?.title || 'Accordion Item';
         const isOpen = instance.props?.defaultOpen || false;
-        const hasChildren = instance.children.length > 0;
+        
+        // Find Heading child as the title, and separate content children
+        const headingChild = instance.children.find(c => c.type === 'Heading');
+        const contentChildren = instance.children.filter(c => c.type !== 'Heading');
+        const hasContentChildren = contentChildren.length > 0;
+        
+        // Fallback title from props if no Heading child exists
+        const fallbackTitle = instance.props?.title || 'Accordion Item';
         
         const content = (
           <div
@@ -1886,8 +1892,12 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
             onContextMenu={isPreviewMode ? undefined : (e) => handleContextMenu(e, instance)}
           >
             {/* Trigger Header */}
-            <div className="flex items-center justify-between py-4 px-2 text-sm font-medium cursor-pointer hover:bg-muted/30 transition-colors">
-              <span className="font-medium">{title}</span>
+            <div className="flex items-center justify-between py-4 px-2 text-sm cursor-pointer hover:bg-muted/30 transition-colors">
+              {headingChild ? (
+                renderInstance(headingChild, instance, 0)
+              ) : (
+                <span className="font-medium">{fallbackTitle}</span>
+              )}
               <svg 
                 className={`h-4 w-4 shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} 
                 xmlns="http://www.w3.org/2000/svg" 
@@ -1906,9 +1916,9 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
                 className="pb-4 px-2"
                 style={{ minHeight: isPreviewMode ? 'auto' : '80px' }}
               >
-                {hasChildren ? (
+                {hasContentChildren ? (
                   <div className="space-y-2">
-                    {instance.children.map((child, idx) => renderInstance(child, instance, idx))}
+                    {contentChildren.map((child, idx) => renderInstance(child, instance, idx))}
                   </div>
                 ) : (
                   <div className="flex items-center justify-center h-16 border-2 border-dashed border-blue-300 rounded-lg bg-blue-50/50 dark:bg-blue-950/20">
