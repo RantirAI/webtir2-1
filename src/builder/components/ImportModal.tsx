@@ -181,11 +181,24 @@ export const ImportModal: React.FC<ImportModalProps> = ({ open, onOpenChange, on
         
         // Check if we got actual node data vs just metadata
         if (figmaData) {
+          // Check if this is the new format { meta, hasNodeData } from HTML extraction
+          if (figmaData.meta && typeof figmaData.hasNodeData === 'boolean') {
+            const fileKey = figmaData.meta.fileKey;
+            const fileUrl = fileKey ? `https://www.figma.com/file/${fileKey}` : null;
+            
+            toast({
+              title: 'Figma Uses Proprietary Format',
+              description: `Figma's clipboard uses a binary format that can't be parsed directly.${fileKey ? ` File: ${fileKey}` : ''} Use a Figma-to-code plugin or the Figma REST API.`,
+              variant: 'destructive',
+            });
+            return;
+          }
+          
           // Check if this is just figmeta metadata (fileKey, pasteID) without actual nodes
           if (figmaData.fileKey && figmaData.pasteID && !figmaData.nodes && !figmaData.type) {
             toast({
               title: 'Figma Metadata Only',
-              description: 'Standard Figma copy only includes metadata. Use a Figma-to-code plugin or export as JSON from Dev Mode.',
+              description: `Detected Figma file: ${figmaData.fileKey}. Use a Figma-to-code plugin or export as JSON from Dev Mode.`,
               variant: 'destructive',
             });
             return;
