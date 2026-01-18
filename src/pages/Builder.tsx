@@ -974,14 +974,16 @@ const Builder: React.FC = () => {
           parentId = targetInstanceId;
         } else if (over.id === 'canvas-drop-zone') {
           const selectedType = useBuilderStore.getState().getSelectedInstance()?.type;
-          if (selectedInstanceId && (selectedType === 'Div' || selectedType === 'Container' || selectedType === 'Section')) {
+          if (selectedInstanceId && selectedType && canDropInside(selectedType, componentType)) {
             parentId = selectedInstanceId;
           }
         } else {
           // Dropping on an existing instance
           const overInstance = findInstance(overId);
           if (overInstance) {
-            if (overInstance.type === 'Div' || overInstance.type === 'Container' || overInstance.type === 'Section') {
+            // Use canDropInside to properly recognize all container types
+            // including AccordionItem, TabPanel, CarouselSlide, etc.
+            if (canDropInside(overInstance.type, componentType)) {
               parentId = overId;
             } else {
               // Find parent and insert after the over element
