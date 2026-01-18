@@ -277,6 +277,16 @@ export interface StyleStore {
   isClassEditable: (classId: string) => boolean;
   getClassDependents: (classId: string) => string[];
   getPropertyState: (styleSourceId: string, property: string, breakpointId?: string, state?: PseudoState) => any;
+  
+  // Batch operations for import performance
+  batchCreateStyleSources: (sources: Array<{ type: string; name: string }>) => string[];
+  batchSetStyles: (updates: Array<{
+    styleSourceId: string;
+    property: string;
+    value: string;
+    breakpointId?: string;
+    state?: PseudoState;
+  }>) => void;
 }
 
 export interface BuilderState {

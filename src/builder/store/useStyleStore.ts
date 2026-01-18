@@ -312,4 +312,48 @@ export const useStyleStore = create<StyleStore>((set, get) => ({
     
     return styles[key];
   },
+
+  // Batch create multiple style sources at once (for import performance)
+  batchCreateStyleSources: (sources: Array<{ type: string; name: string }>): string[] => {
+    const ids: string[] = [];
+    set((state) => {
+      const newSources = { ...state.styleSources };
+      for (const { type, name } of sources) {
+        const className = name || `${type}-class`;
+        let id = className;
+        let counter = 1;
+        while (newSources[id]) {
+          id = `${className}-${counter}`;
+          counter++;
+        }
+        newSources[id] = { id, type: type as any, name: className };
+        ids.push(id);
+      }
+      return { styleSources: newSources };
+    });
+    return ids;
+  },
+
+  // Batch set multiple styles at once (for import performance)
+  batchSetStyles: (updates: Array<{
+    styleSourceId: string;
+    property: string;
+    value: string;
+    breakpointId?: string;
+    state?: PseudoState;
+  }>) => {
+    set((prevState) => {
+      const newStyles = { ...prevState.styles };
+      const currentBreakpoint = get().currentBreakpointId;
+      const currentPseudo = get().currentPseudoState;
+      
+      for (const { styleSourceId, property, value, breakpointId, state } of updates) {
+        const bp = breakpointId || currentBreakpoint;
+        const ps = state || currentPseudo;
+        const key = `${styleSourceId}:${bp}:${ps}:${property}`;
+        newStyles[key] = value;
+      }
+      return { styles: newStyles };
+    });
+  },
 }));
