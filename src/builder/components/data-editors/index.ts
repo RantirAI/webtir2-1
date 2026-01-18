@@ -9,6 +9,7 @@ export { BadgeDataEditor } from './BadgeDataEditor';
 export { BreadcrumbDataEditor } from './BreadcrumbDataEditor';
 export { CalendarDataEditor } from './CalendarDataEditor';
 export { CarouselDataEditor } from './CarouselDataEditor';
+export { CarouselSlideDataEditor } from './CarouselSlideDataEditor';
 export { CommandPaletteDataEditor } from './CommandPaletteDataEditor';
 export { CTASectionDataEditor } from './CTASectionDataEditor';
 export { DrawerDataEditor } from './DrawerDataEditor';
