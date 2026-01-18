@@ -48,6 +48,7 @@ import { componentRegistry } from '../primitives/registry';
 import { generateId } from '../utils/instance';
 import { DroppableContainer } from './DroppableContainer';
 import { DraggableInstance } from './DraggableInstance';
+import { TableRowElement, TableHeaderCellElement, TableCellElement } from './TableElements';
 import { Accordion as ShadcnAccordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
 import { CarouselPreview } from './CarouselPreview';
 
@@ -1808,128 +1809,51 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
         return wrapWithDraggable(content);
       }
 
-      // Table child primitives
-      case 'TableRow': {
-        // Get tableStyles from parent Table for styling
-        const parentTable = parentInstance && parentInstance.type === 'Table' ? parentInstance : null;
-        const tableStyles = parentTable?.props?.tableStyles || {};
-        const isHeader = instance.props?.isHeader || false;
-        const rowIndex = parentInstance?.children.filter(c => !c.props?.isHeader).indexOf(instance) ?? 0;
-        const isStriped = tableStyles.striped && !isHeader && rowIndex % 2 === 1;
-        
-        const content = (
-          <tr
-            data-instance-id={instance.id}
-            style={{
-              ...getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties,
-              backgroundColor: isStriped ? (tableStyles.stripedColor || 'hsl(var(--muted) / 0.5)') : undefined,
-              ...(tableStyles.hoverable && !isHeader ? { cursor: 'pointer' } : {}),
-            }}
-            className={tableStyles.hoverable && !isHeader ? 'hover:bg-muted/50' : ''}
-            onClick={isPreviewMode ? undefined : (e) => { e.stopPropagation(); setSelectedInstanceId(instance.id); }}
-            onMouseEnter={isPreviewMode ? undefined : () => setHoveredInstanceId(instance.id)}
-            onMouseLeave={isPreviewMode ? undefined : () => setHoveredInstanceId(null)}
-            onContextMenu={isPreviewMode ? undefined : (e) => handleContextMenu(e, instance)}
-          >
-            {instance.children.length > 0 
-              ? instance.children.map((child, idx) => renderInstance(child, instance, idx))
-              : !isPreviewMode ? (
-                <td colSpan={100}>
-                  <div className="flex items-center justify-center h-10 border-2 border-dashed border-blue-300 rounded bg-blue-50/50 dark:bg-blue-950/20">
-                    <span className="text-xs text-blue-500 font-medium">Drop cells here</span>
-                  </div>
-                </td>
-              ) : null}
-          </tr>
+      // Table child primitives - use dedicated components to attach droppable directly to table elements
+      case 'TableRow':
+        return (
+          <TableRowElement
+            key={instance.id}
+            instance={instance}
+            parentInstance={parentInstance}
+            isPreviewMode={isPreviewMode}
+            getComputedStyles={getComputedStyles}
+            renderInstance={renderInstance}
+            setSelectedInstanceId={setSelectedInstanceId}
+            setHoveredInstanceId={setHoveredInstanceId}
+            handleContextMenu={handleContextMenu}
+          />
         );
-        return isPreviewMode ? content : (
-          <DroppableContainer key={instance.id} instance={instance} {...commonProps}>
-            {content}
-          </DroppableContainer>
-        );
-      }
 
-      case 'TableHeaderCell': {
-        // Get tableStyles from grandparent Table
-        let tableStyles: any = {};
-        if (parentInstance?.type === 'TableRow') {
-          const { rootInstance } = useBuilderStore.getState();
-          const tableParent = rootInstance.children.find(c => 
-            c.type === 'Table' && c.children.some(row => row.id === parentInstance.id)
-          );
-          tableStyles = tableParent?.props?.tableStyles || {};
-        }
-        
-        const content = (
-          <th
-            data-instance-id={instance.id}
-            style={{
-              ...getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties,
-              padding: `${tableStyles.cellPadding || 12}px`,
-              fontWeight: tableStyles.headerFontWeight || '600',
-              fontSize: `${tableStyles.headerFontSize || 14}px`,
-              textAlign: 'left',
-              backgroundColor: tableStyles.headerBackground || 'hsl(var(--muted))',
-              color: tableStyles.headerTextColor || 'hsl(var(--foreground))',
-              borderBottom: tableStyles.borderStyle !== 'none' ? `${tableStyles.borderWidth || 1}px solid ${tableStyles.borderColor || 'hsl(var(--border))'}` : undefined,
-              ...(tableStyles.bordered ? { border: `${tableStyles.borderWidth || 1}px solid ${tableStyles.borderColor || 'hsl(var(--border))'}` } : {}),
-            }}
-            onClick={isPreviewMode ? undefined : (e) => { e.stopPropagation(); setSelectedInstanceId(instance.id); }}
-            onMouseEnter={isPreviewMode ? undefined : () => setHoveredInstanceId(instance.id)}
-            onMouseLeave={isPreviewMode ? undefined : () => setHoveredInstanceId(null)}
-            onContextMenu={isPreviewMode ? undefined : (e) => handleContextMenu(e, instance)}
-          >
-            {instance.children.length > 0 
-              ? instance.children.map((child, idx) => renderInstance(child, instance, idx))
-              : (instance.props?.content || 'Header')}
-          </th>
+      case 'TableHeaderCell':
+        return (
+          <TableHeaderCellElement
+            key={instance.id}
+            instance={instance}
+            parentInstance={parentInstance}
+            isPreviewMode={isPreviewMode}
+            getComputedStyles={getComputedStyles}
+            renderInstance={renderInstance}
+            setSelectedInstanceId={setSelectedInstanceId}
+            setHoveredInstanceId={setHoveredInstanceId}
+            handleContextMenu={handleContextMenu}
+          />
         );
-        return isPreviewMode ? content : (
-          <DroppableContainer key={instance.id} instance={instance} {...commonProps}>
-            {content}
-          </DroppableContainer>
-        );
-      }
 
-      case 'TableCell': {
-        // Get tableStyles from grandparent Table
-        let tableStyles: any = {};
-        if (parentInstance?.type === 'TableRow') {
-          const { rootInstance } = useBuilderStore.getState();
-          const tableParent = rootInstance.children.find(c => 
-            c.type === 'Table' && c.children.some(row => row.id === parentInstance.id)
-          );
-          tableStyles = tableParent?.props?.tableStyles || {};
-        }
-        
-        const content = (
-          <td
-            data-instance-id={instance.id}
-            style={{
-              ...getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties,
-              padding: `${tableStyles.cellPadding || 12}px`,
-              fontSize: `${tableStyles.cellFontSize || 14}px`,
-              backgroundColor: tableStyles.cellBackground || 'transparent',
-              color: tableStyles.cellTextColor || 'hsl(var(--foreground))',
-              borderBottom: tableStyles.borderStyle !== 'none' ? `${tableStyles.borderWidth || 1}px solid ${tableStyles.borderColor || 'hsl(var(--border))'}` : undefined,
-              ...(tableStyles.bordered ? { border: `${tableStyles.borderWidth || 1}px solid ${tableStyles.borderColor || 'hsl(var(--border))'}` } : {}),
-            }}
-            onClick={isPreviewMode ? undefined : (e) => { e.stopPropagation(); setSelectedInstanceId(instance.id); }}
-            onMouseEnter={isPreviewMode ? undefined : () => setHoveredInstanceId(instance.id)}
-            onMouseLeave={isPreviewMode ? undefined : () => setHoveredInstanceId(null)}
-            onContextMenu={isPreviewMode ? undefined : (e) => handleContextMenu(e, instance)}
-          >
-            {instance.children.length > 0 
-              ? instance.children.map((child, idx) => renderInstance(child, instance, idx))
-              : (instance.props?.content || '')}
-          </td>
+      case 'TableCell':
+        return (
+          <TableCellElement
+            key={instance.id}
+            instance={instance}
+            parentInstance={parentInstance}
+            isPreviewMode={isPreviewMode}
+            getComputedStyles={getComputedStyles}
+            renderInstance={renderInstance}
+            setSelectedInstanceId={setSelectedInstanceId}
+            setHoveredInstanceId={setHoveredInstanceId}
+            handleContextMenu={handleContextMenu}
+          />
         );
-        return isPreviewMode ? content : (
-          <DroppableContainer key={instance.id} instance={instance} {...commonProps}>
-            {content}
-          </DroppableContainer>
-        );
-      }
 
       // Tab Panel child primitive
       case 'TabPanel': {
