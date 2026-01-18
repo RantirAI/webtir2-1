@@ -471,20 +471,7 @@ export const componentRegistry: Record<string, ComponentMeta> = {
     defaultStyles: {
       width: '100%',
     },
-    propsDefinition: {
-      rows: {
-        type: 'number',
-        label: 'Rows',
-        control: 'number',
-        defaultValue: 3,
-      },
-      columns: {
-        type: 'number',
-        label: 'Columns',
-        control: 'number',
-        defaultValue: 3,
-      },
-    },
+    propsDefinition: {},
   },
   // Table child primitives
   TableRow: {
