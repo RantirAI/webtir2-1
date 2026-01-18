@@ -1857,9 +1857,17 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
             onMouseLeave={isPreviewMode ? undefined : () => setHoveredInstanceId(null)}
             onContextMenu={isPreviewMode ? undefined : (e) => handleContextMenu(e, instance)}
           >
-            {instance.children.length > 0 
-              ? instance.children.map((child, idx) => renderInstance(child, instance, idx))
-              : <div className="text-muted-foreground text-sm italic">Drop content here</div>}
+            {/* Filter out TabTrigger - only show content children */}
+            {(() => {
+              const contentChildren = instance.children.filter(c => (c.type as string) !== 'TabTrigger');
+              return contentChildren.length > 0 
+                ? contentChildren.map((child, idx) => renderInstance(child, instance, idx))
+                : !isPreviewMode ? (
+                  <div className="flex items-center justify-center h-16 border-2 border-dashed border-blue-300 rounded-lg bg-blue-50/50 dark:bg-blue-950/20">
+                    <span className="text-sm text-blue-500 font-medium">Drop elements here</span>
+                  </div>
+                ) : null;
+            })()}
           </div>
         );
         return isPreviewMode ? content : (
