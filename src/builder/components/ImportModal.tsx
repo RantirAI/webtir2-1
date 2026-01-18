@@ -181,29 +181,22 @@ export const ImportModal: React.FC<ImportModalProps> = ({ open, onOpenChange, on
         
         // Check if we got actual node data vs just metadata
         if (figmaData) {
-          // Check if this is the new format { meta, hasNodeData } from HTML extraction
-          if (figmaData.meta && typeof figmaData.hasNodeData === 'boolean') {
-            const fileKey = figmaData.meta.fileKey;
-            const fileUrl = fileKey ? `https://www.figma.com/file/${fileKey}` : null;
+          // Check if this is metadata-only (from clipboard HTML that couldn't be fully parsed)
+          if (figmaData._isMetadataOnly) {
+            const fileKey = figmaData.fileKey;
+            const hasBinaryData = figmaData._hasBinaryData;
             
             toast({
-              title: 'Figma Uses Proprietary Format',
-              description: `Figma's clipboard uses a binary format that can't be parsed directly.${fileKey ? ` File: ${fileKey}` : ''} Use a Figma-to-code plugin or the Figma REST API.`,
+              title: hasBinaryData ? 'Figma Uses Proprietary Format' : 'Figma Metadata Only',
+              description: hasBinaryData 
+                ? `Figma's clipboard uses a binary format that can't be parsed directly.${fileKey ? ` File: ${fileKey}` : ''} Use a Figma-to-code plugin or the Figma REST API.`
+                : `Detected Figma file: ${fileKey || 'unknown'}. Use a Figma-to-code plugin or export as JSON from Dev Mode.`,
               variant: 'destructive',
             });
             return;
           }
           
-          // Check if this is just figmeta metadata (fileKey, pasteID) without actual nodes
-          if (figmaData.fileKey && figmaData.pasteID && !figmaData.nodes && !figmaData.type) {
-            toast({
-              title: 'Figma Metadata Only',
-              description: `Detected Figma file: ${figmaData.fileKey}. Use a Figma-to-code plugin or export as JSON from Dev Mode.`,
-              variant: 'destructive',
-            });
-            return;
-          }
-          
+          // Try to translate if it looks like valid Figma data
           if (isFigmaData(figmaData)) {
             const instance = translateFigmaToWebtir(figmaData);
             if (instance) {
