@@ -3526,6 +3526,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({
               selectedInstance.type === "Table" ||
               selectedInstance.type === "Accordion" ||
               selectedInstance.type === "Carousel" ||
+              (selectedInstance.type as string) === "CarouselSlide" ||
               selectedInstance.type === "Tabs" ||
               selectedInstance.type === "Slider" ||
               selectedInstance.type === "AlertDialog" ||
