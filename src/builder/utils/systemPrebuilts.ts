@@ -1540,6 +1540,9 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
   const tabPanel1Id = generateId();
   const tabPanel2Id = generateId();
   const tabPanel3Id = generateId();
+  const tabTrigger1Id = generateId();
+  const tabTrigger2Id = generateId();
+  const tabTrigger3Id = generateId();
 
   prebuilts.push({
     id: 'system-tabs',
@@ -1558,24 +1561,51 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
           id: tabPanel1Id,
           type: 'TabPanel' as ComponentType,
           label: 'Tab 1',
-          props: { label: 'Account', content: 'Account settings and preferences.' },
-          children: [],
+          props: { content: 'Account settings and preferences.' },
+          children: [
+            {
+              id: tabTrigger1Id,
+              type: 'TabTrigger' as ComponentType,
+              label: 'Account',
+              props: { text: 'Account' },
+              children: [],
+              styleSourceIds: ['style-tab-trigger'],
+            },
+          ],
           styleSourceIds: ['style-tab-panel'],
         },
         {
           id: tabPanel2Id,
           type: 'TabPanel' as ComponentType,
           label: 'Tab 2',
-          props: { label: 'Password', content: 'Change your password here.' },
-          children: [],
+          props: { content: 'Change your password here.' },
+          children: [
+            {
+              id: tabTrigger2Id,
+              type: 'TabTrigger' as ComponentType,
+              label: 'Password',
+              props: { text: 'Password' },
+              children: [],
+              styleSourceIds: ['style-tab-trigger'],
+            },
+          ],
           styleSourceIds: ['style-tab-panel'],
         },
         {
           id: tabPanel3Id,
           type: 'TabPanel' as ComponentType,
           label: 'Tab 3',
-          props: { label: 'Settings', content: 'Other settings.' },
-          children: [],
+          props: { content: 'Other settings.' },
+          children: [
+            {
+              id: tabTrigger3Id,
+              type: 'TabTrigger' as ComponentType,
+              label: 'Settings',
+              props: { text: 'Settings' },
+              children: [],
+              styleSourceIds: ['style-tab-trigger'],
+            },
+          ],
           styleSourceIds: ['style-tab-panel'],
         },
       ],

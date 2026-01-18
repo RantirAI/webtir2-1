@@ -106,13 +106,16 @@ const TabsComponent: React.FC<{
   // Get TabPanel children only - no fallback to props.tabs
   const tabPanels = instance.children.filter(c => c.type === 'TabPanel');
   
-  // Map TabPanel children to tab data
-  const allTabs = tabPanels.map((child, index) => ({
-    id: child.id,
-    label: child.props?.label || `Tab ${index + 1}`,
-    content: child,
-    disabled: child.props?.disabled || false,
-  }));
+  // Map TabPanel children to tab data - get label from TabTrigger child
+  const allTabs = tabPanels.map((child, index) => {
+    const trigger = child.children?.find(c => (c.type as string) === 'TabTrigger');
+    return {
+      id: child.id,
+      label: trigger?.props?.text || child.props?.label || `Tab ${index + 1}`,
+      content: child,
+      disabled: trigger?.props?.disabled || child.props?.disabled || false,
+    };
+  });
   
   const [activeTab, setActiveTab] = useState(allTabs[0]?.id || '');
 

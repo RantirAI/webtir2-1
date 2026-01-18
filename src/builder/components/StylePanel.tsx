@@ -83,6 +83,7 @@ import { CarouselDataEditor } from "./data-editors/CarouselDataEditor";
 import { CarouselSlideDataEditor } from "./data-editors/CarouselSlideDataEditor";
 import { TabsDataEditor } from "./data-editors/TabsDataEditor";
 import { TabPanelDataEditor } from "./data-editors/TabPanelDataEditor";
+import { TabTriggerDataEditor } from "./data-editors/TabTriggerDataEditor";
 import { TableDataEditor } from "./data-editors/TableDataEditor";
 import { SliderDataEditor } from "./data-editors/SliderDataEditor";
 import { AlertDialogDataEditor } from "./data-editors/AlertDialogDataEditor";
@@ -3530,6 +3531,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({
               (selectedInstance.type as string) === "CarouselSlide" ||
               selectedInstance.type === "Tabs" ||
               (selectedInstance.type as string) === "TabPanel" ||
+              (selectedInstance.type as string) === "TabTrigger" ||
               selectedInstance.type === "Slider" ||
               selectedInstance.type === "AlertDialog" ||
               selectedInstance.type === "Avatar" ||
@@ -4847,6 +4849,9 @@ export const StylePanel: React.FC<StylePanelProps> = ({
 
                   {/* Tab Panel Settings */}
                   {(selectedInstance.type as string) === "TabPanel" && <TabPanelDataEditor instance={selectedInstance} />}
+
+                  {/* Tab Trigger Settings */}
+                  {(selectedInstance.type as string) === "TabTrigger" && <TabTriggerDataEditor instance={selectedInstance} />}
 
                   {/* Table Settings */}
                   {selectedInstance.type === "Table" && <TableDataEditor instance={selectedInstance} />}
