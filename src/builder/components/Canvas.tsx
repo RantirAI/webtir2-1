@@ -961,12 +961,10 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
       }
 
       case 'Accordion': {
-        // Check for children-based structure first (AccordionItem children)
+        // Children-based structure only (AccordionItem children)
         const childItems = instance.children.filter(c => c.type === 'AccordionItem');
         const hasChildItems = childItems.length > 0;
         
-        // Use children if available, otherwise fall back to data-driven items
-        const items = hasChildItems ? [] : (instance.props?.items || []);
         const accordionStyles = instance.props?.accordionStyles || {};
         const collapseMode = accordionStyles.collapseMode || 'single';
         const orientation = accordionStyles.orientation || 'vertical';
@@ -1019,37 +1017,18 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
           }
         `;
 
-        // Render the appropriate icon based on settings
-        const renderIcon = (isOpen: boolean) => {
-          if (iconPosition === 'none') return null;
-          switch (iconStyle) {
-            case 'plus-minus':
-              return isOpen 
-                ? <span className="h-4 w-4 shrink-0 flex items-center justify-center">−</span>
-                : <span className="h-4 w-4 shrink-0 flex items-center justify-center">+</span>;
-            case 'arrow':
-              return <svg className={`h-4 w-4 shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-90' : ''}`} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18l6-6-6-6"/></svg>;
-            default:
-              return <svg className={`h-4 w-4 shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9l6 6 6-6"/></svg>;
-          }
-        };
-
         // In preview mode, render a fully interactive accordion using the shadcn/Radix component
         if (isPreviewMode) {
-          // Combine data items and child items for preview
-          const allItems = hasChildItems 
-            ? childItems.map((child, index) => ({
-                id: child.id,
-                title: child.props?.title || `Item ${index + 1}`,
-                content: child.children.length > 0 ? child : (child.props?.content || 'Content'),
-                defaultOpen: child.props?.defaultOpen || false,
-                isChildBased: true,
-              }))
-            : items;
+          const allItems = childItems.map((child, index) => ({
+            id: child.id,
+            title: child.props?.title || `Item ${index + 1}`,
+            content: child,
+            defaultOpen: child.props?.defaultOpen || false,
+          }));
             
           const defaultOpenValues = allItems
             .filter((item: any) => item.defaultOpen)
-            .map((item: any, index: number) => String(item.id ?? `item-${index}`));
+            .map((item: any) => String(item.id));
 
           const content = (
             <div
@@ -1061,31 +1040,55 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
               style={getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties}
             >
               <style>{accordionCss}</style>
-              <ShadcnAccordion
-                type={collapseMode === 'multiple' ? 'multiple' : 'single'}
-                defaultValue={collapseMode === 'multiple' ? defaultOpenValues : defaultOpenValues[0]}
-                className={`w-full accordion-items-container`}
-                {...(collapseMode === 'single' ? { collapsible: true } : {})}
-              >
-                {allItems.map((item: any, index: number) => {
-                  const value = String(item.id ?? `item-${index}`);
-                  return (
-                    <AccordionItem key={value} value={value} className="accordion-item">
-                      <AccordionTrigger className={`accordion-trigger ${iconPosition === 'left' ? 'flex-row-reverse justify-end gap-2' : ''}`}>
-                        {item.title || `Item ${index + 1}`}
-                      </AccordionTrigger>
-                      <AccordionContent className="accordion-content">
-                        {item.isChildBased && item.content?.children?.length > 0
-                          ? item.content.children.map((child: ComponentInstance, idx: number) => renderInstance(child, item.content, idx))
-                          : (typeof item.content === 'string' ? item.content : 'Accordion content')}
-                      </AccordionContent>
-                    </AccordionItem>
-                  );
-                })}
-              </ShadcnAccordion>
-              {allItems.length === 0 && (
-                <div className="py-4 text-sm text-muted-foreground italic">
-                  No accordion items. Add items in the Data tab or drag AccordionItem components.
+              {collapseMode === 'multiple' ? (
+                <ShadcnAccordion
+                  type="multiple"
+                  defaultValue={defaultOpenValues}
+                  className={`w-full accordion-items-container`}
+                >
+                  {allItems.map((item: any) => {
+                    const value = String(item.id);
+                    return (
+                      <AccordionItem key={value} value={value} className="accordion-item">
+                        <AccordionTrigger className={`accordion-trigger ${iconPosition === 'left' ? 'flex-row-reverse justify-end gap-2' : ''}`}>
+                          {item.title}
+                        </AccordionTrigger>
+                        <AccordionContent className="accordion-content">
+                          {item.content?.children?.length > 0
+                            ? item.content.children.map((child: ComponentInstance, idx: number) => renderInstance(child, item.content, idx))
+                            : <span className="text-muted-foreground italic">No content</span>}
+                        </AccordionContent>
+                      </AccordionItem>
+                    );
+                  })}
+                </ShadcnAccordion>
+              ) : (
+                <ShadcnAccordion
+                  type="single"
+                  defaultValue={defaultOpenValues[0]}
+                  collapsible
+                  className={`w-full accordion-items-container`}
+                >
+                  {allItems.map((item: any) => {
+                    const value = String(item.id);
+                    return (
+                      <AccordionItem key={value} value={value} className="accordion-item">
+                        <AccordionTrigger className={`accordion-trigger ${iconPosition === 'left' ? 'flex-row-reverse justify-end gap-2' : ''}`}>
+                          {item.title}
+                        </AccordionTrigger>
+                        <AccordionContent className="accordion-content">
+                          {item.content?.children?.length > 0
+                            ? item.content.children.map((child: ComponentInstance, idx: number) => renderInstance(child, item.content, idx))
+                            : <span className="text-muted-foreground italic">No content</span>}
+                        </AccordionContent>
+                      </AccordionItem>
+                    );
+                  })}
+                </ShadcnAccordion>
+              )}
+              {!hasChildItems && (
+                <div className="py-4 text-sm text-muted-foreground italic text-center">
+                  No accordion sections
                 </div>
               )}
             </div>
@@ -1114,41 +1117,15 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
           >
             <style>{accordionCss}</style>
             <div className="accordion-items-container">
-              {/* Render child AccordionItems if present */}
+              {/* Render child AccordionItems */}
               {hasChildItems && childItems.map((child, idx) => renderInstance(child, instance, idx))}
-              
-              {/* Fall back to data-driven items */}
-              {!hasChildItems && items.map((item: any, index: number) => (
-                <div 
-                  key={item.id || index} 
-                  className="accordion-item"
-                >
-                  <button 
-                    className={`accordion-trigger flex w-full items-center justify-between py-4 text-sm font-medium transition-all ${iconPosition === 'left' ? 'flex-row-reverse justify-end gap-2' : ''} ${item.defaultOpen ? 'active' : ''}`}
-                  >
-                    {item.title}
-                    {renderIcon(item.defaultOpen)}
-                  </button>
-                  {item.defaultOpen && (
-                    <div className="accordion-content text-sm text-muted-foreground">
-                      {item.content}
-                    </div>
-                  )}
-                </div>
-              ))}
             </div>
-            {/* Render generic children (Text, Button, etc.) that were dropped directly */}
-            {(() => {
-              const otherChildren = instance.children.filter(c => c.type !== 'AccordionItem');
-              return otherChildren.length > 0 ? (
-                <div className="p-4 border-t border-dashed border-border">
-                  {otherChildren.map((child, idx) => renderInstance(child, instance, idx))}
-                </div>
-              ) : null;
-            })()}
-            {items.length === 0 && !hasChildItems && instance.children.length === 0 && (
-              <div className="py-4 text-sm text-muted-foreground italic">
-                No accordion items. Add items in the Data tab or drag AccordionItem components.
+            
+            {/* Empty state */}
+            {!hasChildItems && (
+              <div className="py-8 text-center">
+                <p className="text-sm text-muted-foreground">No accordion sections</p>
+                <p className="text-xs text-muted-foreground mt-1">Drag AccordionItem here or use Add Section button</p>
               </div>
             )}
           </div>
@@ -1889,10 +1866,12 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
         );
       }
 
-      // Accordion Item child primitive
+      // Accordion Item child primitive - container-based with droppable content area
       case 'AccordionItem': {
         const title = instance.props?.title || 'Accordion Item';
         const isOpen = instance.props?.defaultOpen || false;
+        const hasChildren = instance.children.length > 0;
+        
         const content = (
           <div
             data-instance-id={instance.id}
@@ -1906,19 +1885,41 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
             onMouseLeave={isPreviewMode ? undefined : () => setHoveredInstanceId(null)}
             onContextMenu={isPreviewMode ? undefined : (e) => handleContextMenu(e, instance)}
           >
-            <div className="flex items-center justify-between py-4 text-sm font-medium cursor-pointer">
-              {title}
-              <svg className={`h-4 w-4 shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9l6 6 6-6"/></svg>
+            {/* Trigger Header */}
+            <div className="flex items-center justify-between py-4 px-2 text-sm font-medium cursor-pointer hover:bg-muted/30 transition-colors">
+              <span className="font-medium">{title}</span>
+              <svg 
+                className={`h-4 w-4 shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} 
+                xmlns="http://www.w3.org/2000/svg" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2"
+              >
+                <path d="M6 9l6 6 6-6"/>
+              </svg>
             </div>
+            
+            {/* Content Area - Always visible in edit mode for dropping */}
             {(isOpen || !isPreviewMode) && (
-              <div className="pb-4 text-sm text-muted-foreground">
-                {instance.children.length > 0 
-                  ? instance.children.map((child, idx) => renderInstance(child, instance, idx))
-                  : <div className="italic">Drop content here</div>}
+              <div 
+                className="pb-4 px-2"
+                style={{ minHeight: isPreviewMode ? 'auto' : '80px' }}
+              >
+                {hasChildren ? (
+                  <div className="space-y-2">
+                    {instance.children.map((child, idx) => renderInstance(child, instance, idx))}
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center h-16 border-2 border-dashed border-blue-300 rounded-lg bg-blue-50/50 dark:bg-blue-950/20">
+                    <span className="text-sm text-blue-500 font-medium">Drop elements here</span>
+                  </div>
+                )}
               </div>
             )}
           </div>
         );
+        
         return isPreviewMode ? content : (
           <DroppableContainer key={instance.id} instance={instance} {...commonProps}>
             {content}

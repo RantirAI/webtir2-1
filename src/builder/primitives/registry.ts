@@ -1428,11 +1428,12 @@ export const componentRegistry: Record<string, ComponentMeta> = {
     label: 'Accordion',
     icon: 'ChevronRight',
     defaultProps: {
-      items: [
-        { id: '1', title: 'Section 1', content: 'Content for section 1', defaultOpen: false },
-        { id: '2', title: 'Section 2', content: 'Content for section 2', defaultOpen: false },
-        { id: '3', title: 'Section 3', content: 'Content for section 3', defaultOpen: false },
-      ],
+      // No items array - children-based only (AccordionItem children)
+      accordionStyles: {
+        collapseMode: 'single',
+        iconPosition: 'right',
+        iconStyle: 'chevron',
+      }
     },
     defaultStyles: {
       width: '100%',
