@@ -85,6 +85,8 @@ import { TabsDataEditor } from "./data-editors/TabsDataEditor";
 import { TabPanelDataEditor } from "./data-editors/TabPanelDataEditor";
 import { TabTriggerDataEditor } from "./data-editors/TabTriggerDataEditor";
 import { TableDataEditor } from "./data-editors/TableDataEditor";
+import { TableRowDataEditor } from "./data-editors/TableRowDataEditor";
+import { TableCellDataEditor } from "./data-editors/TableCellDataEditor";
 import { SliderDataEditor } from "./data-editors/SliderDataEditor";
 import { AlertDialogDataEditor } from "./data-editors/AlertDialogDataEditor";
 import { AvatarDataEditor } from "./data-editors/AvatarDataEditor";
