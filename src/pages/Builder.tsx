@@ -699,6 +699,78 @@ const Builder: React.FC = () => {
         return;
       }
 
+      // 6) Accordion - create with 3 AccordionItem children
+      if (componentType === 'Accordion') {
+        const accordionId = generateId();
+        const item1Id = generateId();
+        const item2Id = generateId();
+        const item3Id = generateId();
+
+        const { createStyleSource, setStyle, getNextAutoClassName } = useStyleStore.getState();
+        
+        // Accordion container styles
+        const accordionClassName = getNextAutoClassName('accordion');
+        const accordionStyleId = createStyleSource('local', accordionClassName);
+        setStyle(accordionStyleId, 'width', '100%');
+        setStyle(accordionStyleId, 'display', 'flex');
+        setStyle(accordionStyleId, 'flexDirection', 'column');
+        
+        // AccordionItem styles
+        const item1ClassName = getNextAutoClassName('accordion-item');
+        const item1StyleId = createStyleSource('local', item1ClassName);
+        setStyle(item1StyleId, 'width', '100%');
+        
+        const item2ClassName = getNextAutoClassName('accordion-item');
+        const item2StyleId = createStyleSource('local', item2ClassName);
+        setStyle(item2StyleId, 'width', '100%');
+        
+        const item3ClassName = getNextAutoClassName('accordion-item');
+        const item3StyleId = createStyleSource('local', item3ClassName);
+        setStyle(item3StyleId, 'width', '100%');
+
+        const accordionInstance: ComponentInstance = {
+          id: accordionId,
+          type: 'Accordion' as ComponentType,
+          label: 'Accordion',
+          props: {
+            accordionStyles: {
+              collapseMode: 'single',
+              iconPosition: 'right',
+              iconStyle: 'chevron',
+            }
+          },
+          styleSourceIds: [accordionStyleId],
+          children: [
+            {
+              id: item1Id,
+              type: 'AccordionItem' as ComponentType,
+              label: 'Section 1',
+              props: { title: 'Section 1', defaultOpen: true },
+              styleSourceIds: [item1StyleId],
+              children: [],
+            },
+            {
+              id: item2Id,
+              type: 'AccordionItem' as ComponentType,
+              label: 'Section 2',
+              props: { title: 'Section 2', defaultOpen: false },
+              styleSourceIds: [item2StyleId],
+              children: [],
+            },
+            {
+              id: item3Id,
+              type: 'AccordionItem' as ComponentType,
+              label: 'Section 3',
+              props: { title: 'Section 3', defaultOpen: false },
+              styleSourceIds: [item3StyleId],
+              children: [],
+            },
+          ],
+        };
+        addInstance(accordionInstance, computeParentId());
+        return;
+      }
+
       // Create default children for RichText component
       const defaultChildren: ComponentInstance[] = [];
       if (componentType === 'RichText') {
