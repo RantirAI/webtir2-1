@@ -1537,7 +1537,9 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
   const tab1Id = generateId();
   const tab2Id = generateId();
   const tab3Id = generateId();
-  const tabsContentId = generateId();
+  const tabPanel1Id = generateId();
+  const tabPanel2Id = generateId();
+  const tabPanel3Id = generateId();
 
   prebuilts.push({
     id: 'system-tabs',
@@ -1548,15 +1550,35 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
       type: 'Tabs' as ComponentType,
       label: 'Tabs',
       props: {
-        tabs: [
-          { id: 'account', label: 'Account', content: 'Account settings and preferences.' },
-          { id: 'password', label: 'Password', content: 'Change your password here.' },
-          { id: 'settings', label: 'Settings', content: 'Other settings.' },
-        ],
-        defaultTab: 'account',
+        defaultTab: tabPanel1Id,
       },
       styleSourceIds: ['style-tabs'],
-      children: [],
+      children: [
+        {
+          id: tabPanel1Id,
+          type: 'TabPanel' as ComponentType,
+          label: 'Tab 1',
+          props: { label: 'Account', content: 'Account settings and preferences.' },
+          children: [],
+          styleSourceIds: ['style-tab-panel'],
+        },
+        {
+          id: tabPanel2Id,
+          type: 'TabPanel' as ComponentType,
+          label: 'Tab 2',
+          props: { label: 'Password', content: 'Change your password here.' },
+          children: [],
+          styleSourceIds: ['style-tab-panel'],
+        },
+        {
+          id: tabPanel3Id,
+          type: 'TabPanel' as ComponentType,
+          label: 'Tab 3',
+          props: { label: 'Settings', content: 'Other settings.' },
+          children: [],
+          styleSourceIds: ['style-tab-panel'],
+        },
+      ],
     },
     defaultStyles: {
       'style-tabs': createStyleEntry({

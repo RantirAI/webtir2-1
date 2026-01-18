@@ -131,18 +131,33 @@ export function createPrebuiltChildren(instanceType: string, props: Record<strin
     }
     
     case 'Tabs': {
-      const tabs = props.tabs || [];
-      return tabs.map((tab: any, index: number) => ({
-        id: generateId(),
-        type: 'TabPanel',
-        name: `tab-${index + 1}`,
-        props: {
-          label: tab.label || `Tab ${index + 1}`,
-          content: tab.content || '',
+      // Always create 3 TabPanel children
+      return [
+        {
+          id: generateId(),
+          type: 'TabPanel',
+          label: 'Tab 1',
+          props: { label: 'Account', content: 'Account settings and preferences.' },
+          children: [],
+          styleSourceIds: [],
         },
-        children: [],
-        styleSourceIds: [],
-      }));
+        {
+          id: generateId(),
+          type: 'TabPanel',
+          label: 'Tab 2',
+          props: { label: 'Password', content: 'Change your password here.' },
+          children: [],
+          styleSourceIds: [],
+        },
+        {
+          id: generateId(),
+          type: 'TabPanel',
+          label: 'Tab 3',
+          props: { label: 'Settings', content: 'Other settings.' },
+          children: [],
+          styleSourceIds: [],
+        },
+      ];
     }
     
     case 'Carousel': {
