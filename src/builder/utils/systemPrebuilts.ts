@@ -1065,13 +1065,12 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
   });
 
   // ---------------------------------------------------------------------------
-  // ACCORDION ITEM
+  // ACCORDION
   // ---------------------------------------------------------------------------
   const accordionId = generateId();
-  const accordionHeaderId = generateId();
-  const accordionTitleId = generateId();
-  const accordionIconId = generateId();
-  const accordionContentId = generateId();
+  const accordionItem1Id = generateId();
+  const accordionItem2Id = generateId();
+  const accordionItem3Id = generateId();
 
   prebuilts.push({
     id: 'system-accordion',
@@ -1082,17 +1081,53 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
       type: 'Accordion' as ComponentType,
       label: 'Accordion',
       props: {
-        items: [
-          { id: '1', title: 'Is it accessible?', content: 'Yes. It adheres to the WAI-ARIA design pattern.', defaultOpen: true },
-          { id: '2', title: 'Is it styled?', content: 'Yes. It comes with default styles that match your design system.' },
-          { id: '3', title: 'Is it animated?', content: 'Yes. It supports smooth animations for expanding and collapsing.' },
-        ]
+        accordionStyles: {
+          collapseMode: 'single',
+          iconPosition: 'right',
+          iconStyle: 'chevron',
+        }
       },
       styleSourceIds: ['style-accordion'],
-      children: [],
+      children: [
+        {
+          id: accordionItem1Id,
+          type: 'AccordionItem' as ComponentType,
+          label: 'Section 1',
+          props: { title: 'Section 1', defaultOpen: true },
+          styleSourceIds: ['style-accordion-item'],
+          children: [],
+        },
+        {
+          id: accordionItem2Id,
+          type: 'AccordionItem' as ComponentType,
+          label: 'Section 2',
+          props: { title: 'Section 2', defaultOpen: false },
+          styleSourceIds: ['style-accordion-item-2'],
+          children: [],
+        },
+        {
+          id: accordionItem3Id,
+          type: 'AccordionItem' as ComponentType,
+          label: 'Section 3',
+          props: { title: 'Section 3', defaultOpen: false },
+          styleSourceIds: ['style-accordion-item-3'],
+          children: [],
+        },
+      ],
     },
     defaultStyles: {
       'style-accordion': createStyleEntry({
+        width: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+      }),
+      'style-accordion-item': createStyleEntry({
+        width: '100%',
+      }),
+      'style-accordion-item-2': createStyleEntry({
+        width: '100%',
+      }),
+      'style-accordion-item-3': createStyleEntry({
         width: '100%',
       }),
     },
