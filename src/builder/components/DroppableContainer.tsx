@@ -23,7 +23,7 @@ export const DroppableContainer: React.FC<DroppableContainerProps> = ({
   onContextMenu,
   isInsideNavigation = false,
 }) => {
-  const { setNodeRef } = useDroppable({
+  const { setNodeRef, isOver } = useDroppable({
     id: `droppable-${instance.id}`,
     data: { instanceId: instance.id, type: instance.type },
   });
@@ -35,6 +35,10 @@ export const DroppableContainer: React.FC<DroppableContainerProps> = ({
   
   // Check if this is a droppable container (for min-height when empty)
   const isDroppableContainer = canDropInside(instance.type);
+
+  // These types need a measurable bounding box for dnd-kit collision detection
+  // display: contents removes the element from layout, making it invisible to dnd-kit
+  const needsMeasurableBox = ['AccordionItem', 'TabPanel', 'CarouselSlide', 'TableCell'].includes(instance.type);
 
   // Get child IDs for sortable context
   const childIds = instance.children.map(child => child.id);
@@ -49,9 +53,13 @@ export const DroppableContainer: React.FC<DroppableContainerProps> = ({
       ref={setNodeRef}
       data-droppable-id={instance.id}
       style={{
-        // Use display: contents to make wrapper invisible to CSS layout
-        // This preserves flex/grid child positioning and CSS selectors for imported components
-        display: 'contents',
+        // Use display: contents for most elements to preserve CSS layout
+        // But AccordionItem, TabPanel, etc. need measurable boxes for drop detection
+        display: needsMeasurableBox ? 'block' : 'contents',
+        width: needsMeasurableBox ? '100%' : undefined,
+        // Visual feedback when hovering over valid drop targets
+        outline: isOver && needsMeasurableBox ? '2px dashed rgba(59, 130, 246, 0.6)' : undefined,
+        outlineOffset: isOver && needsMeasurableBox ? '-2px' : undefined,
       }}
       onClick={(e) => {
         const target = e.target as HTMLElement;
