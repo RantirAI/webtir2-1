@@ -2,6 +2,7 @@
  * Figma to Webtir Translator
  * Converts Figma clipboard JSON to Webtir ComponentInstance tree
  * Handles auto-layout, fills, text styles, and intelligent heading detection
+ * Uses batch operations for performance
  */
 
 import { ComponentType, ComponentInstance } from '../store/types';
@@ -130,6 +131,12 @@ export interface FigmaClipboardData {
   meta?: { images?: Record<string, string> };
   // Sometimes nodes are under different keys
   [key: string]: any;
+}
+
+// Style collector for batch operations
+interface StyleCollector {
+  sources: Array<{ name: string }>;
+  styleUpdates: Array<{ sourceIndex: number; property: string; value: string }>;
 }
 
 // ============================================
@@ -653,9 +660,12 @@ function extractFigmaNodes(data: any): FigmaNode[] {
 }
 
 /**
- * Convert a single Figma node to Webtir ComponentInstance
+ * Convert a single Figma node to intermediate representation with placeholder style index
  */
-function convertFigmaNodeTree(node: FigmaNode): ComponentInstance {
+function convertFigmaNodeTree(
+  node: FigmaNode,
+  collector: StyleCollector
+): ComponentInstance {
   const type = mapFigmaTypeToWebtir(node);
   const props: Record<string, any> = {};
   
@@ -689,15 +699,20 @@ function convertFigmaNodeTree(node: FigmaNode): ComponentInstance {
     }
   }
   
-  // Create style source and apply styles
-  const { createStyleSource, setStyle } = useStyleStore.getState();
+  // Add to collector instead of immediately creating style source
   const sanitizedName = (node.name || 'figma').replace(/[^a-zA-Z0-9-_]/g, '-').toLowerCase();
   const name = `figma-${sanitizedName}-${generateId().slice(0, 4)}`;
-  const sourceId = createStyleSource('local', name);
+  const sourceIndex = collector.sources.length;
+  collector.sources.push({ name });
   
+  // Collect style updates for this source
   Object.entries(allStyles).forEach(([prop, value]) => {
     if (value) {
-      setStyle(sourceId, prop, value, 'base', 'default');
+      collector.styleUpdates.push({
+        sourceIndex,
+        property: prop,
+        value,
+      });
     }
   });
   
@@ -707,7 +722,7 @@ function convertFigmaNodeTree(node: FigmaNode): ComponentInstance {
     for (const child of node.children) {
       // Skip invisible or locked nodes
       if (child.visible === false) continue;
-      children.push(convertFigmaNodeTree(child));
+      children.push(convertFigmaNodeTree(child, collector));
     }
   }
   
@@ -719,13 +734,42 @@ function convertFigmaNodeTree(node: FigmaNode): ComponentInstance {
     type,
     label,
     props,
-    styleSourceIds: [sourceId],
+    // Store placeholder index - will be resolved after batch creation
+    styleSourceIds: [sourceIndex as any],
     children,
   };
 }
 
+// Resolve placeholder source indexes to actual style source IDs
+function resolveStyleSourceIds(
+  instance: ComponentInstance,
+  createdSourceIds: string[]
+): ComponentInstance {
+  const resolvedInstance = { ...instance };
+  
+  // Resolve style source IDs from indexes
+  if (Array.isArray(instance.styleSourceIds)) {
+    resolvedInstance.styleSourceIds = (instance.styleSourceIds as any[]).map(idx => {
+      if (typeof idx === 'number' && idx < createdSourceIds.length) {
+        return createdSourceIds[idx];
+      }
+      return idx; // Already a string ID
+    });
+  }
+  
+  // Recursively resolve children
+  if (instance.children && instance.children.length > 0) {
+    resolvedInstance.children = instance.children.map(child => 
+      resolveStyleSourceIds(child, createdSourceIds)
+    );
+  }
+  
+  return resolvedInstance;
+}
+
 /**
  * Main translation function - converts Figma clipboard data to Webtir ComponentInstance tree
+ * Uses batch operations for better performance
  */
 export function translateFigmaToWebtir(figmaData: any): ComponentInstance | null {
   try {
@@ -739,22 +783,57 @@ export function translateFigmaToWebtir(figmaData: any): ComponentInstance | null
     
     console.log(`[Figma Translator] Converting ${nodes.length} root node(s)`);
     
-    // Convert each root node
+    // Initialize collector for batch operations
+    const collector: StyleCollector = {
+      sources: [],
+      styleUpdates: [],
+    };
+    
+    // Convert each root node (collecting styles without applying them)
+    let resultInstance: ComponentInstance;
     if (nodes.length === 1) {
-      return convertFigmaNodeTree(nodes[0]);
+      resultInstance = convertFigmaNodeTree(nodes[0], collector);
+    } else {
+      // Multiple nodes - wrap in container
+      const children = nodes.map(node => convertFigmaNodeTree(node, collector));
+      resultInstance = {
+        id: generateId(),
+        type: 'Div',
+        label: 'Figma Import',
+        props: {},
+        styleSourceIds: [],
+        children,
+      };
     }
     
-    // Multiple nodes - wrap in container
-    const children = nodes.map(node => convertFigmaNodeTree(node));
+    // Now batch create all style sources at once
+    const { batchCreateStyleSources, batchSetStyles } = useStyleStore.getState();
     
-    return {
-      id: generateId(),
-      type: 'Div',
-      label: 'Figma Import',
-      props: {},
-      styleSourceIds: [],
-      children,
-    };
+    console.log(`[Figma Translator] Batch creating ${collector.sources.length} style sources, ${collector.styleUpdates.length} style rules`);
+    
+    const createdSourceIds = batchCreateStyleSources(
+      collector.sources.map(s => ({ type: 'local', name: s.name }))
+    );
+    
+    // Batch apply all styles at once
+    if (collector.styleUpdates.length > 0) {
+      batchSetStyles(
+        collector.styleUpdates.map(u => ({
+          styleSourceId: createdSourceIds[u.sourceIndex],
+          property: u.property,
+          value: u.value,
+          breakpointId: 'base',
+          state: 'default' as any,
+        }))
+      );
+    }
+    
+    // Resolve placeholder indexes to actual IDs in the instance tree
+    const resolvedInstance = resolveStyleSourceIds(resultInstance, createdSourceIds);
+    
+    console.log(`[Figma Translator] Import complete`);
+    
+    return resolvedInstance;
   } catch (error) {
     console.error('Failed to translate Figma data:', error);
     return null;

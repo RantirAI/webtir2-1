@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Upload, CheckCircle2, Package } from 'lucide-react';
+import { Upload, CheckCircle2, Package, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { detectPastedSource, parseWebflowData, getSourceLabel, ClipboardSource, inspectClipboard } from '../utils/clipboardInspector';
 import { translateWebflowToWebtir, getWebflowDataSummary } from '../utils/webflowTranslator';
@@ -50,6 +50,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({ open, onOpenChange, on
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [detectedSource, setDetectedSource] = useState<ClipboardSource | null>(null);
   const [convertPreview, setConvertPreview] = useState<{ nodes: number; styles: number } | null>(null);
+  const [isImporting, setIsImporting] = useState(false);
   const { toast } = useToast();
   const { addInstance, rootInstance } = useBuilderStore();
 
@@ -134,7 +135,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({ open, onOpenChange, on
     }
   };
 
-  const handleConvert = () => {
+  const handleConvert = async () => {
     if (!pastedCode.trim()) {
       toast({
         title: 'No Content',
@@ -144,71 +145,80 @@ export const ImportModal: React.FC<ImportModalProps> = ({ open, onOpenChange, on
       return;
     }
 
-    // Handle Webflow conversion
-    if (detectedSource === 'webflow' || activePlatform === 'webflow') {
-      const wfData = parseWebflowData(pastedCode);
-      if (wfData) {
-        const instance = translateWebflowToWebtir(wfData);
-        if (instance) {
-          addInstance(instance, rootInstance.id);
-          toast({
-            title: 'Webflow Import Success',
-            description: `Imported ${convertPreview?.nodes || 0} components with ${convertPreview?.styles || 0} styles. Review and click "Apply Changes to Canvas" if needed.`,
-          });
-          // Signal CodeView that import completed so it can show Apply Changes button
-          onImportComplete?.();
-          resetAndClose();
-          return;
-        }
-      }
-      toast({
-        title: 'Conversion Failed',
-        description: 'Could not parse Webflow data. Make sure you copied from Webflow correctly.',
-        variant: 'destructive',
-      });
-      return;
-    }
+    setIsImporting(true);
+    
+    // Yield to UI to show loading state
+    await new Promise(resolve => setTimeout(resolve, 50));
 
-    // Handle Figma conversion
-    if (detectedSource === 'figma' || activePlatform === 'figma') {
-      try {
-        const parsed = JSON.parse(pastedCode);
-        if (isFigmaData(parsed)) {
-          const instance = translateFigmaToWebtir(parsed);
+    try {
+      // Handle Webflow conversion
+      if (detectedSource === 'webflow' || activePlatform === 'webflow') {
+        const wfData = parseWebflowData(pastedCode);
+        if (wfData) {
+          const instance = translateWebflowToWebtir(wfData);
           if (instance) {
             addInstance(instance, rootInstance.id);
             toast({
-              title: 'Figma Import Success',
-              description: `Imported ${convertPreview?.nodes || 0} components with ${convertPreview?.styles || 0} text elements. Review and click "Apply Changes to Canvas" if needed.`,
+              title: 'Webflow Import Success',
+              description: `Imported ${convertPreview?.nodes || 0} components with ${convertPreview?.styles || 0} styles.`,
             });
+            // Signal CodeView that import completed so it can refresh
             onImportComplete?.();
             resetAndClose();
             return;
           }
         }
-      } catch (e) {
-        // Invalid JSON
+        toast({
+          title: 'Conversion Failed',
+          description: 'Could not parse Webflow data. Make sure you copied from Webflow correctly.',
+          variant: 'destructive',
+        });
+        return;
       }
-      toast({
-        title: 'Conversion Failed',
-        description: 'Could not parse Figma data. Make sure you copied from Figma correctly.',
-        variant: 'destructive',
-      });
-      return;
-    }
 
-    // Framer - future implementation
-    if (detectedSource === 'framer' || activePlatform === 'framer') {
-      toast({
-        title: 'Framer Import',
-        description: 'Framer import coming soon. For now, export as code and paste the HTML.',
-      });
-      return;
-    }
+      // Handle Figma conversion
+      if (detectedSource === 'figma' || activePlatform === 'figma') {
+        try {
+          const parsed = JSON.parse(pastedCode);
+          if (isFigmaData(parsed)) {
+            const instance = translateFigmaToWebtir(parsed);
+            if (instance) {
+              addInstance(instance, rootInstance.id);
+              toast({
+                title: 'Figma Import Success',
+                description: `Imported ${convertPreview?.nodes || 0} components with ${convertPreview?.styles || 0} text elements.`,
+              });
+              onImportComplete?.();
+              resetAndClose();
+              return;
+            }
+          }
+        } catch (e) {
+          // Invalid JSON
+        }
+        toast({
+          title: 'Conversion Failed',
+          description: 'Could not parse Figma data. Make sure you copied from Figma correctly.',
+          variant: 'destructive',
+        });
+        return;
+      }
 
-    // Fallback - pass to legacy handler
-    onImport(activePlatform, pastedCode);
-    resetAndClose();
+      // Framer - future implementation
+      if (detectedSource === 'framer' || activePlatform === 'framer') {
+        toast({
+          title: 'Framer Import',
+          description: 'Framer import coming soon. For now, export as code and paste the HTML.',
+        });
+        return;
+      }
+
+      // Fallback - pass to legacy handler
+      onImport(activePlatform, pastedCode);
+      resetAndClose();
+    } finally {
+      setIsImporting(false);
+    }
   };
 
   const handleUpload = () => {
@@ -388,15 +398,22 @@ export const ImportModal: React.FC<ImportModalProps> = ({ open, onOpenChange, on
 
               {/* Convert Button */}
               <div className="flex justify-end gap-1.5">
-                <Button variant="outline" onClick={resetAndClose} className="h-8 text-xs px-3">
+                <Button variant="outline" onClick={resetAndClose} className="h-8 text-xs px-3" disabled={isImporting}>
                   Cancel
                 </Button>
                 <Button 
                   onClick={handleConvert} 
-                  className="h-8 text-xs px-3"
-                  disabled={!pastedCode.trim()}
+                  className="h-8 text-xs px-3 gap-2"
+                  disabled={!pastedCode.trim() || isImporting}
                 >
-                  {getConvertButtonLabel()}
+                  {isImporting ? (
+                    <>
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                      Importing...
+                    </>
+                  ) : (
+                    getConvertButtonLabel()
+                  )}
                 </Button>
               </div>
             </TabsContent>

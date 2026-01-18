@@ -1,11 +1,18 @@
 /**
  * Webflow to Webtir Translator
  * Converts Webflow @webflow/XscpData JSON to Webtir ComponentInstance tree
+ * Uses batch operations for performance
  */
 
 import { ComponentType, ComponentInstance } from '../store/types';
 import { useStyleStore } from '../store/useStyleStore';
 import { WebflowXscpData, WebflowNode, WebflowStyle } from './clipboardInspector';
+
+// Style collector for batch operations
+interface StyleCollector {
+  sources: Array<{ name: string; wfStyleId: string }>;
+  styleUpdates: Array<{ sourceIndex: number; property: string; value: string; breakpoint: string; state: string }>;
+}
 
 // Generate unique ID
 function generateId(): string {
@@ -147,32 +154,40 @@ function mapBreakpoint(wfBreakpoint: string): string {
   }
 }
 
-// Create a style source from Webflow style and apply styles
-function createStyleSourceFromWebflow(wfStyle: WebflowStyle): string {
-  const { createStyleSource, setStyle } = useStyleStore.getState();
-  
-  // Create style source with Webflow class name (prefixed to avoid conflicts)
-  const name = `wf-${wfStyle.name}`;
-  const sourceId = createStyleSource('local', name);
-  
-  // Parse and apply base styles
+// Collect styles from Webflow style (no immediate store updates)
+function collectStylesFromWebflow(
+  wfStyle: WebflowStyle,
+  sourceIndex: number,
+  collector: StyleCollector
+): void {
+  // Parse and collect base styles
   const baseStyles = parseStyleLess(wfStyle.styleLess);
   Object.entries(baseStyles).forEach(([prop, value]) => {
-    setStyle(sourceId, prop, value, 'base', 'default');
+    collector.styleUpdates.push({
+      sourceIndex,
+      property: prop,
+      value,
+      breakpoint: 'base',
+      state: 'default',
+    });
   });
   
-  // Apply responsive variants
+  // Collect responsive variants
   if (wfStyle.variants) {
     Object.entries(wfStyle.variants).forEach(([breakpoint, variant]) => {
       const webtirBreakpoint = mapBreakpoint(breakpoint);
       const variantStyles = parseStyleLess(variant.styleLess);
       Object.entries(variantStyles).forEach(([prop, value]) => {
-        setStyle(sourceId, prop, value, webtirBreakpoint, 'default');
+        collector.styleUpdates.push({
+          sourceIndex,
+          property: prop,
+          value,
+          breakpoint: webtirBreakpoint,
+          state: 'default',
+        });
       });
     });
   }
-  
-  return sourceId;
 }
 
 // Extract props from Webflow node based on type
@@ -254,26 +269,31 @@ function findRootNodes(nodes: WebflowNode[]): WebflowNode[] {
 }
 
 // Convert Webflow node tree to Webtir ComponentInstance tree
+// Returns the instance with placeholder sourceIndexes that will be resolved later
 function convertNodeTree(
   node: WebflowNode,
   nodeMap: Map<string, WebflowNode>,
   styleMap: Map<string, WebflowStyle>,
-  createdStyles: Map<string, string>, // Cache for already created style sources
+  collector: StyleCollector,
+  styleIndexMap: Map<string, number>, // Maps Webflow style ID to source index
 ): ComponentInstance {
   const type = mapWebflowTypeToWebtir(node.type, node.tag);
   
-  // Create style sources for this node's classes
-  const styleSourceIds: string[] = [];
+  // Collect style sources for this node's classes
+  const placeholderSourceIndexes: number[] = [];
   for (const classId of node.classes || []) {
-    // Check if we already created this style source
-    if (createdStyles.has(classId)) {
-      styleSourceIds.push(createdStyles.get(classId)!);
+    // Check if we already collected this style source
+    if (styleIndexMap.has(classId)) {
+      placeholderSourceIndexes.push(styleIndexMap.get(classId)!);
     } else {
       const wfStyle = styleMap.get(classId);
       if (wfStyle) {
-        const sourceId = createStyleSourceFromWebflow(wfStyle);
-        createdStyles.set(classId, sourceId);
-        styleSourceIds.push(sourceId);
+        const sourceIndex = collector.sources.length;
+        const name = `wf-${wfStyle.name}`;
+        collector.sources.push({ name, wfStyleId: classId });
+        styleIndexMap.set(classId, sourceIndex);
+        collectStylesFromWebflow(wfStyle, sourceIndex, collector);
+        placeholderSourceIndexes.push(sourceIndex);
       }
     }
   }
@@ -286,7 +306,7 @@ function convertNodeTree(
   for (const childId of node.children || []) {
     const childNode = nodeMap.get(childId);
     if (childNode && !childNode.text && !childNode.data?.text) {
-      children.push(convertNodeTree(childNode, nodeMap, styleMap, createdStyles));
+      children.push(convertNodeTree(childNode, nodeMap, styleMap, collector, styleIndexMap));
     }
   }
   
@@ -298,13 +318,42 @@ function convertNodeTree(
     type,
     label,
     props,
-    styleSourceIds,
+    // Store placeholder indexes temporarily - will be resolved after batch creation
+    styleSourceIds: placeholderSourceIndexes as any,
     children,
   };
 }
 
+// Resolve placeholder source indexes to actual style source IDs
+function resolveStyleSourceIds(
+  instance: ComponentInstance,
+  createdSourceIds: string[]
+): ComponentInstance {
+  const resolvedInstance = { ...instance };
+  
+  // Resolve style source IDs from indexes
+  if (Array.isArray(instance.styleSourceIds)) {
+    resolvedInstance.styleSourceIds = (instance.styleSourceIds as any[]).map(idx => {
+      if (typeof idx === 'number' && idx < createdSourceIds.length) {
+        return createdSourceIds[idx];
+      }
+      return idx; // Already a string ID
+    });
+  }
+  
+  // Recursively resolve children
+  if (instance.children && instance.children.length > 0) {
+    resolvedInstance.children = instance.children.map(child => 
+      resolveStyleSourceIds(child, createdSourceIds)
+    );
+  }
+  
+  return resolvedInstance;
+}
+
 /**
  * Main translation function - converts Webflow XscpData to Webtir ComponentInstance tree
+ * Uses batch operations for better performance
  */
 export function translateWebflowToWebtir(webflowData: WebflowXscpData): ComponentInstance | null {
   try {
@@ -318,7 +367,13 @@ export function translateWebflowToWebtir(webflowData: WebflowXscpData): Componen
     // Build lookup maps
     const nodeMap = new Map(nodes.map(n => [n._id, n]));
     const styleMap = new Map(styles.map(s => [s._id, s]));
-    const createdStyles = new Map<string, string>();
+    
+    // Initialize collector for batch operations
+    const collector: StyleCollector = {
+      sources: [],
+      styleUpdates: [],
+    };
+    const styleIndexMap = new Map<string, number>();
     
     // Find root node(s)
     const rootNodes = findRootNodes(nodes);
@@ -328,22 +383,53 @@ export function translateWebflowToWebtir(webflowData: WebflowXscpData): Componen
       return null;
     }
     
-    // If single root, convert directly
+    console.log(`[Webflow Translator] Converting ${rootNodes.length} root node(s), ${styles.length} styles`);
+    
+    // Convert tree (collecting styles without applying them)
+    let resultInstance: ComponentInstance;
     if (rootNodes.length === 1) {
-      return convertNodeTree(rootNodes[0], nodeMap, styleMap, createdStyles);
+      resultInstance = convertNodeTree(rootNodes[0], nodeMap, styleMap, collector, styleIndexMap);
+    } else {
+      // Multiple roots - wrap in a container
+      const children = rootNodes.map(root => convertNodeTree(root, nodeMap, styleMap, collector, styleIndexMap));
+      resultInstance = {
+        id: generateId(),
+        type: 'Div',
+        label: 'Webflow Import',
+        props: {},
+        styleSourceIds: [],
+        children,
+      };
     }
     
-    // Multiple roots - wrap in a container
-    const children = rootNodes.map(root => convertNodeTree(root, nodeMap, styleMap, createdStyles));
+    // Now batch create all style sources at once
+    const { batchCreateStyleSources, batchSetStyles } = useStyleStore.getState();
     
-    return {
-      id: generateId(),
-      type: 'Div',
-      label: 'Webflow Import',
-      props: {},
-      styleSourceIds: [],
-      children,
-    };
+    console.log(`[Webflow Translator] Batch creating ${collector.sources.length} style sources, ${collector.styleUpdates.length} style rules`);
+    
+    const createdSourceIds = batchCreateStyleSources(
+      collector.sources.map(s => ({ type: 'local', name: s.name }))
+    );
+    
+    // Batch apply all styles at once
+    if (collector.styleUpdates.length > 0) {
+      batchSetStyles(
+        collector.styleUpdates.map(u => ({
+          styleSourceId: createdSourceIds[u.sourceIndex],
+          property: u.property,
+          value: u.value,
+          breakpointId: u.breakpoint,
+          state: u.state as any,
+        }))
+      );
+    }
+    
+    // Resolve placeholder indexes to actual IDs in the instance tree
+    const resolvedInstance = resolveStyleSourceIds(resultInstance, createdSourceIds);
+    
+    console.log(`[Webflow Translator] Import complete`);
+    
+    return resolvedInstance;
   } catch (error) {
     console.error('Failed to translate Webflow data:', error);
     return null;
