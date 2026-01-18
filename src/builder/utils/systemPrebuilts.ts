@@ -1071,6 +1071,9 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
   const accordionItem1Id = generateId();
   const accordionItem2Id = generateId();
   const accordionItem3Id = generateId();
+  const accordionHeading1Id = generateId();
+  const accordionHeading2Id = generateId();
+  const accordionHeading3Id = generateId();
 
   prebuilts.push({
     id: 'system-accordion',
@@ -1093,25 +1096,52 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
           id: accordionItem1Id,
           type: 'AccordionItem' as ComponentType,
           label: 'Section 1',
-          props: { title: 'Section 1', defaultOpen: true },
+          props: { defaultOpen: true },
           styleSourceIds: ['style-accordion-item'],
-          children: [],
+          children: [
+            {
+              id: accordionHeading1Id,
+              type: 'Heading' as ComponentType,
+              label: 'Section Title',
+              props: { children: 'Section 1', level: 'h3' },
+              styleSourceIds: ['style-accordion-heading'],
+              children: [],
+            },
+          ],
         },
         {
           id: accordionItem2Id,
           type: 'AccordionItem' as ComponentType,
           label: 'Section 2',
-          props: { title: 'Section 2', defaultOpen: false },
+          props: { defaultOpen: false },
           styleSourceIds: ['style-accordion-item-2'],
-          children: [],
+          children: [
+            {
+              id: accordionHeading2Id,
+              type: 'Heading' as ComponentType,
+              label: 'Section Title',
+              props: { children: 'Section 2', level: 'h3' },
+              styleSourceIds: ['style-accordion-heading'],
+              children: [],
+            },
+          ],
         },
         {
           id: accordionItem3Id,
           type: 'AccordionItem' as ComponentType,
           label: 'Section 3',
-          props: { title: 'Section 3', defaultOpen: false },
+          props: { defaultOpen: false },
           styleSourceIds: ['style-accordion-item-3'],
-          children: [],
+          children: [
+            {
+              id: accordionHeading3Id,
+              type: 'Heading' as ComponentType,
+              label: 'Section Title',
+              props: { children: 'Section 3', level: 'h3' },
+              styleSourceIds: ['style-accordion-heading'],
+              children: [],
+            },
+          ],
         },
       ],
     },
@@ -1129,6 +1159,11 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
       }),
       'style-accordion-item-3': createStyleEntry({
         width: '100%',
+      }),
+      'style-accordion-heading': createStyleEntry({
+        fontSize: '16px',
+        fontWeight: '500',
+        margin: '0',
       }),
     },
   });

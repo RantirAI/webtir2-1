@@ -74,30 +74,57 @@ export function canDropInside(instanceType: string, draggedType?: string): boole
 export function createPrebuiltChildren(instanceType: string, props: Record<string, any> = {}): any[] {
   switch (instanceType) {
     case 'Accordion': {
-      // Always create 3 AccordionItem children with empty children arrays for dropping
+      // Always create 3 AccordionItem children with Heading children for the title
       return [
         {
           id: generateId(),
           type: 'AccordionItem',
           label: 'Section 1',
-          props: { title: 'Section 1', defaultOpen: true },
-          children: [],
+          props: { defaultOpen: true },
+          children: [
+            {
+              id: generateId(),
+              type: 'Heading',
+              label: 'Section Title',
+              props: { children: 'Section 1', level: 'h3' },
+              children: [],
+              styleSourceIds: [],
+            },
+          ],
           styleSourceIds: [],
         },
         {
           id: generateId(),
           type: 'AccordionItem',
           label: 'Section 2',
-          props: { title: 'Section 2', defaultOpen: false },
-          children: [],
+          props: { defaultOpen: false },
+          children: [
+            {
+              id: generateId(),
+              type: 'Heading',
+              label: 'Section Title',
+              props: { children: 'Section 2', level: 'h3' },
+              children: [],
+              styleSourceIds: [],
+            },
+          ],
           styleSourceIds: [],
         },
         {
           id: generateId(),
           type: 'AccordionItem',
           label: 'Section 3',
-          props: { title: 'Section 3', defaultOpen: false },
-          children: [],
+          props: { defaultOpen: false },
+          children: [
+            {
+              id: generateId(),
+              type: 'Heading',
+              label: 'Section Title',
+              props: { children: 'Section 3', level: 'h3' },
+              children: [],
+              styleSourceIds: [],
+            },
+          ],
           styleSourceIds: [],
         },
       ];
