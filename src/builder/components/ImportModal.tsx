@@ -179,23 +179,36 @@ export const ImportModal: React.FC<ImportModalProps> = ({ open, onOpenChange, on
         // Parse Figma data (handles both HTML figmeta format and raw JSON)
         const figmaData = parseFigmaData(pastedCode);
         
-        if (figmaData && isFigmaData(figmaData)) {
-          const instance = translateFigmaToWebtir(figmaData);
-          if (instance) {
-            addInstance(instance, rootInstance.id);
+        // Check if we got actual node data vs just metadata
+        if (figmaData) {
+          // Check if this is just figmeta metadata (fileKey, pasteID) without actual nodes
+          if (figmaData.fileKey && figmaData.pasteID && !figmaData.nodes && !figmaData.type) {
             toast({
-              title: 'Figma Import Success',
-              description: `Imported ${convertPreview?.nodes || 0} components with ${convertPreview?.styles || 0} text elements.`,
+              title: 'Figma Metadata Only',
+              description: 'Standard Figma copy only includes metadata. Use a Figma-to-code plugin or export as JSON from Dev Mode.',
+              variant: 'destructive',
             });
-            onImportComplete?.();
-            resetAndClose();
             return;
+          }
+          
+          if (isFigmaData(figmaData)) {
+            const instance = translateFigmaToWebtir(figmaData);
+            if (instance) {
+              addInstance(instance, rootInstance.id);
+              toast({
+                title: 'Figma Import Success',
+                description: `Imported ${convertPreview?.nodes || 0} components with ${convertPreview?.styles || 0} text elements.`,
+              });
+              onImportComplete?.();
+              resetAndClose();
+              return;
+            }
           }
         }
         
         toast({
           title: 'Conversion Failed',
-          description: 'Could not parse Figma data. Make sure you copied from Figma correctly.',
+          description: 'Could not parse Figma data. Use a Figma-to-code plugin or export JSON from Dev Mode.',
           variant: 'destructive',
         });
         return;
@@ -388,7 +401,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({ open, onOpenChange, on
               <div className="bg-muted/50 p-2 rounded-lg">
                 <p className="text-[11px] text-muted-foreground leading-relaxed">
                   {activePlatform === 'webflow' && '📝 In Webflow, select elements and use Cmd/Ctrl+C to copy. Paste the JSON data here.'}
-                  {activePlatform === 'figma' && '📝 In Figma, select frames and copy. Alternatively, use a Figma-to-code plugin.'}
+                  {activePlatform === 'figma' && '📝 Standard Figma copy doesn\'t include node data. Use Dev Mode → Export as JSON, or use a Figma-to-code plugin like html.to.design.'}
                   {activePlatform === 'framer' && '📝 In Framer, copy components or use export to get the code.'}
                 </p>
               </div>
