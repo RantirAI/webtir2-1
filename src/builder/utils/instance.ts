@@ -131,30 +131,57 @@ export function createPrebuiltChildren(instanceType: string, props: Record<strin
     }
     
     case 'Tabs': {
-      // Always create 3 TabPanel children
+      // Always create 3 TabPanel children, each with a TabTrigger
       return [
         {
           id: generateId(),
           type: 'TabPanel',
           label: 'Tab 1',
-          props: { label: 'Account', content: 'Account settings and preferences.' },
-          children: [],
+          props: { content: 'Account settings and preferences.' },
+          children: [
+            {
+              id: generateId(),
+              type: 'TabTrigger',
+              label: 'Account',
+              props: { text: 'Account' },
+              children: [],
+              styleSourceIds: [],
+            },
+          ],
           styleSourceIds: [],
         },
         {
           id: generateId(),
           type: 'TabPanel',
           label: 'Tab 2',
-          props: { label: 'Password', content: 'Change your password here.' },
-          children: [],
+          props: { content: 'Change your password here.' },
+          children: [
+            {
+              id: generateId(),
+              type: 'TabTrigger',
+              label: 'Password',
+              props: { text: 'Password' },
+              children: [],
+              styleSourceIds: [],
+            },
+          ],
           styleSourceIds: [],
         },
         {
           id: generateId(),
           type: 'TabPanel',
           label: 'Tab 3',
-          props: { label: 'Settings', content: 'Other settings.' },
-          children: [],
+          props: { content: 'Other settings.' },
+          children: [
+            {
+              id: generateId(),
+              type: 'TabTrigger',
+              label: 'Settings',
+              props: { text: 'Settings' },
+              children: [],
+              styleSourceIds: [],
+            },
+          ],
           styleSourceIds: [],
         },
       ];

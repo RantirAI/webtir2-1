@@ -59,15 +59,26 @@ export const TabsDataEditor: React.FC<TabsDataEditorProps> = ({ instance }) => {
 
   const addTabPanel = () => {
     const newPanelId = generateId();
+    const newTriggerId = generateId();
+    const tabNumber = tabPanels.length + 1;
+    
     const newPanel: ComponentInstance = {
       id: newPanelId,
       type: 'TabPanel' as any,
-      label: `Tab ${tabPanels.length + 1}`,
+      label: `Tab ${tabNumber}`,
       props: { 
-        label: `Tab ${tabPanels.length + 1}`, 
-        content: `Content for Tab ${tabPanels.length + 1}` 
+        content: `Content for Tab ${tabNumber}` 
       },
-      children: [],
+      children: [
+        {
+          id: newTriggerId,
+          type: 'TabTrigger' as any,
+          label: `Tab ${tabNumber}`,
+          props: { text: `Tab ${tabNumber}` },
+          children: [],
+          styleSourceIds: [],
+        },
+      ],
       styleSourceIds: [],
     };
     
