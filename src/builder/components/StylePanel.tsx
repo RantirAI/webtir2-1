@@ -3526,6 +3526,9 @@ export const StylePanel: React.FC<StylePanelProps> = ({
               selectedInstance.type === "RadioGroup" ||
               selectedInstance.type === "CheckboxField" ||
               selectedInstance.type === "Table" ||
+              (selectedInstance.type as string) === "TableRow" ||
+              (selectedInstance.type as string) === "TableHeaderCell" ||
+              (selectedInstance.type as string) === "TableCell" ||
               selectedInstance.type === "Accordion" ||
               selectedInstance.type === "Carousel" ||
               (selectedInstance.type as string) === "CarouselSlide" ||
@@ -4855,6 +4858,12 @@ export const StylePanel: React.FC<StylePanelProps> = ({
 
                   {/* Table Settings */}
                   {selectedInstance.type === "Table" && <TableDataEditor instance={selectedInstance} />}
+                  
+                  {/* Table Row Settings */}
+                  {(selectedInstance.type as string) === "TableRow" && <TableRowDataEditor instance={selectedInstance} />}
+                  
+                  {/* Table Cell Settings */}
+                  {((selectedInstance.type as string) === "TableHeaderCell" || (selectedInstance.type as string) === "TableCell") && <TableCellDataEditor instance={selectedInstance} />}
 
                   {/* Slider Settings */}
                   {selectedInstance.type === "Slider" && <SliderDataEditor instance={selectedInstance} />}

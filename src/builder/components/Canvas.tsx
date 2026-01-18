@@ -766,20 +766,66 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
         }
         return wrapWithDraggable(<LinkPrimitive key={instance.id} {...commonProps} />);
       }
-      case 'Table':
-        return wrapWithDraggable(
-          <TablePrimitive 
-            key={instance.id} 
-            instance={instance}
-            isSelected={isSelected}
-            onUpdateProp={(key, value) => {
-              const { updateInstance } = useBuilderStore.getState();
-              updateInstance(instance.id, {
-                props: { ...instance.props, [key]: value }
-              });
+      case 'Table': {
+        // Children-based Table rendering
+        const tableStyles = instance.props?.tableStyles || {};
+        const headerRows = instance.children.filter(c => c.type === 'TableRow' && c.props?.isHeader);
+        const bodyRows = instance.children.filter(c => c.type === 'TableRow' && !c.props?.isHeader);
+        
+        const getShadowClass = (shadow: string) => {
+          switch(shadow) {
+            case 'sm': return '0 1px 2px rgba(0,0,0,0.05)';
+            case 'md': return '0 4px 6px -1px rgba(0,0,0,0.1)';
+            case 'lg': return '0 10px 15px -3px rgba(0,0,0,0.1)';
+            default: return 'none';
+          }
+        };
+
+        const tableContent = (
+          <div
+            data-instance-id={instance.id}
+            className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
+            style={{
+              ...getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties,
+              backgroundColor: tableStyles.tableBackground || 'transparent',
+              borderRadius: `${tableStyles.outerBorderRadius || 8}px`,
+              boxShadow: getShadowClass(tableStyles.tableShadow),
+              overflow: 'hidden',
             }}
-          />
+            onClick={isPreviewMode ? undefined : (e) => { e.stopPropagation(); setSelectedInstanceId(instance.id); }}
+            onMouseEnter={isPreviewMode ? undefined : () => setHoveredInstanceId(instance.id)}
+            onMouseLeave={isPreviewMode ? undefined : () => setHoveredInstanceId(null)}
+            onContextMenu={isPreviewMode ? undefined : (e) => handleContextMenu(e, instance)}
+          >
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              {headerRows.length > 0 && (
+                <thead>
+                  {headerRows.map((row, idx) => renderInstance(row, instance, idx))}
+                </thead>
+              )}
+              <tbody>
+                {bodyRows.length > 0 
+                  ? bodyRows.map((row, idx) => renderInstance(row, instance, idx))
+                  : !isPreviewMode ? (
+                    <tr>
+                      <td colSpan={100}>
+                        <div className="flex items-center justify-center h-16 border-2 border-dashed border-blue-300 rounded-lg bg-blue-50/50 dark:bg-blue-950/20">
+                          <span className="text-sm text-blue-500 font-medium">Drop rows here</span>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : null}
+              </tbody>
+            </table>
+          </div>
         );
+        
+        return isPreviewMode ? tableContent : (
+          <DroppableContainer key={instance.id} instance={instance} {...commonProps}>
+            {tableContent}
+          </DroppableContainer>
+        );
+      }
       case 'Form': {
         // If Form has children (new composite structure), render as Div container
         if (instance.children && instance.children.length > 0) {
@@ -1764,21 +1810,37 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
 
       // Table child primitives
       case 'TableRow': {
+        // Get tableStyles from parent Table for styling
+        const parentTable = parentInstance && parentInstance.type === 'Table' ? parentInstance : null;
+        const tableStyles = parentTable?.props?.tableStyles || {};
         const isHeader = instance.props?.isHeader || false;
-        const RowTag = isHeader ? 'thead' : 'tbody';
+        const rowIndex = parentInstance?.children.filter(c => !c.props?.isHeader).indexOf(instance) ?? 0;
+        const isStriped = tableStyles.striped && !isHeader && rowIndex % 2 === 1;
+        
         const content = (
-          <RowTag
+          <tr
             data-instance-id={instance.id}
-            style={getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties}
+            style={{
+              ...getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties,
+              backgroundColor: isStriped ? (tableStyles.stripedColor || 'hsl(var(--muted) / 0.5)') : undefined,
+              ...(tableStyles.hoverable && !isHeader ? { cursor: 'pointer' } : {}),
+            }}
+            className={tableStyles.hoverable && !isHeader ? 'hover:bg-muted/50' : ''}
             onClick={isPreviewMode ? undefined : (e) => { e.stopPropagation(); setSelectedInstanceId(instance.id); }}
             onMouseEnter={isPreviewMode ? undefined : () => setHoveredInstanceId(instance.id)}
             onMouseLeave={isPreviewMode ? undefined : () => setHoveredInstanceId(null)}
             onContextMenu={isPreviewMode ? undefined : (e) => handleContextMenu(e, instance)}
           >
-            <tr>
-              {instance.children.map((child, idx) => renderInstance(child, instance, idx))}
-            </tr>
-          </RowTag>
+            {instance.children.length > 0 
+              ? instance.children.map((child, idx) => renderInstance(child, instance, idx))
+              : !isPreviewMode ? (
+                <td colSpan={100}>
+                  <div className="flex items-center justify-center h-10 border-2 border-dashed border-blue-300 rounded bg-blue-50/50 dark:bg-blue-950/20">
+                    <span className="text-xs text-blue-500 font-medium">Drop cells here</span>
+                  </div>
+                </td>
+              ) : null}
+          </tr>
         );
         return isPreviewMode ? content : (
           <DroppableContainer key={instance.id} instance={instance} {...commonProps}>
@@ -1788,15 +1850,29 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
       }
 
       case 'TableHeaderCell': {
+        // Get tableStyles from grandparent Table
+        let tableStyles: any = {};
+        if (parentInstance?.type === 'TableRow') {
+          const { rootInstance } = useBuilderStore.getState();
+          const tableParent = rootInstance.children.find(c => 
+            c.type === 'Table' && c.children.some(row => row.id === parentInstance.id)
+          );
+          tableStyles = tableParent?.props?.tableStyles || {};
+        }
+        
         const content = (
           <th
             data-instance-id={instance.id}
             style={{
               ...getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties,
-              padding: '12px',
-              fontWeight: '600',
+              padding: `${tableStyles.cellPadding || 12}px`,
+              fontWeight: tableStyles.headerFontWeight || '600',
+              fontSize: `${tableStyles.headerFontSize || 14}px`,
               textAlign: 'left',
-              backgroundColor: 'hsl(var(--muted))',
+              backgroundColor: tableStyles.headerBackground || 'hsl(var(--muted))',
+              color: tableStyles.headerTextColor || 'hsl(var(--foreground))',
+              borderBottom: tableStyles.borderStyle !== 'none' ? `${tableStyles.borderWidth || 1}px solid ${tableStyles.borderColor || 'hsl(var(--border))'}` : undefined,
+              ...(tableStyles.bordered ? { border: `${tableStyles.borderWidth || 1}px solid ${tableStyles.borderColor || 'hsl(var(--border))'}` } : {}),
             }}
             onClick={isPreviewMode ? undefined : (e) => { e.stopPropagation(); setSelectedInstanceId(instance.id); }}
             onMouseEnter={isPreviewMode ? undefined : () => setHoveredInstanceId(instance.id)}
@@ -1816,12 +1892,27 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
       }
 
       case 'TableCell': {
+        // Get tableStyles from grandparent Table
+        let tableStyles: any = {};
+        if (parentInstance?.type === 'TableRow') {
+          const { rootInstance } = useBuilderStore.getState();
+          const tableParent = rootInstance.children.find(c => 
+            c.type === 'Table' && c.children.some(row => row.id === parentInstance.id)
+          );
+          tableStyles = tableParent?.props?.tableStyles || {};
+        }
+        
         const content = (
           <td
             data-instance-id={instance.id}
             style={{
               ...getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties,
-              padding: '12px',
+              padding: `${tableStyles.cellPadding || 12}px`,
+              fontSize: `${tableStyles.cellFontSize || 14}px`,
+              backgroundColor: tableStyles.cellBackground || 'transparent',
+              color: tableStyles.cellTextColor || 'hsl(var(--foreground))',
+              borderBottom: tableStyles.borderStyle !== 'none' ? `${tableStyles.borderWidth || 1}px solid ${tableStyles.borderColor || 'hsl(var(--border))'}` : undefined,
+              ...(tableStyles.bordered ? { border: `${tableStyles.borderWidth || 1}px solid ${tableStyles.borderColor || 'hsl(var(--border))'}` } : {}),
             }}
             onClick={isPreviewMode ? undefined : (e) => { e.stopPropagation(); setSelectedInstanceId(instance.id); }}
             onMouseEnter={isPreviewMode ? undefined : () => setHoveredInstanceId(instance.id)}

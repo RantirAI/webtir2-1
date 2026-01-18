@@ -1485,15 +1485,19 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
   // ---------------------------------------------------------------------------
   const tableId = generateId();
   const tableHeaderId = generateId();
-  const tableHeaderRow = generateId();
-  const tableH1Id = generateId();
-  const tableH2Id = generateId();
-  const tableH3Id = generateId();
-  const tableBodyId = generateId();
+  // Table row/cell IDs
+  const tableHeaderRowId = generateId();
   const tableRow1Id = generateId();
-  const tableD1Id = generateId();
-  const tableD2Id = generateId();
-  const tableD3Id = generateId();
+  const tableRow2Id = generateId();
+  const headerCell1Id = generateId();
+  const headerCell2Id = generateId();
+  const headerCell3Id = generateId();
+  const cell1_1Id = generateId();
+  const cell1_2Id = generateId();
+  const cell1_3Id = generateId();
+  const cell2_1Id = generateId();
+  const cell2_2Id = generateId();
+  const cell2_3Id = generateId();
 
   prebuilts.push({
     id: 'system-table',
@@ -1504,20 +1508,66 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
       type: 'Table' as ComponentType,
       label: 'Table',
       props: {
-        columns: [
-          { id: 'name', header: 'Name', accessor: 'name' },
-          { id: 'status', header: 'Status', accessor: 'status' },
-          { id: 'amount', header: 'Amount', accessor: 'amount' },
-        ],
-        rows: [
-          { id: '1', name: 'John Doe', status: 'Active', amount: '$250.00' },
-          { id: '2', name: 'Jane Smith', status: 'Pending', amount: '$150.00' },
-        ],
-        showHeader: true,
-        striped: false,
+        tableStyles: {
+          template: 'simple',
+          headerBackground: 'hsl(var(--muted))',
+          headerTextColor: 'hsl(var(--foreground))',
+          headerFontWeight: '600',
+          headerFontSize: '14',
+          cellBackground: 'transparent',
+          cellTextColor: 'hsl(var(--foreground))',
+          cellFontSize: '14',
+          cellPadding: '12',
+          borderStyle: 'horizontal',
+          borderColor: 'hsl(var(--border))',
+          borderWidth: '1',
+          outerBorderRadius: '8',
+          tableBackground: 'transparent',
+          tableShadow: 'none',
+        },
       },
       styleSourceIds: ['style-table-wrapper'],
-      children: [],
+      children: [
+        // Header Row
+        {
+          id: tableHeaderRowId,
+          type: 'TableRow' as ComponentType,
+          label: 'Header Row',
+          props: { isHeader: true },
+          children: [
+            { id: headerCell1Id, type: 'TableHeaderCell' as ComponentType, label: 'Name', props: { content: 'Name' }, children: [], styleSourceIds: [] },
+            { id: headerCell2Id, type: 'TableHeaderCell' as ComponentType, label: 'Status', props: { content: 'Status' }, children: [], styleSourceIds: [] },
+            { id: headerCell3Id, type: 'TableHeaderCell' as ComponentType, label: 'Amount', props: { content: 'Amount' }, children: [], styleSourceIds: [] },
+          ],
+          styleSourceIds: [],
+        },
+        // Data Row 1
+        {
+          id: tableRow1Id,
+          type: 'TableRow' as ComponentType,
+          label: 'Row 1',
+          props: { isHeader: false },
+          children: [
+            { id: cell1_1Id, type: 'TableCell' as ComponentType, label: 'John Doe', props: { content: 'John Doe' }, children: [], styleSourceIds: [] },
+            { id: cell1_2Id, type: 'TableCell' as ComponentType, label: 'Active', props: { content: 'Active' }, children: [], styleSourceIds: [] },
+            { id: cell1_3Id, type: 'TableCell' as ComponentType, label: '$250.00', props: { content: '$250.00' }, children: [], styleSourceIds: [] },
+          ],
+          styleSourceIds: [],
+        },
+        // Data Row 2
+        {
+          id: tableRow2Id,
+          type: 'TableRow' as ComponentType,
+          label: 'Row 2',
+          props: { isHeader: false },
+          children: [
+            { id: cell2_1Id, type: 'TableCell' as ComponentType, label: 'Jane Smith', props: { content: 'Jane Smith' }, children: [], styleSourceIds: [] },
+            { id: cell2_2Id, type: 'TableCell' as ComponentType, label: 'Pending', props: { content: 'Pending' }, children: [], styleSourceIds: [] },
+            { id: cell2_3Id, type: 'TableCell' as ComponentType, label: '$150.00', props: { content: '$150.00' }, children: [], styleSourceIds: [] },
+          ],
+          styleSourceIds: [],
+        },
+      ],
     },
     defaultStyles: {
       'style-table-wrapper': createStyleEntry({
