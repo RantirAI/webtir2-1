@@ -2239,6 +2239,8 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
             key={pageId}
             className={`builder-page ${!isPreviewMode ? 'scrollbar-thin' : ''} ${isCurrentPage ? 'ring-2 ring-blue-500' : ''} ${isAddingComment && isCurrentPage ? 'cursor-crosshair' : ''}`}
             style={{ 
+              // Fallback white background for imported content without explicit backgrounds
+              backgroundColor: '#ffffff',
               ...pageStyles,
               width: isPreviewMode ? '100%' : `${frameWidth}px`,
               minHeight: isPreviewMode ? '100vh' : '1200px',
