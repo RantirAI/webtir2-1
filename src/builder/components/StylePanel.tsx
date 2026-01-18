@@ -80,6 +80,7 @@ import { AttributeRow } from "./AttributeRow";
 import { ComponentInstance } from "../store/types";
 import { AccordionDataEditor } from "./data-editors/AccordionDataEditor";
 import { CarouselDataEditor } from "./data-editors/CarouselDataEditor";
+import { CarouselSlideDataEditor } from "./data-editors/CarouselSlideDataEditor";
 import { TabsDataEditor } from "./data-editors/TabsDataEditor";
 import { TableDataEditor } from "./data-editors/TableDataEditor";
 import { SliderDataEditor } from "./data-editors/SliderDataEditor";
@@ -4834,6 +4835,9 @@ export const StylePanel: React.FC<StylePanelProps> = ({
 
                   {/* Carousel Settings */}
                   {selectedInstance.type === "Carousel" && <CarouselDataEditor instance={selectedInstance} />}
+
+                  {/* Carousel Slide Settings */}
+                  {selectedInstance.type === "CarouselSlide" && <CarouselSlideDataEditor instance={selectedInstance} />}
 
                   {/* Tabs Settings */}
                   {selectedInstance.type === "Tabs" && <TabsDataEditor instance={selectedInstance} />}
