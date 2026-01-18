@@ -82,6 +82,7 @@ import { AccordionDataEditor } from "./data-editors/AccordionDataEditor";
 import { CarouselDataEditor } from "./data-editors/CarouselDataEditor";
 import { CarouselSlideDataEditor } from "./data-editors/CarouselSlideDataEditor";
 import { TabsDataEditor } from "./data-editors/TabsDataEditor";
+import { TabPanelDataEditor } from "./data-editors/TabPanelDataEditor";
 import { TableDataEditor } from "./data-editors/TableDataEditor";
 import { SliderDataEditor } from "./data-editors/SliderDataEditor";
 import { AlertDialogDataEditor } from "./data-editors/AlertDialogDataEditor";
@@ -3528,6 +3529,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({
               selectedInstance.type === "Carousel" ||
               (selectedInstance.type as string) === "CarouselSlide" ||
               selectedInstance.type === "Tabs" ||
+              (selectedInstance.type as string) === "TabPanel" ||
               selectedInstance.type === "Slider" ||
               selectedInstance.type === "AlertDialog" ||
               selectedInstance.type === "Avatar" ||
@@ -4842,6 +4844,9 @@ export const StylePanel: React.FC<StylePanelProps> = ({
 
                   {/* Tabs Settings */}
                   {selectedInstance.type === "Tabs" && <TabsDataEditor instance={selectedInstance} />}
+
+                  {/* Tab Panel Settings */}
+                  {(selectedInstance.type as string) === "TabPanel" && <TabPanelDataEditor instance={selectedInstance} />}
 
                   {/* Table Settings */}
                   {selectedInstance.type === "Table" && <TableDataEditor instance={selectedInstance} />}

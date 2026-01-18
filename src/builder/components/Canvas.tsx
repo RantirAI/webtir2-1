@@ -103,28 +103,28 @@ const TabsComponent: React.FC<{
   handleContextMenu: (e: React.MouseEvent, instance: ComponentInstance) => void;
   renderInstance?: (instance: ComponentInstance, parent?: ComponentInstance, index?: number) => React.ReactNode;
 }> = ({ instance, tabs, defaultTab, isPreviewMode, getComputedStyles, setSelectedInstanceId, setHoveredInstanceId, handleContextMenu, renderInstance }) => {
-  // Check for TabPanel children first
-  const childPanels = instance.children.filter(c => c.type === 'TabPanel');
-  const hasChildPanels = childPanels.length > 0;
+  // Get TabPanel children only - no fallback to props.tabs
+  const tabPanels = instance.children.filter(c => c.type === 'TabPanel');
   
-  // Combine data tabs with child panels
-  const allTabs = hasChildPanels 
-    ? childPanels.map((child, index) => ({
-        id: child.id,
-        label: child.props?.label || `Tab ${index + 1}`,
-        content: child,
-        isChildBased: true,
-      }))
-    : tabs;
+  // Map TabPanel children to tab data
+  const allTabs = tabPanels.map((child, index) => ({
+    id: child.id,
+    label: child.props?.label || `Tab ${index + 1}`,
+    content: child,
+    disabled: child.props?.disabled || false,
+  }));
   
-  const [activeTab, setActiveTab] = useState(hasChildPanels ? (allTabs[0]?.id || '') : defaultTab);
+  const [activeTab, setActiveTab] = useState(allTabs[0]?.id || '');
 
-  // Reset active tab when defaultTab changes
+  // Reset active tab when defaultTab changes or tabs change
   useEffect(() => {
-    if (!hasChildPanels) {
-      setActiveTab(defaultTab);
+    const defaultTabId = instance.props?.defaultTab;
+    if (defaultTabId && allTabs.some(t => t.id === defaultTabId)) {
+      setActiveTab(defaultTabId);
+    } else if (allTabs.length > 0 && !allTabs.some(t => t.id === activeTab)) {
+      setActiveTab(allTabs[0].id);
     }
-  }, [defaultTab, hasChildPanels]);
+  }, [instance.props?.defaultTab, allTabs.length]);
 
   // Get tabsStyles from instance props
   const tabsStyles = instance.props?.tabsStyles || {
@@ -247,9 +247,9 @@ const TabsComponent: React.FC<{
           minHeight: '60px',
         }}
       >
-        {activeTabData?.isChildBased && renderInstance
+        {activeTabData && renderInstance
           ? renderInstance(activeTabData.content, instance, 0)
-          : (activeTabData?.content || 'Tab content')}
+          : (activeTabData?.content?.props?.content || 'Tab content')}
       </div>
       
       {/* Render generic children (Text, Button, etc.) that were dropped directly into Tabs */}
