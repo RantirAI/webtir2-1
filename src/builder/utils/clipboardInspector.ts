@@ -8,25 +8,45 @@ export type ClipboardSource = 'webflow' | 'figma' | 'framer' | 'html' | 'text' |
 
 /**
  * Extract Figma data from HTML clipboard content
- * Figma embeds data as base64-encoded JSON in a data-metadata attribute
- * Format: <span data-metadata="<!--(figmeta)BASE64DATA(/figmeta)-->">
+ * Figma embeds data in two sections:
+ * - <!--(figmeta)BASE64(/figmeta)--> : metadata (fileKey, pasteID, dataType)
+ * - <!--(figma)BASE64(/figma)--> : actual node data
  */
 function extractFigmaFromHtml(html: string): any | null {
   if (!html) return null;
   
-  // Look for the figmeta pattern in the HTML
-  const figmetaMatch = html.match(/<!--\(figmeta\)([A-Za-z0-9+/=]+)\(\/figmeta\)-->/);
-  if (!figmetaMatch || !figmetaMatch[1]) return null;
+  // First check if this looks like Figma clipboard data
+  const hasFigmeta = html.includes('(figmeta)') && html.includes('(/figmeta)');
+  if (!hasFigmeta) return null;
   
-  try {
-    // Decode the base64 data
-    const decoded = atob(figmetaMatch[1]);
-    const parsed = JSON.parse(decoded);
-    return parsed;
-  } catch (e) {
-    console.warn('Failed to decode Figma metadata:', e);
-    return null;
+  // Look for the actual figma node data (not figmeta which is just metadata)
+  const figmaMatch = html.match(/<!--\(figma\)([A-Za-z0-9+/=]+)\(\/figma\)-->/);
+  
+  if (figmaMatch && figmaMatch[1]) {
+    try {
+      const decoded = atob(figmaMatch[1]);
+      const parsed = JSON.parse(decoded);
+      return parsed;
+    } catch (e) {
+      console.warn('Failed to decode Figma data:', e);
+    }
   }
+  
+  // Fallback: try figmeta (older format or different paste type)
+  const figmetaMatch = html.match(/<!--\(figmeta\)([A-Za-z0-9+/=]+)\(\/figmeta\)-->/);
+  if (figmetaMatch && figmetaMatch[1]) {
+    try {
+      const decoded = atob(figmetaMatch[1]);
+      const parsed = JSON.parse(decoded);
+      // figmeta typically contains { fileKey, pasteID, dataType } - not nodes
+      // but return it anyway so we can detect it's Figma
+      return parsed;
+    } catch (e) {
+      console.warn('Failed to decode Figma metadata:', e);
+    }
+  }
+  
+  return null;
 }
 
 export interface ClipboardPayload {
