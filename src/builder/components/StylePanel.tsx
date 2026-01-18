@@ -4837,7 +4837,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({
                   {selectedInstance.type === "Carousel" && <CarouselDataEditor instance={selectedInstance} />}
 
                   {/* Carousel Slide Settings */}
-                  {selectedInstance.type === "CarouselSlide" && <CarouselSlideDataEditor instance={selectedInstance} />}
+                  {(selectedInstance.type as string) === "CarouselSlide" && <CarouselSlideDataEditor instance={selectedInstance} />}
 
                   {/* Tabs Settings */}
                   {selectedInstance.type === "Tabs" && <TabsDataEditor instance={selectedInstance} />}
