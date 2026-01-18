@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Upload, CheckCircle2, Package, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { detectPastedSource, parseWebflowData, getSourceLabel, ClipboardSource, inspectClipboard } from '../utils/clipboardInspector';
+import { detectPastedSource, parseWebflowData, getSourceLabel, ClipboardSource, inspectClipboard, parseFigmaData } from '../utils/clipboardInspector';
 import { translateWebflowToWebtir, getWebflowDataSummary } from '../utils/webflowTranslator';
 import { translateFigmaToWebtir, getFigmaDataSummary, isFigmaData } from '../utils/figmaTranslator';
 import { useBuilderStore } from '../store/useBuilderStore';
@@ -80,14 +80,12 @@ export const ImportModal: React.FC<ImportModalProps> = ({ open, onOpenChange, on
         setConvertPreview({ nodes: summary.nodeCount, styles: summary.styleCount });
       }
     } else if (source === 'figma') {
-      // Try to parse Figma data for preview
-      try {
-        const parsed = JSON.parse(text);
-        if (isFigmaData(parsed)) {
-          const summary = getFigmaDataSummary(parsed);
-          setConvertPreview({ nodes: summary.nodeCount, styles: summary.textCount });
-        }
-      } catch {
+      // Try to parse Figma data for preview (handles both HTML figmeta and raw JSON)
+      const figmaData = parseFigmaData(text);
+      if (figmaData && isFigmaData(figmaData)) {
+        const summary = getFigmaDataSummary(figmaData);
+        setConvertPreview({ nodes: summary.nodeCount, styles: summary.textCount });
+      } else {
         setConvertPreview(null);
       }
     } else {
@@ -178,24 +176,23 @@ export const ImportModal: React.FC<ImportModalProps> = ({ open, onOpenChange, on
 
       // Handle Figma conversion
       if (detectedSource === 'figma' || activePlatform === 'figma') {
-        try {
-          const parsed = JSON.parse(pastedCode);
-          if (isFigmaData(parsed)) {
-            const instance = translateFigmaToWebtir(parsed);
-            if (instance) {
-              addInstance(instance, rootInstance.id);
-              toast({
-                title: 'Figma Import Success',
-                description: `Imported ${convertPreview?.nodes || 0} components with ${convertPreview?.styles || 0} text elements.`,
-              });
-              onImportComplete?.();
-              resetAndClose();
-              return;
-            }
+        // Parse Figma data (handles both HTML figmeta format and raw JSON)
+        const figmaData = parseFigmaData(pastedCode);
+        
+        if (figmaData && isFigmaData(figmaData)) {
+          const instance = translateFigmaToWebtir(figmaData);
+          if (instance) {
+            addInstance(instance, rootInstance.id);
+            toast({
+              title: 'Figma Import Success',
+              description: `Imported ${convertPreview?.nodes || 0} components with ${convertPreview?.styles || 0} text elements.`,
+            });
+            onImportComplete?.();
+            resetAndClose();
+            return;
           }
-        } catch (e) {
-          // Invalid JSON
         }
+        
         toast({
           title: 'Conversion Failed',
           description: 'Could not parse Figma data. Make sure you copied from Figma correctly.',
