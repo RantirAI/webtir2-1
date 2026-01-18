@@ -6,6 +6,29 @@
 
 export type ClipboardSource = 'webflow' | 'figma' | 'framer' | 'html' | 'text' | 'unknown';
 
+/**
+ * Extract Figma data from HTML clipboard content
+ * Figma embeds data as base64-encoded JSON in a data-metadata attribute
+ * Format: <span data-metadata="<!--(figmeta)BASE64DATA(/figmeta)-->">
+ */
+function extractFigmaFromHtml(html: string): any | null {
+  if (!html) return null;
+  
+  // Look for the figmeta pattern in the HTML
+  const figmetaMatch = html.match(/<!--\(figmeta\)([A-Za-z0-9+/=]+)\(\/figmeta\)-->/);
+  if (!figmetaMatch || !figmetaMatch[1]) return null;
+  
+  try {
+    // Decode the base64 data
+    const decoded = atob(figmetaMatch[1]);
+    const parsed = JSON.parse(decoded);
+    return parsed;
+  } catch (e) {
+    console.warn('Failed to decode Figma metadata:', e);
+    return null;
+  }
+}
+
 export interface ClipboardPayload {
   source: ClipboardSource;
   data: any;
@@ -139,6 +162,20 @@ export function inspectClipboard(event: ClipboardEvent): ClipboardPayload {
   }
 
   // --- Figma ---
+  // Figma copies data as HTML containing base64-encoded figmeta
+  // Format: <span data-metadata="<!--(figmeta)BASE64DATA(/figmeta)-->">
+  const figmaData = extractFigmaFromHtml(htmlData);
+  
+  if (figmaData) {
+    return {
+      source: 'figma',
+      data: figmaData,
+      rawText: JSON.stringify(figmaData, null, 2),
+      mimeTypes,
+    };
+  }
+  
+  // Fallback: Check for direct Figma MIME types or JSON patterns
   const isFigma =
     mimeTypes.includes('application/x-figma-design') ||
     mimeTypes.some((t) => t.toLowerCase().includes('figma'));
@@ -253,7 +290,12 @@ export function detectPastedSource(text: string): ClipboardSource {
     return 'webflow';
   }
   
-  // Figma
+  // Figma - check for figmeta pattern in HTML first
+  if (trimmed.includes('(figmeta)') && trimmed.includes('(/figmeta)')) {
+    return 'figma';
+  }
+  
+  // Figma - check for JSON patterns
   if (trimmed.includes('"figma"') || 
       trimmed.includes('"type":"FRAME"') ||
       trimmed.includes('"type":"COMPONENT"')) {
@@ -278,6 +320,25 @@ export function detectPastedSource(text: string): ClipboardSource {
   }
   
   return 'text';
+}
+
+/**
+ * Parse Figma data from pasted text (handles both HTML with figmeta and raw JSON)
+ */
+export function parseFigmaData(text: string): any | null {
+  if (!text) return null;
+  
+  // Try extracting from HTML figmeta format first
+  const figmaFromHtml = extractFigmaFromHtml(text);
+  if (figmaFromHtml) return figmaFromHtml;
+  
+  // Try parsing as JSON directly
+  try {
+    const parsed = JSON.parse(text.trim());
+    return parsed;
+  } catch {
+    return null;
+  }
 }
 
 /**
