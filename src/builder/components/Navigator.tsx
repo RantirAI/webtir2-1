@@ -10,10 +10,14 @@ import * as Icons from 'lucide-react';
 import { componentRegistry } from '../primitives/registry';
 import { useSortable } from '@dnd-kit/sortable';
 import { useDroppable } from '@dnd-kit/core';
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { canDropInside } from '../utils/instance';
 import { duplicateInstanceWithLinkage, applyDuplicationLinks } from '../utils/duplication';
 import { CreateComponentDialog } from './CreateComponentDialog';
+
+// Type for drop position - where the item should be inserted
+type DropPosition = 'before' | 'inside' | 'after' | null;
 
 interface ContextMenuState {
   x: number;
@@ -130,17 +134,20 @@ export const Navigator: React.FC = () => {
     setContextMenu(null);
   };
 
-  const TreeNode: React.FC<{ instance: ComponentInstance; level: number; isInsidePrebuilt?: boolean; prebuiltName?: string; isGlobal?: boolean }> = ({ 
+  const TreeNode: React.FC<{ instance: ComponentInstance; level: number; isInsidePrebuilt?: boolean; prebuiltName?: string; isGlobal?: boolean; siblingIds?: string[] }> = ({ 
     instance, 
     level, 
     isInsidePrebuilt = false,
     prebuiltName,
-    isGlobal = false
+    isGlobal = false,
+    siblingIds = []
   }) => {
     const isExpanded = expandedIds.has(instance.id);
     const isSelected = instance.id === selectedInstanceId;
     const hasChildren = instance.children.length > 0;
     const isRoot = instance.id === 'root';
+    const nodeRef = useRef<HTMLDivElement>(null);
+    const [dropPosition, setDropPosition] = useState<DropPosition>(null);
     
     // Check if this is a linked prebuilt instance
     const isLinkedInstance = useComponentInstanceStore((state) => state.isLinkedInstance);
@@ -192,9 +199,9 @@ export const Navigator: React.FC = () => {
       },
     });
 
-    // Setup droppable for container elements
+    // Setup droppable for this element (both container and between-sibling drops)
     const { isOver, setNodeRef: setDropRef, active } = useDroppable({
-      id: `nav-drop-${instance.id}`,
+      id: instance.id,
       disabled: isRoot,
       data: { 
         instanceId: instance.id, 
@@ -203,15 +210,55 @@ export const Navigator: React.FC = () => {
       },
     });
 
-    // Determine if this is a valid drop target
+    // Determine drop position based on pointer location
+    useEffect(() => {
+      if (!isOver || !active || !nodeRef.current) {
+        setDropPosition(null);
+        return;
+      }
+
+      const handleMouseMove = (e: MouseEvent) => {
+        if (!nodeRef.current) return;
+        
+        const rect = nodeRef.current.getBoundingClientRect();
+        const y = e.clientY - rect.top;
+        const height = rect.height;
+        const topThird = height / 3;
+        const bottomThird = height * 2 / 3;
+        
+        const activeInstance = active.data.current?.instance as ComponentInstance | undefined;
+        const draggedType = activeInstance?.type || active.data.current?.type;
+        const canBeContainer = canDropInside(instance.type, draggedType);
+        
+        if (y < topThird) {
+          setDropPosition('before');
+        } else if (y > bottomThird) {
+          setDropPosition('after');
+        } else if (canBeContainer) {
+          setDropPosition('inside');
+        } else {
+          // If not a container, treat middle as "after"
+          setDropPosition('after');
+        }
+      };
+
+      document.addEventListener('mousemove', handleMouseMove);
+      return () => document.removeEventListener('mousemove', handleMouseMove);
+    }, [isOver, active, instance.type]);
+
+    // Determine if this is a valid drop target for "inside"
     const activeInstance = active?.data.current?.instance as ComponentInstance | undefined;
     const draggedType = activeInstance?.type || active?.data.current?.type;
     const canAcceptDrop = canDropInside(instance.type, draggedType);
-    const showValidDropZone = isOver && canAcceptDrop;
-    const showInvalidDropZone = isOver && !canAcceptDrop;
+    
+    // Visual states
+    const showInsideDropZone = isOver && dropPosition === 'inside' && canAcceptDrop;
+    const showBeforeIndicator = isOver && dropPosition === 'before' && !isRoot;
+    const showAfterIndicator = isOver && dropPosition === 'after' && !isRoot;
 
     // Combine refs
     const setNodeRef = (node: HTMLElement | null) => {
+      (nodeRef as React.MutableRefObject<HTMLElement | null>).current = node;
       if (!isRoot) {
         setDragRef(node);
         setDropRef(node);
@@ -233,26 +280,42 @@ export const Navigator: React.FC = () => {
 
     return (
       <div ref={setNodeRef} style={style} {...(!isRoot ? attributes : {})} {...(!isRoot ? listeners : {})}>
-        {/* Valid drop zone indicator */}
-        {showValidDropZone && (
+        {/* Before insertion indicator */}
+        {showBeforeIndicator && (
+          <div
+            className="absolute left-0 right-0 pointer-events-none"
+            style={{
+              top: '-2px',
+              height: '4px',
+              backgroundColor: 'hsl(217, 91%, 60%)',
+              borderRadius: '2px',
+              boxShadow: '0 0 4px rgba(59, 130, 246, 0.6)',
+              zIndex: 20,
+            }}
+          >
+            <div
+              className="absolute"
+              style={{
+                left: `${level * 16}px`,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                width: '8px',
+                height: '8px',
+                backgroundColor: 'hsl(217, 91%, 60%)',
+                borderRadius: '50%',
+              }}
+            />
+          </div>
+        )}
+
+        {/* Inside container drop zone indicator */}
+        {showInsideDropZone && (
           <div
             className="absolute inset-0 pointer-events-none rounded-md"
             style={{
               backgroundColor: 'rgba(59, 130, 246, 0.1)',
               border: '2px solid hsl(217, 91%, 60%)',
               boxShadow: '0 0 8px rgba(59, 130, 246, 0.4)',
-              zIndex: 10,
-            }}
-          />
-        )}
-
-        {/* Invalid drop zone indicator */}
-        {showInvalidDropZone && (
-          <div
-            className="absolute inset-0 pointer-events-none rounded-md"
-            style={{
-              backgroundColor: 'rgba(239, 68, 68, 0.1)',
-              border: '2px dashed hsl(0, 84%, 60%)',
               zIndex: 10,
             }}
           />
@@ -321,12 +384,12 @@ export const Navigator: React.FC = () => {
           )}
         </div>
 
-        {/* Insertion line indicator between siblings */}
-        {isOver && !canAcceptDrop && (
+        {/* After insertion indicator */}
+        {showAfterIndicator && !hasChildren && (
           <div
             className="absolute left-0 right-0 pointer-events-none"
             style={{
-              top: '-2px',
+              bottom: '-2px',
               height: '4px',
               backgroundColor: 'hsl(217, 91%, 60%)',
               borderRadius: '2px',
@@ -349,18 +412,25 @@ export const Navigator: React.FC = () => {
           </div>
         )}
 
+        {/* Children with SortableContext for proper reordering */}
         {hasChildren && isExpanded && (
-          <div>
-            {instance.children.map((child) => (
-              <TreeNode 
-                key={child.id} 
-                instance={child} 
-                level={level + 1} 
-                isInsidePrebuilt={isPrebuiltStyled}
-                prebuiltName={currentPrebuiltName}
-              />
-            ))}
-          </div>
+          <SortableContext 
+            items={instance.children.map(c => c.id)} 
+            strategy={verticalListSortingStrategy}
+          >
+            <div>
+              {instance.children.map((child) => (
+                <TreeNode 
+                  key={child.id} 
+                  instance={child} 
+                  level={level + 1} 
+                  isInsidePrebuilt={isPrebuiltStyled}
+                  prebuiltName={currentPrebuiltName}
+                  siblingIds={instance.children.map(c => c.id)}
+                />
+              ))}
+            </div>
+          </SortableContext>
         )}
       </div>
     );
