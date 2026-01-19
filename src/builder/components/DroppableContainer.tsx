@@ -12,6 +12,7 @@ interface DroppableContainerProps {
   onHoverEnd?: () => void;
   onContextMenu?: (e: React.MouseEvent) => void;
   isInsideNavigation?: boolean;
+  isRootInstance?: boolean; // Flag to identify root instance - don't show empty state for root
 }
 
 export const DroppableContainer: React.FC<DroppableContainerProps> = ({
@@ -22,6 +23,7 @@ export const DroppableContainer: React.FC<DroppableContainerProps> = ({
   onHoverEnd,
   onContextMenu,
   isInsideNavigation = false,
+  isRootInstance = false,
 }) => {
   const { setNodeRef, isOver } = useDroppable({
     id: `droppable-${instance.id}`,
@@ -46,7 +48,9 @@ export const DroppableContainer: React.FC<DroppableContainerProps> = ({
   // Check if this is the Navigation root (Section with htmlTag='nav')
   const isNavigationRoot = instance.type === 'Section' && instance.props?.htmlTag === 'nav';
 
-  const isEmpty = isDroppableContainer && instance.children.length === 0;
+  // Only show empty state for non-root droppable containers that have no children
+  // Root instance should never show the "Drop elements here" placeholder
+  const isEmpty = isDroppableContainer && instance.children.length === 0 && !isRootInstance;
 
   return (
     <div

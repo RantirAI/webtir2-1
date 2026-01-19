@@ -591,8 +591,10 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
             {instance.children.map((child, idx) => renderInstance(child, instance, idx, isInsideNavigation))}
           </Div>
         );
+        // Check if this is the root instance (id === 'root') - don't show empty placeholder for root
+        const isRoot = instance.id === 'root';
         return isPreviewMode ? content : (
-          <DroppableContainer key={instance.id} instance={instance} {...commonProps}>
+          <DroppableContainer key={instance.id} instance={instance} {...commonProps} isRootInstance={isRoot}>
             {content}
           </DroppableContainer>
         );
