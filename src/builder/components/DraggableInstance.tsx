@@ -33,7 +33,7 @@ export const DraggableInstance: React.FC<DraggableInstanceProps> = ({
     },
   });
 
-  const isFullWidth = ['Section', 'Container'].includes(instance.type);
+  const isFullWidth = ['Section', 'Container', 'Div', 'Box'].includes(instance.type);
 
   // Important: avoid setting an "identity" CSS transform (e.g. translate3d(0,0,0))
   // because some browsers have contentEditable caret/input bugs inside transformed ancestors.
@@ -41,8 +41,8 @@ export const DraggableInstance: React.FC<DraggableInstanceProps> = ({
     !!transform &&
     (transform.x !== 0 || transform.y !== 0 || transform.scaleX !== 1 || transform.scaleY !== 1);
 
-  // Use display: contents when not dragging to make wrapper invisible to CSS layout
-  // This preserves flex/grid child positioning and CSS selectors for imported components
+  // For container types, we need a proper wrapper for drag operations
+  // For non-containers, use display: contents when not dragging to preserve CSS layout
   const style: React.CSSProperties = isDragging
     ? {
         transform: hasTransform ? CSS.Transform.toString(transform) : undefined,
@@ -54,33 +54,40 @@ export const DraggableInstance: React.FC<DraggableInstanceProps> = ({
         minWidth: isFullWidth ? '100%' : undefined,
         flexBasis: isFullWidth ? '100%' : undefined,
       }
+    : isContainer
+    ? {
+        // For containers, use block display to allow proper sizing
+        display: 'block',
+        width: '100%',
+      }
     : {
+        // For non-containers (leaf elements), use display: contents
         display: 'contents',
       };
 
   // Show insertion indicator when dragging over (for reordering siblings)
-  const showInsertIndicator = isOver && active && active.id !== instance.id;
+  const showInsertIndicator = isOver && active && active.id !== instance.id && !isContainer;
 
   return (
     <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
       {/* Top insertion indicator */}
       {showInsertIndicator && (
         <div
+          className="bg-primary rounded"
           style={{
             position: 'absolute',
             top: '-2px',
             left: '0',
             right: '0',
             height: '4px',
-            backgroundColor: '#3b82f6',
-            borderRadius: '2px',
             zIndex: 9999,
             pointerEvents: 'none',
-            boxShadow: '0 0 8px rgba(59, 130, 246, 0.6)',
+            boxShadow: '0 0 8px hsl(var(--primary) / 0.6)',
           }}
         >
           {/* Left circle indicator */}
           <div
+            className="bg-primary rounded-full"
             style={{
               position: 'absolute',
               left: '-4px',
@@ -88,13 +95,12 @@ export const DraggableInstance: React.FC<DraggableInstanceProps> = ({
               transform: 'translateY(-50%)',
               width: '8px',
               height: '8px',
-              backgroundColor: '#3b82f6',
-              borderRadius: '50%',
-              boxShadow: '0 0 4px rgba(59, 130, 246, 0.8)',
+              boxShadow: '0 0 4px hsl(var(--primary) / 0.8)',
             }}
           />
           {/* Right circle indicator */}
           <div
+            className="bg-primary rounded-full"
             style={{
               position: 'absolute',
               right: '-4px',
@@ -102,9 +108,7 @@ export const DraggableInstance: React.FC<DraggableInstanceProps> = ({
               transform: 'translateY(-50%)',
               width: '8px',
               height: '8px',
-              backgroundColor: '#3b82f6',
-              borderRadius: '50%',
-              boxShadow: '0 0 4px rgba(59, 130, 246, 0.8)',
+              boxShadow: '0 0 4px hsl(var(--primary) / 0.8)',
             }}
           />
         </div>
@@ -113,12 +117,10 @@ export const DraggableInstance: React.FC<DraggableInstanceProps> = ({
       {/* Drag placeholder when item is being dragged */}
       {isDragging && (
         <div
+          className="border-2 border-dashed border-muted-foreground/30 bg-muted/10 rounded"
           style={{
             position: 'absolute',
             inset: 0,
-            border: '2px dashed #cbd5e1',
-            backgroundColor: 'rgba(203, 213, 225, 0.1)',
-            borderRadius: '4px',
             pointerEvents: 'none',
             zIndex: 1,
           }}

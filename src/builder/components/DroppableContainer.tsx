@@ -25,22 +25,22 @@ export const DroppableContainer: React.FC<DroppableContainerProps> = ({
   isInsideNavigation = false,
   isRootInstance = false,
 }) => {
-  const { setNodeRef, isOver } = useDroppable({
+  const { setNodeRef, isOver, active } = useDroppable({
     id: `droppable-${instance.id}`,
     data: { instanceId: instance.id, type: instance.type },
   });
 
-  // Full-width container types should take full width
-  // Use canDropInside to include all container-like components
-  const fullWidthTypes = ['Div', 'Section', 'Container', 'Navigation', 'Accordion', 'Tabs', 'Carousel', 'Breadcrumb', 'Table'];
-  const isFullWidthContainer = fullWidthTypes.includes(instance.type);
+  // Container types that need measurable bounding boxes for drag-and-drop
+  const containerTypes = [
+    'Div', 'Section', 'Container', 'Box', 'RichText', 
+    'Accordion', 'AccordionItem', 'Tabs', 'TabPanel', 
+    'Carousel', 'CarouselSlide', 'Table', 'TableCell', 
+    'Form', 'Navigation', 'Breadcrumb'
+  ];
+  const isContainerType = containerTypes.includes(instance.type);
   
   // Check if this is a droppable container (for min-height when empty)
   const isDroppableContainer = canDropInside(instance.type);
-
-  // These types need a measurable bounding box for dnd-kit collision detection
-  // display: contents removes the element from layout, making it invisible to dnd-kit
-  const needsMeasurableBox = ['AccordionItem', 'TabPanel', 'CarouselSlide', 'TableCell'].includes(instance.type);
 
   // Get child IDs for sortable context
   const childIds = instance.children.map(child => child.id);
@@ -52,19 +52,35 @@ export const DroppableContainer: React.FC<DroppableContainerProps> = ({
   // Root instance should never show the "Drop elements here" placeholder
   const isEmpty = isDroppableContainer && instance.children.length === 0 && !isRootInstance;
 
+  // Determine if we're being dragged over with a valid dragged item
+  const isDragActive = !!active;
+  const isValidDropTarget = isOver && isDragActive && isDroppableContainer;
+
+  // CRITICAL: For container types, we need a measurable wrapper for dnd-kit collision detection.
+  // Using display: contents makes the element invisible to collision detection.
+  // For containers, use display: block with width: 100% to ensure proper bounding box.
+  const wrapperStyle: React.CSSProperties = isContainerType
+    ? {
+        display: 'block',
+        width: '100%',
+        position: 'relative' as const,
+        // Add visual feedback when dragging over this container
+        outline: isValidDropTarget ? '2px dashed hsl(var(--primary) / 0.6)' : undefined,
+        outlineOffset: isValidDropTarget ? '-2px' : undefined,
+        backgroundColor: isValidDropTarget ? 'hsl(var(--primary) / 0.05)' : undefined,
+        borderRadius: isValidDropTarget ? '4px' : undefined,
+      }
+    : {
+        // For non-containers, use display: contents to preserve layout
+        display: 'contents',
+      };
+
   return (
     <div
       ref={setNodeRef}
       data-droppable-id={instance.id}
-      style={{
-        // Use display: contents for most elements to preserve CSS layout
-        // But AccordionItem, TabPanel, etc. need measurable boxes for drop detection
-        display: needsMeasurableBox ? 'block' : 'contents',
-        width: needsMeasurableBox ? '100%' : undefined,
-        // Visual feedback when hovering over valid drop targets
-        outline: isOver && needsMeasurableBox ? '2px dashed rgba(59, 130, 246, 0.6)' : undefined,
-        outlineOffset: isOver && needsMeasurableBox ? '-2px' : undefined,
-      }}
+      data-is-container={isContainerType}
+      style={wrapperStyle}
       onClick={(e) => {
         const target = e.target as HTMLElement;
         const closestDroppable = target.closest('[data-droppable-id]');
@@ -129,10 +145,13 @@ export const DroppableContainer: React.FC<DroppableContainerProps> = ({
       <SortableContext items={childIds} strategy={verticalListSortingStrategy}>
         {isEmpty ? (
           <div 
-            className="flex items-center justify-center border-2 border-dashed border-blue-300 rounded-lg bg-blue-50/50 dark:bg-blue-950/20"
-            style={{ minHeight: '60px', width: '100%' }}
+            className="flex items-center justify-center border-2 border-dashed border-primary/40 rounded-lg bg-primary/5"
+            style={{ 
+              minHeight: '60px', 
+              width: '100%',
+            }}
           >
-            <span className="text-sm text-blue-500 font-medium">Drop elements here</span>
+            <span className="text-sm text-primary font-medium">Drop elements here</span>
           </div>
         ) : (
           children
