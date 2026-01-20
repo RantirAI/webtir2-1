@@ -6,6 +6,43 @@ export function generateId(): string {
   return `instance-${Date.now()}-${instanceCounter++}`;
 }
 
+// Check if an instance is inside a Navigation component
+export function isInsideNavigation(instanceId: string, rootInstance: any): boolean {
+  const path = getInstancePath(rootInstance, instanceId);
+  if (!path) return false;
+  
+  // Traverse the path and check for Navigation-related types
+  const checkInstance = (tree: any, targetPath: string[]): boolean => {
+    if (targetPath.length === 0) return false;
+    
+    const [currentId, ...rest] = targetPath;
+    
+    if (tree.id !== currentId) return false;
+    
+    // Check if this node is a Navigation component
+    if (tree.type === 'Navigation') return true;
+    
+    // Check if this is a Box with Navigation label (composite navigation)
+    if (tree.type === 'Box' && tree.label === 'Navigation') return true;
+    
+    // Check if this Section has htmlTag='nav'
+    if (tree.type === 'Section' && tree.props?.htmlTag === 'nav') return true;
+    
+    // Continue checking children
+    if (rest.length === 0) return false;
+    
+    for (const child of tree.children || []) {
+      if (child.id === rest[0]) {
+        return checkInstance(child, rest);
+      }
+    }
+    
+    return false;
+  };
+  
+  return checkInstance(rootInstance, path);
+}
+
 export function getInstancePath(tree: any, targetId: string, path: string[] = []): string[] | null {
   if (tree.id === targetId) {
     return [...path, tree.id];

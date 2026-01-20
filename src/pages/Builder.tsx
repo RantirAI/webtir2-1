@@ -16,7 +16,7 @@ import { useBuilderStore } from '@/builder/store/useBuilderStore';
 import { usePageStore } from '@/builder/store/usePageStore';
 import { componentRegistry } from '@/builder/primitives/registry';
 import { ComponentInstance, ComponentType } from '@/builder/store/types';
-import { generateId, canDropInside, createPrebuiltChildren, shouldAutoConvertToChildren } from '@/builder/utils/instance';
+import { generateId, canDropInside, createPrebuiltChildren, shouldAutoConvertToChildren, isInsideNavigation } from '@/builder/utils/instance';
 import { migrateNavigationRemoveGetStartedCTA } from '@/builder/utils/migrateNavigationRemoveGetStartedCTA';
 import { useStyleStore } from '@/builder/store/useStyleStore';
 import { useKeyboardShortcuts } from '@/builder/hooks/useKeyboardShortcuts';
@@ -226,6 +226,19 @@ const Builder: React.FC = () => {
         if (isImage) {
           const imageClassName = getNextAutoClassName('image');
           const imageStyleId = createStyleSource('local', imageClassName);
+          
+          // Check if we're dropping into a navigation context
+          const isNavContext = isInsideNavigation(parentId, rootInstance);
+          
+          // Apply navigation-friendly styles if inside navigation
+          if (isNavContext) {
+            setStyle(imageStyleId, 'width', 'auto');
+            setStyle(imageStyleId, 'maxHeight', '40px');
+            setStyle(imageStyleId, 'height', 'auto');
+            setStyle(imageStyleId, 'flexShrink', '0');
+            setStyle(imageStyleId, 'objectFit', 'contain');
+          }
+          
           const imageInstance: ComponentInstance = {
             id: newId,
             type: 'Image' as ComponentType,

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useLayoutEffect } from 'react';
 import { ComponentInstance } from '../store/types';
 import { useStyleStore } from '../store/useStyleStore';
 
@@ -58,9 +58,35 @@ export const ImagePrimitive: React.FC<ImagePrimitiveProps> = ({
   dataBindingProps = {},
 }) => {
   const [imgError, setImgError] = useState(false);
+  const [isInNavContext, setIsInNavContext] = useState(false);
   
   // Extract non-style dataBindingProps
   const { style: dataBindingStyle, ...restDataBindingProps } = dataBindingProps;
+
+  // Detect if the image is inside a Navigation context via DOM traversal
+  useLayoutEffect(() => {
+    // Use a small delay to ensure DOM is rendered
+    const timer = setTimeout(() => {
+      const el = document.querySelector(`[data-instance-id="${instance.id}"]`);
+      if (el) {
+        // Check for navigation context markers
+        const navParent = el.closest('[data-nav-context="true"]') || 
+                         el.closest('[data-component-label="Navigation"]') ||
+                         el.closest('nav');
+        setIsInNavContext(!!navParent);
+      }
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [instance.id]);
+
+  // Navigation-specific styles to prevent layout breaking
+  const navStyles: React.CSSProperties = isInNavContext ? {
+    maxHeight: '40px',
+    width: 'auto',
+    height: 'auto',
+    objectFit: 'contain' as const,
+    flexShrink: 0,
+  } : {};
 
   // Compute the actual image source with fallback handling
   const imgSrc = useMemo(() => {
@@ -90,7 +116,7 @@ export const ImagePrimitive: React.FC<ImagePrimitiveProps> = ({
       className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
       src={imgSrc}
       alt={instance.props.alt || 'Image'}
-      style={{ position: 'relative', ...dataBindingStyle }}
+      style={{ position: 'relative', ...navStyles, ...dataBindingStyle }}
       onError={handleError}
       onClick={isPreviewMode ? undefined : (e) => {
         e.stopPropagation();
