@@ -586,9 +586,20 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
     switch (instance.type) {
       case 'Div':
       case 'Box': { // Backward compatibility for Box -> Div rename
+        // Check if this Box is a Navigation container (composite navigation)
+        const isNavBox = instance.label === 'Navigation';
+        
         const content = (
-          <Div {...commonProps} featureCardIcon={featureCardIcon}>
-            {instance.children.map((child, idx) => renderInstance(child, instance, idx, isInsideNavigation))}
+          <Div 
+            {...commonProps} 
+            featureCardIcon={featureCardIcon}
+            dataBindingProps={{
+              ...commonProps.dataBindingProps,
+              'data-nav-context': isNavBox ? 'true' : undefined,
+              'data-component-label': instance.label || undefined,
+            }}
+          >
+            {instance.children.map((child, idx) => renderInstance(child, instance, idx, isInsideNavigation || isNavBox))}
           </Div>
         );
         // Check if this is the root instance (id === 'root') - don't show empty placeholder for root
@@ -642,7 +653,8 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
               {...commonProps}
               dataBindingProps={{
                 ...commonProps.dataBindingProps,
-                className: navClassName || undefined
+                className: navClassName || undefined,
+                'data-nav-context': isNavSection ? 'true' : undefined,
               }}
             >
               {instance.children.map((child, idx) => renderInstance(child, instance, idx, isNavSection))}
@@ -963,8 +975,15 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
         // If Navigation has children (new composite structure), render as Div container
         if (instance.children && instance.children.length > 0) {
           const content = (
-            <Div {...commonProps}>
-              {instance.children.map((child, idx) => renderInstance(child, instance, idx))}
+            <Div 
+              {...commonProps}
+              dataBindingProps={{
+                ...commonProps.dataBindingProps,
+                'data-nav-context': 'true',
+                'data-component-label': 'Navigation',
+              }}
+            >
+              {instance.children.map((child, idx) => renderInstance(child, instance, idx, true))}
             </Div>
           );
           return isPreviewMode ? content : (
@@ -1002,7 +1021,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
             className=""
             style={getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties}
           >
-            {instance.children.map((child, idx) => renderInstance(child, instance, idx))}
+            {instance.children.map((child, idx) => renderInstance(child, instance, idx, true))}
           </NavigationPrimitive>
         );
         return isPreviewMode ? content : (
