@@ -105,7 +105,7 @@ export const ResponsiveNavWrapper: React.FC<ResponsiveNavWrapperProps> = ({
 
   // Find logo, links, and other children (Buttons, etc.) from composition children
   const navContent = useMemo(() => {
-    // Navigate: Section > Container > [Logo, LinksDiv, Buttons, etc.]
+    // Navigate: Section > Container > [Slots or direct children]
     const container = instance.children?.[0];
     if (!container || container.type !== 'Container') {
       return { logo: null, links: null, otherChildren: [] };
@@ -115,19 +115,41 @@ export const ResponsiveNavWrapper: React.FC<ResponsiveNavWrapperProps> = ({
     let links: ComponentInstance | null = null;
     const otherChildren: ComponentInstance[] = [];
 
-    for (const child of container.children || []) {
-      // Logo: Text or Image (first one found)
-      if ((child.type === 'Text' || child.type === 'Image') && !logo) {
-        logo = child;
+    // Helper to find elements inside a slot or container
+    const findElementsIn = (parent: ComponentInstance) => {
+      for (const child of parent.children || []) {
+        // Logo: Text or Image (first one found)
+        if ((child.type === 'Text' || child.type === 'Image') && !logo) {
+          logo = child;
+        }
+        // Links container: Div with Link children (but not a slot itself)
+        else if (
+          child.type === 'Div' && 
+          !child.props?._isNavSlot && 
+          child.children?.some((c) => c.type === 'Link')
+        ) {
+          links = child;
+        }
+        // Button/CTA
+        else if (child.type === 'Button') {
+          otherChildren.push(child);
+        }
       }
-      // Links container: Div with Link children
-      else if (child.type === 'Div' && child.children?.some((c) => c.type === 'Link')) {
-        links = child;
+    };
+
+    // Check if using slot-based architecture
+    const slots = (container.children || []).filter(
+      (c) => c.type === 'Div' && c.props?._isNavSlot
+    );
+
+    if (slots.length > 0) {
+      // New slot-based structure: search inside each slot
+      for (const slot of slots) {
+        findElementsIn(slot);
       }
-      // Any other component (Button, custom components, etc.)
-      else if (child.type !== 'Text' && child.type !== 'Image') {
-        otherChildren.push(child);
-      }
+    } else {
+      // Legacy flat structure: search directly in container
+      findElementsIn(container);
     }
 
     return { logo, links, otherChildren, container };
