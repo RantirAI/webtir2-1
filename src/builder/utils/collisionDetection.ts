@@ -23,9 +23,29 @@ export const deepestContainerCollision: CollisionDetection = ({
   // Find all droppables that contain the pointer
   for (const droppableContainer of droppableContainers) {
     const { id } = droppableContainer;
-    const rect = droppableRects.get(id);
+    let rect = droppableRects.get(id);
 
-    if (!rect) {
+    // If rect is missing or has zero dimensions, try to find the actual element
+    if (!rect || (rect.width === 0 && rect.height === 0)) {
+      // Try to find the instance element by data-droppable-id or data-instance-id
+      const droppableId = id.toString().replace('droppable-', '');
+      const instanceEl = document.querySelector(`[data-instance-id="${droppableId}"]`) ||
+                         document.querySelector(`[data-droppable-id="${droppableId}"]`);
+      
+      if (instanceEl) {
+        const domRect = instanceEl.getBoundingClientRect();
+        rect = {
+          width: domRect.width,
+          height: domRect.height,
+          top: domRect.top,
+          left: domRect.left,
+          right: domRect.right,
+          bottom: domRect.bottom,
+        } as ClientRect;
+      }
+    }
+
+    if (!rect || (rect.width === 0 && rect.height === 0)) {
       continue;
     }
 
@@ -43,7 +63,10 @@ export const deepestContainerCollision: CollisionDetection = ({
       const isActualContainer = canDropInside(instanceType || '');
       
       // Boost depth for actual container components to ensure they're prioritized
-      const adjustedDepth = isActualContainer ? depth + 100 : depth;
+      // Higher boost for more specific containers
+      const containerBoost = isActualContainer ? 1000 : 0;
+      const areaBonus = 1000 / (rect.width * rect.height + 1); // Smaller = higher priority
+      const adjustedDepth = depth + containerBoost + areaBonus;
 
       collisions.push({
         id,
@@ -55,25 +78,9 @@ export const deepestContainerCollision: CollisionDetection = ({
     }
   }
 
-  // Sort by depth (deepest first) and then by size (smaller first as tiebreaker)
+  // Sort by adjusted depth (highest first = deepest/smallest container)
   return collisions.sort((a, b) => {
-    const depthDiff = (b.data?.value || 0) - (a.data?.value || 0);
-    
-    if (depthDiff !== 0) {
-      return depthDiff;
-    }
-
-    // If depths are equal, prefer smaller containers (more specific targets)
-    const rectA = droppableRects.get(a.id);
-    const rectB = droppableRects.get(b.id);
-
-    if (rectA && rectB) {
-      const areaA = rectA.width * rectA.height;
-      const areaB = rectB.width * rectB.height;
-      return areaA - areaB;
-    }
-
-    return 0;
+    return (b.data?.value || 0) - (a.data?.value || 0);
   });
 };
 
