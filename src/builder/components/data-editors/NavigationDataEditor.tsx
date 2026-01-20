@@ -513,23 +513,36 @@ export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ inst
     if (!logoInstance?.styleSourceIds?.length) return;
     
     const logoStyleId = logoInstance.styleSourceIds[0];
+    const menuStyleId = fresh.menu?.styleSourceIds?.[0];
     const setStyle = useStyleStore.getState().setStyle;
     
     switch (position) {
       case 'left':
-        setStyle(logoStyleId, 'order', '1');
-        setStyle(logoStyleId, 'marginLeft', '0');
-        setStyle(logoStyleId, 'marginRight', '0');
+        setStyle(logoStyleId, 'order', '1', 'base', 'default');
+        setStyle(logoStyleId, 'marginLeft', '0', 'base', 'default');
+        setStyle(logoStyleId, 'marginRight', '0', 'base', 'default');
+        setStyle(logoStyleId, 'flexShrink', '0', 'base', 'default');
+        if (menuStyleId) {
+          setStyle(menuStyleId, 'order', '2', 'base', 'default');
+        }
         break;
       case 'center':
-        setStyle(logoStyleId, 'order', '2');
-        setStyle(logoStyleId, 'marginLeft', 'auto');
-        setStyle(logoStyleId, 'marginRight', 'auto');
+        setStyle(logoStyleId, 'order', '2', 'base', 'default');
+        setStyle(logoStyleId, 'marginLeft', 'auto', 'base', 'default');
+        setStyle(logoStyleId, 'marginRight', 'auto', 'base', 'default');
+        setStyle(logoStyleId, 'flexShrink', '0', 'base', 'default');
+        if (menuStyleId) {
+          setStyle(menuStyleId, 'order', '1', 'base', 'default');
+        }
         break;
       case 'right':
-        setStyle(logoStyleId, 'order', '3');
-        setStyle(logoStyleId, 'marginLeft', '0');
-        setStyle(logoStyleId, 'marginRight', '0');
+        setStyle(logoStyleId, 'order', '3', 'base', 'default');
+        setStyle(logoStyleId, 'marginLeft', '0', 'base', 'default');
+        setStyle(logoStyleId, 'marginRight', '0', 'base', 'default');
+        setStyle(logoStyleId, 'flexShrink', '0', 'base', 'default');
+        if (menuStyleId) {
+          setStyle(menuStyleId, 'order', '1', 'base', 'default');
+        }
         break;
     }
   };
