@@ -307,15 +307,15 @@ export const NavigationPrimitive: React.FC<NavigationPrimitiveProps> = ({
     }
   };
 
-  // Get layout styles based on template
+  // Get layout styles based on template (using new slot-based structure)
   const getNavStyles = (): React.CSSProperties => {
-    const { layout } = templateConfig;
+    const { containerStyles } = templateConfig;
     return {
-      display: 'flex',
-      flexDirection: layout.flexDirection,
-      justifyContent: layout.justifyContent,
-      alignItems: layout.alignItems,
-      gap: layout.gap,
+      display: containerStyles.display || 'flex',
+      flexDirection: containerStyles.flexDirection as React.CSSProperties['flexDirection'] || 'row',
+      justifyContent: containerStyles.justifyContent || 'space-between',
+      alignItems: containerStyles.alignItems || 'center',
+      gap: containerStyles.gap || '24px',
       width: '100%',
       padding: '16px 24px',
       ...style,
@@ -323,35 +323,57 @@ export const NavigationPrimitive: React.FC<NavigationPrimitiveProps> = ({
   };
 
   const getLogoBoxStyles = (): React.CSSProperties => {
-    const { logoBox } = templateConfig;
+    const { slotStyles, placement } = templateConfig;
+    // Determine which slot the logo is in
+    const logoInLeft = placement.left.includes('logo');
+    const logoInCenter = placement.center.includes('logo');
+    const logoInRight = placement.right.includes('logo');
+    
+    let slotStyle = slotStyles.left;
+    if (logoInCenter) slotStyle = slotStyles.center;
+    if (logoInRight) slotStyle = slotStyles.right;
+    
     return {
-      order: logoBox.order,
-      marginLeft: logoBox.marginLeft,
-      marginRight: logoBox.marginRight,
+      display: slotStyle.display || 'flex',
+      flex: slotStyle.flex || '0 0 auto',
+      alignItems: slotStyle.alignItems || 'center',
+      justifyContent: slotStyle.justifyContent || 'flex-start',
       flexShrink: 0,
     };
   };
 
   const getLinksBoxStyles = (): React.CSSProperties => {
-    const { linksBox } = templateConfig;
+    const { slotStyles, placement, hideMenu } = templateConfig;
+    // Determine which slot the menu is in
+    const menuInLeft = placement.left.includes('menu');
+    const menuInCenter = placement.center.includes('menu');
+    
+    let slotStyle = slotStyles.right; // default
+    if (menuInLeft) slotStyle = slotStyles.left;
+    if (menuInCenter) slotStyle = slotStyles.center;
+    
     return {
-      order: linksBox.order,
-      display: template === 'minimal-logo' ? 'none' : 'flex',
-      justifyContent: linksBox.justifyContent,
-      alignItems: 'center',
-      gap: '32px',
-      flexGrow: linksBox.flexGrow,
-      marginLeft: linksBox.marginLeft,
-      marginRight: linksBox.marginRight,
+      display: hideMenu ? 'none' : (slotStyle.display || 'flex'),
+      flex: slotStyle.flex || '1',
+      justifyContent: slotStyle.justifyContent || 'flex-end',
+      alignItems: slotStyle.alignItems || 'center',
+      gap: slotStyle.gap || '24px',
     };
   };
 
   const getButtonBoxStyles = (): React.CSSProperties => {
-    const { buttonBox } = templateConfig;
-    if (!buttonBox) return {};
+    const { slotStyles, placement } = templateConfig;
+    // CTA is typically in the right slot
+    const ctaInLeft = placement.left.includes('cta');
+    const ctaInCenter = placement.center.includes('cta');
+    
+    let slotStyle = slotStyles.right;
+    if (ctaInLeft) slotStyle = slotStyles.left;
+    if (ctaInCenter) slotStyle = slotStyles.center;
+    
     return {
-      order: buttonBox.order,
-      marginLeft: buttonBox.marginLeft,
+      display: slotStyle.display || 'flex',
+      flex: '0 0 auto',
       flexShrink: 0,
     };
   };
