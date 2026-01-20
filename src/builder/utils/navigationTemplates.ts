@@ -1,6 +1,7 @@
-// Navigation template definitions and layout configurations
+// Navigation Layout Templates - Slot-Based Architecture
+// Each template defines how logo, menu, and CTA are distributed across Left/Center/Right slots
 
-export type NavigationTemplate = 
+export type NavigationTemplate =
   | 'logo-left-menu-right'
   | 'logo-right-menu-left'
   | 'logo-center-split'
@@ -10,347 +11,378 @@ export type NavigationTemplate =
   | 'minimal-logo'
   | 'mega-menu';
 
+export type SlotElement = 'logo' | 'menu' | 'cta' | 'hamburger';
+
+export interface SlotPlacement {
+  left: SlotElement[];
+  center: SlotElement[];
+  right: SlotElement[];
+}
+
+export interface SlotStyles {
+  left: Record<string, string>;
+  center: Record<string, string>;
+  right: Record<string, string>;
+}
+
 export interface TemplateConfig {
   id: NavigationTemplate;
   label: string;
   description: string;
-  layout: {
-    flexDirection: 'row' | 'column';
-    justifyContent: string;
-    alignItems: string;
-    gap: string;
-  };
-  logoBox: {
-    order: number;
-    justifySelf?: string;
-    alignSelf?: string;
-    marginLeft?: string;
-    marginRight?: string;
-  };
-  linksBox: {
-    order: number;
-    justifyContent: string;
-    flexGrow?: number;
-    minWidth?: string;
-    marginLeft?: string;
-    marginRight?: string;
-  };
-  buttonBox?: {
-    order: number;
-    marginLeft?: string;
-  };
-  mobile: {
-    hamburgerPosition: 'right' | 'left';
-    logoPosition: 'left' | 'center' | 'right';
-  };
+  placement: SlotPlacement;
+  containerStyles: Record<string, string>;
+  slotStyles: SlotStyles;
+  hideMenu?: boolean;
+  splitMenu?: boolean;
+  stacked?: boolean;
 }
 
+// Define all 8 templates with slot-based configurations
 export const navigationTemplates: Record<NavigationTemplate, TemplateConfig> = {
   'logo-left-menu-right': {
     id: 'logo-left-menu-right',
     label: 'Logo Left + Menu Right',
-    description: 'Standard horizontal navbar with logo on left, menu on right',
-    layout: {
+    description: 'Standard horizontal navbar with logo on left',
+    placement: {
+      left: ['logo'],
+      center: [],
+      right: ['menu', 'cta'],
+    },
+    containerStyles: {
+      display: 'flex',
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
       gap: '24px',
+      width: '100%',
     },
-    logoBox: {
-      order: 1,
-    },
-    linksBox: {
-      order: 2,
-      justifyContent: 'flex-end',
-      flexGrow: 1,
-      minWidth: '0',
-    },
-    buttonBox: {
-      order: 3,
-      marginLeft: '16px',
-    },
-    mobile: {
-      hamburgerPosition: 'right',
-      logoPosition: 'left',
+    slotStyles: {
+      left: {
+        display: 'flex',
+        flex: '0 0 auto',
+        alignItems: 'center',
+        justifyContent: 'flex-start',
+      },
+      center: {
+        display: 'none',
+        flex: '0 0 auto',
+        alignItems: 'center',
+        justifyContent: 'center',
+      },
+      right: {
+        display: 'flex',
+        flex: '1',
+        alignItems: 'center',
+        justifyContent: 'flex-end',
+        gap: '24px',
+      },
     },
   },
 
   'logo-right-menu-left': {
     id: 'logo-right-menu-left',
     label: 'Logo Right + Menu Left',
-    description: 'Mirrored layout with logo on right, menu on left',
-    layout: {
+    description: 'Mirrored layout with logo on right',
+    placement: {
+      left: ['menu'],
+      center: [],
+      right: ['cta', 'logo'],
+    },
+    containerStyles: {
+      display: 'flex',
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
       gap: '24px',
+      width: '100%',
     },
-    logoBox: {
-      order: 3,
-    },
-    linksBox: {
-      order: 1,
-      justifyContent: 'flex-start',
-      flexGrow: 1,
-      minWidth: '0',
-    },
-    buttonBox: {
-      order: 2,
-      marginLeft: 'auto',
-    },
-    mobile: {
-      hamburgerPosition: 'left',
-      logoPosition: 'right',
+    slotStyles: {
+      left: {
+        display: 'flex',
+        flex: '1',
+        alignItems: 'center',
+        justifyContent: 'flex-start',
+        gap: '24px',
+      },
+      center: {
+        display: 'none',
+        flex: '0 0 auto',
+        alignItems: 'center',
+        justifyContent: 'center',
+      },
+      right: {
+        display: 'flex',
+        flex: '0 0 auto',
+        alignItems: 'center',
+        justifyContent: 'flex-end',
+        gap: '16px',
+      },
     },
   },
 
   'logo-center-split': {
     id: 'logo-center-split',
     label: 'Logo Center + Split Menu',
-    description: 'Logo centered with menu items split on both sides',
-    layout: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      gap: '32px',
+    description: 'Centered logo with menu items split on both sides',
+    placement: {
+      left: ['menu'],
+      center: ['logo'],
+      right: ['menu', 'cta'],
     },
-    logoBox: {
-      order: 2,
-      marginLeft: 'auto',
-      marginRight: 'auto',
-    },
-    linksBox: {
-      order: 1,
-      justifyContent: 'flex-start',
-      minWidth: '0',
-    },
-    buttonBox: {
-      order: 3,
-    },
-    mobile: {
-      hamburgerPosition: 'right',
-      logoPosition: 'center',
-    },
-  },
-
-  'stacked-center': {
-    id: 'stacked-center',
-    label: 'Stacked (Logo Top, Menu Bottom)',
-    description: 'Logo centered at top, menu bar directly below',
-    layout: {
-      flexDirection: 'column',
-      justifyContent: 'center',
-      alignItems: 'center',
-      gap: '16px',
-    },
-    logoBox: {
-      order: 1,
-    },
-    linksBox: {
-      order: 2,
-      justifyContent: 'center',
-      minWidth: '0',
-    },
-    buttonBox: {
-      order: 3,
-    },
-    mobile: {
-      hamburgerPosition: 'right',
-      logoPosition: 'center',
-    },
-  },
-
-  'center-hamburger': {
-    id: 'center-hamburger',
-    label: 'Center Logo + Hamburger Right',
-    description: 'Logo centered, hamburger menu on right (clean minimal)',
-    layout: {
+    containerStyles: {
+      display: 'flex',
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
       gap: '24px',
+      width: '100%',
     },
-    logoBox: {
-      order: 2,
-      marginLeft: 'auto',
-      marginRight: 'auto',
+    slotStyles: {
+      left: {
+        display: 'flex',
+        flex: '1',
+        alignItems: 'center',
+        justifyContent: 'flex-start',
+        gap: '24px',
+      },
+      center: {
+        display: 'flex',
+        flex: '0 0 auto',
+        alignItems: 'center',
+        justifyContent: 'center',
+      },
+      right: {
+        display: 'flex',
+        flex: '1',
+        alignItems: 'center',
+        justifyContent: 'flex-end',
+        gap: '24px',
+      },
     },
-    linksBox: {
-      order: 3,
-      justifyContent: 'flex-end',
-      minWidth: '0',
+    splitMenu: true,
+  },
+
+  'stacked-center': {
+    id: 'stacked-center',
+    label: 'Stacked Center',
+    description: 'Logo on top, menu centered below',
+    placement: {
+      left: [],
+      center: ['logo', 'menu', 'cta'],
+      right: [],
     },
-    buttonBox: {
-      order: 1,
+    containerStyles: {
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'center',
+      alignItems: 'center',
+      gap: '16px',
+      width: '100%',
     },
-    mobile: {
-      hamburgerPosition: 'right',
-      logoPosition: 'center',
+    slotStyles: {
+      left: {
+        display: 'none',
+        flex: '0 0 auto',
+        alignItems: 'center',
+        justifyContent: 'flex-start',
+      },
+      center: {
+        display: 'flex',
+        flexDirection: 'column',
+        flex: '0 0 auto',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '12px',
+      },
+      right: {
+        display: 'none',
+        flex: '0 0 auto',
+        alignItems: 'center',
+        justifyContent: 'flex-end',
+      },
     },
+    stacked: true,
+  },
+
+  'center-hamburger': {
+    id: 'center-hamburger',
+    label: 'Center Logo + Hamburger',
+    description: 'Centered logo with hamburger menu toggle',
+    placement: {
+      left: ['hamburger'],
+      center: ['logo'],
+      right: ['cta'],
+    },
+    containerStyles: {
+      display: 'flex',
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      gap: '16px',
+      width: '100%',
+    },
+    slotStyles: {
+      left: {
+        display: 'flex',
+        flex: '0 0 auto',
+        alignItems: 'center',
+        justifyContent: 'flex-start',
+      },
+      center: {
+        display: 'flex',
+        flex: '1',
+        alignItems: 'center',
+        justifyContent: 'center',
+      },
+      right: {
+        display: 'flex',
+        flex: '0 0 auto',
+        alignItems: 'center',
+        justifyContent: 'flex-end',
+      },
+    },
+    hideMenu: true,
   },
 
   'logo-left-menu-center': {
     id: 'logo-left-menu-center',
     label: 'Logo Left + Menu Center',
-    description: 'Logo docked left, menu centered in navbar',
-    layout: {
+    description: 'Logo on left, menu centered, CTA on right',
+    placement: {
+      left: ['logo'],
+      center: ['menu'],
+      right: ['cta'],
+    },
+    containerStyles: {
+      display: 'flex',
       flexDirection: 'row',
-      justifyContent: 'flex-start',
+      justifyContent: 'space-between',
       alignItems: 'center',
       gap: '24px',
+      width: '100%',
     },
-    logoBox: {
-      order: 1,
-    },
-    linksBox: {
-      order: 2,
-      justifyContent: 'center',
-      flexGrow: 1,
-      minWidth: '0',
-    },
-    buttonBox: {
-      order: 3,
-    },
-    mobile: {
-      hamburgerPosition: 'right',
-      logoPosition: 'left',
+    slotStyles: {
+      left: {
+        display: 'flex',
+        flex: '0 0 auto',
+        alignItems: 'center',
+        justifyContent: 'flex-start',
+      },
+      center: {
+        display: 'flex',
+        flex: '1',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '24px',
+      },
+      right: {
+        display: 'flex',
+        flex: '0 0 auto',
+        alignItems: 'center',
+        justifyContent: 'flex-end',
+      },
     },
   },
 
   'minimal-logo': {
     id: 'minimal-logo',
-    label: 'Minimal (Logo Left Only)',
-    description: 'Clean layout with just logo, no menu (for landing pages)',
-    layout: {
+    label: 'Minimal (Logo Only)',
+    description: 'Clean minimal navbar with just logo',
+    placement: {
+      left: ['logo'],
+      center: [],
+      right: [],
+    },
+    containerStyles: {
+      display: 'flex',
       flexDirection: 'row',
-      justifyContent: 'space-between',
+      justifyContent: 'flex-start',
       alignItems: 'center',
-      gap: '24px',
+      gap: '16px',
+      width: '100%',
     },
-    logoBox: {
-      order: 1,
+    slotStyles: {
+      left: {
+        display: 'flex',
+        flex: '0 0 auto',
+        alignItems: 'center',
+        justifyContent: 'flex-start',
+      },
+      center: {
+        display: 'none',
+        flex: '0 0 auto',
+        alignItems: 'center',
+        justifyContent: 'center',
+      },
+      right: {
+        display: 'none',
+        flex: '0 0 auto',
+        alignItems: 'center',
+        justifyContent: 'flex-end',
+      },
     },
-    linksBox: {
-      order: 2,
-      justifyContent: 'flex-end',
-      flexGrow: 1,
-      minWidth: '0',
-    },
-    buttonBox: {
-      order: 3,
-    },
-    mobile: {
-      hamburgerPosition: 'right',
-      logoPosition: 'left',
-    },
+    hideMenu: true,
   },
 
   'mega-menu': {
     id: 'mega-menu',
     label: 'Mega Menu Layout',
-    description: 'Full-width navigation with space for large dropdowns',
-    layout: {
+    description: 'Full-width dropdown menu support',
+    placement: {
+      left: ['logo'],
+      center: ['menu'],
+      right: ['cta'],
+    },
+    containerStyles: {
+      display: 'flex',
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
       gap: '32px',
+      width: '100%',
     },
-    logoBox: {
-      order: 1,
-    },
-    linksBox: {
-      order: 2,
-      justifyContent: 'center',
-      flexGrow: 1,
-      minWidth: '0',
-    },
-    buttonBox: {
-      order: 3,
-    },
-    mobile: {
-      hamburgerPosition: 'right',
-      logoPosition: 'left',
+    slotStyles: {
+      left: {
+        display: 'flex',
+        flex: '0 0 auto',
+        alignItems: 'center',
+        justifyContent: 'flex-start',
+      },
+      center: {
+        display: 'flex',
+        flex: '1',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '32px',
+      },
+      right: {
+        display: 'flex',
+        flex: '0 0 auto',
+        alignItems: 'center',
+        justifyContent: 'flex-end',
+      },
     },
   },
 };
 
+// Get template config by ID
 export function getTemplateConfig(template: NavigationTemplate): TemplateConfig {
   return navigationTemplates[template];
 }
 
-export function applyTemplateToStyles(
-  template: NavigationTemplate,
-  navStyleId: string,
-  logoBoxStyleId: string,
-  linksBoxStyleId: string,
-  buttonBoxStyleId: string | undefined,
-  setStyle: (styleId: string, property: string, value: any) => void
-): void {
-  const config = getTemplateConfig(template);
-
-  // Apply main navigation container styles
-  setStyle(navStyleId, 'flexDirection', config.layout.flexDirection);
-  setStyle(navStyleId, 'justifyContent', config.layout.justifyContent);
-  setStyle(navStyleId, 'alignItems', config.layout.alignItems);
-  setStyle(navStyleId, 'gap', config.layout.gap);
-
-  // Apply logo box styles
-  setStyle(logoBoxStyleId, 'order', config.logoBox.order.toString());
-  if (config.logoBox.marginLeft) {
-    setStyle(logoBoxStyleId, 'marginLeft', config.logoBox.marginLeft);
-  }
-  if (config.logoBox.marginRight) {
-    setStyle(logoBoxStyleId, 'marginRight', config.logoBox.marginRight);
-  }
-
-  // Reset potentially conflicting styles before applying new template
-  // This prevents stale values from previous templates from causing layout issues
-  if (!config.logoBox.marginLeft) {
-    setStyle(logoBoxStyleId, 'marginLeft', '0');
-  }
-  if (!config.logoBox.marginRight) {
-    setStyle(logoBoxStyleId, 'marginRight', '0');
-  }
-
-  // Apply links box styles
-  setStyle(linksBoxStyleId, 'order', config.linksBox.order.toString());
-  setStyle(linksBoxStyleId, 'justifyContent', config.linksBox.justifyContent);
-  
-  // Always apply minWidth: 0 to prevent flex overflow
-  setStyle(linksBoxStyleId, 'minWidth', config.linksBox.minWidth || '0');
-  
-  // Reset flexGrow if not specified by template, otherwise apply it
-  if (config.linksBox.flexGrow !== undefined) {
-    setStyle(linksBoxStyleId, 'flexGrow', config.linksBox.flexGrow.toString());
-  } else {
-    setStyle(linksBoxStyleId, 'flexGrow', '0');
-  }
-  
-  if (config.linksBox.marginLeft) {
-    setStyle(linksBoxStyleId, 'marginLeft', config.linksBox.marginLeft);
-  } else {
-    setStyle(linksBoxStyleId, 'marginLeft', '0');
-  }
-  if (config.linksBox.marginRight) {
-    setStyle(linksBoxStyleId, 'marginRight', config.linksBox.marginRight);
-  } else {
-    setStyle(linksBoxStyleId, 'marginRight', '0');
-  }
-
-  // Apply button box styles if it exists
-  if (buttonBoxStyleId && config.buttonBox) {
-    setStyle(buttonBoxStyleId, 'order', config.buttonBox.order.toString());
-    if (config.buttonBox.marginLeft) {
-      setStyle(buttonBoxStyleId, 'marginLeft', config.buttonBox.marginLeft);
-    } else {
-      setStyle(buttonBoxStyleId, 'marginLeft', '0');
-    }
-  }
-
-  // Special handling for minimal template - hide links
-  if (template === 'minimal-logo') {
-    setStyle(linksBoxStyleId, 'display', 'none');
-  } else {
-    setStyle(linksBoxStyleId, 'display', 'flex');
-  }
+// Get all templates as array for dropdowns
+export function getAllTemplates(): TemplateConfig[] {
+  return Object.values(navigationTemplates);
 }
+
+// Template visual preview icons (simple ASCII representations)
+export const templatePreviews: Record<NavigationTemplate, { left: string; center: string; right: string }> = {
+  'logo-left-menu-right': { left: '■', center: '', right: '― ― ―' },
+  'logo-right-menu-left': { left: '― ― ―', center: '', right: '■' },
+  'logo-center-split': { left: '― ―', center: '■', right: '― ―' },
+  'stacked-center': { left: '', center: '■', right: '' },
+  'center-hamburger': { left: '☰', center: '■', right: '○' },
+  'logo-left-menu-center': { left: '■', center: '― ― ―', right: '○' },
+  'minimal-logo': { left: '■', center: '', right: '' },
+  'mega-menu': { left: '■', center: '▼ ▼ ▼', right: '○' },
+};

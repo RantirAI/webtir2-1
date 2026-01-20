@@ -1,5 +1,5 @@
 /**
- * Navigation Layout Utilities
+ * Navigation Layout Utilities - Slot-Based Architecture
  * 
  * This module handles structural layout of navigation components using
  * a slot-based approach (left, center, right slots) instead of CSS order.
@@ -10,6 +10,11 @@ import { useBuilderStore } from '../store/useBuilderStore';
 import { useStyleStore } from '../store/useStyleStore';
 import { usePageStore } from '../store/usePageStore';
 import { generateId } from './instance';
+import { 
+  NavigationTemplate, 
+  getTemplateConfig,
+  TemplateConfig 
+} from './navigationTemplates';
 
 export type LogoPosition = 'left' | 'center' | 'right';
 
@@ -43,7 +48,7 @@ export function getNavigationInstance(navId: string): ComponentInstance | null {
   return null;
 }
 
-// Find the navigation container (the direct child of Section)
+// Get the navigation container (the direct child of Section)
 export function getNavContainer(navInstance: ComponentInstance): ComponentInstance | null {
   if (!navInstance || navInstance.type !== 'Section') return null;
   const container = navInstance.children?.[0];
@@ -51,67 +56,70 @@ export function getNavContainer(navInstance: ComponentInstance): ComponentInstan
   return null;
 }
 
+// Check if a child is a slot container
+function isSlot(child: ComponentInstance): boolean {
+  return child.type === 'Div' && (
+    child.label?.toLowerCase().includes('slot') || 
+    child.props?._isNavSlot === true
+  );
+}
+
 // Find child elements in navigation by role
 export function findNavElements(container: ComponentInstance) {
   const children = container.children || [];
   
-  // Find logo - can be Text or Image, typically first non-Div child or in leftSlot
   let logo: ComponentInstance | null = null;
   let menu: ComponentInstance | null = null;
+  let cta: ComponentInstance | null = null;
   let leftSlot: ComponentInstance | null = null;
   let centerSlot: ComponentInstance | null = null;
   let rightSlot: ComponentInstance | null = null;
   
+  // Find slots
   for (const child of children) {
-    // Check for slot containers (by label or special prop)
-    if (child.type === 'Div') {
+    if (isSlot(child)) {
       const label = child.label?.toLowerCase() || '';
-      if (label.includes('left') && label.includes('slot')) {
-        leftSlot = child;
-      } else if (label.includes('center') && label.includes('slot')) {
-        centerSlot = child;
-      } else if (label.includes('right') && label.includes('slot')) {
-        rightSlot = child;
-      } else if (child.children?.some(c => c.type === 'Link')) {
-        // This is the menu container
+      if (label.includes('left')) leftSlot = child;
+      else if (label.includes('center')) centerSlot = child;
+      else if (label.includes('right')) rightSlot = child;
+    }
+  }
+  
+  // Search for elements in slots or directly in container
+  const searchInChildren = (items: ComponentInstance[]) => {
+    for (const child of items) {
+      // Logo: Text or Image
+      if ((child.type === 'Text' || child.type === 'Image') && !logo) {
+        logo = child;
+      }
+      // Menu: Div containing Links
+      if (child.type === 'Div' && !isSlot(child) && child.children?.some(c => c.type === 'Link') && !menu) {
         menu = child;
       }
+      // CTA: Button
+      if (child.type === 'Button' && !cta) {
+        cta = child;
+      }
     }
-    
-    // Direct logo (Text or Image at container level)
-    if (child.type === 'Text' || child.type === 'Image') {
-      logo = child;
-    }
+  };
+  
+  // Search in slots first, then container
+  if (leftSlot) searchInChildren(leftSlot.children || []);
+  if (centerSlot) searchInChildren(centerSlot.children || []);
+  if (rightSlot) searchInChildren(rightSlot.children || []);
+  
+  // Fallback: search directly in container (legacy support)
+  if (!logo || !menu) {
+    searchInChildren(children.filter(c => !isSlot(c)));
   }
   
-  // If slots exist, look for logo and menu inside them
-  if (leftSlot) {
-    const logoInLeft = leftSlot.children?.find(c => c.type === 'Text' || c.type === 'Image');
-    if (logoInLeft) logo = logoInLeft;
-    const menuInLeft = leftSlot.children?.find(c => c.type === 'Div' && c.children?.some(l => l.type === 'Link'));
-    if (menuInLeft) menu = menuInLeft;
-  }
-  if (centerSlot) {
-    const logoInCenter = centerSlot.children?.find(c => c.type === 'Text' || c.type === 'Image');
-    if (logoInCenter) logo = logoInCenter;
-  }
-  if (rightSlot) {
-    const logoInRight = rightSlot.children?.find(c => c.type === 'Text' || c.type === 'Image');
-    if (logoInRight) logo = logoInRight;
-    const menuInRight = rightSlot.children?.find(c => c.type === 'Div' && c.children?.some(l => l.type === 'Link'));
-    if (menuInRight) menu = menuInRight;
-  }
-  
-  return { logo, menu, leftSlot, centerSlot, rightSlot };
+  return { logo, menu, cta, leftSlot, centerSlot, rightSlot };
 }
 
 // Check if navigation has slot structure
 export function hasSlotStructure(container: ComponentInstance): boolean {
   const children = container.children || [];
-  return children.some(c => 
-    c.type === 'Div' && 
-    (c.label?.toLowerCase().includes('slot') || c.props?._isNavSlot)
-  );
+  return children.some(c => isSlot(c));
 }
 
 // Create slot containers for navigation
@@ -129,13 +137,12 @@ export function createNavSlots(): {
   setStyle(leftStyleId, 'display', 'flex');
   setStyle(leftStyleId, 'alignItems', 'center');
   setStyle(leftStyleId, 'gap', '16px');
-  setStyle(leftStyleId, 'flex', '1');
+  setStyle(leftStyleId, 'flex', '0 0 auto');
   setStyle(leftStyleId, 'justifyContent', 'flex-start');
-  setStyle(leftStyleId, 'minWidth', '0');
   
   const centerClassName = getNextAutoClassName('div');
   const centerStyleId = createStyleSource('local', centerClassName);
-  setStyle(centerStyleId, 'display', 'flex');
+  setStyle(centerStyleId, 'display', 'none');
   setStyle(centerStyleId, 'alignItems', 'center');
   setStyle(centerStyleId, 'justifyContent', 'center');
   setStyle(centerStyleId, 'flex', '0 0 auto');
@@ -144,10 +151,9 @@ export function createNavSlots(): {
   const rightStyleId = createStyleSource('local', rightClassName);
   setStyle(rightStyleId, 'display', 'flex');
   setStyle(rightStyleId, 'alignItems', 'center');
-  setStyle(rightStyleId, 'gap', '16px');
+  setStyle(rightStyleId, 'gap', '24px');
   setStyle(rightStyleId, 'flex', '1');
   setStyle(rightStyleId, 'justifyContent', 'flex-end');
-  setStyle(rightStyleId, 'minWidth', '0');
   
   return {
     leftSlot: {
@@ -182,6 +188,100 @@ export function createNavSlots(): {
   };
 }
 
+// Apply a navigation template to restructure the nav
+export function applyNavigationTemplate(
+  navSectionId: string,
+  templateId: NavigationTemplate
+): boolean {
+  const config = getTemplateConfig(templateId);
+  const navInstance = getNavigationInstance(navSectionId);
+  if (!navInstance) return false;
+  
+  const container = getNavContainer(navInstance);
+  if (!container) return false;
+  
+  const { setStyle } = useStyleStore.getState();
+  const updateInstance = useBuilderStore.getState().updateInstance;
+  
+  // Ensure slot structure exists
+  if (!hasSlotStructure(container)) {
+    migrateToSlotStructure(navSectionId);
+  }
+  
+  // Re-fetch after potential migration
+  const freshNav = getNavigationInstance(navSectionId);
+  if (!freshNav) return false;
+  const freshContainer = getNavContainer(freshNav);
+  if (!freshContainer) return false;
+  
+  const elements = findNavElements(freshContainer);
+  const { logo, menu, cta, leftSlot, centerSlot, rightSlot } = elements;
+  
+  if (!leftSlot || !centerSlot || !rightSlot) return false;
+  
+  // Build new children arrays for each slot based on template placement
+  const buildSlotChildren = (placement: string[]): ComponentInstance[] => {
+    const children: ComponentInstance[] = [];
+    for (const item of placement) {
+      if (item === 'logo' && logo) children.push(logo);
+      if (item === 'menu' && menu) children.push(menu);
+      if (item === 'cta' && cta) children.push(cta);
+    }
+    return children;
+  };
+  
+  const newLeftChildren = buildSlotChildren(config.placement.left);
+  const newCenterChildren = buildSlotChildren(config.placement.center);
+  const newRightChildren = buildSlotChildren(config.placement.right);
+  
+  // Update slot children
+  updateInstance(leftSlot.id, { children: newLeftChildren });
+  updateInstance(centerSlot.id, { children: newCenterChildren });
+  updateInstance(rightSlot.id, { children: newRightChildren });
+  
+  // Apply container styles
+  const containerStyleId = freshContainer.styleSourceIds?.[0];
+  if (containerStyleId) {
+    for (const [prop, value] of Object.entries(config.containerStyles)) {
+      setStyle(containerStyleId, prop, value);
+    }
+  }
+  
+  // Apply slot styles
+  const applySlotStyles = (slot: ComponentInstance, styles: Record<string, string>) => {
+    const styleId = slot.styleSourceIds?.[0];
+    if (styleId) {
+      for (const [prop, value] of Object.entries(styles)) {
+        setStyle(styleId, prop, value);
+      }
+    }
+  };
+  
+  applySlotStyles(leftSlot, config.slotStyles.left);
+  applySlotStyles(centerSlot, config.slotStyles.center);
+  applySlotStyles(rightSlot, config.slotStyles.right);
+  
+  // Handle hideMenu for templates like minimal-logo
+  if (config.hideMenu && menu) {
+    const menuStyleId = menu.styleSourceIds?.[0];
+    if (menuStyleId) {
+      setStyle(menuStyleId, 'display', 'none');
+    }
+  } else if (menu) {
+    const menuStyleId = menu.styleSourceIds?.[0];
+    if (menuStyleId) {
+      setStyle(menuStyleId, 'display', 'flex');
+    }
+  }
+  
+  // Store template on nav section
+  updateInstance(navSectionId, {
+    props: { ...freshNav.props, template: templateId }
+  });
+  
+  return true;
+}
+
 // Migrate old navigation structure to slot-based
 export function migrateToSlotStructure(navSectionId: string): void {
   const navInstance = getNavigationInstance(navSectionId);
@@ -194,7 +294,7 @@ export function migrateToSlotStructure(navSectionId: string): void {
   if (hasSlotStructure(container)) return;
   
   const updateInstance = useBuilderStore.getState().updateInstance;
-  const { logo, menu } = findNavElements(container);
+  const { logo, menu, cta } = findNavElements(container);
   
   // Create slots
   const { leftSlot, centerSlot, rightSlot } = createNavSlots();
@@ -204,9 +304,12 @@ export function migrateToSlotStructure(navSectionId: string): void {
     leftSlot.children = [{ ...logo }];
   }
   
-  // Move menu to right slot (default position)
+  // Move menu and cta to right slot (default position)
   if (menu) {
     rightSlot.children = [{ ...menu }];
+  }
+  if (cta) {
+    rightSlot.children = [...(rightSlot.children || []), { ...cta }];
   }
   
   // Update container with new slot structure
@@ -239,23 +342,27 @@ export function applyLogoPosition(navSectionId: string, position: LogoPosition):
 
 function applyLogoPositionToSlots(container: ComponentInstance, position: LogoPosition): void {
   const updateInstance = useBuilderStore.getState().updateInstance;
+  const { setStyle } = useStyleStore.getState();
   const children = container.children || [];
   
   // Find slots
-  let leftSlot = children.find(c => c.label?.toLowerCase().includes('left'));
-  let centerSlot = children.find(c => c.label?.toLowerCase().includes('center'));
-  let rightSlot = children.find(c => c.label?.toLowerCase().includes('right'));
+  const leftSlot = children.find(c => c.label?.toLowerCase().includes('left'));
+  const centerSlot = children.find(c => c.label?.toLowerCase().includes('center'));
+  const rightSlot = children.find(c => c.label?.toLowerCase().includes('right'));
   
   if (!leftSlot || !centerSlot || !rightSlot) return;
   
   // Collect all elements from all slots
   const allLogoElements: ComponentInstance[] = [];
   const allMenuElements: ComponentInstance[] = [];
+  const allCtaElements: ComponentInstance[] = [];
   
   for (const slot of [leftSlot, centerSlot, rightSlot]) {
     for (const child of slot.children || []) {
       if (child.type === 'Text' || child.type === 'Image') {
         allLogoElements.push(child);
+      } else if (child.type === 'Button') {
+        allCtaElements.push(child);
       } else if (child.type === 'Div') {
         allMenuElements.push(child);
       }
@@ -264,6 +371,7 @@ function applyLogoPositionToSlots(container: ComponentInstance, position: LogoPo
   
   const logo = allLogoElements[0] || null;
   const menu = allMenuElements[0] || null;
+  const cta = allCtaElements[0] || null;
   
   // Create new slot children based on position
   let newLeftChildren: ComponentInstance[] = [];
@@ -272,20 +380,20 @@ function applyLogoPositionToSlots(container: ComponentInstance, position: LogoPo
   
   switch (position) {
     case 'left':
-      // Logo left, menu right
       if (logo) newLeftChildren.push(logo);
       if (menu) newRightChildren.push(menu);
+      if (cta) newRightChildren.push(cta);
       break;
       
     case 'center':
-      // Logo center, menu split (for now just put menu on left)
       if (menu) newLeftChildren.push(menu);
       if (logo) newCenterChildren.push(logo);
+      if (cta) newRightChildren.push(cta);
       break;
       
     case 'right':
-      // Menu left, logo right
       if (menu) newLeftChildren.push(menu);
+      if (cta) newLeftChildren.push(cta);
       if (logo) newRightChildren.push(logo);
       break;
   }
@@ -294,6 +402,18 @@ function applyLogoPositionToSlots(container: ComponentInstance, position: LogoPo
   updateInstance(leftSlot.id, { children: newLeftChildren });
   updateInstance(centerSlot.id, { children: newCenterChildren });
   updateInstance(rightSlot.id, { children: newRightChildren });
+  
+  // Update slot visibility based on content
+  const updateSlotVisibility = (slot: ComponentInstance, hasContent: boolean) => {
+    const styleId = slot.styleSourceIds?.[0];
+    if (styleId) {
+      setStyle(styleId, 'display', hasContent ? 'flex' : 'none');
+    }
+  };
+  
+  updateSlotVisibility(leftSlot, newLeftChildren.length > 0);
+  updateSlotVisibility(centerSlot, newCenterChildren.length > 0);
+  updateSlotVisibility(rightSlot, newRightChildren.length > 0);
 }
 
 // Get current logo position from slot structure
