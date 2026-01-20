@@ -16,7 +16,7 @@ import { useBuilderStore } from '@/builder/store/useBuilderStore';
 import { usePageStore } from '@/builder/store/usePageStore';
 import { componentRegistry } from '@/builder/primitives/registry';
 import { ComponentInstance, ComponentType } from '@/builder/store/types';
-import { generateId, canDropInside, createPrebuiltChildren, shouldAutoConvertToChildren, isInsideNavigation } from '@/builder/utils/instance';
+import { generateId, canDropInside, createPrebuiltChildren, shouldAutoConvertToChildren, isInsideNavigation, findNavigationSection, findBrandTextInNavigation } from '@/builder/utils/instance';
 import { migrateNavigationRemoveGetStartedCTA } from '@/builder/utils/migrateNavigationRemoveGetStartedCTA';
 import { useStyleStore } from '@/builder/store/useStyleStore';
 import { useKeyboardShortcuts } from '@/builder/hooks/useKeyboardShortcuts';
@@ -226,6 +226,7 @@ const Builder: React.FC = () => {
         if (isImage) {
           const imageClassName = getNextAutoClassName('image');
           const imageStyleId = createStyleSource('local', imageClassName);
+          const deleteInstance = useBuilderStore.getState().deleteInstance;
           
           // Check if we're dropping into a navigation context
           const isNavContext = isInsideNavigation(parentId, rootInstance);
@@ -237,6 +238,22 @@ const Builder: React.FC = () => {
             setStyle(imageStyleId, 'height', 'auto');
             setStyle(imageStyleId, 'flexShrink', '0');
             setStyle(imageStyleId, 'objectFit', 'contain');
+            
+            // Find and remove existing Brand text in the navigation
+            const navSection = findNavigationSection(parentId, rootInstance);
+            const brandText = findBrandTextInNavigation(navSection);
+            if (brandText) {
+              // Inherit the brand text's style source IDs for positioning
+              const brandStyleIds = brandText.styleSourceIds || [];
+              if (brandStyleIds.length > 0) {
+                // Apply the same order/positioning styles from the brand text
+                const computedStyles = useStyleStore.getState().getComputedStyles(brandStyleIds, 'base', 'default');
+                if (computedStyles.order) {
+                  setStyle(imageStyleId, 'order', computedStyles.order);
+                }
+              }
+              deleteInstance(brandText.id);
+            }
           }
           
           const imageInstance: ComponentInstance = {

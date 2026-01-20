@@ -488,6 +488,52 @@ export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ inst
     setPageGlobalOverride(currentPageId, 'header', hide);
   };
 
+  // Get logo position from computed styles
+  const getLogoPosition = (): 'left' | 'center' | 'right' => {
+    const fresh = getFreshNavChildren();
+    const logoInstance = fresh.logoImage || fresh.logoText;
+    if (!logoInstance?.styleSourceIds?.length) return 'left';
+    
+    const computedStyles = useStyleStore.getState().getComputedStyles(
+      logoInstance.styleSourceIds, 
+      'base', 
+      'default'
+    );
+    const order = computedStyles.order;
+    
+    if (order === '3') return 'right';
+    if (order === '2') return 'center';
+    return 'left';
+  };
+
+  // Handle logo position change
+  const handleLogoPositionChange = (position: 'left' | 'center' | 'right') => {
+    const fresh = getFreshNavChildren();
+    const logoInstance = fresh.logoImage || fresh.logoText;
+    if (!logoInstance?.styleSourceIds?.length) return;
+    
+    const logoStyleId = logoInstance.styleSourceIds[0];
+    const setStyle = useStyleStore.getState().setStyle;
+    
+    switch (position) {
+      case 'left':
+        setStyle(logoStyleId, 'order', '1');
+        setStyle(logoStyleId, 'marginLeft', '0');
+        setStyle(logoStyleId, 'marginRight', '0');
+        break;
+      case 'center':
+        setStyle(logoStyleId, 'order', '2');
+        setStyle(logoStyleId, 'marginLeft', 'auto');
+        setStyle(logoStyleId, 'marginRight', 'auto');
+        break;
+      case 'right':
+        setStyle(logoStyleId, 'order', '3');
+        setStyle(logoStyleId, 'marginLeft', '0');
+        setStyle(logoStyleId, 'marginRight', '0');
+        break;
+    }
+  };
+
   // Generate page URL from page name
   const getPageUrl = (pageName: string) => {
     return `/pages/${pageName.toLowerCase().replace(/\s+/g, '-')}.html`;
@@ -562,19 +608,39 @@ export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ inst
         <Label className="text-[10px] font-medium text-foreground">Logo</Label>
         
         {logoImageUrl ? (
-          <div className="relative inline-block">
-            <img 
-              src={logoImageUrl} 
-              alt="Logo preview" 
-              className="h-8 w-auto max-w-[120px] object-contain rounded border border-border"
-            />
-            <button
-              onClick={handleRemoveLogoImage}
-              className="absolute -top-1.5 -right-1.5 p-0.5 bg-destructive text-destructive-foreground rounded-full hover:opacity-90"
-            >
-              <X className="w-2.5 h-2.5" />
-            </button>
-          </div>
+          <>
+            <div className="relative inline-block">
+              <img 
+                src={logoImageUrl} 
+                alt="Logo preview" 
+                className="h-8 w-auto max-w-[120px] object-contain rounded border border-border"
+              />
+              <button
+                onClick={handleRemoveLogoImage}
+                className="absolute -top-1.5 -right-1.5 p-0.5 bg-destructive text-destructive-foreground rounded-full hover:opacity-90"
+              >
+                <X className="w-2.5 h-2.5" />
+              </button>
+            </div>
+            
+            {/* Logo Position Selector - only shown when image logo exists */}
+            <div className="space-y-1">
+              <Label className="text-[9px] text-muted-foreground">Logo Position</Label>
+              <Select 
+                value={getLogoPosition()} 
+                onValueChange={handleLogoPositionChange}
+              >
+                <SelectTrigger className="h-7 text-[10px] text-foreground bg-background">
+                  <SelectValue placeholder="Select position" />
+                </SelectTrigger>
+                <SelectContent className="bg-popover">
+                  <SelectItem value="left" className="text-[10px]">Left</SelectItem>
+                  <SelectItem value="center" className="text-[10px]">Center (Split Menu)</SelectItem>
+                  <SelectItem value="right" className="text-[10px]">Right</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </>
         ) : (
           <Button
             variant="outline"
