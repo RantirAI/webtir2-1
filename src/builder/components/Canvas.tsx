@@ -323,6 +323,12 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
   const [richTextAddMenu, setRichTextAddMenu] = useState<{ isOpen: boolean; position: { x: number; y: number }; instanceId: string } | null>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
   const [customWidth, setCustomWidth] = useState<number | null>(null);
+  
+  // Reset custom width when breakpoint changes so breakpoint widths take effect
+  useEffect(() => {
+    setCustomWidth(null);
+  }, [currentBreakpoint]);
+  
   const [isResizing, setIsResizing] = useState<'left' | 'right' | null>(null);
   const [resizeStart, setResizeStart] = useState({ x: 0, width: 0 });
   const [touchStart, setTouchStart] = useState<{ x: number; y: number; distance: number } | null>(null);

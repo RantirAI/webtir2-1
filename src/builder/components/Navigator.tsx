@@ -323,8 +323,10 @@ export const Navigator: React.FC = () => {
 
         {/* Component row - styled green for prebuilt components and their children */}
         <div
-          className={`flex items-center gap-1 px-2 py-1 text-sm cursor-pointer hover:bg-accent rounded-md group relative ${
-            isSelected ? 'bg-accent text-accent-foreground' : ''
+          className={`flex items-center gap-1 px-2 py-1 text-sm cursor-pointer rounded-md group relative ${
+            isSelected 
+              ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300' 
+              : 'hover:bg-muted'
           } ${isDragging ? 'opacity-40' : ''}`}
           style={{ paddingLeft: `${level * 16 + 8}px` }}
           onContextMenu={handleRightClick}
