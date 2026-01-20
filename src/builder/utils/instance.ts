@@ -56,6 +56,67 @@ export function getInstancePath(tree: any, targetId: string, path: string[] = []
   return null;
 }
 
+// Find the Navigation Section from any child instance
+export function findNavigationSection(instanceId: string, rootInstance: any): any | null {
+  const path = getInstancePath(rootInstance, instanceId);
+  if (!path) return null;
+  
+  // Traverse the path and find the Navigation section
+  const findNavInPath = (tree: any, targetPath: string[]): any | null => {
+    if (targetPath.length === 0) return null;
+    
+    const [currentId, ...rest] = targetPath;
+    
+    if (tree.id !== currentId) return null;
+    
+    // Check if this node is a Navigation section
+    if (tree.type === 'Section' && tree.props?.htmlTag === 'nav') {
+      return tree;
+    }
+    
+    // Check if this is a Box with Navigation label
+    if (tree.type === 'Box' && tree.label === 'Navigation') {
+      return tree;
+    }
+    
+    // Continue to children
+    if (rest.length === 0) return null;
+    
+    for (const child of tree.children || []) {
+      if (child.id === rest[0]) {
+        return findNavInPath(child, rest);
+      }
+    }
+    
+    return null;
+  };
+  
+  return findNavInPath(rootInstance, path);
+}
+
+// Find the first Text element (Brand logo) in a Navigation container
+export function findBrandTextInNavigation(navInstance: any): any | null {
+  if (!navInstance) return null;
+  
+  // For composition navigation (Section with htmlTag='nav'), look in Container child
+  const container = navInstance.children?.[0];
+  if (!container) return null;
+  
+  // Look for Text component (that's not inside a links box)
+  for (const child of container.children || []) {
+    if (child.type === 'Text') {
+      return child;
+    }
+    // Also check in Box children (like Logo Container)
+    if ((child.type === 'Box' || child.type === 'Div') && child.label?.includes('Logo')) {
+      const textInBox = child.children?.find((c: any) => c.type === 'Text');
+      if (textInBox) return textInBox;
+    }
+  }
+  
+  return null;
+}
+
 export function canDropInside(instanceType: string, draggedType?: string): boolean {
   // Sections cannot contain other sections
   if (instanceType === 'Section' && draggedType === 'Section') {
