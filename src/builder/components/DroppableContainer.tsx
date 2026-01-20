@@ -64,11 +64,12 @@ export const DroppableContainer: React.FC<DroppableContainerProps> = ({
         display: 'block',
         width: '100%',
         position: 'relative' as const,
-        // Add visual feedback when dragging over this container
-        outline: isValidDropTarget ? '2px dashed hsl(var(--primary) / 0.6)' : undefined,
+        // Add prominent blue visual feedback when dragging over this container
+        outline: isValidDropTarget ? '2px dashed #3b82f6' : undefined,
         outlineOffset: isValidDropTarget ? '-2px' : undefined,
-        backgroundColor: isValidDropTarget ? 'hsl(var(--primary) / 0.05)' : undefined,
-        borderRadius: isValidDropTarget ? '4px' : undefined,
+        backgroundColor: isValidDropTarget ? 'rgba(59, 130, 246, 0.08)' : undefined,
+        borderRadius: isValidDropTarget ? '6px' : undefined,
+        transition: 'outline 150ms ease, background-color 150ms ease',
       }
     : {
         // For non-containers, use display: contents to preserve layout
@@ -145,13 +146,20 @@ export const DroppableContainer: React.FC<DroppableContainerProps> = ({
       <SortableContext items={childIds} strategy={verticalListSortingStrategy}>
         {isEmpty ? (
           <div 
-            className="flex items-center justify-center border-2 border-dashed border-primary/40 rounded-lg bg-primary/5"
+            className="flex items-center justify-center rounded-lg transition-all duration-150"
             style={{ 
               minHeight: '60px', 
               width: '100%',
+              border: isValidDropTarget ? '2px dashed #3b82f6' : '2px dashed #cbd5e1',
+              backgroundColor: isValidDropTarget ? 'rgba(59, 130, 246, 0.08)' : 'rgba(241, 245, 249, 0.5)',
             }}
           >
-            <span className="text-sm text-primary font-medium">Drop elements here</span>
+            <span 
+              className="text-sm font-medium transition-colors duration-150"
+              style={{ color: isValidDropTarget ? '#3b82f6' : '#94a3b8' }}
+            >
+              {isValidDropTarget ? 'Drop here' : 'Drop elements here'}
+            </span>
           </div>
         ) : (
           children
