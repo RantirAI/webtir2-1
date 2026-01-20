@@ -95,6 +95,7 @@ export function findNavigationSection(instanceId: string, rootInstance: any): an
 }
 
 // Find the first Text element (Brand logo) in a Navigation container
+// Supports both slot-based and legacy flat structures
 export function findBrandTextInNavigation(navInstance: any): any | null {
   if (!navInstance) return null;
   
@@ -102,7 +103,17 @@ export function findBrandTextInNavigation(navInstance: any): any | null {
   const container = navInstance.children?.[0];
   if (!container) return null;
   
-  // Look for Text component (that's not inside a links box)
+  // Check for slot-based structure first
+  for (const child of container.children || []) {
+    if (child.type === 'Div' && (child.label?.toLowerCase().includes('slot') || child.props?._isNavSlot)) {
+      // Search inside slot
+      for (const slotChild of child.children || []) {
+        if (slotChild.type === 'Text') return slotChild;
+      }
+    }
+  }
+  
+  // Legacy: Look for Text component directly in container
   for (const child of container.children || []) {
     if (child.type === 'Text') {
       return child;

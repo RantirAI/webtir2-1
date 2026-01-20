@@ -1762,10 +1762,15 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
   });
 
   // ---------------------------------------------------------------------------
-  // NAVIGATION COMPONENT (Composition-based - editable children)
+  // NAVIGATION COMPONENT (Composition-based with slots - editable children)
   // ---------------------------------------------------------------------------
+  // Uses 3-slot structure: Left Slot | Center Slot | Right Slot
+  // Logo position is controlled by moving elements between slots (not CSS order)
   const navId = generateId();
   const navContainerId = generateId();
+  const navLeftSlotId = generateId();
+  const navCenterSlotId = generateId();
+  const navRightSlotId = generateId();
   const navLogoId = generateId();
   const navMenuId = generateId();
   const navMenuItem1Id = generateId();
@@ -1782,7 +1787,7 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
       id: navId,
       type: 'Section' as ComponentType,
       label: 'Section',
-      props: { htmlTag: 'nav' },
+      props: { htmlTag: 'nav', logoPosition: 'left' },
       styleSourceIds: ['style-nav-wrapper'],
       children: [
         {
@@ -1792,54 +1797,81 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
           props: {},
           styleSourceIds: ['style-nav-container'],
           children: [
-            // Logo
+            // Left Slot - contains logo by default
             {
-              id: navLogoId,
-              type: 'Text' as ComponentType,
-              label: 'Text',
-              props: { children: 'Brand' },
-              styleSourceIds: ['style-nav-logo'],
-              children: [],
-            },
-            // Menu Links Container
-            {
-              id: navMenuId,
+              id: navLeftSlotId,
               type: 'Div' as ComponentType,
-              label: 'Div',
-              props: {},
-              styleSourceIds: ['style-nav-menu'],
+              label: 'Left Slot',
+              props: { _isNavSlot: true },
+              styleSourceIds: ['style-nav-slot-left'],
               children: [
                 {
-                  id: navMenuItem1Id,
-                  type: 'Link' as ComponentType,
-                  label: 'Link',
-                  props: { children: 'Home', href: '#' },
-                  styleSourceIds: ['style-nav-link'],
+                  id: navLogoId,
+                  type: 'Text' as ComponentType,
+                  label: 'Text',
+                  props: { children: 'Brand' },
+                  styleSourceIds: ['style-nav-logo'],
                   children: [],
                 },
+              ],
+            },
+            // Center Slot - empty by default
+            {
+              id: navCenterSlotId,
+              type: 'Div' as ComponentType,
+              label: 'Center Slot',
+              props: { _isNavSlot: true },
+              styleSourceIds: ['style-nav-slot-center'],
+              children: [],
+            },
+            // Right Slot - contains menu by default
+            {
+              id: navRightSlotId,
+              type: 'Div' as ComponentType,
+              label: 'Right Slot',
+              props: { _isNavSlot: true },
+              styleSourceIds: ['style-nav-slot-right'],
+              children: [
                 {
-                  id: navMenuItem2Id,
-                  type: 'Link' as ComponentType,
-                  label: 'Link',
-                  props: { children: 'About', href: '#' },
-                  styleSourceIds: ['style-nav-link'],
-                  children: [],
-                },
-                {
-                  id: navMenuItem3Id,
-                  type: 'Link' as ComponentType,
-                  label: 'Link',
-                  props: { children: 'Services', href: '#' },
-                  styleSourceIds: ['style-nav-link'],
-                  children: [],
-                },
-                {
-                  id: navMenuItem4Id,
-                  type: 'Link' as ComponentType,
-                  label: 'Link',
-                  props: { children: 'Contact', href: '#' },
-                  styleSourceIds: ['style-nav-link'],
-                  children: [],
+                  id: navMenuId,
+                  type: 'Div' as ComponentType,
+                  label: 'Div',
+                  props: {},
+                  styleSourceIds: ['style-nav-menu'],
+                  children: [
+                    {
+                      id: navMenuItem1Id,
+                      type: 'Link' as ComponentType,
+                      label: 'Link',
+                      props: { children: 'Home', href: '#' },
+                      styleSourceIds: ['style-nav-link'],
+                      children: [],
+                    },
+                    {
+                      id: navMenuItem2Id,
+                      type: 'Link' as ComponentType,
+                      label: 'Link',
+                      props: { children: 'About', href: '#' },
+                      styleSourceIds: ['style-nav-link'],
+                      children: [],
+                    },
+                    {
+                      id: navMenuItem3Id,
+                      type: 'Link' as ComponentType,
+                      label: 'Link',
+                      props: { children: 'Services', href: '#' },
+                      styleSourceIds: ['style-nav-link'],
+                      children: [],
+                    },
+                    {
+                      id: navMenuItem4Id,
+                      type: 'Link' as ComponentType,
+                      label: 'Link',
+                      props: { children: 'Contact', href: '#' },
+                      styleSourceIds: ['style-nav-link'],
+                      children: [],
+                    },
+                  ],
                 },
               ],
             },
@@ -1863,7 +1895,29 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
         maxWidth: '1200px',
         margin: '0 auto',
         padding: '16px 24px',
-        gap: '32px',
+        gap: '24px',
+      }),
+      'style-nav-slot-left': createStyleEntry({
+        display: 'flex',
+        alignItems: 'center',
+        gap: '16px',
+        flex: '1',
+        justifyContent: 'flex-start',
+        minWidth: '0',
+      }),
+      'style-nav-slot-center': createStyleEntry({
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flex: '0 0 auto',
+      }),
+      'style-nav-slot-right': createStyleEntry({
+        display: 'flex',
+        alignItems: 'center',
+        gap: '16px',
+        flex: '1',
+        justifyContent: 'flex-end',
+        minWidth: '0',
       }),
       'style-nav-logo': createStyleEntry({
         fontSize: '20px',
@@ -1875,8 +1929,6 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
         display: 'flex',
         alignItems: 'center',
         gap: '32px',
-        flexGrow: '1',
-        justifyContent: 'center',
         minWidth: '0',
         flexShrink: '1',
       }),
