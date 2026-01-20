@@ -49,21 +49,60 @@ const ACTIVE_PRESETS = [
 // Helper to generate unique IDs
 const generateId = () => `inst_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
+// Check if a child is a slot container
+const isSlot = (child: ComponentInstance): boolean => {
+  return child.type === 'Div' && (
+    child.label?.toLowerCase().includes('slot') || 
+    child.props?._isNavSlot === true
+  );
+};
+
 // Helper to find children by role in the composition-based navigation
+// Supports both slot-based and legacy flat structures
 const findNavChildren = (instance: ComponentInstance) => {
   const container = instance.children?.[0]; // Container
   if (!container || container.type !== 'Container') {
-    return { logoText: null, logoImage: null, menu: null, cta: null, container: null };
+    return { logoText: null, logoImage: null, menu: null, cta: null, container: null, leftSlot: null, centerSlot: null, rightSlot: null };
   }
   
-  // Logo can be Text or Image - find both separately
-  const logoText = container.children?.find(c => c.type === 'Text');
-  const logoImage = container.children?.find(c => c.type === 'Image');
+  let logoText: ComponentInstance | null = null;
+  let logoImage: ComponentInstance | null = null;
+  let menu: ComponentInstance | null = null;
+  let cta: ComponentInstance | null = null;
+  let leftSlot: ComponentInstance | null = null;
+  let centerSlot: ComponentInstance | null = null;
+  let rightSlot: ComponentInstance | null = null;
   
-  const menu = container.children?.find(c => c.type === 'Div' && c.children?.some(l => l.type === 'Link'));
-  const cta = container.children?.find(c => c.type === 'Button');
+  // Check for slot-based structure
+  for (const child of container.children || []) {
+    if (isSlot(child)) {
+      const label = child.label?.toLowerCase() || '';
+      if (label.includes('left')) leftSlot = child;
+      else if (label.includes('center')) centerSlot = child;
+      else if (label.includes('right')) rightSlot = child;
+    }
+  }
   
-  return { logoText, logoImage, menu, cta, container };
+  // If we have slots, look for elements inside them
+  if (leftSlot || centerSlot || rightSlot) {
+    const allSlots = [leftSlot, centerSlot, rightSlot].filter(Boolean) as ComponentInstance[];
+    for (const slot of allSlots) {
+      for (const child of slot.children || []) {
+        if (child.type === 'Text' && !logoText) logoText = child;
+        if (child.type === 'Image' && !logoImage) logoImage = child;
+        if (child.type === 'Div' && child.children?.some(l => l.type === 'Link') && !menu) menu = child;
+        if (child.type === 'Button' && !cta) cta = child;
+      }
+    }
+  } else {
+    // Legacy flat structure - search directly in container
+    logoText = container.children?.find(c => c.type === 'Text') || null;
+    logoImage = container.children?.find(c => c.type === 'Image') || null;
+    menu = container.children?.find(c => c.type === 'Div' && c.children?.some(l => l.type === 'Link')) || null;
+    cta = container.children?.find(c => c.type === 'Button') || null;
+  }
+  
+  return { logoText, logoImage, menu, cta, container, leftSlot, centerSlot, rightSlot };
 };
 
 // Check if this is a composition-based navigation (Section with htmlTag='nav')
@@ -126,7 +165,7 @@ export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ inst
     if (isCompositionNavigation(currentInstance)) {
       return findNavChildren(currentInstance);
     }
-    return { logoText: null, logoImage: null, menu: null, cta: null, container: null };
+    return { logoText: null, logoImage: null, menu: null, cta: null, container: null, leftSlot: null, centerSlot: null, rightSlot: null };
   };
 
   // Get the global header to include in dependencies for reactivity
@@ -311,8 +350,25 @@ export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ inst
           } else if (fresh.logoText) {
             // Replace Text with Image - REUSE the existing styleSourceIds
             const existingStyleIds = fresh.logoText.styleSourceIds || [];
-            const logoIndex = fresh.container.children?.findIndex(c => c.id === fresh.logoText?.id) ?? 0;
-            const containerId = fresh.container.id;
+            
+            // Find which slot contains the logo
+            let containerId = fresh.container.id;
+            let logoIndex = 0;
+            
+            // Check slots first
+            if (fresh.leftSlot?.children?.some(c => c.id === fresh.logoText?.id)) {
+              containerId = fresh.leftSlot.id;
+              logoIndex = fresh.leftSlot.children?.findIndex(c => c.id === fresh.logoText?.id) ?? 0;
+            } else if (fresh.centerSlot?.children?.some(c => c.id === fresh.logoText?.id)) {
+              containerId = fresh.centerSlot.id;
+              logoIndex = fresh.centerSlot.children?.findIndex(c => c.id === fresh.logoText?.id) ?? 0;
+            } else if (fresh.rightSlot?.children?.some(c => c.id === fresh.logoText?.id)) {
+              containerId = fresh.rightSlot.id;
+              logoIndex = fresh.rightSlot.children?.findIndex(c => c.id === fresh.logoText?.id) ?? 0;
+            } else {
+              // Legacy: direct child of container
+              logoIndex = fresh.container.children?.findIndex(c => c.id === fresh.logoText?.id) ?? 0;
+            }
             
             // Delete the old Text logo
             deleteInstance(fresh.logoText.id);
@@ -353,8 +409,21 @@ export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ inst
       if (fresh.logoImage) {
         // REUSE the existing styleSourceIds from the Image
         const existingStyleIds = fresh.logoImage.styleSourceIds || [];
-        const logoIndex = fresh.container.children?.findIndex(c => c.id === fresh.logoImage?.id) ?? 0;
-        const containerId = fresh.container.id;
+        
+        // Find which slot contains the logo
+        let containerId = fresh.container.id;
+        let logoIndex = 0;
+        
+        if (fresh.leftSlot?.children?.some(c => c.id === fresh.logoImage?.id)) {
+          containerId = fresh.leftSlot.id;
+          logoIndex = fresh.leftSlot.children?.findIndex(c => c.id === fresh.logoImage?.id) ?? 0;
+        } else if (fresh.centerSlot?.children?.some(c => c.id === fresh.logoImage?.id)) {
+          containerId = fresh.centerSlot.id;
+          logoIndex = fresh.centerSlot.children?.findIndex(c => c.id === fresh.logoImage?.id) ?? 0;
+        } else if (fresh.rightSlot?.children?.some(c => c.id === fresh.logoImage?.id)) {
+          containerId = fresh.rightSlot.id;
+          logoIndex = fresh.rightSlot.children?.findIndex(c => c.id === fresh.logoImage?.id) ?? 0;
+        }
         
         deleteInstance(fresh.logoImage.id);
         
@@ -488,63 +557,99 @@ export const NavigationDataEditor: React.FC<NavigationDataEditorProps> = ({ inst
     setPageGlobalOverride(currentPageId, 'header', hide);
   };
 
-  // Get logo position from computed styles
+  // Get logo position from slot structure
   const getLogoPosition = (): 'left' | 'center' | 'right' => {
     const fresh = getFreshNavChildren();
     const logoInstance = fresh.logoImage || fresh.logoText;
-    if (!logoInstance?.styleSourceIds?.length) return 'left';
+    if (!logoInstance) return 'left';
     
-    const computedStyles = useStyleStore.getState().getComputedStyles(
-      logoInstance.styleSourceIds, 
-      'base', 
-      'default'
-    );
-    const order = computedStyles.order;
+    // Check which slot contains the logo
+    if (fresh.leftSlot?.children?.some(c => c.id === logoInstance.id)) return 'left';
+    if (fresh.centerSlot?.children?.some(c => c.id === logoInstance.id)) return 'center';
+    if (fresh.rightSlot?.children?.some(c => c.id === logoInstance.id)) return 'right';
     
-    if (order === '3') return 'right';
-    if (order === '2') return 'center';
-    return 'left';
+    // Also check for nested logo in slots
+    for (const slot of [fresh.leftSlot, fresh.centerSlot, fresh.rightSlot]) {
+      if (!slot) continue;
+      for (const child of slot.children || []) {
+        if (child.type === 'Text' || child.type === 'Image') {
+          if (slot === fresh.leftSlot) return 'left';
+          if (slot === fresh.centerSlot) return 'center';
+          if (slot === fresh.rightSlot) return 'right';
+        }
+      }
+    }
+    
+    // Default to 'left' or use props
+    return (freshInstance.props?.logoPosition as 'left' | 'center' | 'right') || 'left';
   };
 
-  // Handle logo position change
+  // Handle logo position change by moving elements between slots
   const handleLogoPositionChange = (position: 'left' | 'center' | 'right') => {
     const fresh = getFreshNavChildren();
-    const logoInstance = fresh.logoImage || fresh.logoText;
-    if (!logoInstance?.styleSourceIds?.length) return;
     
-    const logoStyleId = logoInstance.styleSourceIds[0];
-    const menuStyleId = fresh.menu?.styleSourceIds?.[0];
-    const setStyle = useStyleStore.getState().setStyle;
+    // If we don't have slots, we can't do structural positioning
+    if (!fresh.leftSlot || !fresh.centerSlot || !fresh.rightSlot) {
+      console.warn('Navigation does not have slot structure');
+      return;
+    }
+    
+    const logoInstance = fresh.logoImage || fresh.logoText;
+    const menuInstance = fresh.menu;
+    
+    if (!logoInstance) return;
+    
+    // Update the nav section's logoPosition prop
+    updateInstance(freshInstance.id, {
+      props: { ...freshInstance.props, logoPosition: position }
+    });
+    
+    // Collect all elements from all slots (excluding the logo and menu we'll move)
+    const getOtherChildren = (slot: ComponentInstance | null, exclude: ComponentInstance[]): ComponentInstance[] => {
+      if (!slot) return [];
+      const excludeIds = exclude.filter(Boolean).map(e => e.id);
+      return (slot.children || []).filter(c => !excludeIds.includes(c.id));
+    };
+    
+    // Build new slot children based on position
+    let newLeftChildren: ComponentInstance[] = [];
+    let newCenterChildren: ComponentInstance[] = [];
+    let newRightChildren: ComponentInstance[] = [];
+    
+    // Get other elements that should stay in their slots
+    const allOther = [
+      ...getOtherChildren(fresh.leftSlot, [logoInstance, menuInstance].filter(Boolean) as ComponentInstance[]),
+      ...getOtherChildren(fresh.centerSlot, [logoInstance, menuInstance].filter(Boolean) as ComponentInstance[]),
+      ...getOtherChildren(fresh.rightSlot, [logoInstance, menuInstance].filter(Boolean) as ComponentInstance[]),
+    ];
     
     switch (position) {
       case 'left':
-        setStyle(logoStyleId, 'order', '1', 'base', 'default');
-        setStyle(logoStyleId, 'marginLeft', '0', 'base', 'default');
-        setStyle(logoStyleId, 'marginRight', '0', 'base', 'default');
-        setStyle(logoStyleId, 'flexShrink', '0', 'base', 'default');
-        if (menuStyleId) {
-          setStyle(menuStyleId, 'order', '2', 'base', 'default');
-        }
+        // Logo left, menu right
+        newLeftChildren = [logoInstance, ...allOther];
+        newCenterChildren = [];
+        if (menuInstance) newRightChildren = [menuInstance];
         break;
+        
       case 'center':
-        setStyle(logoStyleId, 'order', '2', 'base', 'default');
-        setStyle(logoStyleId, 'marginLeft', 'auto', 'base', 'default');
-        setStyle(logoStyleId, 'marginRight', 'auto', 'base', 'default');
-        setStyle(logoStyleId, 'flexShrink', '0', 'base', 'default');
-        if (menuStyleId) {
-          setStyle(menuStyleId, 'order', '1', 'base', 'default');
-        }
+        // Logo center, menu left (or split - simplified for now)
+        if (menuInstance) newLeftChildren = [menuInstance];
+        newCenterChildren = [logoInstance];
+        newRightChildren = [...allOther];
         break;
+        
       case 'right':
-        setStyle(logoStyleId, 'order', '3', 'base', 'default');
-        setStyle(logoStyleId, 'marginLeft', '0', 'base', 'default');
-        setStyle(logoStyleId, 'marginRight', '0', 'base', 'default');
-        setStyle(logoStyleId, 'flexShrink', '0', 'base', 'default');
-        if (menuStyleId) {
-          setStyle(menuStyleId, 'order', '1', 'base', 'default');
-        }
+        // Menu left, logo right
+        if (menuInstance) newLeftChildren = [menuInstance];
+        newCenterChildren = [];
+        newRightChildren = [logoInstance, ...allOther];
         break;
     }
+    
+    // Update all slots
+    updateInstance(fresh.leftSlot.id, { children: newLeftChildren });
+    updateInstance(fresh.centerSlot.id, { children: newCenterChildren });
+    updateInstance(fresh.rightSlot.id, { children: newRightChildren });
   };
 
   // Generate page URL from page name
