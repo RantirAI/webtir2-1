@@ -92,6 +92,7 @@ import { AlertDialogDataEditor } from "./data-editors/AlertDialogDataEditor";
 import { AvatarDataEditor } from "./data-editors/AvatarDataEditor";
 import { BadgeDataEditor } from "./data-editors/BadgeDataEditor";
 import { BreadcrumbDataEditor } from "./data-editors/BreadcrumbDataEditor";
+import { BreadcrumbItemDataEditor } from "./data-editors/BreadcrumbItemDataEditor";
 import { ProgressDataEditor } from "./data-editors/ProgressDataEditor";
 import { TooltipDataEditor } from "./data-editors/TooltipDataEditor";
 import { PopoverDataEditor } from "./data-editors/PopoverDataEditor";
@@ -372,12 +373,10 @@ const detectPrebuiltByStructure = (instance: ComponentInstance): string | null =
     return 'system-separator';
   }
   
-  // Breadcrumb: Div with items array containing breadcrumb items
+  // Breadcrumb: Has BreadcrumbItem children or is Breadcrumb type
   if (
-    instance.type === 'Div' &&
-    instance.props?.items &&
-    Array.isArray(instance.props.items) &&
-    instance.props.items.some((item: any) => item.label && (item.href || item.isCurrentPage))
+    instance.type === 'Breadcrumb' ||
+    (instance.type === 'Div' && instance.children?.some(c => c.type === 'BreadcrumbItem'))
   ) {
     return 'system-breadcrumb';
   }
@@ -4901,6 +4900,9 @@ export const StylePanel: React.FC<StylePanelProps> = ({
 
                   {/* Breadcrumb Settings */}
                   {selectedInstance.type === "Breadcrumb" && <BreadcrumbDataEditor instance={selectedInstance} />}
+                  
+                  {/* BreadcrumbItem Settings */}
+                  {(selectedInstance.type as string) === "BreadcrumbItem" && <BreadcrumbItemDataEditor instance={selectedInstance} />}
 
                   {/* Progress Settings */}
                   {selectedInstance.type === "ProgressBar" && <ProgressDataEditor instance={selectedInstance} />}

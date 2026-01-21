@@ -48,9 +48,13 @@ export const DroppableContainer: React.FC<DroppableContainerProps> = ({
   // Check if this is the Navigation root (Section with htmlTag='nav')
   const isNavigationRoot = instance.type === 'Section' && instance.props?.htmlTag === 'nav';
 
+  // Check for components that use prop-based content (not children) - these should not show empty state
+  const hasPropBasedContent = 
+    (instance.type === 'Separator' && instance.props?.separatorSettings);
+
   // Only show empty state for non-root droppable containers that have no children
   // Root instance should never show the "Drop elements here" placeholder
-  const isEmpty = isDroppableContainer && instance.children.length === 0 && !isRootInstance;
+  const isEmpty = isDroppableContainer && instance.children.length === 0 && !isRootInstance && !hasPropBasedContent;
 
   // Determine if we're being dragged over with a valid dragged item
   const isDragActive = !!active;

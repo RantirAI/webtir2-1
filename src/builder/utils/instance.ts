@@ -327,19 +327,33 @@ export function createPrebuiltChildren(instanceType: string, props: Record<strin
     }
     
     case 'Breadcrumb': {
-      const items = props.items || [];
-      return items.map((item: any, index: number) => ({
-        id: generateId(),
-        type: 'BreadcrumbItem',
-        name: `crumb-${index + 1}`,
-        props: {
-          label: item.label || `Page ${index + 1}`,
-          href: item.href || '#',
-          isCurrentPage: item.isCurrentPage || false,
+      // Return default BreadcrumbItem children structure (3 items)
+      return [
+        {
+          id: generateId(),
+          type: 'BreadcrumbItem',
+          label: 'Home',
+          props: { label: 'Home', href: '/', isCurrentPage: false },
+          children: [],
+          styleSourceIds: [],
         },
-        children: [],
-        styleSourceIds: [],
-      }));
+        {
+          id: generateId(),
+          type: 'BreadcrumbItem',
+          label: 'Products',
+          props: { label: 'Products', href: '/products', isCurrentPage: false },
+          children: [],
+          styleSourceIds: [],
+        },
+        {
+          id: generateId(),
+          type: 'BreadcrumbItem',
+          label: 'Current Page',
+          props: { label: 'Current Page', href: '', isCurrentPage: true },
+          children: [],
+          styleSourceIds: [],
+        },
+      ];
     }
     
     case 'Table': {
