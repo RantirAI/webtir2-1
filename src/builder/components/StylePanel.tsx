@@ -115,6 +115,7 @@ import { LoginFormDataEditor } from "./data-editors/LoginFormDataEditor";
 import { InputFieldDataEditor } from "./data-editors/InputFieldDataEditor";
 import { CalendarDataEditor } from "./data-editors/CalendarDataEditor";
 import { CommandPaletteDataEditor } from "./data-editors/CommandPaletteDataEditor";
+import { SeparatorDataEditor } from "./data-editors/SeparatorDataEditor";
 import { useComponentInstanceStore } from "../store/useComponentInstanceStore";
 import "../styles/style-panel.css";
 import "../styles/tokens.css";
@@ -360,6 +361,25 @@ const detectPrebuiltByStructure = (instance: ComponentInstance): string | null =
     instance.children[0].children?.some(c => c.type === 'Div' && c.children?.some(l => l.type === 'Link'))
   ) {
     return 'system-navigation';
+  }
+  
+  // Separator: Div with separatorSettings or specific separator style pattern
+  if (
+    instance.type === 'Div' &&
+    instance.children?.length === 0 &&
+    (instance.props?.separatorSettings || instance.styleSourceIds?.some(id => id.includes('separator')))
+  ) {
+    return 'system-separator';
+  }
+  
+  // Breadcrumb: Div with items array containing breadcrumb items
+  if (
+    instance.type === 'Div' &&
+    instance.props?.items &&
+    Array.isArray(instance.props.items) &&
+    instance.props.items.some((item: any) => item.label && (item.href || item.isCurrentPage))
+  ) {
+    return 'system-breadcrumb';
   }
   
   return null;
@@ -4957,6 +4977,10 @@ export const StylePanel: React.FC<StylePanelProps> = ({
                         return <CommandPaletteDataEditor instance={linkedInstance} />;
                       case 'system-navigation':
                         return <NavigationDataEditor instance={linkedInstance} />;
+                      case 'system-separator':
+                        return <SeparatorDataEditor instance={linkedInstance} />;
+                      case 'system-breadcrumb':
+                        return <BreadcrumbDataEditor instance={linkedInstance} />;
                       default:
                         return null;
                     }
