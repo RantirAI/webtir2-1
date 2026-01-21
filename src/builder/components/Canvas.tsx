@@ -1773,17 +1773,84 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
       }
 
       case 'Calendar': {
-        const settings = instance.props?.calendarSettings || {};
+        // Calendar is now a container with Header, DayPicker, and Footer slots
+        const content = (
+          <div
+            data-instance-id={instance.id}
+            className={(instance.styleSourceIds || [])
+              .map((id) => useStyleStore.getState().styleSources[id]?.name)
+              .filter(Boolean)
+              .join(' ')}
+            style={{
+              ...getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties,
+            }}
+            onClick={isPreviewMode ? undefined : (e) => { e.stopPropagation(); setSelectedInstanceId(instance.id); }}
+            onMouseEnter={isPreviewMode ? undefined : () => setHoveredInstanceId(instance.id)}
+            onMouseLeave={isPreviewMode ? undefined : () => setHoveredInstanceId(null)}
+            onContextMenu={isPreviewMode ? undefined : (e) => handleContextMenu(e, instance)}
+          >
+            {instance.children.map((child) => renderInstance(child))}
+          </div>
+        );
+        return wrapWithDraggable(content);
+      }
+
+      case 'CalendarHeader': {
+        // Header slot - can contain custom elements (title, navigation, etc.)
+        const content = (
+          <div
+            data-instance-id={instance.id}
+            className={(instance.styleSourceIds || [])
+              .map((id) => useStyleStore.getState().styleSources[id]?.name)
+              .filter(Boolean)
+              .join(' ')}
+            style={{
+              ...getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties,
+            }}
+            onClick={isPreviewMode ? undefined : (e) => { e.stopPropagation(); setSelectedInstanceId(instance.id); }}
+            onMouseEnter={isPreviewMode ? undefined : () => setHoveredInstanceId(instance.id)}
+            onMouseLeave={isPreviewMode ? undefined : () => setHoveredInstanceId(null)}
+            onContextMenu={isPreviewMode ? undefined : (e) => handleContextMenu(e, instance)}
+          >
+            {instance.children.length > 0 ? (
+              instance.children.map((child) => renderInstance(child))
+            ) : (
+              <div className="text-xs text-muted-foreground text-center py-1">
+                Add header content
+              </div>
+            )}
+          </div>
+        );
+        return wrapWithDraggable(content);
+      }
+
+      case 'CalendarDayPicker': {
+        // DayPicker slot - renders the actual Shadcn Calendar
+        // Get settings from parent Calendar instance
+        const findParentCalendar = (id: string): ComponentInstance | null => {
+          const findInTree = (node: ComponentInstance): ComponentInstance | null => {
+            for (const child of node.children || []) {
+              if (child.id === id) {
+                // Check if parent is Calendar
+                if (node.type === 'Calendar') return node;
+              }
+              const found = findInTree(child);
+              if (found) return found;
+            }
+            return null;
+          };
+          return rootInstance ? findInTree(rootInstance) : null;
+        };
+        
+        const parentCalendar = findParentCalendar(instance.id);
+        const settings = parentCalendar?.props?.calendarSettings || {};
         const mode = settings.mode || 'single';
         const weekStartsOn = (settings.weekStartsOn ?? 0) as 0 | 1 | 2 | 3 | 4 | 5 | 6;
         const showOutsideDays = settings.showOutsideDays !== false;
         const numberOfMonths = settings.numberOfMonths || 1;
         
-        // Parse date bounds
         const fromDate = settings.fromDate ? new Date(settings.fromDate) : undefined;
         const toDate = settings.toDate ? new Date(settings.toDate) : undefined;
-        
-        // Compute default month (or use current date)
         const defaultMonth = settings.defaultMonth 
           ? new Date(settings.defaultMonth + '-01') 
           : new Date();
@@ -1811,8 +1878,37 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
               defaultMonth={defaultMonth}
               fromDate={fromDate}
               toDate={toDate}
-              className="rounded-md border pointer-events-auto"
+              className="pointer-events-auto"
             />
+          </div>
+        );
+        return wrapWithDraggable(content);
+      }
+
+      case 'CalendarFooter': {
+        // Footer slot - can contain buttons like "Today", "Clear", etc.
+        const content = (
+          <div
+            data-instance-id={instance.id}
+            className={(instance.styleSourceIds || [])
+              .map((id) => useStyleStore.getState().styleSources[id]?.name)
+              .filter(Boolean)
+              .join(' ')}
+            style={{
+              ...getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties,
+            }}
+            onClick={isPreviewMode ? undefined : (e) => { e.stopPropagation(); setSelectedInstanceId(instance.id); }}
+            onMouseEnter={isPreviewMode ? undefined : () => setHoveredInstanceId(instance.id)}
+            onMouseLeave={isPreviewMode ? undefined : () => setHoveredInstanceId(null)}
+            onContextMenu={isPreviewMode ? undefined : (e) => handleContextMenu(e, instance)}
+          >
+            {instance.children.length > 0 ? (
+              instance.children.map((child) => renderInstance(child))
+            ) : (
+              <div className="text-xs text-muted-foreground text-center py-1">
+                Add footer actions
+              </div>
+            )}
           </div>
         );
         return wrapWithDraggable(content);

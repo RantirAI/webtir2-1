@@ -141,7 +141,7 @@ export function canDropInside(instanceType: string, draggedType?: string): boole
   }
   
   // Rich text leaf elements cannot contain other elements
-  const leafTypes = ['Blockquote', 'OrderedList', 'UnorderedList', 'CodeBlock', 'Text', 'Heading', 'Image', 'Button', 'Link', 'Separator', 'Divider', 'BreadcrumbItem', 'Calendar'];
+  const leafTypes = ['Blockquote', 'OrderedList', 'UnorderedList', 'CodeBlock', 'Text', 'Heading', 'Image', 'Button', 'Link', 'Separator', 'Divider', 'BreadcrumbItem', 'CalendarDayPicker'];
   if (leafTypes.includes(instanceType)) {
     return false;
   }
@@ -165,6 +165,7 @@ export function canDropInside(instanceType: string, draggedType?: string): boole
     'Breadcrumb',
     'Table',
     'Dropdown',
+    'Calendar',
     
     // Child primitives that can accept nested content
     'AccordionItem',
@@ -173,7 +174,9 @@ export function canDropInside(instanceType: string, draggedType?: string): boole
     'TableRow',
     'TableHeaderCell',
     'TableCell',
-    'Cell'
+    'Cell',
+    'CalendarHeader',
+    'CalendarFooter'
   ];
   return containerTypes.includes(instanceType);
 }
@@ -397,6 +400,45 @@ export function createPrebuiltChildren(instanceType: string, props: Record<strin
       return [headerRow, dataRow1, dataRow2];
     }
     
+    case 'Calendar': {
+      // Generate Calendar children: Header, DayPicker, Footer
+      return [
+        {
+          id: generateId(),
+          type: 'CalendarHeader',
+          label: 'Header',
+          props: {},
+          children: [],
+          styleSourceIds: [],
+        },
+        {
+          id: generateId(),
+          type: 'CalendarDayPicker',
+          label: 'Day Picker',
+          props: {},
+          children: [],
+          styleSourceIds: [],
+        },
+        {
+          id: generateId(),
+          type: 'CalendarFooter',
+          label: 'Footer',
+          props: {},
+          children: [
+            {
+              id: generateId(),
+              type: 'Button',
+              label: 'Button',
+              props: { children: 'Today' },
+              children: [],
+              styleSourceIds: [],
+            },
+          ],
+          styleSourceIds: [],
+        },
+      ];
+    }
+    
     default:
       return [];
   }
@@ -404,5 +446,5 @@ export function createPrebuiltChildren(instanceType: string, props: Record<strin
 
 // Check if a prebuilt type should auto-convert its data items to children
 export function shouldAutoConvertToChildren(instanceType: string): boolean {
-  return ['Accordion', 'Tabs', 'Carousel', 'Breadcrumb', 'Table'].includes(instanceType);
+  return ['Accordion', 'Tabs', 'Carousel', 'Breadcrumb', 'Table', 'Calendar'].includes(instanceType);
 }

@@ -31,7 +31,9 @@ export type ComponentType =
   // Breadcrumb child primitives
   | 'BreadcrumbItem'
   // Carousel child primitives
-  | 'CarouselSlide';
+  | 'CarouselSlide'
+  // Calendar child primitives
+  | 'CalendarHeader' | 'CalendarDayPicker' | 'CalendarFooter';
 
 export type StyleSourceType = 'local' | 'token' | 'preset';
 
