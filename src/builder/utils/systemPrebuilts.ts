@@ -1247,15 +1247,9 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
   });
 
   // ---------------------------------------------------------------------------
-  // CALENDAR
+  // CALENDAR - Uses Shadcn DayPicker for fully functional calendar
   // ---------------------------------------------------------------------------
   const calendarId = generateId();
-  const calendarHeaderId = generateId();
-  const calendarNavId = generateId();
-  const calendarPrevId = generateId();
-  const calendarMonthId = generateId();
-  const calendarNextId = generateId();
-  const calendarGridId = generateId();
 
   prebuilts.push({
     id: 'system-calendar',
@@ -1263,114 +1257,26 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
     category: 'Form Elements',
     instance: {
       id: calendarId,
-      type: 'Div' as ComponentType,
-      label: 'Div',
-      props: {},
+      type: 'Calendar' as ComponentType,
+      label: 'Calendar',
+      props: {
+        calendarSettings: {
+          mode: 'single',           // 'single' | 'range' | 'multiple'
+          weekStartsOn: 0,          // 0 = Sunday, 1 = Monday
+          showOutsideDays: true,
+          showWeekNumber: false,
+          numberOfMonths: 1,
+          defaultMonth: null,       // null = current month
+          fromDate: null,           // min date bound (YYYY-MM-DD)
+          toDate: null,             // max date bound (YYYY-MM-DD)
+        },
+      },
       styleSourceIds: ['style-calendar'],
-      children: [
-        {
-          id: calendarHeaderId,
-          type: 'Div' as ComponentType,
-          label: 'Div',
-          props: {},
-          styleSourceIds: ['style-calendar-header'],
-          children: [
-            {
-              id: calendarNavId,
-              type: 'Div' as ComponentType,
-              label: 'Div',
-              props: {},
-              styleSourceIds: ['style-calendar-nav'],
-              children: [
-                {
-                  id: calendarPrevId,
-                  type: 'Button' as ComponentType,
-                  label: 'Button',
-                  props: { children: '‹' },
-                  styleSourceIds: ['style-calendar-nav-btn'],
-                  children: [],
-                },
-                {
-                  id: calendarMonthId,
-                  type: 'Text' as ComponentType,
-                  label: 'Text',
-                  props: { children: 'December 2024' },
-                  styleSourceIds: ['style-calendar-month'],
-                  children: [],
-                },
-                {
-                  id: calendarNextId,
-                  type: 'Button' as ComponentType,
-                  label: 'Button',
-                  props: { children: '›' },
-                  styleSourceIds: ['style-calendar-nav-btn-2'],
-                  children: [],
-                },
-              ],
-            },
-          ],
-        },
-        {
-          id: calendarGridId,
-          type: 'Div' as ComponentType,
-          label: 'Div',
-          props: {},
-          styleSourceIds: ['style-calendar-grid'],
-          children: [],
-        },
-      ],
+      children: [],  // No nested children - rendered by DayPicker
     },
     defaultStyles: {
       'style-calendar': createStyleEntry({
-        padding: '16px',
-        backgroundColor: 'hsl(var(--card))',
-        border: '1px solid hsl(var(--border))',
-        borderRadius: '12px',
-        width: '280px',
-      }),
-      'style-calendar-header': createStyleEntry({
-        marginBottom: '16px',
-      }),
-      'style-calendar-nav': createStyleEntry({
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-      }),
-      'style-calendar-nav-btn': createStyleEntry({
-        width: '32px',
-        height: '32px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: 'transparent',
-        border: 'none',
-        borderRadius: '6px',
-        fontSize: '18px',
-        color: 'hsl(var(--muted-foreground))',
-        cursor: 'pointer',
-      }),
-      'style-calendar-nav-btn-2': createStyleEntry({
-        width: '32px',
-        height: '32px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: 'transparent',
-        border: 'none',
-        borderRadius: '6px',
-        fontSize: '18px',
-        color: 'hsl(var(--muted-foreground))',
-        cursor: 'pointer',
-      }),
-      'style-calendar-month': createStyleEntry({
-        fontSize: '14px',
-        fontWeight: '500',
-        color: 'hsl(var(--foreground))',
-      }),
-      'style-calendar-grid': createStyleEntry({
-        display: 'grid',
-        gridTemplateColumns: 'repeat(7, 1fr)',
-        gap: '4px',
+        display: 'inline-block',
       }),
     },
   });

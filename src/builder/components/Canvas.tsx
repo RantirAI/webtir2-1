@@ -51,6 +51,7 @@ import { DraggableInstance } from './DraggableInstance';
 import { TableRowElement, TableHeaderCellElement, TableCellElement } from './TableElements';
 import { Accordion as ShadcnAccordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
 import { CarouselPreview } from './CarouselPreview';
+import { Calendar } from '@/components/ui/calendar';
 
 // Canvas Resize Handle Component with improved UX
 interface CanvasResizeHandleProps {
@@ -1769,6 +1770,52 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
             {content}
           </DroppableContainer>
         );
+      }
+
+      case 'Calendar': {
+        const settings = instance.props?.calendarSettings || {};
+        const mode = settings.mode || 'single';
+        const weekStartsOn = (settings.weekStartsOn ?? 0) as 0 | 1 | 2 | 3 | 4 | 5 | 6;
+        const showOutsideDays = settings.showOutsideDays !== false;
+        const numberOfMonths = settings.numberOfMonths || 1;
+        
+        // Parse date bounds
+        const fromDate = settings.fromDate ? new Date(settings.fromDate) : undefined;
+        const toDate = settings.toDate ? new Date(settings.toDate) : undefined;
+        
+        // Compute default month (or use current date)
+        const defaultMonth = settings.defaultMonth 
+          ? new Date(settings.defaultMonth + '-01') 
+          : new Date();
+
+        const content = (
+          <div
+            data-instance-id={instance.id}
+            className={(instance.styleSourceIds || [])
+              .map((id) => useStyleStore.getState().styleSources[id]?.name)
+              .filter(Boolean)
+              .join(' ')}
+            style={{
+              ...getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties,
+            }}
+            onClick={isPreviewMode ? undefined : (e) => { e.stopPropagation(); setSelectedInstanceId(instance.id); }}
+            onMouseEnter={isPreviewMode ? undefined : () => setHoveredInstanceId(instance.id)}
+            onMouseLeave={isPreviewMode ? undefined : () => setHoveredInstanceId(null)}
+            onContextMenu={isPreviewMode ? undefined : (e) => handleContextMenu(e, instance)}
+          >
+            <Calendar
+              mode={mode as any}
+              weekStartsOn={weekStartsOn}
+              showOutsideDays={showOutsideDays}
+              numberOfMonths={numberOfMonths}
+              defaultMonth={defaultMonth}
+              fromDate={fromDate}
+              toDate={toDate}
+              className="rounded-md border pointer-events-auto"
+            />
+          </div>
+        );
+        return wrapWithDraggable(content);
       }
 
       case 'Drawer': 
