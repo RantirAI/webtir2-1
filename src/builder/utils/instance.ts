@@ -141,7 +141,7 @@ export function canDropInside(instanceType: string, draggedType?: string): boole
   }
   
   // Rich text leaf elements cannot contain other elements
-  const leafTypes = ['Blockquote', 'OrderedList', 'UnorderedList', 'CodeBlock', 'Text', 'Heading', 'Image', 'Button', 'Link', 'Separator', 'Divider', 'BreadcrumbItem'];
+  const leafTypes = ['Blockquote', 'OrderedList', 'UnorderedList', 'CodeBlock', 'Text', 'Heading', 'Image', 'Button', 'Link', 'Separator', 'Divider', 'BreadcrumbItem', 'Calendar'];
   if (leafTypes.includes(instanceType)) {
     return false;
   }
