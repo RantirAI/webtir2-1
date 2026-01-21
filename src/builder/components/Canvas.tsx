@@ -537,6 +537,12 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
   }, [richTextAddMenu]);
 
   const renderInstance = (instance: ComponentInstance, parentInstance?: ComponentInstance, childIndex?: number, isInsideNavigation: boolean = false): React.ReactNode => {
+    // Guard against undefined/null instances
+    if (!instance || !instance.id || !instance.type) {
+      console.warn('renderInstance called with invalid instance:', instance);
+      return null;
+    }
+    
     const isSelected = instance.id === selectedInstanceId;
     const isHovered = instance.id === hoveredInstanceId;
     const isContainer = ['Div', 'Container', 'Section', 'Navigation'].includes(instance.type);
@@ -1789,7 +1795,9 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
             onMouseLeave={isPreviewMode ? undefined : () => setHoveredInstanceId(null)}
             onContextMenu={isPreviewMode ? undefined : (e) => handleContextMenu(e, instance)}
           >
-            {instance.children.map((child) => renderInstance(child))}
+            {(instance.children || []).filter(Boolean).map((child) => (
+              <React.Fragment key={child.id}>{renderInstance(child)}</React.Fragment>
+            ))}
           </div>
         );
         return wrapWithDraggable(content);
@@ -1813,7 +1821,9 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
             onContextMenu={isPreviewMode ? undefined : (e) => handleContextMenu(e, instance)}
           >
             {instance.children.length > 0 ? (
-              instance.children.map((child) => renderInstance(child))
+              (instance.children || []).filter(Boolean).map((child) => (
+                <React.Fragment key={child.id}>{renderInstance(child)}</React.Fragment>
+              ))
             ) : (
               <div className="text-xs text-muted-foreground text-center py-1">
                 Add header content
@@ -1903,7 +1913,9 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
             onContextMenu={isPreviewMode ? undefined : (e) => handleContextMenu(e, instance)}
           >
             {instance.children.length > 0 ? (
-              instance.children.map((child) => renderInstance(child))
+              (instance.children || []).filter(Boolean).map((child) => (
+                <React.Fragment key={child.id}>{renderInstance(child)}</React.Fragment>
+              ))
             ) : (
               <div className="text-xs text-muted-foreground text-center py-1">
                 Add footer actions
