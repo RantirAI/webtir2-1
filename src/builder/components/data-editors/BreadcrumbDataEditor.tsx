@@ -1,10 +1,11 @@
 import React from 'react';
-import { Plus, X, GripVertical, Home } from 'lucide-react';
+import { Plus, X, GripVertical, Home, ChevronRight, Slash, ArrowRight, Circle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ComponentInstance } from '../../store/types';
 import { useBuilderStore } from '../../store/useBuilderStore';
 
@@ -28,6 +29,20 @@ const prebuiltTemplates = [
   { value: 'underline-active', label: 'Underline Active' },
 ];
 
+const separatorTypes = [
+  { value: 'chevron', label: 'Chevron (›)', icon: ChevronRight },
+  { value: 'slash', label: 'Slash (/)', icon: Slash },
+  { value: 'arrow', label: 'Arrow (→)', icon: ArrowRight },
+  { value: 'dot', label: 'Dot (•)', icon: Circle },
+  { value: 'custom', label: 'Custom', icon: null },
+];
+
+const hoverStyles = [
+  { value: 'underline', label: 'Underline' },
+  { value: 'color', label: 'Color Change' },
+  { value: 'background', label: 'Background' },
+];
+
 const templateStyles: Record<string, any> = {
   'simple-chevron': {
     separatorType: 'chevron',
@@ -40,6 +55,7 @@ const templateStyles: Record<string, any> = {
     backgroundColor: 'transparent',
     padding: '0',
     borderRadius: '0',
+    hoverStyle: 'underline',
   },
   'slash-dividers': {
     separatorType: 'slash',
@@ -52,6 +68,7 @@ const templateStyles: Record<string, any> = {
     backgroundColor: 'transparent',
     padding: '0',
     borderRadius: '0',
+    hoverStyle: 'color',
   },
   'arrow-trail': {
     separatorType: 'arrow',
@@ -64,6 +81,7 @@ const templateStyles: Record<string, any> = {
     backgroundColor: 'transparent',
     padding: '0',
     borderRadius: '0',
+    hoverStyle: 'color',
   },
   'dotted-path': {
     separatorType: 'dot',
@@ -77,6 +95,7 @@ const templateStyles: Record<string, any> = {
     padding: '0',
     borderRadius: '0',
     separatorSize: '4',
+    hoverStyle: 'underline',
   },
   'pill-style': {
     separatorType: 'chevron',
@@ -92,6 +111,7 @@ const templateStyles: Record<string, any> = {
     padding: '4',
     itemPadding: '6 12',
     borderRadius: '9999',
+    hoverStyle: 'background',
   },
   'underline-active': {
     separatorType: 'slash',
@@ -105,6 +125,7 @@ const templateStyles: Record<string, any> = {
     padding: '0',
     borderRadius: '0',
     activeUnderline: true,
+    hoverStyle: 'underline',
   },
 };
 
@@ -117,7 +138,8 @@ export const BreadcrumbDataEditor: React.FC<BreadcrumbDataEditorProps> = ({ inst
   ];
 
   const settings = instance.props?.breadcrumbSettings || {};
-  const currentTemplate = instance.props?.breadcrumbStyles?.template || '';
+  const styles = instance.props?.breadcrumbStyles || {};
+  const currentTemplate = styles.template || '';
 
   const updateItems = (newItems: BreadcrumbItem[]) => {
     updateInstance(instance.id, {
@@ -130,6 +152,15 @@ export const BreadcrumbDataEditor: React.FC<BreadcrumbDataEditorProps> = ({ inst
       props: {
         ...instance.props,
         breadcrumbSettings: { ...settings, [key]: value }
+      }
+    });
+  };
+
+  const updateStyles = (key: string, value: any) => {
+    updateInstance(instance.id, {
+      props: {
+        ...instance.props,
+        breadcrumbStyles: { ...styles, [key]: value }
       }
     });
   };
@@ -166,6 +197,11 @@ export const BreadcrumbDataEditor: React.FC<BreadcrumbDataEditorProps> = ({ inst
     if (items.length <= 1) return;
     updateItems(items.filter(item => item.id !== id));
   };
+
+  const [separatorOpen, setSeparatorOpen] = React.useState(false);
+  const [appearanceOpen, setAppearanceOpen] = React.useState(false);
+  const [textOpen, setTextOpen] = React.useState(false);
+  const [seoOpen, setSeoOpen] = React.useState(false);
 
   return (
     <div className="space-y-4">
@@ -223,6 +259,152 @@ export const BreadcrumbDataEditor: React.FC<BreadcrumbDataEditorProps> = ({ inst
           </div>
         </div>
       </div>
+
+      {/* Separator Configuration */}
+      <Collapsible open={separatorOpen} onOpenChange={setSeparatorOpen}>
+        <CollapsibleTrigger className="flex items-center justify-between w-full py-1.5 text-[10px] font-medium text-foreground hover:text-foreground/80">
+          Separator Configuration
+          <ChevronRight className={`w-3 h-3 transition-transform ${separatorOpen ? 'rotate-90' : ''}`} />
+        </CollapsibleTrigger>
+        <CollapsibleContent className="space-y-2 pt-2">
+          <div className="space-y-1">
+            <Label className="text-[9px] text-muted-foreground">Separator Type</Label>
+            <Select
+              value={styles.separatorType || 'chevron'}
+              onValueChange={(value) => updateStyles('separatorType', value)}
+            >
+              <SelectTrigger className="h-6 text-[10px] bg-background border-border">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-popover border-border z-50">
+                {separatorTypes.map(type => (
+                  <SelectItem key={type.value} value={type.value} className="text-[10px]">
+                    {type.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {styles.separatorType === 'custom' && (
+            <div className="space-y-1">
+              <Label className="text-[9px] text-muted-foreground">Custom Separator</Label>
+              <Input
+                value={styles.customSeparator || ''}
+                onChange={(e) => updateStyles('customSeparator', e.target.value)}
+                className="h-5 text-[10px]"
+                placeholder="Enter character..."
+                maxLength={3}
+              />
+            </div>
+          )}
+
+          <div className="space-y-1">
+            <Label className="text-[9px] text-muted-foreground">Separator Size</Label>
+            <Input
+              type="number"
+              value={styles.separatorSize || '14'}
+              onChange={(e) => updateStyles('separatorSize', e.target.value)}
+              className="h-5 text-[10px]"
+              placeholder="14"
+              min={8}
+              max={24}
+            />
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
+
+      {/* Appearance Settings */}
+      <Collapsible open={appearanceOpen} onOpenChange={setAppearanceOpen}>
+        <CollapsibleTrigger className="flex items-center justify-between w-full py-1.5 text-[10px] font-medium text-foreground hover:text-foreground/80">
+          Appearance
+          <ChevronRight className={`w-3 h-3 transition-transform ${appearanceOpen ? 'rotate-90' : ''}`} />
+        </CollapsibleTrigger>
+        <CollapsibleContent className="space-y-2 pt-2">
+          <div className="space-y-1">
+            <Label className="text-[9px] text-muted-foreground">Item Spacing</Label>
+            <Input
+              value={styles.gap || '8'}
+              onChange={(e) => updateStyles('gap', e.target.value)}
+              className="h-5 text-[10px]"
+              placeholder="8"
+            />
+          </div>
+
+          <div className="space-y-1">
+            <Label className="text-[9px] text-muted-foreground">Hover Style</Label>
+            <Select
+              value={styles.hoverStyle || 'underline'}
+              onValueChange={(value) => updateStyles('hoverStyle', value)}
+            >
+              <SelectTrigger className="h-6 text-[10px] bg-background border-border">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-popover border-border z-50">
+                {hoverStyles.map(style => (
+                  <SelectItem key={style.value} value={style.value} className="text-[10px]">
+                    {style.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
+
+      {/* Text Options */}
+      <Collapsible open={textOpen} onOpenChange={setTextOpen}>
+        <CollapsibleTrigger className="flex items-center justify-between w-full py-1.5 text-[10px] font-medium text-foreground hover:text-foreground/80">
+          Text Options
+          <ChevronRight className={`w-3 h-3 transition-transform ${textOpen ? 'rotate-90' : ''}`} />
+        </CollapsibleTrigger>
+        <CollapsibleContent className="space-y-2 pt-2">
+          <label className="flex items-center gap-2 text-[10px]">
+            <Checkbox
+              checked={settings.truncateLabels || false}
+              onCheckedChange={(checked) => updateSettings('truncateLabels', !!checked)}
+              className="h-3.5 w-3.5"
+            />
+            Truncate long labels
+          </label>
+
+          {settings.truncateLabels && (
+            <div className="space-y-1">
+              <Label className="text-[9px] text-muted-foreground">Max Label Length</Label>
+              <Input
+                type="number"
+                value={settings.maxLabelLength || 20}
+                onChange={(e) => updateSettings('maxLabelLength', parseInt(e.target.value) || 20)}
+                className="h-5 text-[10px]"
+                placeholder="20"
+                min={5}
+                max={100}
+              />
+            </div>
+          )}
+        </CollapsibleContent>
+      </Collapsible>
+
+      {/* SEO & Accessibility */}
+      <Collapsible open={seoOpen} onOpenChange={setSeoOpen}>
+        <CollapsibleTrigger className="flex items-center justify-between w-full py-1.5 text-[10px] font-medium text-foreground hover:text-foreground/80">
+          SEO & Accessibility
+          <ChevronRight className={`w-3 h-3 transition-transform ${seoOpen ? 'rotate-90' : ''}`} />
+        </CollapsibleTrigger>
+        <CollapsibleContent className="space-y-2 pt-2">
+          <label className="flex items-center gap-2 text-[10px]">
+            <Checkbox
+              checked={settings.enableStructuredData || false}
+              onCheckedChange={(checked) => updateSettings('enableStructuredData', !!checked)}
+              className="h-3.5 w-3.5"
+            />
+            Enable structured data (JSON-LD)
+          </label>
+          <p className="text-[9px] text-muted-foreground pl-5">
+            Adds schema.org BreadcrumbList for better SEO
+          </p>
+        </CollapsibleContent>
+      </Collapsible>
 
       {/* Items */}
       <div className="space-y-2">

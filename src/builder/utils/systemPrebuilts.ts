@@ -1465,8 +1465,19 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
     instance: {
       id: separatorId,
       type: 'Div' as ComponentType,
-      label: 'Div',
-      props: {},
+      label: 'Separator',
+      props: {
+        separatorSettings: {
+          orientation: 'horizontal',
+          lineType: 'solid',
+          thickness: '1px',
+          length: '100%',
+          spacing: '16px',
+          decorative: true,
+        },
+        'aria-hidden': 'true',
+        role: 'presentation',
+      },
       styleSourceIds: ['style-separator'],
       children: [],
     },
@@ -1475,6 +1486,8 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
         width: '100%',
         height: '1px',
         backgroundColor: 'hsl(var(--border))',
+        marginTop: '16px',
+        marginBottom: '16px',
       }),
     },
   });

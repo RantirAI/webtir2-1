@@ -7,6 +7,7 @@ export { AlertDialogDataEditor } from './AlertDialogDataEditor';
 export { AvatarDataEditor } from './AvatarDataEditor';
 export { BadgeDataEditor } from './BadgeDataEditor';
 export { BreadcrumbDataEditor } from './BreadcrumbDataEditor';
+export { SeparatorDataEditor } from './SeparatorDataEditor';
 export { CalendarDataEditor } from './CalendarDataEditor';
 export { CarouselDataEditor } from './CarouselDataEditor';
 export { CarouselSlideDataEditor } from './CarouselSlideDataEditor';
