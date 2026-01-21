@@ -1170,14 +1170,12 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
 
 
   // ---------------------------------------------------------------------------
-  // BREADCRUMB
+  // BREADCRUMB - Container-based children architecture
   // ---------------------------------------------------------------------------
   const breadcrumbId = generateId();
-  const breadcrumb1Id = generateId();
-  const breadcrumbSep1Id = generateId();
-  const breadcrumb2Id = generateId();
-  const breadcrumbSep2Id = generateId();
-  const breadcrumb3Id = generateId();
+  const breadcrumbItem1Id = generateId();
+  const breadcrumbItem2Id = generateId();
+  const breadcrumbItem3Id = generateId();
 
   prebuilts.push({
     id: 'system-breadcrumb',
@@ -1188,15 +1186,37 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
       type: 'Breadcrumb' as ComponentType,
       label: 'Breadcrumb',
       props: {
-        items: [
-          { id: '1', label: 'Home', href: '/' },
-          { id: '2', label: 'Products', href: '/products' },
-          { id: '3', label: 'Current Page', href: '' },
-        ],
         separator: '/',
+        breadcrumbSettings: {},
+        breadcrumbStyles: {},
       },
       styleSourceIds: ['style-breadcrumb'],
-      children: [],
+      children: [
+        {
+          id: breadcrumbItem1Id,
+          type: 'BreadcrumbItem' as ComponentType,
+          label: 'Home',
+          props: { label: 'Home', href: '/', isCurrentPage: false },
+          styleSourceIds: ['style-breadcrumb-item-1'],
+          children: [],
+        },
+        {
+          id: breadcrumbItem2Id,
+          type: 'BreadcrumbItem' as ComponentType,
+          label: 'Products',
+          props: { label: 'Products', href: '/products', isCurrentPage: false },
+          styleSourceIds: ['style-breadcrumb-item-2'],
+          children: [],
+        },
+        {
+          id: breadcrumbItem3Id,
+          type: 'BreadcrumbItem' as ComponentType,
+          label: 'Current Page',
+          props: { label: 'Current Page', href: '', isCurrentPage: true },
+          styleSourceIds: ['style-breadcrumb-item-current'],
+          children: [],
+        },
+      ],
     },
     defaultStyles: {
       'style-breadcrumb': createStyleEntry({
@@ -1204,28 +1224,24 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
         alignItems: 'center',
         gap: '8px',
       }),
-      'style-breadcrumb-link': createStyleEntry({
+      'style-breadcrumb-item-1': createStyleEntry({
         fontSize: '14px',
         color: 'hsl(var(--muted-foreground))',
         textDecoration: 'none',
       }),
-      'style-breadcrumb-link-2': createStyleEntry({
+      'style-breadcrumb-item-2': createStyleEntry({
         fontSize: '14px',
         color: 'hsl(var(--muted-foreground))',
         textDecoration: 'none',
       }),
-      'style-breadcrumb-sep': createStyleEntry({
-        fontSize: '14px',
-        color: 'hsl(var(--muted-foreground))',
-      }),
-      'style-breadcrumb-sep-2': createStyleEntry({
-        fontSize: '14px',
-        color: 'hsl(var(--muted-foreground))',
-      }),
-      'style-breadcrumb-current': createStyleEntry({
+      'style-breadcrumb-item-current': createStyleEntry({
         fontSize: '14px',
         fontWeight: '500',
         color: 'hsl(var(--foreground))',
+      }),
+      'style-breadcrumb-separator': createStyleEntry({
+        fontSize: '14px',
+        color: 'hsl(var(--muted-foreground))',
       }),
     },
   });

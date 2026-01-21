@@ -8,13 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ComponentInstance } from '../../store/types';
 import { useBuilderStore } from '../../store/useBuilderStore';
-
-interface BreadcrumbItem {
-  id: string;
-  label: string;
-  href?: string;
-  isCurrentPage?: boolean;
-}
+import { generateId } from '../../utils/instance';
 
 interface BreadcrumbDataEditorProps {
   instance: ComponentInstance;
@@ -131,21 +125,20 @@ const templateStyles: Record<string, any> = {
 
 export const BreadcrumbDataEditor: React.FC<BreadcrumbDataEditorProps> = ({ instance }) => {
   const { updateInstance } = useBuilderStore();
-  const items: BreadcrumbItem[] = instance.props?.items || [
-    { id: '1', label: 'Home', href: '/' },
-    { id: '2', label: 'Products', href: '/products' },
-    { id: '3', label: 'Current Page', isCurrentPage: true },
-  ];
+  
+  // Get items from children (container-based architecture)
+  const childItems = instance.children
+    .filter(child => child.type === 'BreadcrumbItem')
+    .map(child => ({
+      id: child.id,
+      label: child.props?.label || 'Page',
+      href: child.props?.href || '#',
+      isCurrentPage: child.props?.isCurrentPage || false,
+    }));
 
   const settings = instance.props?.breadcrumbSettings || {};
   const styles = instance.props?.breadcrumbStyles || {};
   const currentTemplate = styles.template || '';
-
-  const updateItems = (newItems: BreadcrumbItem[]) => {
-    updateInstance(instance.id, {
-      props: { ...instance.props, items: newItems }
-    });
-  };
 
   const updateSettings = (key: string, value: any) => {
     updateInstance(instance.id, {
@@ -177,25 +170,63 @@ export const BreadcrumbDataEditor: React.FC<BreadcrumbDataEditorProps> = ({ inst
     }
   };
 
+  // Add a new BreadcrumbItem child
   const addItem = () => {
-    const newItem: BreadcrumbItem = {
-      id: Date.now().toString(),
-      label: `Page ${items.length + 1}`,
-      href: '#',
+    const newChild = {
+      id: generateId(),
+      type: 'BreadcrumbItem' as const,
+      label: `Page ${childItems.length + 1}`,
+      props: {
+        label: `Page ${childItems.length + 1}`,
+        href: '#',
+        isCurrentPage: false,
+      },
+      styleSourceIds: [],
+      children: [],
     };
-    updateItems([...items, newItem]);
+    
+    updateInstance(instance.id, {
+      children: [...instance.children, newChild]
+    });
   };
 
-  const updateItem = (id: string, field: keyof BreadcrumbItem, value: string | boolean) => {
-    const newItems = items.map(item =>
-      item.id === id ? { ...item, [field]: value } : item
-    );
-    updateItems(newItems);
+  // Update a child item's props
+  const updateItem = (childId: string, field: string, value: string | boolean) => {
+    const newChildren = instance.children.map(child => {
+      if (child.id === childId) {
+        // If setting isCurrentPage to true, clear it from others
+        if (field === 'isCurrentPage' && value === true) {
+          return {
+            ...child,
+            props: { ...child.props, [field]: value },
+            label: child.props?.label || child.label,
+          };
+        }
+        return {
+          ...child,
+          props: { ...child.props, [field]: value },
+          label: field === 'label' ? value as string : child.label,
+        };
+      }
+      // If setting isCurrentPage to true, clear it from other items
+      if (field === 'isCurrentPage' && value === true && child.type === 'BreadcrumbItem') {
+        return {
+          ...child,
+          props: { ...child.props, isCurrentPage: false },
+        };
+      }
+      return child;
+    });
+    
+    updateInstance(instance.id, { children: newChildren });
   };
 
-  const removeItem = (id: string) => {
-    if (items.length <= 1) return;
-    updateItems(items.filter(item => item.id !== id));
+  // Remove a child item
+  const removeItem = (childId: string) => {
+    if (instance.children.length <= 1) return;
+    updateInstance(instance.id, {
+      children: instance.children.filter(c => c.id !== childId)
+    });
   };
 
   const [separatorOpen, setSeparatorOpen] = React.useState(false);
@@ -406,7 +437,7 @@ export const BreadcrumbDataEditor: React.FC<BreadcrumbDataEditorProps> = ({ inst
         </CollapsibleContent>
       </Collapsible>
 
-      {/* Items */}
+      {/* Breadcrumb Items - now manages children */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <Label className="text-[10px] font-medium text-foreground">Breadcrumb Items</Label>
@@ -421,7 +452,7 @@ export const BreadcrumbDataEditor: React.FC<BreadcrumbDataEditorProps> = ({ inst
         </div>
         
         <div className="space-y-1.5 max-h-[250px] overflow-y-auto">
-          {items.map((item, index) => (
+          {childItems.map((item, index) => (
             <div key={item.id} className="p-2 border border-border rounded bg-muted/30 space-y-2">
               <div className="flex items-center gap-1">
                 <GripVertical className="w-3 h-3 text-muted-foreground cursor-grab" />
@@ -431,7 +462,7 @@ export const BreadcrumbDataEditor: React.FC<BreadcrumbDataEditorProps> = ({ inst
                   variant="ghost"
                   onClick={() => removeItem(item.id)}
                   className="h-4 w-4 p-0 text-destructive hover:text-destructive"
-                  disabled={items.length <= 1}
+                  disabled={childItems.length <= 1}
                 >
                   <X className="w-2.5 h-2.5" />
                 </Button>
@@ -462,21 +493,18 @@ export const BreadcrumbDataEditor: React.FC<BreadcrumbDataEditorProps> = ({ inst
               <label className="flex items-center gap-1.5 text-[9px]">
                 <Checkbox
                   checked={item.isCurrentPage || false}
-                  onCheckedChange={(checked) => {
-                    // Only one can be current page
-                    const newItems = items.map(i => ({
-                      ...i,
-                      isCurrentPage: i.id === item.id ? !!checked : false
-                    }));
-                    updateItems(newItems);
-                  }}
+                  onCheckedChange={(checked) => updateItem(item.id, 'isCurrentPage', !!checked)}
                   className="h-3 w-3"
                 />
-                Current page (no link)
+                Current page
               </label>
             </div>
           ))}
         </div>
+        
+        <p className="text-[9px] text-muted-foreground">
+          Items are also visible in the Navigator panel for individual styling
+        </p>
       </div>
     </div>
   );
