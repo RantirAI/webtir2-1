@@ -1803,29 +1803,32 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
 
       case 'Separator':
       case 'Divider': {
-        const orientation = instance.props?.orientation || 'horizontal';
-        const variant = instance.props?.variant || 'solid';
-        const thickness = parseInt(instance.props?.thickness || '1');
-        const color = instance.props?.color || 'hsl(var(--border))';
-        const spacing = parseInt(instance.props?.spacing || '16');
+        // Read from separatorSettings (matching SeparatorDataEditor)
+        const settings = instance.props?.separatorSettings || {};
+        const orientation = settings.orientation || 'horizontal';
+        const isHorizontal = orientation === 'horizontal';
+        const decorative = settings.decorative !== false;
+        
+        // Get computed styles from style system - this includes color, border-style, dimensions from style panel
+        const computedStyles = getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties;
 
         const content = (
           <div
             data-instance-id={instance.id}
+            role={decorative ? 'presentation' : 'separator'}
+            aria-hidden={decorative ? 'true' : undefined}
             className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
             style={{
-              ...getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties,
-              height: orientation === 'horizontal' ? `${thickness}px` : '100%',
-              width: orientation === 'horizontal' ? '100%' : `${thickness}px`,
-              minHeight: orientation === 'vertical' ? '24px' : undefined,
-              backgroundColor: variant === 'solid' ? color : 'transparent',
-              borderTop: orientation === 'horizontal' && variant !== 'solid' 
-                ? `${thickness}px ${variant} ${color}` : undefined,
-              borderLeft: orientation === 'vertical' && variant !== 'solid'
-                ? `${thickness}px ${variant} ${color}` : undefined,
-              margin: orientation === 'horizontal' 
-                ? `${spacing}px 0` 
-                : `0 ${spacing}px`,
+              ...computedStyles,
+              // Add minimum clickable area without overriding visual appearance
+              minHeight: isHorizontal ? '8px' : (computedStyles.minHeight || '24px'),
+              minWidth: !isHorizontal ? '8px' : undefined,
+              cursor: isPreviewMode ? 'default' : 'pointer',
+              // Ensure the separator is centered within its min-height hit area
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxSizing: 'border-box',
             }}
             onClick={isPreviewMode ? undefined : () => setSelectedInstanceId(instance.id)}
             onMouseEnter={isPreviewMode ? undefined : () => setHoveredInstanceId(instance.id)}

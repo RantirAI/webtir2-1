@@ -7,8 +7,8 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { ComponentInstance } from '../../store/types';
 import { useBuilderStore } from '../../store/useBuilderStore';
 import { useStyleStore } from '../../store/useStyleStore';
-import { Minus, MoreVertical } from 'lucide-react';
-
+import { Minus, MoreVertical, Palette } from 'lucide-react';
+import { ColorPicker } from '../ColorPicker';
 interface SeparatorSettings {
   orientation: 'horizontal' | 'vertical';
   lineType: 'solid' | 'dashed' | 'dotted' | 'double';
@@ -70,7 +70,7 @@ const templateSettings: Record<string, Partial<SeparatorSettings>> = {
 
 export const SeparatorDataEditor: React.FC<SeparatorDataEditorProps> = ({ instance }) => {
   const { updateInstance } = useBuilderStore();
-  const { setStyle, currentBreakpointId } = useStyleStore();
+  const { setStyle, getComputedStyles, currentBreakpointId } = useStyleStore();
 
   const settings: SeparatorSettings = {
     orientation: instance.props?.separatorSettings?.orientation || 'horizontal',
@@ -82,6 +82,12 @@ export const SeparatorDataEditor: React.FC<SeparatorDataEditorProps> = ({ instan
   };
 
   const currentTemplate = instance.props?.separatorSettings?.template || '';
+  
+  // Get current color from computed styles
+  const computedStyles = getComputedStyles(instance.styleSourceIds || []);
+  const currentColor = (settings.lineType === 'solid' 
+    ? computedStyles.backgroundColor 
+    : computedStyles.borderTopColor || computedStyles.borderLeftColor) || 'hsl(var(--border))';
 
   const updateSettings = (updates: Partial<SeparatorSettings>) => {
     const newSettings = { ...settings, ...updates };
@@ -212,6 +218,22 @@ export const SeparatorDataEditor: React.FC<SeparatorDataEditorProps> = ({ instan
     }
   };
 
+  // Update color for the separator
+  const updateColor = (color: string) => {
+    const styleSourceId = instance.styleSourceIds?.[0];
+    if (!styleSourceId) return;
+    
+    const isHorizontal = settings.orientation === 'horizontal';
+    
+    if (settings.lineType === 'solid') {
+      // For solid lines, use backgroundColor
+      setStyle(styleSourceId, 'backgroundColor', color, currentBreakpointId);
+    } else {
+      // For dashed/dotted/double, use border color
+      setStyle(styleSourceId, isHorizontal ? 'borderTopColor' : 'borderLeftColor', color, currentBreakpointId);
+    }
+  };
+
   return (
     <div className="space-y-4">
       {/* Template Selection */}
@@ -229,6 +251,18 @@ export const SeparatorDataEditor: React.FC<SeparatorDataEditorProps> = ({ instan
             ))}
           </SelectContent>
         </Select>
+      </div>
+
+      {/* Color */}
+      <div className="space-y-1.5">
+        <Label className="text-[10px] font-medium text-foreground flex items-center gap-1.5">
+          <Palette className="w-3 h-3" />
+          Color
+        </Label>
+        <ColorPicker
+          value={currentColor as string}
+          onChange={updateColor}
+        />
       </div>
 
       {/* Orientation */}
