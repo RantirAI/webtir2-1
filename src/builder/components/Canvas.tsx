@@ -1854,16 +1854,38 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
         
         const parentCalendar = findParentCalendar(instance.id);
         const settings = parentCalendar?.props?.calendarSettings || {};
-        const mode = settings.mode || 'single';
-        const weekStartsOn = (settings.weekStartsOn ?? 0) as 0 | 1 | 2 | 3 | 4 | 5 | 6;
-        const showOutsideDays = settings.showOutsideDays !== false;
-        const numberOfMonths = settings.numberOfMonths || 1;
         
+        // Selection settings
+        const mode = settings.mode || 'single';
+        const required = settings.required || false;
+        
+        // Layout settings
+        const weekStartsOn = (settings.weekStartsOn ?? 0) as 0 | 1 | 2 | 3 | 4 | 5 | 6;
+        const numberOfMonths = settings.numberOfMonths || 1;
+        const captionLayout = settings.captionLayout || 'buttons';
+        const fixedWeeks = settings.fixedWeeks || false;
+        const reverseMonths = settings.reverseMonths || false;
+        const pagedNavigation = settings.pagedNavigation || false;
+        
+        // Display settings
+        const showOutsideDays = settings.showOutsideDays !== false;
+        const showWeekNumber = settings.showWeekNumber || false;
+        const ISOWeek = settings.ISOWeek || false;
+        const disableNavigation = settings.disableNavigation || false;
+        
+        // Date constraints
         const fromDate = settings.fromDate ? new Date(settings.fromDate) : undefined;
         const toDate = settings.toDate ? new Date(settings.toDate) : undefined;
         const defaultMonth = settings.defaultMonth 
           ? new Date(settings.defaultMonth + '-01') 
           : new Date();
+        const today = settings.today ? new Date(settings.today) : undefined;
+        
+        // Disabled weekdays
+        const disabledWeekdays: number[] = settings.disabledWeekdays || [];
+        const disabled = disabledWeekdays.length > 0 
+          ? [{ dayOfWeek: disabledWeekdays }] 
+          : undefined;
 
         const content = (
           <div
@@ -1884,10 +1906,20 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
               mode={mode as any}
               weekStartsOn={weekStartsOn}
               showOutsideDays={showOutsideDays}
+              showWeekNumber={showWeekNumber}
               numberOfMonths={numberOfMonths}
+              captionLayout={captionLayout as any}
+              fixedWeeks={fixedWeeks}
+              reverseMonths={reverseMonths}
+              pagedNavigation={pagedNavigation}
+              ISOWeek={ISOWeek}
+              disableNavigation={disableNavigation}
+              required={required}
               defaultMonth={defaultMonth}
               fromDate={fromDate}
               toDate={toDate}
+              today={today}
+              disabled={disabled}
               className="pointer-events-auto"
             />
           </div>
