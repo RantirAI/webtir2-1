@@ -35,7 +35,8 @@ export const DroppableContainer: React.FC<DroppableContainerProps> = ({
     'Div', 'Section', 'Container', 'Box', 'RichText', 
     'Accordion', 'AccordionItem', 'Tabs', 'TabPanel', 
     'Carousel', 'CarouselSlide', 'Table', 'TableCell', 
-    'Form', 'Navigation', 'Breadcrumb'
+    'Form', 'Navigation', 'Breadcrumb',
+    'Calendar', 'CalendarHeader', 'CalendarFooter'
   ];
   const isContainerType = containerTypes.includes(instance.type);
   

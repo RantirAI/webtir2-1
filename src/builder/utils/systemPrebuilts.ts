@@ -1247,9 +1247,13 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
   });
 
   // ---------------------------------------------------------------------------
-  // CALENDAR - Uses Shadcn DayPicker for fully functional calendar
+  // CALENDAR - Container with Header, DayPicker, and Footer slots
   // ---------------------------------------------------------------------------
   const calendarId = generateId();
+  const calendarHeaderId = generateId();
+  const calendarDayPickerId = generateId();
+  const calendarFooterId = generateId();
+  const calendarTodayBtnId = generateId();
 
   prebuilts.push({
     id: 'system-calendar',
@@ -1272,11 +1276,76 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
         },
       },
       styleSourceIds: ['style-calendar'],
-      children: [],  // No nested children - rendered by DayPicker
+      children: [
+        {
+          id: calendarHeaderId,
+          type: 'CalendarHeader' as ComponentType,
+          label: 'Header',
+          props: {},
+          styleSourceIds: ['style-calendar-header'],
+          children: [],
+        },
+        {
+          id: calendarDayPickerId,
+          type: 'CalendarDayPicker' as ComponentType,
+          label: 'Day Picker',
+          props: {},
+          styleSourceIds: ['style-calendar-daypicker'],
+          children: [],
+        },
+        {
+          id: calendarFooterId,
+          type: 'CalendarFooter' as ComponentType,
+          label: 'Footer',
+          props: {},
+          styleSourceIds: ['style-calendar-footer'],
+          children: [
+            {
+              id: calendarTodayBtnId,
+              type: 'Button' as ComponentType,
+              label: 'Button',
+              props: { children: 'Today' },
+              styleSourceIds: ['style-calendar-today-btn'],
+              children: [],
+            },
+          ],
+        },
+      ],
     },
     defaultStyles: {
       'style-calendar': createStyleEntry({
-        display: 'inline-block',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '8px',
+        padding: '16px',
+        backgroundColor: 'hsl(var(--card))',
+        border: '1px solid hsl(var(--border))',
+        borderRadius: '8px',
+      }),
+      'style-calendar-header': createStyleEntry({
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '24px',
+      }),
+      'style-calendar-daypicker': createStyleEntry({
+        display: 'block',
+      }),
+      'style-calendar-footer': createStyleEntry({
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '8px',
+        paddingTop: '8px',
+        borderTop: '1px solid hsl(var(--border))',
+      }),
+      'style-calendar-today-btn': createStyleEntry({
+        padding: '6px 12px',
+        fontSize: '12px',
+        fontWeight: '500',
+        backgroundColor: 'hsl(var(--primary))',
+        color: 'hsl(var(--primary-foreground))',
+        borderRadius: '6px',
       }),
     },
   });

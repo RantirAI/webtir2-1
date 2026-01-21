@@ -1157,7 +1157,9 @@ export const componentRegistry: Record<string, ComponentMeta> = {
       },
     },
     defaultStyles: {
-      display: 'inline-block',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '8px',
     },
     propsDefinition: {
       'calendarSettings.mode': {
@@ -1194,6 +1196,41 @@ export const componentRegistry: Record<string, ComponentMeta> = {
         defaultValue: '1',
       },
     },
+  },
+  CalendarHeader: {
+    type: 'CalendarHeader',
+    label: 'Calendar Header',
+    icon: 'LayoutTemplate',
+    defaultProps: {},
+    defaultStyles: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    propsDefinition: {},
+  },
+  CalendarDayPicker: {
+    type: 'CalendarDayPicker',
+    label: 'Day Picker',
+    icon: 'CalendarDays',
+    defaultProps: {},
+    defaultStyles: {
+      display: 'block',
+    },
+    propsDefinition: {},
+  },
+  CalendarFooter: {
+    type: 'CalendarFooter',
+    label: 'Calendar Footer',
+    icon: 'LayoutTemplate',
+    defaultProps: {},
+    defaultStyles: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: '8px',
+    },
+    propsDefinition: {},
   },
   CircularImage: {
     type: 'CircularImage',

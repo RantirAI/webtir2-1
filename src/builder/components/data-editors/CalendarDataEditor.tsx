@@ -44,9 +44,17 @@ export const CalendarDataEditor: React.FC<CalendarDataEditorProps> = ({ instance
 
   return (
     <div className="space-y-3">
+      {/* Slot Architecture Info */}
+      <div className="p-2 bg-muted/30 rounded border border-border">
+        <p className="text-[10px] text-muted-foreground">
+          Calendar has three slots: <strong>Header</strong>, <strong>Day Picker</strong>, and <strong>Footer</strong>. 
+          Use the Navigator panel to add/remove content in the Header and Footer slots.
+        </p>
+      </div>
+
       <div className="flex items-center gap-2 mb-2">
         <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
-          Calendar Settings
+          Day Picker Settings
         </span>
       </div>
 
