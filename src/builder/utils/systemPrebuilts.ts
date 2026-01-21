@@ -1264,15 +1264,29 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
       type: 'Calendar' as ComponentType,
       label: 'Calendar',
       props: {
-        calendarSettings: {
+      calendarSettings: {
+          // Selection
           mode: 'single',           // 'single' | 'range' | 'multiple'
+          required: false,
+          // Layout
           weekStartsOn: 0,          // 0 = Sunday, 1 = Monday
+          numberOfMonths: 1,
+          captionLayout: 'buttons', // 'buttons' | 'dropdown' | 'dropdown-months' | 'dropdown-years'
+          fixedWeeks: false,
+          reverseMonths: false,
+          pagedNavigation: false,
+          // Display
           showOutsideDays: true,
           showWeekNumber: false,
-          numberOfMonths: 1,
+          ISOWeek: false,
+          disableNavigation: false,
+          // Week settings
+          disabledWeekdays: [],     // Array of 0-6 for disabled days
+          // Date constraints
           defaultMonth: null,       // null = current month
           fromDate: null,           // min date bound (YYYY-MM-DD)
           toDate: null,             // max date bound (YYYY-MM-DD)
+          today: null,              // override today's date
         },
       },
       styleSourceIds: ['style-calendar'],

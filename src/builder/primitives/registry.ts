@@ -1146,14 +1146,28 @@ export const componentRegistry: Record<string, ComponentMeta> = {
     icon: 'Calendar',
     defaultProps: {
       calendarSettings: {
+        // Selection
         mode: 'single',
+        required: false,
+        // Layout
         weekStartsOn: 0,
+        numberOfMonths: 1,
+        captionLayout: 'buttons',
+        fixedWeeks: false,
+        reverseMonths: false,
+        pagedNavigation: false,
+        // Display
         showOutsideDays: true,
         showWeekNumber: false,
-        numberOfMonths: 1,
+        ISOWeek: false,
+        disableNavigation: false,
+        // Week settings
+        disabledWeekdays: [],
+        // Date constraints
         defaultMonth: null,
         fromDate: null,
         toDate: null,
+        today: null,
       },
     },
     defaultStyles: {
