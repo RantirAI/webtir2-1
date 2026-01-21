@@ -15,7 +15,7 @@ export type ComponentType =
   // Charts
   | 'BarChart' | 'BubbleChart' | 'FunnelChart' | 'HeatMap' | 'LineChart' | 'PieChart' | 'PlotlyJSONChart' | 'SankeyChart' | 'ScatterChart' | 'Sparkline' | 'StackedBarChart' | 'SunburstChart' | 'Treemap' | 'WaterfallChart'
   // Presentation
-  | 'Alert' | 'Avatar' | 'AvatarGroup' | 'Calendar' | 'CircularImage' | 'Divider' | 'EventList' | 'Icon' | 'IconText' | 'ImageGrid' | 'PDF' | 'ProgressBar' | 'ProgressCircle' | 'QRCode' | 'Spacer' | 'Statistic' | 'Status' | 'Tags' | 'Timeline' | 'Video' | 'Youtube' | 'Lottie'
+  | 'Alert' | 'Avatar' | 'AvatarGroup' | 'Calendar' | 'CircularImage' | 'Divider' | 'EventList' | 'Icon' | 'IconText' | 'ImageGrid' | 'PDF' | 'ProgressBar' | 'ProgressCircle' | 'QRCode' | 'Spacer' | 'Statistic' | 'Status' | 'Tags' | 'Timeline' | 'Video' | 'Youtube' | 'Lottie' | 'Separator'
   // Forms
   | 'Form' | 'FormButton' | 'InputLabel' | 'Select' | 'RadioGroup' | 'CheckboxField'
   // Localization
@@ -23,7 +23,7 @@ export type ComponentType =
   // Radix/Shadcn UI Components
   | 'Sheet' | 'NavigationMenu' | 'Tabs' | 'Accordion' | 'Dialog' | 'Collapsible' | 'Popover' | 'Tooltip' | 'Switch' | 'Label'
   | 'Carousel' | 'Slider' | 'AlertDialog' | 'Breadcrumb' | 'Badge' | 'Drawer' | 'Toggle' | 'ToggleGroup' | 'Pagination' | 'OTPInput'
-  | 'HoverCard' | 'ContextMenu' | 'CommandPalette' | 'ScrollArea' | 'Separator' | 'Skeleton' | 'ResizablePanels' | 'Progress'
+  | 'HoverCard' | 'ContextMenu' | 'CommandPalette' | 'ScrollArea' | 'Skeleton' | 'ResizablePanels' | 'Progress'
   // Tabs child primitives
   | 'TabPanel'
   // Accordion child primitives

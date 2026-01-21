@@ -1480,7 +1480,7 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
     category: 'Layout',
     instance: {
       id: separatorId,
-      type: 'Div' as ComponentType,
+      type: 'Separator' as ComponentType,
       label: 'Separator',
       props: {
         separatorSettings: {
