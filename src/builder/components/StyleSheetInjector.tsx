@@ -72,13 +72,13 @@ export const StyleSheetInjector: React.FC = () => {
           ? `${baseSelector}:focus-visible`
           : `${baseSelector}:${state}`;
         
-        // Base styles for this state
+        // Desktop (base) styles for this state
         const baseProps: Record<string, string> = {};
         Object.entries(styles).forEach(([key, value]) => {
           const parts = key.split(':');
           if (parts.length === 4) {
             const [id, bp, st, prop] = parts;
-            if (id === source.id && bp === 'base' && st === state && value) {
+            if (id === source.id && bp === 'desktop' && st === state && value) {
               const cssProp = toCssProp(prop);
               if (cssProp) {
                 baseProps[cssProp] = value;
@@ -103,9 +103,9 @@ export const StyleSheetInjector: React.FC = () => {
           .join(' ');
         if (baseCss) rules.push(`${stateSelector} { ${baseCss} }`);
 
-        // Other breakpoints for this state
+        // Responsive breakpoints for this state (tablet, mobile-landscape, mobile)
         breakpoints
-          .filter((bp) => bp.id !== 'base')
+          .filter((bp) => bp.id !== 'desktop')
           .forEach((bp) => {
             const bpProps: Record<string, string> = {};
             Object.entries(styles).forEach(([key, value]) => {

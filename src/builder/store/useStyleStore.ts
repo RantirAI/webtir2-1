@@ -14,16 +14,17 @@ export const setStyleChangeCallback = (callback: ((styleSourceId: string) => voi
 };
 
 const defaultBreakpoints: Breakpoint[] = [
-  { id: 'base', label: 'Base' },
+  { id: 'desktop', label: 'Desktop' },
   { id: 'tablet', label: 'Tablet', maxWidth: 991 },
-  { id: 'mobile', label: 'Mobile', maxWidth: 767 },
+  { id: 'mobile-landscape', label: 'Mobile L', maxWidth: 767 },
+  { id: 'mobile', label: 'Mobile', maxWidth: 479 },
 ];
 
 export const useStyleStore = create<StyleStore>((set, get) => ({
   styleSources: {},
   styles: {},
   breakpoints: defaultBreakpoints,
-  currentBreakpointId: 'base',
+  currentBreakpointId: 'desktop',
   currentPseudoState: 'default',
   nameCounters: {}, // Kept for backwards compatibility but not used for index calculation
   classDependencies: {}, // Track which classes depend on which: { classId: [dependentClassId1, dependentClassId2] }
