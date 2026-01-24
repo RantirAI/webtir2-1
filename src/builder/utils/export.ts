@@ -185,11 +185,11 @@ body {
         ? `.${className}:focus-visible`
         : `.${className}:${state}`;
 
-      // Base styles for this state
+      // Desktop (base) styles for this state
       const baseStyles: Record<string, string> = {};
       Object.entries(styles).forEach(([key, value]) => {
         const parts = key.split(':');
-        if (parts.length === 4 && parts[0] === source.id && parts[1] === 'base' && parts[2] === state) {
+        if (parts.length === 4 && parts[0] === source.id && parts[1] === 'desktop' && parts[2] === state) {
           const property = parts[3];
           baseStyles[toCssProp(property)] = value;
         }
@@ -212,7 +212,7 @@ body {
 
       // Responsive styles for this state
       breakpoints.forEach(breakpoint => {
-        if (breakpoint.id === 'base') return;
+        if (breakpoint.id === 'desktop') return; // Skip desktop as it's the base
 
         const responsiveStyles: Record<string, string> = {};
         Object.entries(styles).forEach(([key, value]) => {
