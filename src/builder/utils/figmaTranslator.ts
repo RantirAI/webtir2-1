@@ -822,7 +822,7 @@ export function translateFigmaToWebtir(figmaData: any): ComponentInstance | null
           styleSourceId: createdSourceIds[u.sourceIndex],
           property: u.property,
           value: u.value,
-          breakpointId: 'base',
+          breakpointId: 'desktop',
           state: 'default' as any,
         }))
       );

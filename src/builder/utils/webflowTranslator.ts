@@ -150,7 +150,7 @@ function mapBreakpoint(wfBreakpoint: string): string {
     case 'small': return 'tablet';
     case 'medium': return 'laptop';
     case 'large': return 'desktop';
-    default: return 'base';
+    default: return 'desktop';
   }
 }
 
@@ -160,14 +160,14 @@ function collectStylesFromWebflow(
   sourceIndex: number,
   collector: StyleCollector
 ): void {
-  // Parse and collect base styles
+  // Parse and collect desktop (base) styles
   const baseStyles = parseStyleLess(wfStyle.styleLess);
   Object.entries(baseStyles).forEach(([prop, value]) => {
     collector.styleUpdates.push({
       sourceIndex,
       property: prop,
       value,
-      breakpoint: 'base',
+      breakpoint: 'desktop',
       state: 'default',
     });
   });

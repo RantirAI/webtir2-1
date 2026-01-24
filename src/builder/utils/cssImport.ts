@@ -191,7 +191,7 @@ export function parseCSSToStyleStore(cssText: string): {
     const declarations = parseDeclarations(declarationsBlock);
     for (const { property, value } of declarations) {
       const { prop, val } = parseProperty(property, value);
-      setStyle(sourceId, prop, val, 'base', state);
+      setStyle(sourceId, prop, val, 'desktop', state);
       propertiesSet++;
     }
   }

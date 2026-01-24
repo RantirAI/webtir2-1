@@ -537,10 +537,10 @@ Add what's missing: Features, Testimonials, Pricing, CTA, Footer, etc.`;
                   // Apply styles (style sources already created in getSemanticClassName)
                   for (const [styleSourceId, breakpointStyles] of Object.entries(newStyleSources)) {
                     
-                    // Apply base styles
+                    // Apply desktop (base) styles
                     if (breakpointStyles.base) {
                       for (const [property, value] of Object.entries(breakpointStyles.base)) {
-                        setStyle(styleSourceId, property, value, 'base', 'default');
+                        setStyle(styleSourceId, property, value, 'desktop', 'default');
                       }
                     }
                     
