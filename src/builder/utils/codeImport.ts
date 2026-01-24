@@ -49,7 +49,7 @@ function parseAndApplyInlineStyles(
       if (property === 'background-image' || property === 'background' || 
           property === 'background-size' || property === 'background-position' ||
           property === 'background-repeat') {
-        setStyle(styleSourceId, camelCaseProp, value, 'base', 'default');
+        setStyle(styleSourceId, camelCaseProp, value, 'desktop', 'default');
       }
     }
   }
