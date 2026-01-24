@@ -46,6 +46,44 @@ function combineBackgroundLayers(props: Record<string, string>): Record<string, 
   return result;
 }
 
+// Base CSS variables and resets for canvas rendering
+const BASE_CSS = `
+/* Canvas Base CSS Variables */
+:root {
+  --background: 0 0% 100%;
+  --foreground: 240 10% 3.9%;
+  --card: 0 0% 100%;
+  --card-foreground: 240 10% 3.9%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 240 10% 3.9%;
+  --primary: 240 5.9% 10%;
+  --primary-foreground: 0 0% 98%;
+  --secondary: 240 4.8% 95.9%;
+  --secondary-foreground: 240 5.9% 10%;
+  --muted: 240 4.8% 95.9%;
+  --muted-foreground: 240 3.8% 46.1%;
+  --accent: 240 4.8% 95.9%;
+  --accent-foreground: 240 5.9% 10%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 240 5.9% 90%;
+  --input: 240 5.9% 90%;
+  --ring: 240 5.9% 10%;
+  --radius: 0.5rem;
+}
+
+/* Canvas Base Resets */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+/* Ensure primitives render correctly */
+.builder-canvas * {
+  margin: 0;
+  padding: 0;
+}
+`;
+
 export const StyleSheetInjector: React.FC = () => {
   const { styleSources, styles, breakpoints, rawCssOverrides } = useStyleStore();
 
@@ -138,13 +176,20 @@ export const StyleSheetInjector: React.FC = () => {
       });
     });
 
+    // Start with base CSS, then add generated rules
+    let finalCSS = BASE_CSS + '\n' + rules.join('\n');
+    
     // Append raw CSS overrides (element selectors, complex selectors, etc.)
-    let finalCSS = rules.join('\n');
     if (rawCssOverrides && rawCssOverrides.trim()) {
       finalCSS += '\n\n/* Raw CSS Overrides */\n' + rawCssOverrides;
     }
 
     styleEl.textContent = finalCSS;
+    
+    // Debug logging in development
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[StyleSheetInjector] Injected', rules.length, 'CSS rules for', Object.keys(styleSources).length, 'style sources');
+    }
   }, [styleSources, styles, breakpoints, rawCssOverrides]);
 
   return null;
