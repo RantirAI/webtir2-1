@@ -79,19 +79,36 @@ export const DroppableContainer: React.FC<DroppableContainerProps> = ({
   // CRITICAL: For container types, we need a measurable wrapper for dnd-kit collision detection.
   // Using display: contents makes the element invisible to collision detection.
   // For containers and Webflow imports, use display: block with width: 100% to ensure proper bounding box.
-  // Exception: Don't set position: relative on elements that have absolute/fixed positioning
-  const wrapperStyle: React.CSSProperties = isContainerType || (hasWebflowImport && !hasAbsolutePosition)
+  // 
+  // KEY FIX: For Webflow imports, we must NOT set position: relative on the wrapper because:
+  // 1. It creates an unintended containing block for absolutely positioned children
+  // 2. Absolutely positioned elements (decorative lines, etc.) would be positioned relative to 
+  //    the wrapper instead of their actual CSS-styled parent
+  // 3. We use isolation: isolate instead - it creates stacking context WITHOUT being a containing block
+  const wrapperStyle: React.CSSProperties = isContainerType
     ? {
         display: 'block',
         width: '100%',
-        position: hasAbsolutePosition ? undefined : 'relative' as const,
-        isolation: 'isolate', // Ensure stacking context for z-index:-1 children
+        // For Webflow imports, don't set position - let CSS classes control containing blocks
+        // For native builder containers, set position:relative for proper dnd-kit behavior
+        position: hasWebflowImport ? undefined : 'relative' as const,
+        // Use isolation for stacking context (needed for z-index:-1 children)
+        // This creates stacking context WITHOUT becoming a containing block
+        isolation: 'isolate',
         // Add prominent blue visual feedback when dragging over this container
         outline: isValidDropTarget ? '2px dashed #3b82f6' : undefined,
         outlineOffset: isValidDropTarget ? '-2px' : undefined,
         backgroundColor: isValidDropTarget ? 'rgba(59, 130, 246, 0.08)' : undefined,
         borderRadius: isValidDropTarget ? '6px' : undefined,
         transition: 'outline 150ms ease, background-color 150ms ease',
+      }
+    : hasWebflowImport && !hasAbsolutePosition
+    ? {
+        // Webflow non-container elements that need stacking context
+        display: 'block',
+        width: '100%',
+        isolation: 'isolate',
+        // NO position: relative - let CSS classes control positioning hierarchy
       }
     : hasWebflowImport && hasAbsolutePosition
     ? {

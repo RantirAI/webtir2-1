@@ -66,7 +66,12 @@ export const DraggableInstance: React.FC<DraggableInstanceProps> = ({
 
   // For container types, we need a proper wrapper for drag operations
   // For non-containers, use display: contents when not dragging to preserve CSS layout
-  // Exception: Webflow imports need block display to preserve stacking context
+  // 
+  // KEY FIX: For Webflow imports, we must NOT set position: relative on the wrapper because:
+  // 1. It creates an unintended containing block for absolutely positioned children
+  // 2. Absolutely positioned elements would be positioned relative to wrapper instead of 
+  //    their actual CSS-styled parent
+  // 3. We use isolation: isolate instead - creates stacking context WITHOUT being containing block
   const style: React.CSSProperties = isDragging
     ? {
         transform: hasTransform ? CSS.Transform.toString(transform) : undefined,
@@ -81,8 +86,11 @@ export const DraggableInstance: React.FC<DraggableInstanceProps> = ({
     : isContainer
     ? {
         // For containers, use block display to allow proper sizing
+        // No position:relative - let CSS classes control containing blocks
         display: 'block',
         width: '100%',
+        // For Webflow containers, add isolation for stacking context without containing block
+        isolation: hasWebflowStyles ? 'isolate' : undefined,
       }
     : needsStackingContext
     ? {
@@ -91,6 +99,7 @@ export const DraggableInstance: React.FC<DraggableInstanceProps> = ({
         display: 'block',
         width: '100%',
         isolation: 'isolate',
+        // NO position: relative - this is the key fix for decorative elements visibility
       }
     : hasAbsolutePosition
     ? {
