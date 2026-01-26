@@ -169,8 +169,8 @@ h4 { font-size: 1.5rem; line-height: 1.4; }
 h5 { font-size: 1.25rem; line-height: 1.4; }
 h6 { font-size: 1rem; line-height: 1.5; }
 
-/* Default image sizing - only for non-Webflow images */
-img:not([class*="wf-"]) {
+/* Default image sizing */
+img {
   max-width: 100%;
   height: auto;
   display: block;
