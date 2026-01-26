@@ -1,191 +1,150 @@
 
-# Plan: Fix Missing Background Patterns and Decorative Elements During Webflow Import
+# Plan: Fix Background Disappearing After Import
 
 ## Problem Summary
 
-Background decorative elements (patterns, vectors, shapes) visible in the original Webflow design are missing after import into the Canvas. This is caused by:
+Background decorative elements appear briefly then disappear in both the code view preview and canvas preview. The backgrounds are visible in the exported code but not rendered correctly in the live views.
 
-1. **Property aliasing conflict**: CSS `background-image` is aliased to `backgroundGradient`, causing URL-based backgrounds to be stored incorrectly
-2. **Missing differentiation between gradients and images**: The system treats all `background-image` values as gradients
-3. **External assets not downloaded**: Webflow CDN URLs are preserved but not downloaded locally
+## Root Cause
 
-## Root Cause Analysis
+There's a logic error in how background properties are combined in both `StyleSheetInjector.tsx` and `export.ts`:
 
-### Issue 1: Incorrect Property Aliasing in cssImport.ts
+1. **Property flow**:
+   - Styles are stored in camelCase: `backgroundGradient`, `backgroundImage`
+   - `toCssProp()` converts them using aliases/camelCase conversion
+   - `combineBackgroundLayers()` receives the converted properties
 
-```typescript
-// Current (lines 5-7 of cssImport.ts)
-const reversePropertyAliases: Record<string, string> = {
-  'background-image': 'backgroundGradient',  // <-- ALL background-image values become gradients!
-};
+2. **The bug**:
+   - In `StyleSheetInjector.tsx`, `propertyAliases` maps `backgroundGradient` → `background-image`
+   - But `combineBackgroundLayers` looks for `background-gradient` (which never exists after alias conversion)
+   - Similarly, it should look for `background-image` from the `backgroundImage` property
+
+3. **Result**: Gradients and image backgrounds are converted to `background-image` by `toCssProp`, but then `combineBackgroundLayers` can't find them to combine properly because it's looking for the wrong property names.
+
+## Visual Flow of the Bug
+
+```text
+CURRENT (BROKEN):
+┌──────────────────────────────────────────────────────────────────┐
+│ styles store: { backgroundGradient: "linear-gradient(...)" }    │
+│                                    ↓                             │
+│ toCssProp('backgroundGradient')                                  │
+│ → alias lookup: backgroundGradient → 'background-image'         │
+│ → returns: 'background-image'                                    │
+│                                    ↓                             │
+│ baseProps = { 'background-image': 'linear-gradient(...)' }      │
+│                                    ↓                             │
+│ combineBackgroundLayers(baseProps)                               │
+│ → looks for 'background-gradient' → NOT FOUND!                  │
+│ → bgGradient = undefined                                         │
+│ → no combination happens, gradient info lost in some cases      │
+└──────────────────────────────────────────────────────────────────┘
+
+FIXED:
+┌──────────────────────────────────────────────────────────────────┐
+│ styles store: { backgroundGradient: "linear-gradient(...)" }    │
+│                                    ↓                             │
+│ toCssProp('backgroundGradient')                                  │
+│ → alias lookup: backgroundGradient → 'background-gradient'      │
+│ → returns: 'background-gradient' (intermediate form)            │
+│                                    ↓                             │
+│ baseProps = { 'background-gradient': 'linear-gradient(...)' }   │
+│                                    ↓                             │
+│ combineBackgroundLayers(baseProps)                               │
+│ → looks for 'background-gradient' → FOUND!                      │
+│ → combines into 'background-image'                               │
+│ → final CSS is correct                                           │
+└──────────────────────────────────────────────────────────────────┘
 ```
-
-This causes `background-image: url(https://example.com/pattern.svg)` to be stored as `backgroundGradient`, which is incorrect.
-
-### Issue 2: StyleSheetInjector Alias Mapping
-
-```typescript
-// Current (lines 7-9 of StyleSheetInjector.tsx)
-const propertyAliases: Record<string, string> = {
-  backgroundGradient: 'background-image',  // Maps back to CSS background-image
-};
-```
-
-The problem is that BOTH image URLs and gradient functions are flowing through `backgroundGradient`, so the system can't distinguish between them.
-
-### Issue 3: Missing Asset Download
-
-The `extractWebflowAssets()` function identifies CDN URLs but they're never downloaded to the local media folder.
-
----
 
 ## Solution
 
-### Part 1: Fix Property Aliasing - Distinguish Images from Gradients
+### Part 1: Fix `StyleSheetInjector.tsx`
 
-**File: `src/builder/utils/cssImport.ts`**
+Update the `propertyAliases` to use intermediate property names that `combineBackgroundLayers` can find:
 
-Update the `parseProperty` function to intelligently map `background-image` based on its value:
-- If the value contains `url(`, map to `backgroundImage` (for actual images)
-- If the value contains `linear-gradient(`, `radial-gradient(`, etc., map to `backgroundGradient`
-
-```text
-Changes to cssImport.ts:
-1. Remove the blanket 'background-image': 'backgroundGradient' alias
-2. Add value-aware logic in parseProperty() to distinguish url() from gradient()
-```
-
-### Part 2: Update StyleSheetInjector to Handle Both Properties
-
-**File: `src/builder/components/StyleSheetInjector.tsx`**
-
-Update the alias map and `combineBackgroundLayers` function to handle both:
-- `backgroundImage` → URL-based backgrounds
-- `backgroundGradient` → CSS gradient functions
-
-Both should be combined into the final `background-image` CSS property for rendering.
-
-### Part 3: Add Asset Download During Import
-
-**File: `src/builder/utils/webflowTranslator.ts`**
-
-After extracting assets, also extract background image URLs from styles and:
-1. Detect `url()` patterns in `styleLess` strings
-2. Return these URLs in the asset extraction function
-3. The import modal can then offer to download these assets
-
----
-
-## Technical Implementation
-
-### cssImport.ts Changes
-
+**Current (broken)**:
 ```typescript
-// Remove blanket alias
-const reversePropertyAliases: Record<string, string> = {
-  // 'background-image': 'backgroundGradient', // REMOVED
+const propertyAliases: Record<string, string> = {
+  backgroundGradient: 'background-image',
+  backgroundImage: 'background-image',
 };
-
-// Update parseProperty to detect gradients vs images
-function parseProperty(property: string, value: string): { prop: string; val: string } {
-  // Special handling for background-image
-  if (property === 'background-image') {
-    // Check if it's a gradient function
-    if (value.includes('linear-gradient(') || 
-        value.includes('radial-gradient(') ||
-        value.includes('conic-gradient(') ||
-        value.includes('repeating-linear-gradient(') ||
-        value.includes('repeating-radial-gradient(')) {
-      return { prop: 'backgroundGradient', val: value };
-    }
-    // Otherwise it's an image URL
-    return { prop: 'backgroundImage', val: value };
-  }
-  
-  // Check for reverse alias first
-  const aliasedProp = reversePropertyAliases[property];
-  if (aliasedProp) {
-    return { prop: aliasedProp, val: value };
-  }
-  
-  // Convert to camelCase
-  return { prop: kebabToCamel(property), val: value };
-}
 ```
+
+**Fixed**:
+```typescript
+const propertyAliases: Record<string, string> = {
+  backgroundGradient: 'background-gradient', // Keep as intermediate for combineBackgroundLayers
+  backgroundImage: 'background-image',       // This one is fine - already named correctly
+};
+```
+
+The `combineBackgroundLayers` function will then:
+1. Find `background-gradient` (from alias conversion)
+2. Find `background-image` (from backgroundImage property)
+3. Combine them properly into final `background-image` CSS
+
+### Part 2: Fix `export.ts`
+
+Apply the same fix to `export.ts`:
+
+**Current**:
+```typescript
+const propertyAliases: Record<string, string> = {
+  backgroundGradient: 'background-image',
+};
+```
+
+**Fixed**:
+```typescript
+const propertyAliases: Record<string, string> = {
+  backgroundGradient: 'background-gradient', // Intermediate for combineBackgroundLayers
+  backgroundImage: 'background-image',       // Explicit mapping
+};
+```
+
+## Files to Modify
+
+| File | Change |
+|------|--------|
+| `src/builder/components/StyleSheetInjector.tsx` | Change `backgroundGradient` alias from `'background-image'` to `'background-gradient'` |
+| `src/builder/utils/export.ts` | Change `backgroundGradient` alias from `'background-image'` to `'background-gradient'` and add `backgroundImage` alias |
+
+## Technical Details
 
 ### StyleSheetInjector.tsx Changes
 
 ```typescript
-// Updated property aliases - map both gradient and image
+// Line 7-10: Update propertyAliases
 const propertyAliases: Record<string, string> = {
-  backgroundGradient: 'background-image',
-  backgroundImage: 'background-image', // Explicit mapping for images
+  backgroundGradient: 'background-gradient', // Changed from 'background-image'
+  backgroundImage: 'background-image',
 };
-
-// combineBackgroundLayers already handles bgImage and bgGradient separately
-// No changes needed there - just ensure both flow through correctly
 ```
 
-### webflowTranslator.ts Changes
-
-Add URL extraction from background-image styles:
+### export.ts Changes
 
 ```typescript
-// Enhanced asset extraction to include background images from styles
-export function extractWebflowAssets(webflowData: WebflowXscpData): { url: string; alt: string; name: string }[] {
-  const assets: { url: string; alt: string; name: string }[] = [];
-  
-  // Existing asset extraction...
-  
-  // Also extract background images from styles
-  for (const style of webflowData.payload.styles) {
-    if (style.styleLess) {
-      const urlMatches = style.styleLess.matchAll(/url\(['"]?([^'")\s]+)['"]?\)/g);
-      for (const match of urlMatches) {
-        const url = match[1];
-        if (url && url.startsWith('http')) {
-          assets.push({
-            url,
-            alt: '',
-            name: url.split('/').pop() || 'background-image',
-          });
-        }
-      }
-    }
-  }
-  
-  return assets;
-}
+// Line 52-54: Update propertyAliases  
+const propertyAliases: Record<string, string> = {
+  backgroundGradient: 'background-gradient', // Changed from 'background-image'
+  backgroundImage: 'background-image',       // Added
+};
 ```
-
----
-
-## Files to Modify
-
-| File | Changes |
-|------|---------|
-| `src/builder/utils/cssImport.ts` | Remove blanket alias, add value-aware gradient vs image detection |
-| `src/builder/components/StyleSheetInjector.tsx` | Add `backgroundImage` to property alias map |
-| `src/builder/utils/webflowTranslator.ts` | Extract background image URLs from style `styleLess` properties |
-
----
 
 ## Expected Outcomes
 
-1. Background patterns and decorative SVGs/images from Webflow import will render correctly
-2. CSS gradients continue to work as before
-3. Image URLs (`url()`) are properly stored as `backgroundImage`
-4. Gradient functions are properly stored as `backgroundGradient`
-5. Both are correctly combined in the canvas CSS output
-6. External asset URLs are extracted for potential download
-
----
+1. Background gradients and images will be properly combined by `combineBackgroundLayers`
+2. Imported Webflow designs with decorative backgrounds will render correctly
+3. Both Canvas and Code View preview will show consistent results
+4. The CSS export will include proper background-image stacking
 
 ## Testing Checklist
 
-- [ ] Import Webflow design with background patterns - verify patterns appear in Canvas
-- [ ] Import Webflow design with gradient backgrounds - verify gradients render correctly
-- [ ] Import combined gradient + image backgrounds - verify layering works
-- [ ] Check Code View exports correct CSS for backgrounds
-- [ ] Verify background sizing/positioning is preserved
-- [ ] Test with external CDN URLs to verify they load correctly
+- [ ] Import the Webflow JSON with decorative background elements
+- [ ] Verify backgrounds appear in Canvas and don't disappear
+- [ ] Verify Code View preview shows backgrounds correctly
+- [ ] Check exported CSS has correct background-image properties
+- [ ] Test gradient-only backgrounds
+- [ ] Test image-only backgrounds
+- [ ] Test combined color + gradient + image backgrounds
