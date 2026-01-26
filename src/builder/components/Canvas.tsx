@@ -307,7 +307,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
   const addInstance = useBuilderStore((state) => state.addInstance);
   const updateInstance = useBuilderStore((state) => state.updateInstance);
   const { findInstance } = useBuilderStore();
-  const { getComputedStyles } = useStyleStore();
+  const { getComputedStyles, styleSources } = useStyleStore();
   
   // Global components from page store
   const { getGlobalComponents, shouldShowGlobalComponent, currentPageId } = usePageStore();
@@ -2279,6 +2279,22 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
   // Get root instance styles for page body
   const rootStyles = rootInstance ? getComputedStyles(rootInstance.styleSourceIds || []) : {};
 
+  // Helper to check if a page contains Webflow-imported content
+  const hasWebflowContent = (pageInstance: ComponentInstance | undefined): boolean => {
+    if (!pageInstance) return false;
+    const checkInstance = (instance: ComponentInstance): boolean => {
+      // Check if this instance has any wf- prefixed style sources
+      const hasWfStyles = (instance.styleSourceIds || []).some(id => {
+        const name = styleSources[id]?.name;
+        return name?.startsWith('wf-');
+      });
+      if (hasWfStyles) return true;
+      // Check children recursively
+      return instance.children?.some(child => checkInstance(child)) || false;
+    };
+    return checkInstance(pageInstance);
+  };
+
   // Always show only the current page for focused editing
   const pagesToRender = safePages.filter(p => p === currentPage);
 
@@ -2454,6 +2470,9 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
           // Current page respects breakpoint, other pages stay at 1440px
           const frameWidth = isPreviewMode ? '100%' : (isCurrentPage ? displayWidth : 1440);
           
+          // Check if this page contains Webflow content - if so, don't clip overflow
+          const pageHasWebflowContent = hasWebflowContent(pageRootInstance);
+          
           return (
           <div 
             key={pageId}
@@ -2464,12 +2483,14 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
               ...pageStyles,
               width: isPreviewMode ? '100%' : `${frameWidth}px`,
               minHeight: isPreviewMode ? '100vh' : '1200px',
-              maxHeight: isPreviewMode ? 'none' : 'calc(100vh - 8rem)',
+              // For Webflow content, don't constrain height to avoid clipping absolute elements
+              maxHeight: isPreviewMode ? 'none' : (pageHasWebflowContent ? 'none' : 'calc(100vh - 8rem)'),
               boxShadow: isPreviewMode ? 'none' : '0 2px 8px rgba(0,0,0,0.1)',
               transition: isResizing ? 'none' : 'width 0.3s ease',
               position: 'relative',
               isolation: 'isolate', // Creates stacking context for z-index: -1 elements
-              overflow: isPreviewMode ? 'visible' : 'auto',
+              // For Webflow content, use visible overflow to prevent clipping absolute positioned decorations
+              overflow: isPreviewMode ? 'visible' : (pageHasWebflowContent ? 'visible' : 'auto'),
               flexShrink: 0,
               cursor: isAddingComment && isCurrentPage ? 'crosshair' : (isCurrentPage ? 'default' : 'pointer'),
               fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', // Reset to system font for canvas content
