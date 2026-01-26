@@ -1,210 +1,150 @@
 
-# Plan: Fix Background Elements Disappearing (z-index: -1 Stacking Context)
+## Goal
+Make imported decorative “background” elements (dots, waves, shapes) render persistently (no flash-then-disappear) in:
+- Canvas
+- Canvas Preview
+- Code View preview (right-side iframe)
+- Full Page Preview
 
-## Problem Summary
+Assets are already being downloaded successfully; this plan focuses on fixing why those background decorations become invisible after initial render.
 
-Imported Webflow backgrounds with decorative elements using `z-index: -1` (patterns, shapes, vectors) appear briefly then disappear in:
-- Canvas preview
-- Code View preview
-- Full page preview
+---
 
-The issue occurs because the page container and iframe `body` do not establish a **stacking context**, causing negative z-index elements to render behind the visible content.
+## Working hypothesis (based on symptoms)
+The behavior “looks correct for a split second, then disappears” strongly suggests a **second render/style pass** overrides the initial correct paint.
 
-## Root Cause
+The most likely culprits (not mutually exclusive):
 
-CSS `z-index: -1` elements require a parent that creates a new stacking context. Without it, they fall behind the document root (`<html>` or `<body>`), becoming invisible.
+1) **Negative z-index decorations + missing stacking context at the correct ancestor**
+   - Even though we added `isolation: isolate` on `body` (iframe) and `.builder-page`, the *actual parent* of the `z-index:-1` elements might still not create a stable stacking context, or the elements are using `position: fixed` / odd positioning that escapes the expected context.
+   - Result: backgrounds initially paint, then end up behind an ancestor/background and vanish.
 
-```text
-CURRENT STATE (BROKEN):
-┌─────────────────────────────────────────┐
-│ <body> (no stacking context)            │
-│   └─ .builder-page (position: relative) │
-│        └─ .decorative (z-index: -1)     │ ← INVISIBLE (behind body)
-│        └─ .content                      │
-└─────────────────────────────────────────┘
+2) **CSS background-image becomes invalid after URL rewriting (Data URL edge case)**
+   - Backgrounds are more sensitive than `<img>` because `background-image: url(...)` parsing can break if the URL isn’t quoted or contains characters that CSS treats specially.
+   - Result: backgrounds paint briefly (old URL / old CSS), then disappear when rewritten CSS is applied.
 
-FIXED STATE:
-┌─────────────────────────────────────────┐
-│ <body> (isolation: isolate)             │ ← Creates stacking context
-│   └─ .builder-page (isolation: isolate) │ ← Creates stacking context  
-│        └─ .decorative (z-index: -1)     │ ← VISIBLE (within context)
-│        └─ .content                      │
-└─────────────────────────────────────────┘
-```
+3) **Our “backgroundColor as overlay” logic can unintentionally cover imported backgrounds**
+   - If an imported class has `backgroundColor` plus `backgroundImage/Gradient`, and we treat color as a top overlay layer, an opaque color (like white) will hide the imported background visuals.
+   - Result: correct background appears during one render pass, then disappears once the store/CSS recomputation applies the overlay behavior.
 
-## Solution
+This plan addresses all three in a safe, incremental order.
 
-Add `isolation: isolate` to establish stacking contexts in three places:
+---
 
-### Part 1: Canvas Page Frame
+## Phase 1 — Add targeted diagnostics (so we stop guessing)
+### 1. Add a “Background Debug” mode (temporary but very useful)
+When enabled:
+- In **Canvas**, run a post-render inspection that:
+  - Finds elements with computed `z-index < 0`
+  - Logs: tag, class list, computed z-index, computed position, and the closest ancestor that has `isolation`, `transform`, or a non-auto z-index.
+  - Optionally adds a visible outline so we can confirm the elements exist but are hidden.
 
-**File**: `src/builder/components/Canvas.tsx`
+- In **CodeView Preview iframe**, inject a small script that runs after DOM is written:
+  - Same scan/logging for `z-index < 0`
+  - Logs any element whose `background-image` computed style becomes `none` after a short delay (e.g., check at 0ms, 250ms, 1000ms)
 
-Add `isolation: 'isolate'` to the `.builder-page` div style:
+**Files involved**
+- `src/builder/components/Canvas.tsx` (add debug hook)
+- `src/builder/components/CodeView.tsx` (inject debug script into previewHTML when debug mode enabled)
 
-```typescript
-// Line ~2458-2472
-style={{ 
-  backgroundColor: '#ffffff',
-  ...pageStyles,
-  width: isPreviewMode ? '100%' : `${frameWidth}px`,
-  // ... existing styles ...
-  position: 'relative',
-  isolation: 'isolate',  // ADD THIS - creates stacking context
-  // ... rest of styles ...
-}}
-```
+**Outcome**
+We’ll know whether:
+- Elements are present but behind something (stacking context issue), or
+- The `background-image` rule becomes invalid/none (rewrite/parsing issue), or
+- The class styles change after initial paint (store regeneration/overlay issue)
 
-### Part 2: Code View iframe Preview
+---
 
-**File**: `src/builder/components/CodeView.tsx`
+## Phase 2 — Make stacking contexts robust where it matters (not just body)
+### 2.1 Ensure stacking context on the *actual page root container*
+Right now we isolate `.builder-page` (canvas wrapper) and `body` (iframe). If the imported structure relies on a specific wrapper like `.root-style` (seen in your screenshot), we should enforce stacking context there too.
 
-Add body styles to the preview HTML template:
+Add generated CSS rules (via style store defaults or BASE_CSS) so that:
+- `.root-style` always has:
+  - `position: relative;`
+  - `isolation: isolate;`
+- Additionally in preview HTML:
+  - `html, body { position: relative; isolation: isolate; }`
 
-```typescript
-// Line ~731-752
-const previewHTML = `<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    ${googleFontsLink}
-    <style>
-      /* Stacking context for negative z-index elements */
-      body {
-        isolation: isolate;
-        position: relative;
-        margin: 0;
-      }
-      ${cssCode}
-    </style>
-  </head>
-  <body>
-    ${bodyContent}
-    ...
-  </body>
-</html>`;
-```
+**Files involved**
+- `src/builder/utils/initStyles.ts` (ensure `root-style` gets position/isolation defaults)
+- `src/builder/components/CodeView.tsx` (apply `html, body` rules in preview template)
+- `src/builder/utils/export.ts` (add same `html` rule to exported stylesheet)
 
-### Part 3: Exported Stylesheet
+**Why this helps**
+Most Webflow “decorative background” patterns are implemented as absolutely-positioned elements inside a wrapper with `z-index:-1`. Those elements need a reliable stacking context on the wrapper they’re intended to sit behind.
 
-**File**: `src/builder/utils/export.ts`
+---
 
-Add the same body styles to `exportStylesheet()`:
+## Phase 3 — Fix Data URL background parsing (very common gotcha)
+### 3.1 Always quote Data URLs inside `url(...)`
+Update the URL rewriting so CSS becomes:
+- `background-image: url("data:image/...")`
+instead of:
+- `background-image: url(data:image/...)`
 
-```typescript
-// Line ~186-195
-body {
-  margin: 0;
-  font-family: ...;
-  ...
-  isolation: isolate;   // ADD THIS
-  position: relative;   // ADD THIS
-}
-```
+Also ensure replacements handle multiple-layer background-image strings safely.
 
-## Files to Modify
+**Files involved**
+- `src/builder/utils/urlRewriter.ts`
+  - Change replacement so `newUrl` is injected as `"${dataUrl}"` (quoted)
+  - Ensure we replace all instances across comma-separated background layers
 
-| File | Change |
-|------|--------|
-| `src/builder/components/Canvas.tsx` | Add `isolation: 'isolate'` to `.builder-page` style (line ~2467) |
-| `src/builder/components/CodeView.tsx` | Add body reset CSS to iframe preview template (line ~737) |
-| `src/builder/utils/export.ts` | Add `isolation: isolate; position: relative;` to body styles (line ~187) |
+**Why this helps**
+This is a classic reason why `<img src="data:...">` works fine but `background-image: url(data:...)` silently fails.
 
-## Technical Details
+---
 
-### Canvas.tsx Changes (line ~2467)
+## Phase 4 — Prevent imported backgrounds from being “covered” by overlay logic
+### 4.1 Make backgroundColor overlay behavior conditional for imports
+Current behavior can treat `backgroundColor` as a top overlay layer when any background image/gradient exists. That’s not how Webflow CSS behaves (Webflow uses standard CSS: background-color sits behind background-image).
 
-```typescript
-style={{ 
-  // Fallback white background for imported content without explicit backgrounds
-  backgroundColor: '#ffffff',
-  ...pageStyles,
-  width: isPreviewMode ? '100%' : `${frameWidth}px`,
-  minHeight: isPreviewMode ? '100vh' : '1200px',
-  maxHeight: isPreviewMode ? 'none' : 'calc(100vh - 8rem)',
-  boxShadow: isPreviewMode ? 'none' : '0 2px 8px rgba(0,0,0,0.1)',
-  transition: isResizing ? 'none' : 'width 0.3s ease',
-  position: 'relative',
-  isolation: 'isolate', // NEW: creates stacking context for z-index:-1 elements
-  overflow: isPreviewMode ? 'visible' : 'auto',
-  flexShrink: 0,
-  cursor: ...,
-  fontFamily: ...,
-}}
-```
+We will adjust the layering logic so that:
+- For **imported Webflow style sources**, keep `background-color` as `background-color` (bottom), and only stack gradient/image into `background-image`.
+- Only use “color-as-overlay” behavior when we explicitly know the user intended an overlay (e.g., via metadata set by our own style UI).
 
-### CodeView.tsx Changes (line ~731)
+**Implementation approach**
+- Tag styleSources created by Webflow import with metadata: `{ importedFrom: 'webflow' }`
+- Update `combineBackgroundLayers(...)` to accept the current styleSource (or a flag) so it can choose the correct semantics.
 
-```typescript
-const previewHTML = `<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    ${googleFontsLink}
-    <style>
-      /* Base reset for preview - ensures negative z-index elements are visible */
-      body {
-        margin: 0;
-        padding: 0;
-        isolation: isolate;
-        position: relative;
-      }
-      ${cssCode}
-    </style>
-  </head>
-  <body>
-    ${bodyContent}
-    <script>
-      try {
-        ${navigationScript}
-        ${jsCode}
-      } catch(e) {
-        console.error('Preview script error:', e);
-      }
-    </script>
-  </body>
-</html>`;
-```
+**Files involved**
+- `src/builder/utils/webflowTranslator.ts` (set metadata on created style sources)
+- `src/builder/components/StyleSheetInjector.tsx` (call `combineBackgroundLayers(baseProps, source)` and apply “webflow semantics” when appropriate)
+- `src/builder/utils/export.ts` (same adjustment for export)
 
-### export.ts Changes (line ~187)
+**Risk management**
+- Existing non-imported projects that may rely on “color overlay” behavior remain unchanged.
+- Only imported Webflow classes get “standard CSS” behavior.
 
-```typescript
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  font-size: 16px;
-  line-height: 1.5;
-  color: hsl(var(--foreground));
-  background-color: hsl(var(--background));
-  isolation: isolate;
-  position: relative;
-}
-```
+---
 
-## Why `isolation: isolate`?
+## Phase 5 — Verification checklist (what you should see after)
+1) Import the same Webflow design again.
+2) Canvas:
+   - decorative background elements remain visible (no flicker)
+3) Code View preview panel:
+   - decorative background elements remain visible
+4) Full preview:
+   - decorative background remains visible permanently (no disappearing after seconds)
+5) Confirm data URLs appear quoted in exported CSS for background-image rules.
 
-- Creates a new stacking context without side effects
-- Doesn't affect z-index of the element itself
-- Child elements with negative z-index stay within this context
-- Supported in all modern browsers
-- Cleaner than using `z-index: 0` which can interfere with other layouts
+---
 
-## Expected Outcomes
+## Scope of code changes (summary)
+### Modify
+- `src/builder/components/Canvas.tsx`
+- `src/builder/components/CodeView.tsx`
+- `src/builder/utils/initStyles.ts`
+- `src/builder/utils/urlRewriter.ts`
+- `src/builder/utils/webflowTranslator.ts`
+- `src/builder/components/StyleSheetInjector.tsx`
+- `src/builder/utils/export.ts`
 
-1. Background patterns with `z-index: -1` remain visible in Canvas
-2. Code View preview shows backgrounds correctly
-3. Full page preview maintains backgrounds
-4. Exported HTML/CSS renders backgrounds in external browsers
-5. No visual regressions for non-negative z-index content
+### Optional new helper (if we want clean code)
+- `src/builder/utils/backgroundDebug.ts` (debug-only utilities)
+- `src/builder/utils/stackingContextFixer.ts` (if we decide to add a post-import normalization pass)
 
-## Testing Checklist
+---
 
-- [ ] Import Webflow JSON with decorative background elements
-- [ ] Verify backgrounds appear and persist in Canvas
-- [ ] Verify backgrounds appear in Code View preview
-- [ ] Click full preview button - backgrounds should stay visible
-- [ ] Export project and open in browser - backgrounds render correctly
-- [ ] Test that regular content (positive z-index) still renders on top
-- [ ] Verify no layout shifts or visual regressions
+## If you want to proceed
+You can tell me to continue in a new request, and I’ll implement this in Default mode in the order above (Diagnostics → Root stacking context → Data URL quoting → Webflow overlay semantics). This sequencing minimizes risk and ensures we fix the real cause rather than masking symptoms.
