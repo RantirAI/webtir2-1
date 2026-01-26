@@ -111,6 +111,7 @@ export const ImagePrimitive: React.FC<ImagePrimitiveProps> = ({
   };
 
   // Default image styles to ensure proper sizing
+  // Note: position is NOT set here to allow CSS classes to define absolute positioning
   const defaultImageStyles: React.CSSProperties = {
     maxWidth: '100%',
     height: 'auto',
@@ -123,7 +124,7 @@ export const ImagePrimitive: React.FC<ImagePrimitiveProps> = ({
       className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
       src={imgSrc}
       alt={instance.props.alt || 'Image'}
-      style={{ ...defaultImageStyles, position: 'relative', ...navStyles, ...dataBindingStyle }}
+      style={{ ...defaultImageStyles, ...navStyles, ...dataBindingStyle }}
       onError={handleError}
       onClick={isPreviewMode ? undefined : (e) => {
         e.stopPropagation();
