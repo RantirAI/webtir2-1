@@ -70,7 +70,7 @@ function combineBackgroundLayers(props: Record<string, string>): Record<string, 
   const bgImage = props['background-image'];
   const bgGradient = props['background-gradient']; // optional custom prop
 
-  // Check if we have a fill color AND media (image or gradient)
+  // Case 1: Color + media (gradient and/or image) - color overlay on top
   if (bgColor && bgColor !== 'transparent' && (bgImage || bgGradient)) {
     // Create a solid color gradient layer to sit on top
     const colorOverlay = `linear-gradient(${bgColor}, ${bgColor})`;
@@ -84,6 +84,8 @@ function combineBackgroundLayers(props: Record<string, string>): Record<string, 
 
     // Remove background-color since it's now part of background-image layers
     delete result['background-color'];
+    // Remove background-gradient since it's now combined into background-image
+    delete result['background-gradient'];
 
     // Adjust background-size and position to match layer count
     const existingSize = props['background-size'] || 'cover';
@@ -94,6 +96,27 @@ function combineBackgroundLayers(props: Record<string, string>): Record<string, 
     result['background-size'] = Array(layerCount).fill(existingSize).join(', ');
     result['background-position'] = Array(layerCount).fill(existingPosition).join(', ');
     result['background-repeat'] = Array(layerCount).fill(existingRepeat).join(', ');
+  }
+  // Case 2: Gradient + Image (no color overlay needed)
+  else if (bgGradient && bgImage) {
+    result['background-image'] = `${bgGradient}, ${bgImage}`;
+    delete result['background-gradient'];
+    
+    const existingSize = props['background-size'] || 'cover';
+    const existingPosition = props['background-position'] || 'center';
+    const existingRepeat = props['background-repeat'] || 'no-repeat';
+    result['background-size'] = `${existingSize}, ${existingSize}`;
+    result['background-position'] = `${existingPosition}, ${existingPosition}`;
+    result['background-repeat'] = `${existingRepeat}, ${existingRepeat}`;
+  }
+  // Case 3: Gradient only (no image, no color)
+  else if (bgGradient && !bgImage) {
+    result['background-image'] = bgGradient;
+    delete result['background-gradient'];
+  }
+  // Case 4: Image only - just clean up stray gradient property if present
+  else if (bgImage) {
+    delete result['background-gradient'];
   }
 
   return result;
