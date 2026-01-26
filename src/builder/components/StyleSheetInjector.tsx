@@ -5,8 +5,8 @@ import { compileMetadataToCSS } from '../utils/cssCompiler';
 
 // Map custom property names to valid CSS property names
 const propertyAliases: Record<string, string> = {
-  backgroundGradient: 'background-image', // Map gradient to background-image
-  backgroundImage: 'background-image', // Map image URLs to background-image
+  backgroundGradient: 'background-gradient', // Keep as intermediate for combineBackgroundLayers
+  backgroundImage: 'background-image',
 };
 
 function toCssProp(prop: string) {
