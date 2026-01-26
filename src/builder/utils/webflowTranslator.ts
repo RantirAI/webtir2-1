@@ -441,25 +441,51 @@ export function translateWebflowToWebtir(webflowData: WebflowXscpData): Componen
  */
 export function extractWebflowAssets(webflowData: WebflowXscpData): { url: string; alt: string; name: string }[] {
   const assets: { url: string; alt: string; name: string }[] = [];
+  const seenUrls = new Set<string>();
   
   if (webflowData.payload.assets) {
     for (const asset of webflowData.payload.assets) {
-      assets.push({
-        url: asset.cdnUrl,
-        alt: asset.alt || '',
-        name: asset.origFileName || asset.fileName,
-      });
+      if (!seenUrls.has(asset.cdnUrl)) {
+        seenUrls.add(asset.cdnUrl);
+        assets.push({
+          url: asset.cdnUrl,
+          alt: asset.alt || '',
+          name: asset.origFileName || asset.fileName,
+        });
+      }
     }
   }
   
   // Also extract images from nodes
   for (const node of webflowData.payload.nodes) {
     if (node.type === 'Image' && node.data?.attr?.src) {
-      assets.push({
-        url: node.data.attr.src,
-        alt: node.data.attr.alt || '',
-        name: node.data.attr.src.split('/').pop() || 'image',
-      });
+      const src = node.data.attr.src;
+      if (!seenUrls.has(src)) {
+        seenUrls.add(src);
+        assets.push({
+          url: src,
+          alt: node.data.attr.alt || '',
+          name: src.split('/').pop() || 'image',
+        });
+      }
+    }
+  }
+  
+  // Extract background images from style CSS (url() patterns)
+  for (const style of webflowData.payload.styles) {
+    if (style.styleLess) {
+      const urlMatches = style.styleLess.matchAll(/url\(['"]?([^'")\s]+)['"]?\)/g);
+      for (const match of urlMatches) {
+        const url = match[1];
+        if (url && url.startsWith('http') && !seenUrls.has(url)) {
+          seenUrls.add(url);
+          assets.push({
+            url,
+            alt: '',
+            name: url.split('/').pop() || 'background-image',
+          });
+        }
+      }
     }
   }
   

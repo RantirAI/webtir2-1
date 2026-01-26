@@ -2,17 +2,36 @@ import { useStyleStore } from '../store/useStyleStore';
 import { PseudoState } from '../store/types';
 
 // Reverse property aliases - map CSS properties back to internal names
-const reversePropertyAliases: Record<string, string> = {
-  'background-image': 'backgroundGradient',
-};
+// NOTE: background-image is handled specially in parseProperty based on value content
+const reversePropertyAliases: Record<string, string> = {};
 
 // Convert kebab-case to camelCase
 function kebabToCamel(str: string): string {
   return str.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
 }
 
+// Check if a value is a CSS gradient function
+function isGradientValue(value: string): boolean {
+  return (
+    value.includes('linear-gradient(') ||
+    value.includes('radial-gradient(') ||
+    value.includes('conic-gradient(') ||
+    value.includes('repeating-linear-gradient(') ||
+    value.includes('repeating-radial-gradient(')
+  );
+}
+
 // Parse a single CSS property and value
 function parseProperty(property: string, value: string): { prop: string; val: string } {
+  // Special handling for background-image - distinguish between gradients and images
+  if (property === 'background-image') {
+    if (isGradientValue(value)) {
+      return { prop: 'backgroundGradient', val: value };
+    }
+    // URL-based backgrounds stay as backgroundImage
+    return { prop: 'backgroundImage', val: value };
+  }
+  
   // Check for reverse alias first
   const aliasedProp = reversePropertyAliases[property];
   if (aliasedProp) {
