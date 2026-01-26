@@ -110,13 +110,20 @@ export const ImagePrimitive: React.FC<ImagePrimitiveProps> = ({
     setImgError(true);
   };
 
+  // Default image styles to ensure proper sizing
+  const defaultImageStyles: React.CSSProperties = {
+    maxWidth: '100%',
+    height: 'auto',
+    display: 'block',
+  };
+
   return (
     <img
       data-instance-id={instance.id}
       className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
       src={imgSrc}
       alt={instance.props.alt || 'Image'}
-      style={{ position: 'relative', ...navStyles, ...dataBindingStyle }}
+      style={{ ...defaultImageStyles, position: 'relative', ...navStyles, ...dataBindingStyle }}
       onError={handleError}
       onClick={isPreviewMode ? undefined : (e) => {
         e.stopPropagation();

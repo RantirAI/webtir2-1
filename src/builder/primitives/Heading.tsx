@@ -1,8 +1,7 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { ComponentInstance } from '../store/types';
 import { useStyleStore } from '../store/useStyleStore';
 import { useBuilderStore } from '../store/useBuilderStore';
-import { EditableText } from '../components/EditableText';
 
 interface HeadingProps {
   instance: ComponentInstance;
@@ -28,18 +27,19 @@ export const Heading: React.FC<HeadingProps> = ({
   dataBindingProps = {},
 }) => {
   const { updateInstance } = useBuilderStore();
+  const [isEditing, setIsEditing] = useState(false);
+  const elementRef = useRef<HTMLHeadingElement>(null);
+
   // Ensure level is a valid heading tag string (h1-h6)
-  // Handle both number format (1-6) and string format ('h1'-'h6')
   const rawLevel = instance.props.level;
-  let level: string;
+  let level: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
   if (typeof rawLevel === 'number') {
-    level = `h${Math.min(Math.max(rawLevel, 1), 6)}`;
+    level = `h${Math.min(Math.max(rawLevel, 1), 6)}` as typeof level;
   } else if (typeof rawLevel === 'string') {
-    // Handle both 'h1' format and '1' format
     if (['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(rawLevel)) {
-      level = rawLevel;
+      level = rawLevel as typeof level;
     } else if (['1', '2', '3', '4', '5', '6'].includes(rawLevel)) {
-      level = `h${rawLevel}`;
+      level = `h${rawLevel}` as typeof level;
     } else {
       level = 'h1';
     }
@@ -62,32 +62,79 @@ export const Heading: React.FC<HeadingProps> = ({
   // Extract non-style dataBindingProps
   const { style: dataBindingStyle, ...restDataBindingProps } = dataBindingProps;
 
-  return (
-    <div
-      data-instance-id={instance.id}
-      style={dataBindingStyle}
-      onClick={isPreviewMode ? undefined : (e) => {
+  const content = instance.props.children || 'Heading';
+
+  // Handle double-click to enter edit mode
+  const handleDoubleClick = (e: React.MouseEvent) => {
+    if (isPreviewMode) return;
+    e.stopPropagation();
+    setIsEditing(true);
+  };
+
+  // Handle blur to exit edit mode and save
+  const handleBlur = () => {
+    if (elementRef.current) {
+      const newText = elementRef.current.textContent || '';
+      handleTextChange(newText);
+    }
+    setIsEditing(false);
+  };
+
+  // Handle key events for editing
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      elementRef.current?.blur();
+    }
+    if (e.key === 'Escape') {
+      setIsEditing(false);
+      if (elementRef.current) {
+        elementRef.current.textContent = content;
+      }
+    }
+  };
+
+  // Focus element when entering edit mode
+  useEffect(() => {
+    if (isEditing && elementRef.current) {
+      elementRef.current.focus();
+      // Select all text
+      const selection = window.getSelection();
+      const range = document.createRange();
+      range.selectNodeContents(elementRef.current);
+      selection?.removeAllRanges();
+      selection?.addRange(range);
+    }
+  }, [isEditing]);
+
+  // Render the semantic heading tag directly using React.createElement
+  return React.createElement(
+    level,
+    {
+      ref: elementRef,
+      'data-instance-id': instance.id,
+      className: className || undefined,
+      style: dataBindingStyle,
+      contentEditable: isEditing,
+      suppressContentEditableWarning: true,
+      onClick: isPreviewMode ? undefined : (e: React.MouseEvent) => {
         e.stopPropagation();
         onSelect?.();
-      }}
-      onMouseEnter={isPreviewMode ? undefined : (e) => {
+      },
+      onDoubleClick: handleDoubleClick,
+      onMouseEnter: isPreviewMode ? undefined : (e: React.MouseEvent) => {
         e.stopPropagation();
         onHover?.();
-      }}
-      onMouseLeave={isPreviewMode ? undefined : (e) => {
+      },
+      onMouseLeave: isPreviewMode ? undefined : (e: React.MouseEvent) => {
         e.stopPropagation();
         onHoverEnd?.();
-      }}
-      onContextMenu={isPreviewMode ? undefined : onContextMenu}
-      {...restDataBindingProps}
-    >
-      <EditableText
-        value={instance.props.children || 'Heading'}
-        onChange={handleTextChange}
-        as={level as any}
-        className={className}
-        isSelected={isSelected}
-      />
-    </div>
+      },
+      onContextMenu: isPreviewMode ? undefined : onContextMenu,
+      onBlur: isEditing ? handleBlur : undefined,
+      onKeyDown: isEditing ? handleKeyDown : undefined,
+      ...restDataBindingProps,
+    },
+    content
   );
 };
