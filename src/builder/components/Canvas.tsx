@@ -2441,6 +2441,9 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
           minHeight: isPreviewMode ? '100vh' : '100vh',
           minWidth: isPreviewMode ? '100%' : '100%',
           width: isPreviewMode ? '100%' : 'auto',
+          // Create stacking context for z-index:-1 elements in imported content
+          position: 'relative',
+          isolation: 'isolate',
         }}
       >
         {pagesToRender.map((pageId, index) => {

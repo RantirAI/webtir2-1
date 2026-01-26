@@ -743,9 +743,18 @@ const PreviewFrame: React.FC<PreviewFrameProps> = ({
         position: relative;
       }
       /* Ensure root containers also create stacking context */
-      .root-style, [class*="root"] {
+      .root-style, [class*="root-style"] {
         position: relative;
         isolation: isolate;
+      }
+      /* Builder page container stacking context */
+      .builder-page {
+        position: relative;
+        isolation: isolate;
+      }
+      /* Ensure Webflow imported wrappers maintain stacking context */
+      [class*="wf-"] {
+        position: relative;
       }
       ${cssCode}
     </style>
