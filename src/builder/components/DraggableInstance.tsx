@@ -37,12 +37,26 @@ export const DraggableInstance: React.FC<DraggableInstanceProps> = ({
   const isFullWidth = ['Section', 'Container', 'Div', 'Box'].includes(instance.type);
 
   // Check if wrapped element needs proper positioning context (Webflow imports)
-  const { styleSources } = useStyleStore();
-  const hasPositionedContent = instance.styleSourceIds?.some(id => {
-    const source = styleSources[id];
-    const name = source?.name || '';
-    return name.startsWith('wf-') || name.includes('absolute') || name.includes('background');
+  // We need to distinguish between:
+  // 1. Elements that ARE positioned (absolute/fixed) - don't override their position
+  // 2. Elements that CONTAIN positioned children - need stacking context (isolation: isolate)
+  const { styleSources, styles } = useStyleStore();
+  
+  // Check if this element has Webflow-imported styles
+  const hasWebflowStyles = instance.styleSourceIds?.some(id => {
+    const name = styleSources[id]?.name || '';
+    return name.startsWith('wf-');
   });
+  
+  // Check if this element itself has position: absolute or fixed defined
+  const hasAbsolutePosition = instance.styleSourceIds?.some(id => {
+    const positionKey = `${id}:desktop:default:position`;
+    const positionValue = styles[positionKey];
+    return positionValue === 'absolute' || positionValue === 'fixed';
+  });
+  
+  // Webflow imports that are NOT absolutely positioned need stacking context wrapper
+  const needsStackingContext = hasWebflowStyles && !hasAbsolutePosition;
 
   // Important: avoid setting an "identity" CSS transform (e.g. translate3d(0,0,0))
   // because some browsers have contentEditable caret/input bugs inside transformed ancestors.
@@ -70,13 +84,19 @@ export const DraggableInstance: React.FC<DraggableInstanceProps> = ({
         display: 'block',
         width: '100%',
       }
-    : hasPositionedContent
+    : needsStackingContext
     ? {
-        // For Webflow imports, use block display to preserve stacking context
+        // For Webflow imports that contain positioned children, create stacking context
+        // but DON'T set position to allow CSS classes to control positioning
         display: 'block',
         width: '100%',
-        position: 'relative',
         isolation: 'isolate',
+      }
+    : hasAbsolutePosition
+    ? {
+        // For absolutely positioned elements, use display: contents to not interfere
+        // with CSS class positioning - the element itself will be positioned by CSS
+        display: 'contents',
       }
     : {
         // For non-containers (leaf elements), use display: contents
