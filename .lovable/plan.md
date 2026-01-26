@@ -1,161 +1,99 @@
 
-# Plan: Fix Heading System in Code View
+# Plan: Fix Background Rendering Consistency Between Canvas and Code View
 
 ## Problem Summary
 
-The heading system has a structural mismatch between:
-1. **Canvas rendering**: Headings are wrapped in a `<div>` with `data-instance-id`, and the actual semantic tag (`<h1>`-`<h6>`) is rendered inside via `EditableText`
-2. **Code View export**: Headings are correctly exported as semantic tags (`<h2 class="...">Content</h2>`)
-3. **Code View preview**: The CSS is correctly generated, but there's a disconnect because the styles are applied to the class but the class is on the inner heading, not the wrapper
+Backgrounds (colors, images, gradients) render correctly in Code View but are missing or invisible in the Canvas. This occurs because the Canvas's `StyleSheetInjector` has incomplete background layer combination logic compared to the export utility used by Code View.
 
-Additionally, when headings are imported from the Code View back to the canvas, the system correctly identifies them as `Heading` components with the proper `level` prop, but may not apply the design system's default typography if styles are not present in the imported CSS.
+## Root Cause
 
----
+The `combineBackgroundLayers()` function in `StyleSheetInjector.tsx` is missing support for the `background-gradient` property that the export utility correctly handles. When a component has both a background color AND a gradient, the canvas fails to combine them properly, resulting in missing backgrounds.
 
-## Root Cause Analysis
-
-### Issue 1: Canvas Structure vs. Export Structure
-**Canvas (Heading.tsx:65-92)**:
-```
-<div data-instance-id="...">         <!-- Outer wrapper (no class) -->
-  <h2 class="heading-1">Content</h2> <!-- Inner heading (has class) -->
-</div>
+**StyleSheetInjector (Canvas) - Current:**
+```typescript
+const bgColor = props['background-color'];
+const bgImage = props['background-image'];
+// Missing: const bgGradient = props['background-gradient'];
 ```
 
-**Code Export (codeExport.ts:81-83)**:
+**Export Utility (Code View) - Correct:**
+```typescript
+const bgColor = props['background-color'];
+const bgImage = props['background-image'];
+const bgGradient = props['background-gradient']; // Handles all three!
 ```
-<h2 class="heading-1">Content</h2>   <!-- Direct semantic tag -->
-```
-
-This is actually **correct behavior** - the wrapper div is only needed in the builder for interaction handling. The export correctly strips it.
-
-### Issue 2: Missing Typography on Import
-When HTML is imported via Code View, headings are correctly identified (codeImport.ts:160-167, 365-368), but the system does NOT apply default typography from the design system. If the imported CSS doesn't contain font-size/weight/line-height for that class, the heading appears unstyled.
-
-### Issue 3: CSS Export Missing Heading Styles
-When headings are created in the canvas but no styles are explicitly set, the CSS export may not include typography rules. The `headingTypography.ts` utility exists but is only called when:
-- User manually changes the heading level in StylePanel
-- User uses the HeadingSettingsPopover
-
-It is NOT called during:
-- Initial heading creation from registry
-- HTML import from Code View
-- Code view "Apply Changes" flow
 
 ---
 
 ## Solution
 
-### Part 1: Apply Heading Typography on Import
+### Part 1: Update StyleSheetInjector Background Logic
 
-**File: `src/builder/utils/codeImport.ts`**
+**File: `src/builder/components/StyleSheetInjector.tsx`**
 
-After creating a Heading component during import, apply the design system's default typography if no explicit styles exist.
+Update the `combineBackgroundLayers()` function to match the export utility's implementation. This ensures background colors, images, and gradients are properly stacked as CSS background-image layers.
 
-Changes to `domNodeToInstance` function (around line 365-368):
+**Changes:**
+1. Add detection for `background-gradient` property
+2. Combine all three layers: color overlay (top) + gradient + image (bottom)
+3. Adjust `background-size`, `background-position`, and `background-repeat` for the correct number of layers
 
-```typescript
-if (type === 'Heading') {
-  props.level = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(tagName) ? tagName : 'h1';
-  
-  // Apply default typography if no font styles were imported
-  if (styleSourceIds.length > 0) {
-    const { styles } = useStyleStore.getState();
-    const primaryStyleId = styleSourceIds[0];
-    
-    // Check if typography styles already exist
-    const hasFontSize = Object.keys(styles).some(
-      key => key.startsWith(`${primaryStyleId}:`) && key.endsWith(':fontSize')
-    );
-    
-    if (!hasFontSize) {
-      // Import heading typography utility
-      const { getHeadingTypography } = await import('./headingTypography');
-      const typography = getHeadingTypography(props.level);
-      
-      setStyle(primaryStyleId, 'fontSize', typography.fontSize, 'desktop', 'default');
-      setStyle(primaryStyleId, 'fontWeight', typography.fontWeight, 'desktop', 'default');
-      setStyle(primaryStyleId, 'lineHeight', typography.lineHeight, 'desktop', 'default');
-    }
-  }
-}
+```text
+Current logic (lines 18-47):
+- Checks: background-color + background-image
+- Missing: background-gradient
+
+Updated logic:
+- Checks: background-color + background-image + background-gradient
+- Creates layered background-image with all three combined
 ```
 
-Similarly update `domNodeToInstancePreserving` function (around line 216-219).
+---
 
-### Part 2: Apply Typography on "Apply Changes to Canvas"
+## Technical Implementation
 
-**File: `src/builder/components/CodeView.tsx`**
+### StyleSheetInjector.tsx Changes
 
-After parsing HTML and updating instances, traverse the tree to apply heading typography defaults for any headings missing font styles.
-
-In the `applyCodeChanges` function (around line 208-225):
+Replace lines 18-47 with the corrected `combineBackgroundLayers` function:
 
 ```typescript
-const applyCodeChanges = () => {
-  try {
-    if (activeTab === 'html') {
-      const newInstance = parseHTMLPreservingLinks(htmlCode, rootInstance);
-      if (newInstance && rootInstance) {
-        updateInstance(rootInstance.id, {
-          children: newInstance.children,
-          styleSourceIds: newInstance.styleSourceIds,
-          props: newInstance.props,
-        });
-        
-        // Apply heading typography defaults for any headings
-        applyHeadingTypographyToTree(newInstance);
-        
-        toast({
-          title: 'Code applied',
-          description: 'HTML changes have been applied to the canvas.',
-        });
-      }
-    }
-    // ... rest of function
-  }
-};
+// Combine background layers: color + gradient + image into proper CSS
+// CSS background-image layers are stacked: first = top, last = bottom
+function combineBackgroundLayers(props: Record<string, string>): Record<string, string> {
+  const result = { ...props };
 
-// Helper function to apply typography to all headings in tree
-function applyHeadingTypographyToTree(instance: ComponentInstance) {
-  const { styles, setStyle } = useStyleStore.getState();
-  
-  if (instance.type === 'Heading') {
-    const level = instance.props?.level || 'h1';
-    const styleSourceId = instance.styleSourceIds?.[0];
-    
-    if (styleSourceId) {
-      const hasFontSize = Object.keys(styles).some(
-        key => key.startsWith(`${styleSourceId}:`) && key.endsWith(':fontSize')
-      );
-      
-      if (!hasFontSize) {
-        const typography = getHeadingTypography(level);
-        setStyle(styleSourceId, 'fontSize', typography.fontSize, 'desktop', 'default');
-        setStyle(styleSourceId, 'fontWeight', typography.fontWeight, 'desktop', 'default');
-        setStyle(styleSourceId, 'lineHeight', typography.lineHeight, 'desktop', 'default');
-      }
-    }
+  const bgColor = props['background-color'];
+  const bgImage = props['background-image'];
+  const bgGradient = props['background-gradient']; // NEW: Handle gradient property
+
+  // Check if we have a fill color AND media (image or gradient)
+  if (bgColor && bgColor !== 'transparent' && (bgImage || bgGradient)) {
+    // Create a solid color gradient layer to sit on top
+    const colorOverlay = `linear-gradient(${bgColor}, ${bgColor})`;
+
+    // Combine layers: overlay first (top), then gradient, then image (bottom)
+    const layers: string[] = [colorOverlay];
+    if (bgGradient) layers.push(bgGradient);
+    if (bgImage) layers.push(bgImage);
+
+    result['background-image'] = layers.join(', ');
+
+    // Remove background-color since it's now part of background-image layers
+    delete result['background-color'];
+
+    // Adjust background-size/position/repeat to match layer count
+    const existingSize = props['background-size'] || 'cover';
+    const existingPosition = props['background-position'] || 'center';
+    const existingRepeat = props['background-repeat'] || 'no-repeat';
+
+    const layerCount = layers.length;
+    result['background-size'] = Array(layerCount).fill(existingSize).join(', ');
+    result['background-position'] = Array(layerCount).fill(existingPosition).join(', ');
+    result['background-repeat'] = Array(layerCount).fill(existingRepeat).join(', ');
   }
-  
-  // Recurse into children
-  instance.children?.forEach(child => applyHeadingTypographyToTree(child));
+
+  return result;
 }
-```
-
-### Part 3: Ensure Heading Primitive Exports Correctly (Verification)
-
-**File: `src/builder/utils/codeExport.ts`** - Already correct
-
-The export already maps `Heading` to `instance.props.level || 'h2'` (line 81-83). No changes needed.
-
-### Part 4: Add Missing Import Statement
-
-**File: `src/builder/components/CodeView.tsx`**
-
-Add import for heading typography utility:
-```typescript
-import { getHeadingTypography } from '../utils/headingTypography';
 ```
 
 ---
@@ -164,36 +102,51 @@ import { getHeadingTypography } from '../utils/headingTypography';
 
 | File | Changes |
 |------|---------|
-| `src/builder/utils/codeImport.ts` | Apply heading typography defaults during import for both parser functions |
-| `src/builder/components/CodeView.tsx` | Add typography application after "Apply Changes" and import the utility |
+| `src/builder/components/StyleSheetInjector.tsx` | Update `combineBackgroundLayers()` to include `background-gradient` property handling |
 
 ---
 
-## Technical Details
+## Visual Diagram
 
-### Typography Defaults Applied
+```text
+BEFORE (Canvas - broken):
++---------------------------+
+| background-color: blue    |  --> Applied as solid color
+| background-image: url()   |  --> Applied separately
+| background-gradient: ...  |  --> IGNORED! Not combined
++---------------------------+
+Result: Gradient invisible, color may cover image
 
-| Level | Font Size | Line Height | Font Weight |
-|-------|-----------|-------------|-------------|
-| h1 | 48px | 1.2 | 700 |
-| h2 | 40px | 1.3 | 700 |
-| h3 | 32px | 1.3 | 600 |
-| h4 | 24px | 1.4 | 600 |
-| h5 | 20px | 1.5 | 600 |
-| h6 | 16px | 1.5 | 600 |
-
-### Conditional Application Logic
-- Only apply defaults when no `fontSize` style exists for the heading's style source
-- Preserves user-defined styles from imported CSS
-- Works with both fresh imports and "Apply Changes" flow
+AFTER (Canvas - fixed):
++---------------------------+
+| background-color: blue    |
+| background-image: url()   |  --> All combined into single
+| background-gradient: ...  |      background-image stack
++---------------------------+
+Result: linear-gradient(blue,blue), gradient, url(...)
+        Color overlay on top, then gradient, then image
+```
 
 ---
 
 ## Expected Outcomes
 
-1. Headings imported from Code View will have proper typography defaults
-2. Headings edited in Code View and applied to canvas will maintain correct sizing
-3. Code View preview will render headings with correct visual styles
-4. Layers panel will correctly show "Heading" with proper level
-5. Round-trip consistency: Canvas -> Code View -> Edit -> Apply -> Canvas works correctly
-6. Semantic HTML tags (h1-h6) are preserved throughout the workflow
+1. Background colors render correctly on canvas when combined with images/gradients
+2. Background gradients are visible on canvas (currently invisible in some cases)
+3. Background images layer correctly with color overlays
+4. Canvas rendering matches Code View preview exactly
+5. All breakpoints (desktop, tablet, mobile) render backgrounds consistently
+6. Stacking context and z-index work correctly with layered backgrounds
+
+---
+
+## Testing Checklist
+
+- [ ] Create a Section with solid background color - verify it appears on canvas
+- [ ] Create a Section with background gradient - verify it appears on canvas
+- [ ] Create a Section with background image - verify it appears on canvas
+- [ ] Create a Section with color + gradient - verify both layer correctly
+- [ ] Create a Section with color + image - verify color overlay works
+- [ ] Switch breakpoints and verify backgrounds persist
+- [ ] Compare canvas rendering with Code View preview - should match
+- [ ] Export code and verify generated CSS is correct
