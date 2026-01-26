@@ -736,11 +736,16 @@ const PreviewFrame: React.FC<PreviewFrameProps> = ({
     ${googleFontsLink}
     <style>
       /* Base reset - ensures negative z-index elements are visible */
-      body {
+      html, body {
         margin: 0;
         padding: 0;
         isolation: isolate;
         position: relative;
+      }
+      /* Ensure root containers also create stacking context */
+      .root-style, [class*="root"] {
+        position: relative;
+        isolation: isolate;
       }
       ${cssCode}
     </style>

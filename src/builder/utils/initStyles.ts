@@ -44,7 +44,9 @@ export const initializeRootStyles = () => {
   if (!styleSources['root-style']) {
     createStyleSource('local', 'root-style');
     
-    // Set root styles - white background, no flex
+    // Set root styles - white background, stacking context for z-index:-1 elements
     setStyle('root-style', 'backgroundColor', '#ffffff');
+    setStyle('root-style', 'position', 'relative');
+    setStyle('root-style', 'isolation', 'isolate');
   }
 };
