@@ -8,8 +8,10 @@ import { Badge } from '@/components/ui/badge';
 import { Upload, CheckCircle2, Package, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { detectPastedSource, parseWebflowData, getSourceLabel, ClipboardSource, inspectClipboard, parseFigmaData } from '../utils/clipboardInspector';
-import { translateWebflowToWebtir, getWebflowDataSummary } from '../utils/webflowTranslator';
+import { translateWebflowToWebtir, getWebflowDataSummary, extractWebflowAssets } from '../utils/webflowTranslator';
 import { translateFigmaToWebtir, getFigmaDataSummary, isFigmaData } from '../utils/figmaTranslator';
+import { downloadAssets } from '../utils/assetDownloader';
+import { rewriteAllUrls } from '../utils/urlRewriter';
 import { useBuilderStore } from '../store/useBuilderStore';
 
 // Import platform icons
@@ -153,12 +155,30 @@ export const ImportModal: React.FC<ImportModalProps> = ({ open, onOpenChange, on
       if (detectedSource === 'webflow' || activePlatform === 'webflow') {
         const wfData = parseWebflowData(pastedCode);
         if (wfData) {
-          const instance = translateWebflowToWebtir(wfData);
+          let instance = translateWebflowToWebtir(wfData);
           if (instance) {
+            // Extract and download assets
+            const assets = extractWebflowAssets(wfData);
+            if (assets.length > 0) {
+              toast({
+                title: 'Downloading Assets',
+                description: `Downloading ${assets.length} assets...`,
+              });
+              
+              const urlMapping = await downloadAssets(assets);
+              
+              if (urlMapping.size > 0) {
+                // Rewrite URLs in instance tree and styles
+                instance = rewriteAllUrls(instance, urlMapping);
+              }
+            }
+            
             addInstance(instance, rootInstance.id);
+            
+            const downloadedCount = assets.length > 0 ? ` Downloaded ${assets.length} assets.` : '';
             toast({
               title: 'Webflow Import Success',
-              description: `Imported ${convertPreview?.nodes || 0} components with ${convertPreview?.styles || 0} styles.`,
+              description: `Imported ${convertPreview?.nodes || 0} components with ${convertPreview?.styles || 0} styles.${downloadedCount}`,
             });
             // Signal CodeView that import completed so it can refresh
             onImportComplete?.();
