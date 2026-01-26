@@ -1,6 +1,7 @@
 import { ComponentInstance, ComponentType } from '../store/types';
 import { useStyleStore } from '../store/useStyleStore';
 import { generateId } from './instance';
+import { getHeadingTypography } from './headingTypography';
 
 // Parse inline styles and apply them to a style source
 function parseAndApplyInlineStyles(
@@ -215,7 +216,16 @@ function domNodeToInstancePreserving(
   
   if (type === 'Heading') {
     // Ensure level is stored as 'h1', 'h2', etc. for consistency
-    props.level = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(tagName) ? tagName : 'h1';
+    const headingLevel = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(tagName) ? tagName : 'h1';
+    props.level = headingLevel;
+    
+    // Apply default typography for this heading level if style source exists
+    if (styleSourceIds.length > 0) {
+      const typography = getHeadingTypography(headingLevel);
+      setStyle(styleSourceIds[0], 'fontSize', typography.fontSize, 'desktop', 'default');
+      setStyle(styleSourceIds[0], 'fontWeight', typography.fontWeight, 'desktop', 'default');
+      setStyle(styleSourceIds[0], 'lineHeight', typography.lineHeight, 'desktop', 'default');
+    }
   }
   
   if (type === 'Image') {
@@ -364,7 +374,16 @@ function domNodeToInstance(node: Element): ComponentInstance {
   
   if (type === 'Heading') {
     // Ensure level is stored as 'h1', 'h2', etc. for consistency
-    props.level = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(tagName) ? tagName : 'h1';
+    const headingLevel = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(tagName) ? tagName : 'h1';
+    props.level = headingLevel;
+    
+    // Apply default typography for this heading level if style source exists
+    if (styleSourceIds.length > 0) {
+      const typography = getHeadingTypography(headingLevel);
+      setStyle(styleSourceIds[0], 'fontSize', typography.fontSize, 'desktop', 'default');
+      setStyle(styleSourceIds[0], 'fontWeight', typography.fontWeight, 'desktop', 'default');
+      setStyle(styleSourceIds[0], 'lineHeight', typography.lineHeight, 'desktop', 'default');
+    }
   }
   
   if (type === 'Image') {
