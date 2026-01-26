@@ -125,6 +125,26 @@ const BASE_CSS = `
   --radius: 0.5rem;
 }
 
+/* Stacking context for negative z-index elements (critical for Webflow imports) */
+html, body {
+  isolation: isolate;
+  position: relative;
+  margin: 0;
+  padding: 0;
+}
+
+/* Root style container stacking context */
+.root-style, [class*="root-style"] {
+  position: relative;
+  isolation: isolate;
+}
+
+/* Builder page container - ensures z-index:-1 elements stay within page */
+.builder-page {
+  position: relative;
+  isolation: isolate;
+}
+
 /* Canvas Base Resets */
 *, *::before, *::after {
   box-sizing: border-box;
