@@ -3,6 +3,7 @@ import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { ComponentInstance } from '../store/types';
 import { canDropInside } from '../utils/instance';
+import { useStyleStore } from '../store/useStyleStore';
 
 interface DroppableContainerProps {
   instance: ComponentInstance;
@@ -39,6 +40,13 @@ export const DroppableContainer: React.FC<DroppableContainerProps> = ({
     'Calendar', 'CalendarHeader', 'CalendarFooter'
   ];
   const isContainerType = containerTypes.includes(instance.type);
+
+  // Check for Webflow imports that need stacking context
+  const { styleSources } = useStyleStore();
+  const hasWebflowImport = instance.styleSourceIds?.some(id => {
+    const name = styleSources[id]?.name;
+    return name?.startsWith('wf-');
+  });
   
   // Check if this is a droppable container (for min-height when empty)
   const isDroppableContainer = canDropInside(instance.type);
@@ -63,12 +71,13 @@ export const DroppableContainer: React.FC<DroppableContainerProps> = ({
 
   // CRITICAL: For container types, we need a measurable wrapper for dnd-kit collision detection.
   // Using display: contents makes the element invisible to collision detection.
-  // For containers, use display: block with width: 100% to ensure proper bounding box.
-  const wrapperStyle: React.CSSProperties = isContainerType
+  // For containers and Webflow imports, use display: block with width: 100% to ensure proper bounding box.
+  const wrapperStyle: React.CSSProperties = isContainerType || hasWebflowImport
     ? {
         display: 'block',
         width: '100%',
         position: 'relative' as const,
+        isolation: 'isolate', // Ensure stacking context for z-index:-1 children
         // Add prominent blue visual feedback when dragging over this container
         outline: isValidDropTarget ? '2px dashed #3b82f6' : undefined,
         outlineOffset: isValidDropTarget ? '-2px' : undefined,

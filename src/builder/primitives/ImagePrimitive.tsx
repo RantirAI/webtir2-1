@@ -110,13 +110,19 @@ export const ImagePrimitive: React.FC<ImagePrimitiveProps> = ({
     setImgError(true);
   };
 
-  // Default image styles to ensure proper sizing
+  // Check if image has imported styles that define sizing
+  const hasImportedStyles = useMemo(() => {
+    return (instance.styleSourceIds || []).some(id => {
+      const name = useStyleStore.getState().styleSources[id]?.name;
+      return name?.startsWith('wf-');
+    });
+  }, [instance.styleSourceIds]);
+
+  // Default image styles - minimal for imports, standard for native images
   // Note: position is NOT set here to allow CSS classes to define absolute positioning
-  const defaultImageStyles: React.CSSProperties = {
-    maxWidth: '100%',
-    height: 'auto',
-    display: 'block',
-  };
+  const defaultImageStyles: React.CSSProperties = hasImportedStyles
+    ? { display: 'block' }
+    : { maxWidth: '100%', height: 'auto', display: 'block' };
 
   return (
     <img
