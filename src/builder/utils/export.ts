@@ -191,6 +191,8 @@ body {
   line-height: 1.5;
   color: hsl(var(--foreground));
   background-color: hsl(var(--background));
+  isolation: isolate;
+  position: relative;
 }
 
 `;

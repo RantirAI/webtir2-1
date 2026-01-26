@@ -735,6 +735,13 @@ const PreviewFrame: React.FC<PreviewFrameProps> = ({
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     ${googleFontsLink}
     <style>
+      /* Base reset - ensures negative z-index elements are visible */
+      body {
+        margin: 0;
+        padding: 0;
+        isolation: isolate;
+        position: relative;
+      }
       ${cssCode}
     </style>
   </head>
