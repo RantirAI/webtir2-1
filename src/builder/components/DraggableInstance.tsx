@@ -2,6 +2,7 @@ import React from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { ComponentInstance } from '../store/types';
+import { useStyleStore } from '../store/useStyleStore';
 
 interface DraggableInstanceProps {
   instance: ComponentInstance;
@@ -35,6 +36,14 @@ export const DraggableInstance: React.FC<DraggableInstanceProps> = ({
 
   const isFullWidth = ['Section', 'Container', 'Div', 'Box'].includes(instance.type);
 
+  // Check if wrapped element needs proper positioning context (Webflow imports)
+  const { styleSources } = useStyleStore();
+  const hasPositionedContent = instance.styleSourceIds?.some(id => {
+    const source = styleSources[id];
+    const name = source?.name || '';
+    return name.startsWith('wf-') || name.includes('absolute') || name.includes('background');
+  });
+
   // Important: avoid setting an "identity" CSS transform (e.g. translate3d(0,0,0))
   // because some browsers have contentEditable caret/input bugs inside transformed ancestors.
   const hasTransform =
@@ -43,6 +52,7 @@ export const DraggableInstance: React.FC<DraggableInstanceProps> = ({
 
   // For container types, we need a proper wrapper for drag operations
   // For non-containers, use display: contents when not dragging to preserve CSS layout
+  // Exception: Webflow imports need block display to preserve stacking context
   const style: React.CSSProperties = isDragging
     ? {
         transform: hasTransform ? CSS.Transform.toString(transform) : undefined,
@@ -59,6 +69,14 @@ export const DraggableInstance: React.FC<DraggableInstanceProps> = ({
         // For containers, use block display to allow proper sizing
         display: 'block',
         width: '100%',
+      }
+    : hasPositionedContent
+    ? {
+        // For Webflow imports, use block display to preserve stacking context
+        display: 'block',
+        width: '100%',
+        position: 'relative',
+        isolation: 'isolate',
       }
     : {
         // For non-containers (leaf elements), use display: contents
