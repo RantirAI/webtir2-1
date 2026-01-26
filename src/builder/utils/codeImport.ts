@@ -1,6 +1,7 @@
 import { ComponentInstance, ComponentType } from '../store/types';
 import { useStyleStore } from '../store/useStyleStore';
 import { generateId } from './instance';
+import { getHeadingTypography } from './headingTypography';
 
 // Parse inline styles and apply them to a style source
 function parseAndApplyInlineStyles(
@@ -216,6 +217,24 @@ function domNodeToInstancePreserving(
   if (type === 'Heading') {
     // Ensure level is stored as 'h1', 'h2', etc. for consistency
     props.level = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(tagName) ? tagName : 'h1';
+    
+    // Apply default heading typography if no font styles were imported
+    if (styleSourceIds.length > 0) {
+      const { styles } = useStyleStore.getState();
+      const primaryStyleId = styleSourceIds[0];
+      
+      // Check if typography styles already exist
+      const hasFontSize = Object.keys(styles).some(
+        key => key.startsWith(`${primaryStyleId}:`) && key.includes(':fontSize')
+      );
+      
+      if (!hasFontSize) {
+        const typography = getHeadingTypography(props.level);
+        setStyle(primaryStyleId, 'fontSize', typography.fontSize, 'desktop', 'default');
+        setStyle(primaryStyleId, 'fontWeight', typography.fontWeight, 'desktop', 'default');
+        setStyle(primaryStyleId, 'lineHeight', typography.lineHeight, 'desktop', 'default');
+      }
+    }
   }
   
   if (type === 'Image') {
@@ -365,8 +384,26 @@ function domNodeToInstance(node: Element): ComponentInstance {
   if (type === 'Heading') {
     // Ensure level is stored as 'h1', 'h2', etc. for consistency
     props.level = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(tagName) ? tagName : 'h1';
+    
+    // Apply default heading typography if no font styles were imported
+    if (styleSourceIds.length > 0) {
+      const { styles } = useStyleStore.getState();
+      const primaryStyleId = styleSourceIds[0];
+      
+      // Check if typography styles already exist
+      const hasFontSize = Object.keys(styles).some(
+        key => key.startsWith(`${primaryStyleId}:`) && key.includes(':fontSize')
+      );
+      
+      if (!hasFontSize) {
+        const typography = getHeadingTypography(props.level);
+        setStyle(primaryStyleId, 'fontSize', typography.fontSize, 'desktop', 'default');
+        setStyle(primaryStyleId, 'fontWeight', typography.fontWeight, 'desktop', 'default');
+        setStyle(primaryStyleId, 'lineHeight', typography.lineHeight, 'desktop', 'default');
+      }
+    }
   }
-  
+
   if (type === 'Image') {
     props.src = node.getAttribute('src') || '';
     props.alt = node.getAttribute('alt') || '';

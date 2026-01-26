@@ -11,6 +11,8 @@ import { extractUsedFonts, generateGoogleFontsLink } from '../utils/export';
 import { discoverComponents, getComponentCode, flattenComponents } from '../utils/componentCodeExport';
 import { parseHTMLToInstance, parseHTMLPreservingLinks } from '../utils/codeImport';
 import { parseCSSToStyleStore, validateCSS, extractCSSRules } from '../utils/cssImport';
+import { getHeadingTypography } from '../utils/headingTypography';
+import { ComponentInstance } from '../store/types';
 import { Copy, Check, Monitor, Tablet, Smartphone, Upload, Lock, Sparkles } from 'lucide-react';
 import { ImportModal } from './ImportModal';
 import { FileTree } from './FileTree';
@@ -25,6 +27,33 @@ import 'prismjs/themes/prism-tomorrow.css';
 import 'prismjs/components/prism-markup';
 import 'prismjs/components/prism-css';
 import 'prismjs/components/prism-javascript';
+
+// Helper function to apply heading typography defaults to all headings in tree
+function applyHeadingTypographyToTree(instance: ComponentInstance) {
+  const { styles, setStyle } = useStyleStore.getState();
+  
+  if (instance.type === 'Heading') {
+    const level = instance.props?.level || 'h1';
+    const styleSourceId = instance.styleSourceIds?.[0];
+    
+    if (styleSourceId) {
+      // Check if typography styles already exist for this style source
+      const hasFontSize = Object.keys(styles).some(
+        key => key.startsWith(`${styleSourceId}:`) && key.includes(':fontSize')
+      );
+      
+      if (!hasFontSize) {
+        const typography = getHeadingTypography(level);
+        setStyle(styleSourceId, 'fontSize', typography.fontSize, 'desktop', 'default');
+        setStyle(styleSourceId, 'fontWeight', typography.fontWeight, 'desktop', 'default');
+        setStyle(styleSourceId, 'lineHeight', typography.lineHeight, 'desktop', 'default');
+      }
+    }
+  }
+  
+  // Recurse into children
+  instance.children?.forEach(child => applyHeadingTypographyToTree(child));
+}
 
 interface CodeViewProps {
   onClose: () => void;
@@ -217,6 +246,9 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
             styleSourceIds: newInstance.styleSourceIds,
             props: newInstance.props,
           });
+          
+          // Apply heading typography defaults for any headings missing font styles
+          applyHeadingTypographyToTree(newInstance);
           
           toast({
             title: 'Code applied',
