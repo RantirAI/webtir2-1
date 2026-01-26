@@ -42,10 +42,17 @@ export const DroppableContainer: React.FC<DroppableContainerProps> = ({
   const isContainerType = containerTypes.includes(instance.type);
 
   // Check for Webflow imports that need stacking context
-  const { styleSources } = useStyleStore();
+  const { styleSources, styles } = useStyleStore();
   const hasWebflowImport = instance.styleSourceIds?.some(id => {
     const name = styleSources[id]?.name;
     return name?.startsWith('wf-');
+  });
+  
+  // Check if this element has absolute/fixed positioning (should not get position: relative)
+  const hasAbsolutePosition = instance.styleSourceIds?.some(id => {
+    const positionKey = `${id}:desktop:default:position`;
+    const positionValue = styles[positionKey];
+    return positionValue === 'absolute' || positionValue === 'fixed';
   });
   
   // Check if this is a droppable container (for min-height when empty)
@@ -72,11 +79,12 @@ export const DroppableContainer: React.FC<DroppableContainerProps> = ({
   // CRITICAL: For container types, we need a measurable wrapper for dnd-kit collision detection.
   // Using display: contents makes the element invisible to collision detection.
   // For containers and Webflow imports, use display: block with width: 100% to ensure proper bounding box.
-  const wrapperStyle: React.CSSProperties = isContainerType || hasWebflowImport
+  // Exception: Don't set position: relative on elements that have absolute/fixed positioning
+  const wrapperStyle: React.CSSProperties = isContainerType || (hasWebflowImport && !hasAbsolutePosition)
     ? {
         display: 'block',
         width: '100%',
-        position: 'relative' as const,
+        position: hasAbsolutePosition ? undefined : 'relative' as const,
         isolation: 'isolate', // Ensure stacking context for z-index:-1 children
         // Add prominent blue visual feedback when dragging over this container
         outline: isValidDropTarget ? '2px dashed #3b82f6' : undefined,
@@ -84,6 +92,12 @@ export const DroppableContainer: React.FC<DroppableContainerProps> = ({
         backgroundColor: isValidDropTarget ? 'rgba(59, 130, 246, 0.08)' : undefined,
         borderRadius: isValidDropTarget ? '6px' : undefined,
         transition: 'outline 150ms ease, background-color 150ms ease',
+      }
+    : hasWebflowImport && hasAbsolutePosition
+    ? {
+        // For absolutely positioned Webflow elements, use display: contents
+        // to allow CSS classes to fully control positioning
+        display: 'contents',
       }
     : {
         // For non-containers, use display: contents to preserve layout
