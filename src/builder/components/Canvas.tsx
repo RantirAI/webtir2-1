@@ -2465,6 +2465,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
               boxShadow: isPreviewMode ? 'none' : '0 2px 8px rgba(0,0,0,0.1)',
               transition: isResizing ? 'none' : 'width 0.3s ease',
               position: 'relative',
+              isolation: 'isolate', // Creates stacking context for z-index: -1 elements
               overflow: isPreviewMode ? 'visible' : 'auto',
               flexShrink: 0,
               cursor: isAddingComment && isCurrentPage ? 'crosshair' : (isCurrentPage ? 'default' : 'pointer'),
