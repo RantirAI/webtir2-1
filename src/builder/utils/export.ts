@@ -50,7 +50,8 @@ export function generateGoogleFontsLink(fonts: string[]): string {
 }
 // Map custom property names to valid CSS property names
 const propertyAliases: Record<string, string> = {
-  backgroundGradient: 'background-image',
+  backgroundGradient: 'background-gradient', // Intermediate for combineBackgroundLayers
+  backgroundImage: 'background-image',
 };
 
 function toCssProp(prop: string) {
