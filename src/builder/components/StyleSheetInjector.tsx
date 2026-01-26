@@ -18,39 +18,61 @@ function toCssProp(prop: string) {
 
 // Combine background layers: color + gradient + image into proper CSS
 // CSS background-image layers are stacked: first = top, last = bottom
-function combineBackgroundLayers(props: Record<string, string>): Record<string, string> {
+// For Webflow imports: use standard CSS behavior (color behind image)
+// For Webtir-native: allow color overlay on top of image
+function combineBackgroundLayers(props: Record<string, string>, isImported: boolean = false): Record<string, string> {
   const result = { ...props };
   
   const bgColor = props['background-color'];
   const bgImage = props['background-image'];
   const bgGradient = props['background-gradient']; // Handle gradient property
   
-  // Case 1: Color + media (gradient and/or image) - color overlay on top
+  // Case 1: Color + media (gradient and/or image)
   if (bgColor && bgColor !== 'transparent' && (bgImage || bgGradient)) {
-    // Create a solid color gradient layer to sit on top
-    const colorOverlay = `linear-gradient(${bgColor}, ${bgColor})`;
-    
-    // Combine layers: overlay first (top), then gradient, then image (bottom)
-    const layers: string[] = [colorOverlay];
-    if (bgGradient) layers.push(bgGradient);
-    if (bgImage) layers.push(bgImage);
-    
-    result['background-image'] = layers.join(', ');
-    
-    // Remove background-color since it's now part of background-image layers
-    delete result['background-color'];
-    // Remove background-gradient since it's now combined into background-image
-    delete result['background-gradient'];
-    
-    // Adjust background-size/position/repeat to match layer count
-    const existingSize = props['background-size'] || 'cover';
-    const existingPosition = props['background-position'] || 'center';
-    const existingRepeat = props['background-repeat'] || 'no-repeat';
-    
-    const layerCount = layers.length;
-    result['background-size'] = Array(layerCount).fill(existingSize).join(', ');
-    result['background-position'] = Array(layerCount).fill(existingPosition).join(', ');
-    result['background-repeat'] = Array(layerCount).fill(existingRepeat).join(', ');
+    // For imported styles (Webflow), keep standard CSS behavior:
+    // background-color sits BEHIND background-image (no overlay)
+    if (isImported) {
+      // Just combine gradient and image if both exist
+      if (bgGradient && bgImage) {
+        result['background-image'] = `${bgGradient}, ${bgImage}`;
+        
+        const existingSize = props['background-size'] || 'cover';
+        const existingPosition = props['background-position'] || 'center';
+        const existingRepeat = props['background-repeat'] || 'no-repeat';
+        result['background-size'] = `${existingSize}, ${existingSize}`;
+        result['background-position'] = `${existingPosition}, ${existingPosition}`;
+        result['background-repeat'] = `${existingRepeat}, ${existingRepeat}`;
+      } else if (bgGradient) {
+        result['background-image'] = bgGradient;
+      }
+      // Keep background-color as-is (renders behind background-image per CSS spec)
+      delete result['background-gradient'];
+    } else {
+      // Webtir-native behavior: color overlay on top
+      const colorOverlay = `linear-gradient(${bgColor}, ${bgColor})`;
+      
+      // Combine layers: overlay first (top), then gradient, then image (bottom)
+      const layers: string[] = [colorOverlay];
+      if (bgGradient) layers.push(bgGradient);
+      if (bgImage) layers.push(bgImage);
+      
+      result['background-image'] = layers.join(', ');
+      
+      // Remove background-color since it's now part of background-image layers
+      delete result['background-color'];
+      // Remove background-gradient since it's now combined into background-image
+      delete result['background-gradient'];
+      
+      // Adjust background-size/position/repeat to match layer count
+      const existingSize = props['background-size'] || 'cover';
+      const existingPosition = props['background-position'] || 'center';
+      const existingRepeat = props['background-repeat'] || 'no-repeat';
+      
+      const layerCount = layers.length;
+      result['background-size'] = Array(layerCount).fill(existingSize).join(', ');
+      result['background-position'] = Array(layerCount).fill(existingPosition).join(', ');
+      result['background-repeat'] = Array(layerCount).fill(existingRepeat).join(', ');
+    }
   }
   // Case 2: Gradient + Image (no color overlay needed)
   else if (bgGradient && bgImage) {
@@ -185,7 +207,9 @@ export const StyleSheetInjector: React.FC = () => {
         }
         
         // Combine background layers before generating CSS
-        const finalBaseProps = combineBackgroundLayers(baseProps);
+        // Check if this is a Webflow import by looking at source name prefix
+        const isWebflowImport = source.name.startsWith('wf-');
+        const finalBaseProps = combineBackgroundLayers(baseProps, isWebflowImport);
         
         const baseCss = Object.entries(finalBaseProps)
           .map(([k, v]) => `${k}: ${v};`)
@@ -211,7 +235,7 @@ export const StyleSheetInjector: React.FC = () => {
             });
             
             // Combine background layers for breakpoint styles too
-            const finalBpProps = combineBackgroundLayers(bpProps);
+            const finalBpProps = combineBackgroundLayers(bpProps, isWebflowImport);
             
             const bpCss = Object.entries(finalBpProps)
               .map(([k, v]) => `${k}: ${v};`)

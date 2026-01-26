@@ -78,13 +78,17 @@ function extractUrlFromCss(value: string): string | null {
 
 /**
  * Replace URL in CSS url() function
+ * Always quotes the new URL to ensure Data URLs with special chars parse correctly
  */
 function replaceUrlInCss(value: string, oldUrl: string, newUrl: string): string {
-  // Handle various url() formats
+  // Always quote the new URL to handle Data URLs with commas/special chars
+  const quotedNewUrl = `url("${newUrl}")`;
+  
+  // Handle various url() formats - replace with quoted version
   return value
-    .replace(`url(${oldUrl})`, `url(${newUrl})`)
-    .replace(`url("${oldUrl}")`, `url("${newUrl}")`)
-    .replace(`url('${oldUrl}')`, `url('${newUrl}')`);
+    .replace(`url(${oldUrl})`, quotedNewUrl)
+    .replace(`url("${oldUrl}")`, quotedNewUrl)
+    .replace(`url('${oldUrl}')`, quotedNewUrl);
 }
 
 /**
