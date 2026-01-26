@@ -22,7 +22,6 @@ import { translateWebflowToWebtir, getWebflowDataSummary } from '../utils/webflo
 import { translateFigmaToWebtir, getFigmaDataSummary, isFigmaData } from '../utils/figmaTranslator';
 import { normalizeComponentBase, findMaxIndexForBase } from '../utils/autoClassSystem';
 import { useStyleStore } from '../store/useStyleStore';
-import { getHeadingTypography } from '../utils/headingTypography';
 import { useBuilderStore } from '../store/useBuilderStore';
 import { useMediaStore } from '../store/useMediaStore';
 import { generateImage } from '../services/aiImageService';
@@ -556,28 +555,6 @@ Add what's missing: Features, Testimonials, Pricing, CTA, Footer, etc.`;
                     if (breakpointStyles.mobile) {
                       for (const [property, value] of Object.entries(breakpointStyles.mobile)) {
                         setStyle(styleSourceId, property, value, 'mobile', 'default');
-                      }
-                    }
-                  }
-                  
-                  // Apply default heading typography for any Heading components
-                  // This ensures headings have proper font-size/weight/line-height from design system
-                  for (const inst of instances) {
-                    if (inst.type === 'Heading' && inst.styleSourceIds?.length > 0) {
-                      const level = inst.props.level || 'h1';
-                      const typography = getHeadingTypography(level);
-                      const styleSourceId = inst.styleSourceIds[0];
-                      
-                      // Only apply if AI didn't provide explicit values
-                      const existingStyles = newStyleSources[styleSourceId]?.base || {};
-                      if (!existingStyles.fontSize) {
-                        setStyle(styleSourceId, 'fontSize', typography.fontSize, 'desktop', 'default');
-                      }
-                      if (!existingStyles.fontWeight) {
-                        setStyle(styleSourceId, 'fontWeight', typography.fontWeight, 'desktop', 'default');
-                      }
-                      if (!existingStyles.lineHeight) {
-                        setStyle(styleSourceId, 'lineHeight', typography.lineHeight, 'desktop', 'default');
                       }
                     }
                   }
