@@ -16,31 +16,44 @@ function toCssProp(prop: string) {
 }
 
 // Combine background layers: color + gradient + image into proper CSS
+// CSS background-image layers are stacked: first = top, last = bottom
 function combineBackgroundLayers(props: Record<string, string>): Record<string, string> {
   const result = { ...props };
   
   const bgColor = props['background-color'];
   const bgImage = props['background-image'];
+  const bgGradient = props['background-gradient']; // Handle gradient property
   
-  // If we have both a fill color AND an image/gradient, layer them
-  if (bgColor && bgColor !== 'transparent' && bgImage) {
+  // Check if we have a fill color AND media (image or gradient)
+  if (bgColor && bgColor !== 'transparent' && (bgImage || bgGradient)) {
     // Create a solid color gradient layer to sit on top
     const colorOverlay = `linear-gradient(${bgColor}, ${bgColor})`;
     
-    // Combine layers: overlay first (top), then image (bottom)
-    result['background-image'] = `${colorOverlay}, ${bgImage}`;
+    // Combine layers: overlay first (top), then gradient, then image (bottom)
+    const layers: string[] = [colorOverlay];
+    if (bgGradient) layers.push(bgGradient);
+    if (bgImage) layers.push(bgImage);
+    
+    result['background-image'] = layers.join(', ');
     
     // Remove background-color since it's now part of background-image layers
     delete result['background-color'];
+    // Remove background-gradient since it's now combined into background-image
+    delete result['background-gradient'];
     
-    // Adjust background-size/position/repeat for multiple layers
+    // Adjust background-size/position/repeat to match layer count
     const existingSize = props['background-size'] || 'cover';
     const existingPosition = props['background-position'] || 'center';
     const existingRepeat = props['background-repeat'] || 'no-repeat';
     
-    result['background-size'] = `${existingSize}, ${existingSize}`;
-    result['background-position'] = `${existingPosition}, ${existingPosition}`;
-    result['background-repeat'] = `${existingRepeat}, ${existingRepeat}`;
+    const layerCount = layers.length;
+    result['background-size'] = Array(layerCount).fill(existingSize).join(', ');
+    result['background-position'] = Array(layerCount).fill(existingPosition).join(', ');
+    result['background-repeat'] = Array(layerCount).fill(existingRepeat).join(', ');
+  } else if (bgGradient && !bgColor) {
+    // Handle gradient-only case (no color overlay needed)
+    result['background-image'] = bgGradient;
+    delete result['background-gradient'];
   }
   
   return result;
