@@ -308,6 +308,16 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
   const updateInstance = useBuilderStore((state) => state.updateInstance);
   const { findInstance } = useBuilderStore();
   const { styleSources } = useStyleStore();
+  const setCurrentBreakpoint = useStyleStore((state) => state.setCurrentBreakpoint);
+  
+  // Function to detect breakpoint based on canvas width
+  const detectBreakpointFromWidth = (width: number): string => {
+    // Thresholds based on breakpoint widths: desktop=960, tablet=768, mobile-landscape=640, mobile=375
+    if (width > 768) return 'desktop';
+    if (width > 640) return 'tablet';
+    if (width > 375) return 'mobile-landscape';
+    return 'mobile';
+  };
   
   // Global components from page store
   const { getGlobalComponents, shouldShowGlobalComponent, currentPageId } = usePageStore();
@@ -437,6 +447,12 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
     const delta = isResizing === 'right' ? (e.clientX - resizeStart.x) : (resizeStart.x - e.clientX);
     const newWidth = Math.max(320, Math.min(1920, resizeStart.width + delta * 2));
     setCustomWidth(newWidth);
+    
+    // Auto-detect and switch breakpoint based on new width
+    const detectedBreakpoint = detectBreakpointFromWidth(newWidth);
+    if (detectedBreakpoint !== currentBreakpoint) {
+      setCurrentBreakpoint(detectedBreakpoint);
+    }
   };
 
   // Touch event handlers
