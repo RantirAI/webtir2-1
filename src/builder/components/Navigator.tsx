@@ -15,6 +15,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { canDropInside } from '../utils/instance';
 import { duplicateInstanceWithLinkage, applyDuplicationLinks } from '../utils/duplication';
 import { CreateComponentDialog } from './CreateComponentDialog';
+import { getCanvasComputedStyles } from '../utils/canvasStyles';
 
 // Type for drop position - where the item should be inserted
 type DropPosition = 'before' | 'inside' | 'after' | null;
@@ -34,7 +35,6 @@ export const Navigator: React.FC = () => {
   const addInstance = useBuilderStore((state) => state.addInstance);
   const findInstance = useBuilderStore((state) => state.findInstance);
   const enterIsolationMode = useBuilderStore((state) => state.enterIsolationMode);
-  const { getComputedStyles } = useStyleStore();
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set(['root']));
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -165,8 +165,8 @@ export const Navigator: React.FC = () => {
     const meta = componentRegistry[instance.type];
     const IconComponent = meta ? Icons[meta.icon as keyof typeof Icons] as any : null;
 
-    // Get computed dimensions
-    const computedStyles = getComputedStyles(instance.styleSourceIds);
+    // Get computed dimensions - use scoped state (Navigator shows default state)
+    const computedStyles = getCanvasComputedStyles(instance.id, instance.styleSourceIds || []);
     const width = computedStyles.width || 'auto';
     const height = computedStyles.height || 'auto';
     

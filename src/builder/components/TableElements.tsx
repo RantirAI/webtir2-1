@@ -3,6 +3,7 @@ import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { ComponentInstance } from '../store/types';
 import { useBuilderStore } from '../store/useBuilderStore';
+import { getCanvasComputedStyles } from '../utils/canvasStyles';
 
 interface TableElementProps {
   instance: ComponentInstance;
@@ -46,7 +47,7 @@ export const TableRowElement: React.FC<TableElementProps> = ({
       data-instance-id={instance.id}
       data-droppable-id={instance.id}
       style={{
-        ...getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties,
+        ...getCanvasComputedStyles(instance.id, instance.styleSourceIds || []) as React.CSSProperties,
         backgroundColor: isStriped ? (tableStyles.stripedColor || 'hsl(var(--muted) / 0.5)') : undefined,
         ...(tableStyles.hoverable && !isHeader ? { cursor: 'pointer' } : {}),
       }}
@@ -109,7 +110,7 @@ export const TableHeaderCellElement: React.FC<TableElementProps> = ({
       data-instance-id={instance.id}
       data-droppable-id={instance.id}
       style={{
-        ...getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties,
+        ...getCanvasComputedStyles(instance.id, instance.styleSourceIds || []) as React.CSSProperties,
         padding: `${tableStyles.cellPadding || 12}px`,
         fontWeight: tableStyles.headerFontWeight || '600',
         fontSize: `${tableStyles.headerFontSize || 14}px`,
@@ -173,7 +174,7 @@ export const TableCellElement: React.FC<TableElementProps> = ({
       data-instance-id={instance.id}
       data-droppable-id={instance.id}
       style={{
-        ...getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties,
+        ...getCanvasComputedStyles(instance.id, instance.styleSourceIds || []) as React.CSSProperties,
         padding: `${tableStyles.cellPadding || 12}px`,
         fontSize: `${tableStyles.cellFontSize || 14}px`,
         backgroundColor: tableStyles.cellBackground || 'transparent',
