@@ -135,7 +135,7 @@ const convertSystemPrebuiltToPrebuilt = (
         name: styleId.replace('style-', ''),
       },
       styleValues: Object.fromEntries(
-        Object.entries(styleValues).map(([prop, value]) => [`${styleId}:base:default:${prop}`, value])
+        Object.entries(styleValues).map(([prop, value]) => [`${styleId}:desktop:default:${prop}`, value])
       ),
     };
   }
