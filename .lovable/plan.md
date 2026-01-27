@@ -1,195 +1,91 @@
 
-# Plan: Add Visual Breakpoint Indicators for Typography Responsive Scaling
+## Summary of what’s still broken (based on your screenshot)
 
-## Overview
+The Canvas is being resized to a mobile width, but the typography system still thinks you’re on the **Desktop** breakpoint. That’s why:
+- The **Size input stays 48px**
+- The canvas Heading stays at **48px**
+- The breakpoint badges show values for all breakpoints, but the **current breakpoint highlight remains Desktop**
 
-This plan addresses two issues:
-1. Missing `mobile-landscape` breakpoint in responsive typography defaults
-2. Adding enhanced visual breakpoint indicators in the Typography section to show font sizes at each breakpoint
+## Root cause
 
-## Problem Analysis
+There are currently **two separate “breakpoint states”** in the app:
 
-### Issue 1: Missing Breakpoint
-The `applyResponsiveHeadingTypography` function currently applies styles to only three breakpoints:
-- `desktop` (48px for H1)
-- `tablet` (40px for H1)  
-- `mobile` (32px for H1)
+1) **Builder page local state** (`src/pages/Builder.tsx`)
+- `const [currentBreakpoint, setCurrentBreakpoint] = useState('desktop')`
+- This is what PageNavigation changes.
+- Canvas width responds to this.
 
-However, the system has **four** breakpoints:
-- `desktop` (base)
-- `tablet` (991px)
-- `mobile-landscape` (767px) ← **Missing!**
-- `mobile` (479px)
+2) **Style system state** (`useStyleStore.currentBreakpointId`)
+- This is what StylePanel + getCanvasComputedStyles use to decide which responsive styles apply.
+- This is what Heading/Text are subscribed to.
 
-When switching to `mobile-landscape`, the cascade finds `tablet` (40px), not `mobile` (32px), causing unexpected behavior.
+Right now, **switching breakpoints in the top toolbar only updates (1), not (2)**. So the canvas is “mobile-sized” but the styles remain “desktop”.
 
-### Issue 2: No Visual Breakpoint Preview
-Currently, the Typography section shows a single font size input with a small colored dot indicator. Users cannot quickly see what font sizes are set at other breakpoints without manually switching.
+## Fix (design decision)
 
-## Solution
+Make `useStyleStore.currentBreakpointId` the **single source of truth** for breakpoints, and have Builder/PageNavigation/Canvas all use that value.
 
-### Part 1: Add `mobile-landscape` Breakpoint to Typography Map
+This ensures:
+- Switching breakpoint in PageNavigation changes both canvas width AND typography breakpoint
+- Clicking the new BreakpointValueBadges also changes canvas width AND PageNavigation selection
+- Heading/Text + any other primitives using `getCanvasComputedStyles()` instantly preview the correct responsive styles
 
-Update `src/builder/utils/headingTypography.ts`:
-- Extend `ResponsiveTypography` interface to include `mobileLandscape`
-- Add `mobile-landscape` values to `responsiveHeadingMap` (intermediate between tablet and mobile)
-- Update `applyResponsiveHeadingTypography` to set styles for `mobile-landscape` breakpoint
+## Implementation steps (code changes)
 
-### Part 2: Add Breakpoint Value Badges in Typography Section
+### 1) Update `src/pages/Builder.tsx` to use the style store breakpoint
+- Remove the local React state:
+  - `const [currentBreakpoint, setCurrentBreakpoint] = useState('desktop');`
+- Replace it with Zustand store values:
+  - `const currentBreakpoint = useStyleStore((s) => s.currentBreakpointId);`
+  - `const setCurrentBreakpoint = useStyleStore((s) => s.setCurrentBreakpoint);`
 
-Create a new component `BreakpointValueBadges` that displays small pills showing font size values at each breakpoint:
+Keep the prop names the same so the rest of the component remains unchanged:
+- `<Canvas currentBreakpoint={currentBreakpoint} ... />`
+- `<PageNavigation currentBreakpoint={currentBreakpoint} onBreakpointChange={setCurrentBreakpoint} ... />`
 
-```
-Size [32px]  📱 32px  📱L 36px  📱 40px  🖥️ 48px
-```
+### 2) Validate that all breakpoint IDs match everywhere
+Confirm we consistently use:
+- `desktop`
+- `tablet`
+- `mobile-landscape`
+- `mobile`
 
-Each badge shows:
-- Breakpoint icon (desktop/tablet/mobile)
-- The value at that breakpoint
-- Color coding: blue (explicit), green (inherited from larger), gray (not set)
+(Your `PageNavigation.breakpoints` already includes `mobile-landscape`, and `useStyleStore` does too, which is good.)
 
-## Files to Modify
+### 3) Optional quality improvement (not required for the fix)
+If there are any other places still using a local “breakpoint” state (or hardcoded “desktop/tablet/mobile”), align them to the same 4-breakpoint model. (For example, the unused `DeviceSelector.tsx` only supports 3 breakpoints; since it’s unused, we can ignore or later update.)
 
-### 1. `src/builder/utils/headingTypography.ts`
+## Files to change
 
-**Changes:**
-- Add `mobileLandscape` to `ResponsiveTypography` interface
-- Add `mobile-landscape` values to all heading levels in `responsiveHeadingMap`
-- Update `applyResponsiveHeadingTypography` to set `mobile-landscape` font sizes
+- `src/pages/Builder.tsx` (primary fix; breakpoint state unification)
 
-**New values for H1:**
-```typescript
-h1: {
-  desktop: { fontSize: '48px', ... },
-  tablet: { fontSize: '40px', ... },
-  mobileLandscape: { fontSize: '36px', ... },  // NEW
-  mobile: { fontSize: '32px', ... },
-}
-```
+No other files should be required to make the responsive typography preview work.
 
-### 2. `src/builder/components/StylePanel.tsx`
+## How we’ll verify the fix (exact checks)
 
-**Changes:**
-- Create new `BreakpointValueBadges` component showing font sizes at all breakpoints
-- Add this component below the "Size" input in the Typography section
-- Each badge is clickable to jump to that breakpoint
+1) Add a new Heading (H1).
+2) On Desktop:
+   - StylePanel “Size” shows **48**
+   - Canvas shows **48px**
+3) Switch to Tablet in the top toolbar:
+   - StylePanel “Size” updates to **40**
+   - Canvas heading updates to **40px**
+4) Switch to Mobile-Landscape:
+   - StylePanel “Size” updates to **36**
+   - Canvas heading updates to **36px**
+5) Switch to Mobile:
+   - StylePanel “Size” updates to **32**
+   - Canvas heading updates to **32px**
+6) Click the breakpoint badges in StylePanel:
+   - It should also change the canvas width + the toolbar breakpoint, not just the style panel
 
-**New UI Component (approximately 50 lines):**
-```tsx
-const BreakpointValueBadges: React.FC<{ property: string }> = ({ property }) => {
-  // Get values at each breakpoint
-  const breakpoints = ['desktop', 'tablet', 'mobile-landscape', 'mobile'];
-  const values = breakpoints.map(bp => ({
-    id: bp,
-    value: getValueAtBreakpoint(bp, property),
-    isExplicit: isExplicitAtBreakpoint(bp, property),
-    isCurrent: bp === currentBreakpointId,
-  }));
-  
-  return (
-    <div className="flex gap-1 mt-1">
-      {values.map(({ id, value, isExplicit, isCurrent }) => (
-        <button
-          key={id}
-          onClick={() => setCurrentBreakpoint(id)}
-          className={cn(
-            "px-1.5 py-0.5 rounded text-[9px] font-mono",
-            isCurrent && "ring-2 ring-primary",
-            isExplicit ? "bg-blue-100 text-blue-700" : "bg-muted text-muted-foreground"
-          )}
-          title={`${id}: ${value || 'not set'}`}
-        >
-          <span className="mr-0.5">{getBreakpointIcon(id)}</span>
-          {value || '—'}
-        </button>
-      ))}
-    </div>
-  );
-};
-```
+## Risks / edge cases
 
-## Visual Design
+- Very low risk: this is a state-wiring fix, not a style-system rewrite.
+- Potential behavior change: clicking breakpoint badges will now also resize the canvas (this is desirable, because it matches user expectations and fixes the confusion).
 
-### Current UI (Font Size Row):
-```
-┌──────────────────────────────────────────────────┐
-│ Size●  [48px    ]   Height  [1.2     ]          │
-└──────────────────────────────────────────────────┘
-```
+## Next improvements (optional, after this is fixed)
 
-### New UI (with Breakpoint Badges):
-```
-┌──────────────────────────────────────────────────┐
-│ Size●  [48px    ]   Height  [1.2     ]          │
-│ 🖥️48px  📱40px  📱L36px  📱32px                  │
-│ ──────  ──────  ──────   ──────                 │
-│ current  ↑set    ↑set     ↑set                  │
-└──────────────────────────────────────────────────┘
-```
-
-Badge states:
-- **Blue background**: Value explicitly set at this breakpoint
-- **Green border**: Currently viewing this breakpoint
-- **Gray background**: Value inherited from larger breakpoint (shows inherited value)
-- **Clickable**: Clicking a badge switches to that breakpoint
-
-## Technical Details
-
-### New Helper Functions in StylePanel
-
-```typescript
-// Get the explicit or inherited value for a property at a specific breakpoint
-const getValueAtBreakpoint = (breakpointId: string, property: string): string | undefined => {
-  const { getPropertySourceForBreakpoint } = useStyleStore.getState();
-  const sourceInfo = getPropertySourceForBreakpoint(activeStyleSourceId, property, breakpointId);
-  return sourceInfo.value;
-};
-
-// Check if a value is explicitly set at a breakpoint (vs inherited)
-const isExplicitAtBreakpoint = (breakpointId: string, property: string): boolean => {
-  const { getPropertySourceForBreakpoint } = useStyleStore.getState();
-  const sourceInfo = getPropertySourceForBreakpoint(activeStyleSourceId, property, breakpointId);
-  return sourceInfo.source === 'explicit';
-};
-```
-
-### Breakpoint Icon Mapping
-
-```typescript
-const breakpointIcons: Record<string, string> = {
-  'desktop': '🖥️',
-  'tablet': '📱',
-  'mobile-landscape': '📱L',
-  'mobile': '📱',
-};
-```
-
-## Implementation Order
-
-1. **Fix typography map** - Add `mobile-landscape` to ensure responsive scaling works correctly at all breakpoints
-2. **Add helper functions** - Create utilities to query values at specific breakpoints
-3. **Create BreakpointValueBadges component** - Build the visual indicator UI
-4. **Integrate into Typography section** - Add badges below the font size input
-
-## Expected Behavior After Implementation
-
-1. **Creating H1 heading**: Automatically applies:
-   - Desktop: 48px
-   - Tablet: 40px
-   - Mobile Landscape: 36px (NEW)
-   - Mobile: 32px
-
-2. **Visual indicators**: Below font size input, see all breakpoint values at a glance:
-   - Blue badges = explicitly set
-   - Gray badges = inherited
-   - Ring around current breakpoint
-   - Click any badge to switch breakpoints
-
-3. **Canvas preview**: Correctly shows 36px at mobile-landscape, 32px at mobile
-
-## Files Summary
-
-| File | Change |
-|------|--------|
-| `src/builder/utils/headingTypography.ts` | Add `mobile-landscape` breakpoint to typography map and apply function |
-| `src/builder/components/StylePanel.tsx` | Add `BreakpointValueBadges` component and integrate into Typography section |
+1) Auto-detect breakpoint from manual canvas resize (if user drags width handles) and switch the style breakpoint accordingly.
+2) Add a small “Current breakpoint: Mobile” label near Typography to reduce confusion.
+3) Extend responsive preview to other primitives (Link/Button/etc.) that may still rely on media queries only.
