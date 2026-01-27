@@ -2,10 +2,9 @@ import React, { useState, useRef, useEffect } from 'react';
 import { X, ArrowRight } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { applyHeadingTypography } from '../utils/headingTypography';
+import { applyResponsiveHeadingTypography } from '../utils/headingTypography';
 import { useStyleStore } from '../store/useStyleStore';
 import { useBuilderStore } from '../store/useBuilderStore';
-
 interface HeadingSettingsPopoverProps {
   isOpen: boolean;
   onClose: () => void;
@@ -124,11 +123,11 @@ export const HeadingSettingsPopover: React.FC<HeadingSettingsPopoverProps> = ({
                   const newTag = tags[index];
                   onTagChange(newTag);
                   
-                  // Apply default typography for the selected heading level
+                  // Apply responsive typography for the selected heading level
                   const selectedInstance = getSelectedInstance();
                   if (selectedInstance && selectedInstance.styleSourceIds && selectedInstance.styleSourceIds.length > 0) {
                     const styleSourceId = selectedInstance.styleSourceIds[0];
-                    applyHeadingTypography(styleSourceId, newTag, setStyle);
+                    applyResponsiveHeadingTypography(styleSourceId, newTag, setStyle);
                   }
                 }}
                 className={`h-5 flex items-center justify-center rounded text-[10px] font-medium transition-colors ${
