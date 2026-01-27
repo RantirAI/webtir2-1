@@ -36,11 +36,14 @@ export const Text: React.FC<TextProps> = ({
     });
   };
 
+  // Subscribe to breakpoint changes to trigger re-render
+  const currentBreakpointId = useStyleStore((state) => state.currentBreakpointId);
+
   // Extract non-style dataBindingProps
   const { style: dataBindingStyle, ...restDataBindingProps } = dataBindingProps;
 
-  // Compute breakpoint-aware styles for canvas preview
-  const computedStyles = getCanvasComputedStyles(instance.id, instance.styleSourceIds || []);
+  // Compute breakpoint-aware styles for canvas preview (will re-run when breakpoint changes)
+  const computedStyles = getCanvasComputedStyles(instance.id, instance.styleSourceIds || [], currentBreakpointId);
 
   return (
     <div
