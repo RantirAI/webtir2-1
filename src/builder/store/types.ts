@@ -280,6 +280,23 @@ export interface StyleStore {
   getClassDependents: (classId: string) => string[];
   getPropertyState: (styleSourceId: string, property: string, breakpointId?: string, state?: PseudoState) => any;
   
+  // Breakpoint-aware property source detection
+  getPropertySourceForBreakpoint: (
+    styleSourceId: string, 
+    property: string, 
+    targetBreakpoint?: string,
+    targetState?: PseudoState
+  ) => { 
+    source: 'explicit' | 'breakpoint-inherited' | 'none';
+    inheritedFrom?: string;
+    value?: string;
+  };
+  
+  // Breakpoint override management
+  clearBreakpointOverride: (styleSourceId: string, property: string, breakpointId?: string, state?: PseudoState) => void;
+  countBreakpointOverrides: (styleSourceId: string, breakpointId?: string, state?: PseudoState) => number;
+  clearAllBreakpointOverrides: (styleSourceId: string, breakpointId?: string, state?: PseudoState) => void;
+  
   // Batch operations for import performance
   batchCreateStyleSources: (sources: Array<{ type: string; name: string }>) => string[];
   batchSetStyles: (updates: Array<{
