@@ -88,7 +88,8 @@ export const DroppableContainer: React.FC<DroppableContainerProps> = ({
   const wrapperStyle: React.CSSProperties = isContainerType
     ? {
         display: 'block',
-        width: '100%',
+        // No forced width:100% - let parent flex layouts control sizing
+        // For full-width containers, the primitive CSS class can set width: 100%
         // For Webflow imports, don't set position - let CSS classes control containing blocks
         // For native builder containers, set position:relative for proper dnd-kit behavior
         position: hasWebflowImport ? undefined : 'relative' as const,
@@ -103,8 +104,8 @@ export const DroppableContainer: React.FC<DroppableContainerProps> = ({
     : hasWebflowImport && !hasAbsolutePosition
     ? {
         // Webflow non-container elements - no isolation needed, page-level stacking context handles z-index
+        // No forced width:100% - let parent flex layouts control sizing
         display: 'block',
-        width: '100%',
       }
     : hasWebflowImport && hasAbsolutePosition
     ? {

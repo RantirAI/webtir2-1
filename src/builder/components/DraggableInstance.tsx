@@ -88,8 +88,8 @@ export const DraggableInstance: React.FC<DraggableInstanceProps> = ({
         // For containers, use block display to allow proper sizing
         // No position:relative - let CSS classes control containing blocks
         // No isolation - page-level stacking context (.builder-page) handles z-index
+        // No forced width:100% - let parent flex layouts control sizing
         display: 'block',
-        width: '100%',
       }
     : needsStackingContext
     ? {
