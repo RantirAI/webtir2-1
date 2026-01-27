@@ -54,6 +54,9 @@ export const Heading: React.FC<HeadingProps> = ({
     });
   };
 
+  // Subscribe to breakpoint changes to trigger re-render
+  const currentBreakpointId = useStyleStore((state) => state.currentBreakpointId);
+
   // Get className from styleSourceIds to apply directly to heading element
   const className = (instance.styleSourceIds || [])
     .map((id) => useStyleStore.getState().styleSources[id]?.name)
@@ -65,8 +68,8 @@ export const Heading: React.FC<HeadingProps> = ({
 
   const content = instance.props.children || 'Heading';
 
-  // Compute breakpoint-aware styles for canvas preview
-  const computedStyles = getCanvasComputedStyles(instance.id, instance.styleSourceIds || []);
+  // Compute breakpoint-aware styles for canvas preview (will re-run when breakpoint changes)
+  const computedStyles = getCanvasComputedStyles(instance.id, instance.styleSourceIds || [], currentBreakpointId);
 
   // Handle double-click to enter edit mode
   const handleDoubleClick = (e: React.MouseEvent) => {
