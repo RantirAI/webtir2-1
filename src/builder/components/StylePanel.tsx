@@ -518,6 +518,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({
     setStyleMetadata,
     getStyleMetadata,
     getPropertyState,
+    currentBreakpointId,
   } = useStyleStore();
   const { getInstanceLink } = useComponentInstanceStore();
   const globalComponents = usePageStore((state) => state.globalComponents);
@@ -578,19 +579,37 @@ export const StylePanel: React.FC<StylePanelProps> = ({
   // Get computed styles - always show the full cascade (all classes combined)
   const computedStyles = selectedInstance ? getComputedStyles(selectedInstance.styleSourceIds || []) : {};
 
-  // Helper to check if a property is inherited from a parent class
-  const getPropertySource = (property: string): "active" | "inherited" | "none" => {
+  // Enhanced property source detection with breakpoint awareness
+  const getPropertySource = (property: string): "active" | "breakpoint-inherited" | "class-inherited" | "none" => {
     if (!selectedInstance || !activeStyleSourceId) return "none";
 
-    // Check if defined on the active class - only return active if value is non-empty
-    const activeValue = getPropertyState(activeStyleSourceId, property);
-    if (activeValue !== undefined && activeValue !== "" && activeValue !== "auto" && activeValue !== "none")
+    const { getPropertySourceForBreakpoint, currentBreakpointId } = useStyleStore.getState();
+    
+    // Check the active class first with breakpoint awareness
+    const sourceInfo = getPropertySourceForBreakpoint(activeStyleSourceId, property);
+    
+    if (sourceInfo.source === 'explicit') {
       return "active";
+    }
+    
+    if (sourceInfo.source === 'breakpoint-inherited') {
+      return "breakpoint-inherited";
+    }
 
     // Check if it exists in computed (inherited from parent classes)
     const computedValue = (computedStyles as any)[property];
-    if (computedValue !== undefined && computedValue !== "" && computedValue !== "auto" && computedValue !== "none")
-      return "inherited";
+    if (computedValue !== undefined && computedValue !== "" && computedValue !== "auto" && computedValue !== "none") {
+      // Check if any other class has this property set
+      const otherClasses = selectedInstance.styleSourceIds?.filter(id => id !== activeStyleSourceId) || [];
+      for (const classId of otherClasses) {
+        const classSource = getPropertySourceForBreakpoint(classId, property);
+        if (classSource.source !== 'none') {
+          return "class-inherited";
+        }
+      }
+      // Value exists in computed but not from any tracked class - treat as class-inherited
+      return "class-inherited";
+    }
 
     return "none";
   };
@@ -599,31 +618,61 @@ export const StylePanel: React.FC<StylePanelProps> = ({
   const getPropertyColorClass = (property: string): string => {
     const source = getPropertySource(property);
     if (source === "active") return "text-blue-600 dark:text-blue-400";
-    if (source === "inherited") return "text-yellow-600 dark:text-yellow-400";
+    if (source === "breakpoint-inherited") return "text-green-600 dark:text-green-400";
+    if (source === "class-inherited") return "text-yellow-600 dark:text-yellow-400";
     return ""; // grey/default - no color for empty/reset values
   };
 
-  // Helper component to render property indicator dot
+  // Helper component to render property indicator dot with tooltips
   const PropertyIndicator: React.FC<{ property: string }> = ({ property }) => {
     const source = getPropertySource(property);
     // Don't show indicator for empty/reset/default values
     if (source === "none") return null;
 
-    const color = source === "active" ? "hsl(217, 91%, 60%)" : "hsl(45, 93%, 47%)";
+    // Blue = explicit at this breakpoint
+    // Green = inherited from larger breakpoint (e.g., desktop)
+    // Orange = inherited from parent class
+    const colorMap: Record<string, string> = {
+      "active": "hsl(217, 91%, 60%)",           // Blue
+      "breakpoint-inherited": "hsl(142, 76%, 36%)", // Green
+      "class-inherited": "hsl(45, 93%, 47%)",   // Orange/Yellow
+    };
+    
+    const labelMap: Record<string, string> = {
+      "active": "Set at this breakpoint",
+      "breakpoint-inherited": "Inherited from larger breakpoint",
+      "class-inherited": "Inherited from parent class",
+    };
 
     return (
-      <span
-        style={{
-          width: "6px",
-          height: "6px",
-          borderRadius: "50%",
-          background: color,
-          display: "inline-block",
-          marginLeft: "4px",
-        }}
-      />
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span
+              style={{
+                width: "6px",
+                height: "6px",
+                borderRadius: "50%",
+                background: colorMap[source],
+                display: "inline-block",
+                marginLeft: "4px",
+                cursor: "help",
+              }}
+            />
+          </TooltipTrigger>
+          <TooltipContent side="right" className="text-xs">
+            {labelMap[source]}
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
     );
   };
+
+  // Get breakpoint override count for the active class
+  const { countBreakpointOverrides, clearAllBreakpointOverrides, clearBreakpointOverride } = useStyleStore.getState();
+  const breakpointOverrideCount = activeStyleSourceId 
+    ? countBreakpointOverrides(activeStyleSourceId) 
+    : 0;
 
   // Sync label input to selected instance (unconditional hook placement)
   useEffect(() => {
@@ -1498,6 +1547,30 @@ export const StylePanel: React.FC<StylePanelProps> = ({
                     })}
                   </DropdownMenuContent>
                 </DropdownMenu>
+
+                {/* Breakpoint override indicator - shows when viewing non-desktop breakpoint */}
+                {currentBreakpointId !== 'desktop' && breakpointOverrideCount > 0 && activeStyleSourceId && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="flex items-center gap-1 px-2 h-[36px] bg-accent/50 border border-border rounded text-xs">
+                          <span className="w-2 h-2 rounded-full bg-blue-500" />
+                          <span className="text-muted-foreground">{breakpointOverrideCount}</span>
+                          <button
+                            onClick={() => clearAllBreakpointOverrides(activeStyleSourceId)}
+                            className="ml-1 text-muted-foreground hover:text-foreground transition-colors"
+                            title="Clear all breakpoint overrides"
+                          >
+                            <RotateCcw className="w-3 h-3" />
+                          </button>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" className="text-xs">
+                        {breakpointOverrideCount} override{breakpointOverrideCount !== 1 ? 's' : ''} at this breakpoint
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
               </div>
 
               {classes.length === 0 && (

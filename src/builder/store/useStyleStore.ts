@@ -314,6 +314,87 @@ export const useStyleStore = create<StyleStore>((set, get) => ({
     return styles[key];
   },
 
+  // Get property source with breakpoint awareness - distinguishes explicit vs inherited from larger breakpoint
+  getPropertySourceForBreakpoint: (
+    styleSourceId: string, 
+    property: string, 
+    targetBreakpoint?: string,
+    targetState?: PseudoState
+  ): { 
+    source: 'explicit' | 'breakpoint-inherited' | 'none';
+    inheritedFrom?: string; // breakpoint ID if inherited
+    value?: string;
+  } => {
+    const { styles, breakpoints, currentBreakpointId, currentPseudoState } = get();
+    const bp = targetBreakpoint || currentBreakpointId;
+    const ps = targetState || currentPseudoState;
+    
+    // Check if explicitly set at this breakpoint
+    const key = `${styleSourceId}:${bp}:${ps}:${property}`;
+    if (styles[key] !== undefined && styles[key] !== '') {
+      return { source: 'explicit', value: styles[key] };
+    }
+    
+    // Check if inherited from a larger breakpoint (cascade up)
+    const bpIndex = breakpoints.findIndex(b => b.id === bp);
+    for (let i = bpIndex - 1; i >= 0; i--) {
+      const parentBp = breakpoints[i].id;
+      const parentKey = `${styleSourceId}:${parentBp}:${ps}:${property}`;
+      if (styles[parentKey] !== undefined && styles[parentKey] !== '') {
+        return { source: 'breakpoint-inherited', inheritedFrom: parentBp, value: styles[parentKey] };
+      }
+    }
+    
+    return { source: 'none' };
+  },
+
+  // Clear a breakpoint-specific override (restore inheritance from larger breakpoint)
+  clearBreakpointOverride: (styleSourceId: string, property: string, breakpointId?: string, state?: PseudoState) => {
+    const bp = breakpointId || get().currentBreakpointId;
+    const ps = state || get().currentPseudoState;
+    
+    // Can't clear desktop - it's the base
+    if (bp === 'desktop') return;
+    
+    const key = `${styleSourceId}:${bp}:${ps}:${property}`;
+    set((prevState) => {
+      const newStyles = { ...prevState.styles };
+      delete newStyles[key];
+      return { styles: newStyles };
+    });
+  },
+
+  // Count breakpoint overrides for a style source at current breakpoint
+  countBreakpointOverrides: (styleSourceId: string, breakpointId?: string, state?: PseudoState): number => {
+    const { styles, currentBreakpointId, currentPseudoState } = get();
+    const bp = breakpointId || currentBreakpointId;
+    const ps = state || currentPseudoState;
+    
+    if (bp === 'desktop') return 0; // Desktop is base, no overrides
+    
+    const prefix = `${styleSourceId}:${bp}:${ps}:`;
+    return Object.keys(styles).filter(key => key.startsWith(prefix) && styles[key] !== '').length;
+  },
+
+  // Clear all breakpoint overrides for a style source
+  clearAllBreakpointOverrides: (styleSourceId: string, breakpointId?: string, state?: PseudoState) => {
+    const bp = breakpointId || get().currentBreakpointId;
+    const ps = state || get().currentPseudoState;
+    
+    if (bp === 'desktop') return; // Can't clear desktop
+    
+    const prefix = `${styleSourceId}:${bp}:${ps}:`;
+    set((prevState) => {
+      const newStyles = { ...prevState.styles };
+      Object.keys(newStyles).forEach(key => {
+        if (key.startsWith(prefix)) {
+          delete newStyles[key];
+        }
+      });
+      return { styles: newStyles };
+    });
+  },
+
   // Batch create multiple style sources at once (for import performance)
   batchCreateStyleSources: (sources: Array<{ type: string; name: string }>): string[] => {
     const ids: string[] = [];
