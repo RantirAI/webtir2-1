@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { ComponentInstance } from '../store/types';
 import { useStyleStore } from '../store/useStyleStore';
 import { useBuilderStore } from '../store/useBuilderStore';
+import { getCanvasComputedStyles } from '../utils/canvasStyles';
 
 interface HeadingProps {
   instance: ComponentInstance;
@@ -64,6 +65,9 @@ export const Heading: React.FC<HeadingProps> = ({
 
   const content = instance.props.children || 'Heading';
 
+  // Compute breakpoint-aware styles for canvas preview
+  const computedStyles = getCanvasComputedStyles(instance.id, instance.styleSourceIds || []);
+
   // Handle double-click to enter edit mode
   const handleDoubleClick = (e: React.MouseEvent) => {
     if (isPreviewMode) return;
@@ -114,7 +118,10 @@ export const Heading: React.FC<HeadingProps> = ({
       ref: elementRef,
       'data-instance-id': instance.id,
       className: className || undefined,
-      style: dataBindingStyle,
+      style: {
+        ...computedStyles,      // Breakpoint-aware computed styles
+        ...dataBindingStyle     // dataBinding overrides if present
+      },
       contentEditable: isEditing,
       suppressContentEditableWarning: true,
       onClick: isPreviewMode ? undefined : (e: React.MouseEvent) => {
