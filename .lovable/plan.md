@@ -1,166 +1,99 @@
 
-# Plan: Fix Canvas Edit Mode to Match Code View Rendering for Imported Webflow Content
+# Plan: Fix Z-Index Stacking Order for Webflow Decorative Lines
 
 ## Problem Summary
 
-The Canvas edit mode does not display imported Webflow content identically to the Code View preview. Specifically:
-- **Blue and yellow decorative curved lines** (large SVG/image elements with absolute positioning) are visible in Code View but invisible in Canvas edit mode
-- **Image sizing** appears different between the two views
+The decorative curved lines (with `z-index: -1`) are now visible in the Canvas, but they appear **in the foreground** instead of behind the main content. This is a stacking context issue.
 
-The Code View preview works because it renders clean HTML/CSS into an isolated iframe without drag-and-drop wrapper components. The Canvas edit mode wraps every component in `DraggableInstance` and `DroppableContainer`, which interfere with CSS positioning.
+## Root Cause
 
-## Root Cause Analysis
+When we added `isolation: isolate` to fix the visibility issue, we applied it to **every wrapper** in `DraggableInstance` and `DroppableContainer`. This creates separate stacking contexts for each element, breaking the natural CSS stacking order.
 
-After extensive investigation, I identified **two key issues**:
+**How `isolation: isolate` creates the problem:**
 
-### Issue 1: Wrapper `position: relative` Creates Unintended Containing Blocks
+1. Each wrapper with `isolation: isolate` becomes its own stacking context
+2. Elements with `z-index: -1` inside a wrapper are placed behind content **within that wrapper only**
+3. But the wrapper itself renders in normal DOM order - appearing on TOP of sibling wrappers
+4. Result: The decorative lines appear in front of the dashboard mockup because their wrapper comes after the mockup's wrapper in the DOM
 
-In `DroppableContainer.tsx` (line 87), the wrapper sets `position: relative` on container types:
-
-```typescript
-position: hasAbsolutePosition ? undefined : 'relative' as const,
-```
-
-For Webflow imports, when a **parent container** (like `wf-section-layout1`) gets wrapped with `position: relative`, it becomes the containing block for all `absolute` children. However, the **child images** (the decorative lines) that are absolutely positioned expect their containing block to be the **actual parent element** with `position: relative` set via CSS, not the dnd wrapper.
-
-The chain looks like this:
 ```text
-DroppableContainer [position: relative]  <-- UNEXPECTED containing block
-  └─ .wf-section-layout1 [position: relative]  <-- Expected containing block
-       └─ .wf-background-image [position: absolute; z-index: -1]  <-- Child
+DOM Order:
+┌─ Wrapper A (dashboard mockup) ─────────┐
+│  → Dashboard image                      │
+└─────────────────────────────────────────┘
+┌─ Wrapper B (decorative lines) ──────────┐  ← Renders on TOP because it's later in DOM
+│  → Lines with z-index: -1               │
+└─────────────────────────────────────────┘
 ```
-
-When the dnd wrapper has `position: relative`, the absolutely positioned child may be positioned relative to it instead of the actual styled parent, causing misalignment.
-
-### Issue 2: Detection of Absolute Position Only Checks Desktop/Default State
-
-The detection logic in both `DraggableInstance.tsx` and `DroppableContainer.tsx` only checks the desktop/default state:
-
-```typescript
-const positionKey = `${id}:desktop:default:position`;
-const positionValue = styles[positionKey];
-return positionValue === 'absolute' || positionValue === 'fixed';
-```
-
-This is correct for the import pipeline (which stores values at `desktop:default`), but the current implementation doesn't account for the full CSS cascade correctly.
-
-### Why Code View Works
-
-The Code View preview:
-1. Renders into an isolated iframe
-2. Has no wrapper divs around components
-3. Applies the exact same CSS that would be exported
-4. Preserves the DOM hierarchy exactly as designed
 
 ## Solution
 
-To preserve full drag-and-drop editing while achieving better rendering fidelity, I propose a three-part fix:
+Remove `isolation: isolate` from individual element wrappers. The stacking context is already properly established at the **page level**:
 
-### Part 1: Remove `position: relative` from DroppableContainer for Webflow Imports
+- `StyleSheetInjector.tsx` sets `isolation: isolate` on `html`, `body`, `.root-style`, and `.builder-page`
+- `Canvas.tsx` applies `isolation: 'isolate'` to the `.builder-page` container
 
-The DroppableContainer should NOT set `position: relative` on Webflow-imported elements, as this can create unintended containing blocks. Instead:
-- Only use `isolation: isolate` for stacking context (doesn't create containing block)
-- Let the actual CSS classes control positioning hierarchy
+This page-level stacking context allows `z-index: -1` to work correctly across all elements, placing decorative lines behind the main content as intended.
 
-**File: `src/builder/components/DroppableContainer.tsx`**
+## Files to Modify
 
-Change the wrapper style to NOT set `position: relative` for Webflow imports:
+### 1. `src/builder/components/DroppableContainer.tsx`
 
-```typescript
-const wrapperStyle: React.CSSProperties = isContainerType || (hasWebflowImport && !hasAbsolutePosition)
-  ? {
-      display: 'block',
-      width: '100%',
-      // DON'T set position:relative for Webflow imports - let CSS classes control containing blocks
-      // Only set for native builder containers (non-Webflow)
-      position: !hasWebflowImport ? 'relative' as const : undefined,
-      isolation: 'isolate',
-      // ... drag feedback styles
-    }
-  : // ... other cases
-```
+Remove all `isolation: 'isolate'` from the wrapper styles:
 
-### Part 2: Ensure DraggableInstance Doesn't Interfere with Absolute Positioning
-
-Update DraggableInstance to be more transparent for Webflow-imported absolutely positioned elements:
-
-**File: `src/builder/components/DraggableInstance.tsx`**
-
-Ensure that for absolutely positioned Webflow elements, the wrapper uses `display: contents` and doesn't add any positioning:
-
-```typescript
-// For absolutely positioned Webflow elements, be completely transparent
-: hasAbsolutePosition
-? {
-    display: 'contents',
-  }
-// Existing handling for other cases...
-```
-
-This is already implemented correctly, but we need to verify the detection is accurate.
-
-### Part 3: Fix Detection to Check Parent Chain for Containing Block
-
-The core issue is that we're setting `position: relative` on wrapper divs that shouldn't be containing blocks. A more robust approach is to:
-
-1. For Webflow imports, NEVER set `position: relative` on the dnd wrapper
-2. Let the actual imported CSS handle all positioning
-3. Only use `isolation: isolate` when needed for stacking (negative z-index)
-
-**Updated logic for DroppableContainer.tsx:**
+**Lines 88-122** - Update `wrapperStyle` to remove isolation:
 
 ```typescript
 const wrapperStyle: React.CSSProperties = isContainerType
   ? {
       display: 'block',
       width: '100%',
-      // For Webflow imports, don't set position - let CSS classes control
-      // For native builder containers, set position:relative
+      // For Webflow imports, don't set position - let CSS classes control containing blocks
       position: hasWebflowImport ? undefined : 'relative' as const,
-      // Always use isolation for stacking context support
-      isolation: hasWebflowImport ? 'isolate' : undefined,
-      // ... drag feedback styles
+      // REMOVED: isolation: 'isolate' - page-level stacking context is sufficient
+      // Add drag feedback styles...
+      outline: isValidDropTarget ? '2px dashed #3b82f6' : undefined,
+      outlineOffset: isValidDropTarget ? '-2px' : undefined,
+      backgroundColor: isValidDropTarget ? 'rgba(59, 130, 246, 0.08)' : undefined,
+      borderRadius: isValidDropTarget ? '6px' : undefined,
+      transition: 'outline 150ms ease, background-color 150ms ease',
     }
   : hasWebflowImport && !hasAbsolutePosition
   ? {
-      // Webflow non-container but needs stacking context
+      // Webflow non-container elements
       display: 'block',
       width: '100%',
-      isolation: 'isolate',
-      // NO position: relative!
+      // REMOVED: isolation: 'isolate'
     }
   : hasWebflowImport && hasAbsolutePosition
   ? {
-      // Webflow absolutely positioned - be transparent
       display: 'contents',
     }
   : {
-      // Non-Webflow non-containers
       display: 'contents',
     };
 ```
 
-### Part 4: Update DraggableInstance Similarly
+### 2. `src/builder/components/DraggableInstance.tsx`
 
-**File: `src/builder/components/DraggableInstance.tsx`**
+Remove `isolation: 'isolate'` from the style object:
 
-Apply the same principle - no `position: relative` for Webflow imports:
+**Lines 86-113** - Update style conditions to remove isolation:
 
 ```typescript
 const style: React.CSSProperties = isDragging
-  ? { /* dragging styles */ }
+  ? { /* dragging styles - no change */ }
   : isContainer
   ? {
       display: 'block',
       width: '100%',
-      // No position:relative for containers - let CSS handle it
+      // REMOVED: isolation: hasWebflowStyles ? 'isolate' : undefined
     }
   : needsStackingContext
   ? {
       display: 'block',
       width: '100%',
-      isolation: 'isolate',
-      // NO position: relative - this is the key fix
+      // REMOVED: isolation: 'isolate'
     }
   : hasAbsolutePosition
   ? {
@@ -171,53 +104,32 @@ const style: React.CSSProperties = isDragging
     };
 ```
 
-## Technical Details
+## Technical Explanation
 
-### Files to Modify
+### Why Page-Level Stacking Context Works
 
-| File | Change |
-|------|--------|
-| `src/builder/components/DroppableContainer.tsx` | Remove `position: relative` for Webflow imports; keep `isolation: isolate` only |
-| `src/builder/components/DraggableInstance.tsx` | Same - remove position relative for Webflow imports |
+The page-level stacking context (on `.builder-page`) ensures:
+1. All elements within the page share a single stacking context
+2. `z-index: -1` elements are placed behind `z-index: auto/0` elements correctly
+3. The CSS cascade and DOM order work as expected within the page
 
-### Why This Works
+### Why Element-Level Stacking Contexts Break It
 
-1. **Containing blocks preserved**: By not setting `position: relative` on wrapper divs, absolutely positioned children will find their containing block in the actual DOM element that has `position: relative` via CSS (e.g., `.wf-section-layout1`).
+When each wrapper has `isolation: isolate`:
+1. Each wrapper becomes an atomic unit in the parent's stacking context
+2. The `z-index` values inside a wrapper don't affect elements outside it
+3. Wrappers are stacked by DOM order (later = on top), ignoring child z-index values
 
-2. **Stacking context maintained**: `isolation: isolate` creates a stacking context WITHOUT being a containing block, so `z-index: -1` elements remain visible while absolute positioning references the correct parent.
+## Expected Result
 
-3. **Drag-and-drop still works**: The dnd-kit library uses `ref` callbacks for bounding boxes. `display: block` with `width: 100%` provides measurable dimensions for collision detection, even without `position: relative`.
-
-4. **Backward compatible**: Native builder components (non-Webflow) can still use `position: relative` on wrappers if needed, as they don't have the same containing block expectations.
-
-### CSS Property: `isolation: isolate` vs `position: relative`
-
-| Property | Creates Stacking Context | Creates Containing Block |
-|----------|-------------------------|-------------------------|
-| `position: relative` | Yes | Yes (for absolute children) |
-| `isolation: isolate` | Yes | No |
-
-The key insight is that `isolation: isolate` provides the stacking context we need for `z-index: -1` elements WITHOUT becoming a containing block for `position: absolute` children.
-
-## Implementation Steps
-
-1. Update `DroppableContainer.tsx`:
-   - Remove `position: relative` from Webflow import wrappers
-   - Keep only `isolation: isolate` for stacking context
-
-2. Update `DraggableInstance.tsx`:
-   - Same change - no `position: relative` for Webflow content
-
-3. Test:
-   - Re-import Webflow design with decorative curved lines
-   - Verify lines appear in Canvas edit mode
-   - Verify drag-and-drop still works
-   - Verify image sizing matches Code View
+After this fix:
+- Decorative lines (blue/yellow curves) will appear **behind** the main content (dashboard mockup)
+- The Canvas edit mode will match the Code View preview exactly
+- Drag-and-drop functionality remains unaffected (bounding boxes still work with `display: block` + `width: 100%`)
 
 ## Risk Assessment
 
-**Low risk** - Changes are conservative and scoped:
-- Only affects Webflow imports (detected by `wf-` prefix)
-- Native builder components unchanged
-- `display: block` with `width: 100%` maintains bounding boxes for dnd-kit
-- Easy to verify and rollback if needed
+**Low risk:**
+- The page-level stacking context already exists and handles z-index correctly in Code View preview
+- We're removing code that creates unwanted behavior, not adding new complexity
+- Drag-and-drop collision detection uses element bounding boxes, not stacking contexts
