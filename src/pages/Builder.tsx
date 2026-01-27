@@ -23,6 +23,7 @@ import { useKeyboardShortcuts } from '@/builder/hooks/useKeyboardShortcuts';
 import { DropIndicator } from '@/builder/components/DropIndicator';
 import { deepestContainerCollision } from '@/builder/utils/collisionDetection';
 import { useComponentInstanceStore, createLinkedInstance } from '@/builder/store/useComponentInstanceStore';
+import { applyResponsiveHeadingTypography } from '@/builder/utils/headingTypography';
 import * as Icons from 'lucide-react';
 
 const Builder: React.FC = () => {
@@ -971,7 +972,11 @@ const Builder: React.FC = () => {
       const styleSourceId = createStyleSource('local', autoClassName);
       
       // Apply default styles if they exist
-      if (meta.defaultStyles && Object.keys(meta.defaultStyles).length > 0) {
+      if (componentType === 'Heading') {
+        // Use responsive typography for headings
+        const level = meta.defaultProps?.level || 'h1';
+        applyResponsiveHeadingTypography(styleSourceId, level, setStyle);
+      } else if (meta.defaultStyles && Object.keys(meta.defaultStyles).length > 0) {
         Object.entries(meta.defaultStyles).forEach(([property, value]) => {
           setStyle(styleSourceId, property, value);
         });

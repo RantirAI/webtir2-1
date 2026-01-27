@@ -75,7 +75,7 @@ import { ShadowManager } from "./ShadowManager";
 import { BackgroundLayersManager, BackgroundLayerItem } from "./BackgroundLayersManager";
 import { ShadowItem } from "../store/types";
 import { compileMetadataToCSS } from "../utils/cssCompiler";
-import { applyHeadingTypography } from "../utils/headingTypography";
+import { applyResponsiveHeadingTypography } from "../utils/headingTypography";
 import { AttributeRow } from "./AttributeRow";
 import { ComponentInstance } from "../store/types";
 import { AccordionDataEditor } from "./data-editors/AccordionDataEditor";
@@ -2747,7 +2747,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({
                                 // Apply default typography for the selected heading level
                                 if (selectedInstance.styleSourceIds && selectedInstance.styleSourceIds.length > 0) {
                                   const styleSourceId = selectedInstance.styleSourceIds[0];
-                                  applyHeadingTypography(styleSourceId, tag, setStyle);
+                                  applyResponsiveHeadingTypography(styleSourceId, tag, setStyle);
                                 }
                               }}
                               className={`h-7 flex items-center justify-center rounded border text-xs font-medium transition-colors ${
@@ -3580,7 +3580,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({
                           });
                           // Apply heading typography
                           if (activeStyleSourceId) {
-                            applyHeadingTypography(
+                            applyResponsiveHeadingTypography(
                               activeStyleSourceId,
                               e.target.value as "h1" | "h2" | "h3" | "h4" | "h5" | "h6",
                               setStyle,

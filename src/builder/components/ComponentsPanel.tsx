@@ -5,6 +5,7 @@ import { useStyleStore } from '../store/useStyleStore';
 import { useComponentInstanceStore, createLinkedInstance, createLinkedInstanceFromMaster } from '../store/useComponentInstanceStore';
 import { ComponentInstance, ComponentType } from '../store/types';
 import { generateId } from '../utils/instance';
+import { applyResponsiveHeadingTypography } from '../utils/headingTypography';
 import * as Icons from 'lucide-react';
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
@@ -690,7 +691,11 @@ export const ComponentsPanel: React.FC = () => {
     const styleSourceId = createStyleSource('local', autoClassName);
     
     // Apply default styles if component has them
-    if (meta.defaultStyles) {
+    if (type === 'Heading') {
+      // Use responsive typography for headings
+      const level = meta.defaultProps?.level || 'h1';
+      applyResponsiveHeadingTypography(styleSourceId, level, setStyle);
+    } else if (meta.defaultStyles) {
       Object.entries(meta.defaultStyles).forEach(([property, value]) => {
         setStyle(styleSourceId, property, value);
       });
