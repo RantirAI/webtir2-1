@@ -12,6 +12,7 @@ export interface HeadingTypography {
 export interface ResponsiveTypography {
   desktop: HeadingTypography;
   tablet: HeadingTypography;
+  mobileLandscape: HeadingTypography;
   mobile: HeadingTypography;
 }
 
@@ -49,36 +50,42 @@ export const headingTypographyMap: Record<string, HeadingTypography> = {
   },
 };
 
-// Responsive typography map with tablet and mobile scaling
+// Responsive typography map with tablet, mobile-landscape, and mobile scaling
 export const responsiveHeadingMap: Record<string, ResponsiveTypography> = {
   h1: {
     desktop: { fontSize: '48px', lineHeight: '1.2', fontWeight: '700' },
     tablet: { fontSize: '40px', lineHeight: '1.2', fontWeight: '700' },
+    mobileLandscape: { fontSize: '36px', lineHeight: '1.2', fontWeight: '700' },
     mobile: { fontSize: '32px', lineHeight: '1.2', fontWeight: '700' },
   },
   h2: {
     desktop: { fontSize: '40px', lineHeight: '1.3', fontWeight: '700' },
     tablet: { fontSize: '32px', lineHeight: '1.3', fontWeight: '700' },
-    mobile: { fontSize: '28px', lineHeight: '1.3', fontWeight: '700' },
+    mobileLandscape: { fontSize: '28px', lineHeight: '1.3', fontWeight: '700' },
+    mobile: { fontSize: '24px', lineHeight: '1.3', fontWeight: '700' },
   },
   h3: {
     desktop: { fontSize: '32px', lineHeight: '1.3', fontWeight: '600' },
     tablet: { fontSize: '28px', lineHeight: '1.3', fontWeight: '600' },
-    mobile: { fontSize: '24px', lineHeight: '1.3', fontWeight: '600' },
+    mobileLandscape: { fontSize: '24px', lineHeight: '1.3', fontWeight: '600' },
+    mobile: { fontSize: '22px', lineHeight: '1.3', fontWeight: '600' },
   },
   h4: {
     desktop: { fontSize: '24px', lineHeight: '1.4', fontWeight: '600' },
     tablet: { fontSize: '22px', lineHeight: '1.4', fontWeight: '600' },
-    mobile: { fontSize: '20px', lineHeight: '1.4', fontWeight: '600' },
+    mobileLandscape: { fontSize: '20px', lineHeight: '1.4', fontWeight: '600' },
+    mobile: { fontSize: '18px', lineHeight: '1.4', fontWeight: '600' },
   },
   h5: {
     desktop: { fontSize: '20px', lineHeight: '1.5', fontWeight: '600' },
     tablet: { fontSize: '18px', lineHeight: '1.5', fontWeight: '600' },
+    mobileLandscape: { fontSize: '17px', lineHeight: '1.5', fontWeight: '600' },
     mobile: { fontSize: '16px', lineHeight: '1.5', fontWeight: '600' },
   },
   h6: {
     desktop: { fontSize: '16px', lineHeight: '1.5', fontWeight: '600' },
     tablet: { fontSize: '15px', lineHeight: '1.5', fontWeight: '600' },
+    mobileLandscape: { fontSize: '14px', lineHeight: '1.5', fontWeight: '600' },
     mobile: { fontSize: '14px', lineHeight: '1.5', fontWeight: '600' },
   },
 };
@@ -114,7 +121,7 @@ export function applyHeadingTypography(
 
 /**
  * Apply responsive heading typography across all breakpoints.
- * Desktop gets full typography, tablet and mobile get scaled font-sizes.
+ * Desktop gets full typography, tablet, mobile-landscape, and mobile get scaled font-sizes.
  */
 export function applyResponsiveHeadingTypography(
   styleSourceId: string,
@@ -130,6 +137,9 @@ export function applyResponsiveHeadingTypography(
   
   // Apply tablet styles (only font-size, other properties cascade from desktop)
   setStyle(styleSourceId, 'fontSize', responsive.tablet.fontSize, 'tablet', 'default');
+  
+  // Apply mobile-landscape styles (only font-size, other properties cascade from desktop)
+  setStyle(styleSourceId, 'fontSize', responsive.mobileLandscape.fontSize, 'mobile-landscape', 'default');
   
   // Apply mobile styles (only font-size, other properties cascade from desktop)
   setStyle(styleSourceId, 'fontSize', responsive.mobile.fontSize, 'mobile', 'default');

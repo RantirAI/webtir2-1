@@ -76,6 +76,7 @@ import { BackgroundLayersManager, BackgroundLayerItem } from "./BackgroundLayers
 import { ShadowItem } from "../store/types";
 import { compileMetadataToCSS } from "../utils/cssCompiler";
 import { applyResponsiveHeadingTypography } from "../utils/headingTypography";
+import { BreakpointValueBadges } from "./BreakpointValueBadges";
 import { AttributeRow } from "./AttributeRow";
 import { ComponentInstance } from "../store/types";
 import { AccordionDataEditor } from "./data-editors/AccordionDataEditor";
@@ -2777,31 +2778,38 @@ export const StylePanel: React.FC<StylePanelProps> = ({
                   </div>
 
                   {/* Font Size and Line Height */}
-                  <div
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: "26px 1fr 26px 1fr",
-                      gap: "2px",
-                      alignItems: "center",
-                    }}
-                  >
-                    <label className={`Label ${getPropertyColorClass("fontSize")}`}>
-                      Size
-                      <PropertyIndicator property="fontSize" />
-                    </label>
-                    <UnitInput
-                      value={computedStyles.fontSize || ""}
-                      onChange={(val) => updateStyle("fontSize", val)}
-                      placeholder="16px"
-                    />
-                    <label className={`Label ${getPropertyColorClass("lineHeight")}`}>
-                      Height
-                      <PropertyIndicator property="lineHeight" />
-                    </label>
-                    <UnitInput
-                      value={computedStyles.lineHeight || ""}
-                      onChange={(val) => updateStyle("lineHeight", val)}
-                      placeholder="1.5"
+                  <div>
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "26px 1fr 26px 1fr",
+                        gap: "2px",
+                        alignItems: "center",
+                      }}
+                    >
+                      <label className={`Label ${getPropertyColorClass("fontSize")}`}>
+                        Size
+                        <PropertyIndicator property="fontSize" />
+                      </label>
+                      <UnitInput
+                        value={computedStyles.fontSize || ""}
+                        onChange={(val) => updateStyle("fontSize", val)}
+                        placeholder="16px"
+                      />
+                      <label className={`Label ${getPropertyColorClass("lineHeight")}`}>
+                        Height
+                        <PropertyIndicator property="lineHeight" />
+                      </label>
+                      <UnitInput
+                        value={computedStyles.lineHeight || ""}
+                        onChange={(val) => updateStyle("lineHeight", val)}
+                        placeholder="1.5"
+                      />
+                    </div>
+                    {/* Breakpoint Value Badges for Font Size */}
+                    <BreakpointValueBadges 
+                      property="fontSize" 
+                      styleSourceId={activeStyleSourceId} 
                     />
                   </div>
 
