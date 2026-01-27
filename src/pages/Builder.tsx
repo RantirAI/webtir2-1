@@ -28,7 +28,8 @@ import * as Icons from 'lucide-react';
 
 const Builder: React.FC = () => {
   const [zoom, setZoom] = useState(80); // Default zoom set to 80%
-  const [currentBreakpoint, setCurrentBreakpoint] = useState('desktop');
+  const currentBreakpoint = useStyleStore((s) => s.currentBreakpointId);
+  const setCurrentBreakpoint = useStyleStore((s) => s.setCurrentBreakpoint);
   const [isPanMode, setIsPanMode] = useState(false);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [homePage, setHomePage] = useState('Page 1');
