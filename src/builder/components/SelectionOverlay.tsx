@@ -5,6 +5,7 @@ import { useBuilderStore } from '../store/useBuilderStore';
 import { useStyleStore } from '../store/useStyleStore';
 import { useComponentInstanceStore } from '../store/useComponentInstanceStore';
 import { usePageStore } from '../store/usePageStore';
+import { getCanvasComputedStyles } from '../utils/canvasStyles';
 
 interface SelectionOverlayProps {
   instance: ComponentInstance;
@@ -44,7 +45,6 @@ export const SelectionOverlay: React.FC<SelectionOverlayProps> = ({ instance, el
   const [rect, setRect] = useState<DOMRect | null>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
   const { moveInstance, rootInstance } = useBuilderStore();
-  const { getComputedStyles } = useStyleStore();
   const { isLinkedInstance } = useComponentInstanceStore();
   const { getGlobalComponent } = usePageStore();
   
@@ -58,8 +58,8 @@ export const SelectionOverlay: React.FC<SelectionOverlayProps> = ({ instance, el
   const isGlobalFooter = globalFooter?.id === instance.id;
   const globalLabel = isGlobalHeader ? 'Global Header' : isGlobalFooter ? 'Global Footer' : null;
   
-  // Get computed styles to check if element has grid display
-  const computedStyles = getComputedStyles(instance.styleSourceIds || []);
+  // Get computed styles to check if element has grid display - use scoped state
+  const computedStyles = getCanvasComputedStyles(instance.id, instance.styleSourceIds || []);
   const isGrid = computedStyles.display === 'grid';
   
   useEffect(() => {

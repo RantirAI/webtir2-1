@@ -4,6 +4,7 @@ import { useStyleStore } from '../store/useStyleStore';
 import { ChevronDown } from 'lucide-react';
 import { EditableText } from '../components/EditableText';
 import { useBuilderStore } from '../store/useBuilderStore';
+import { getCanvasComputedStyles } from '../utils/canvasStyles';
 
 interface DropdownItem {
   label: string;
@@ -144,8 +145,8 @@ export const DropdownPrimitive: React.FC<DropdownPrimitiveProps> = ({
     .filter(Boolean)
     .join(' ');
 
-  // Get computed styles
-  const computedStyles = useStyleStore.getState().getComputedStyles(instance.styleSourceIds || []);
+  // Get computed styles with scoped pseudo-state
+  const computedStyles = getCanvasComputedStyles(instance.id, instance.styleSourceIds || []);
 
   // Apply visibility
   const visibilityStyle = instance.visibility === 'hidden' ? { display: 'none' } : {};

@@ -52,6 +52,7 @@ import { TableRowElement, TableHeaderCellElement, TableCellElement } from './Tab
 import { Accordion as ShadcnAccordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
 import { CarouselPreview } from './CarouselPreview';
 import { Calendar } from '@/components/ui/calendar';
+import { getCanvasComputedStyles } from '../utils/canvasStyles';
 
 // Canvas Resize Handle Component with improved UX
 interface CanvasResizeHandleProps {
@@ -99,12 +100,11 @@ const TabsComponent: React.FC<{
   tabs: any[];
   defaultTab: string;
   isPreviewMode: boolean;
-  getComputedStyles: (styleSourceIds: string[], breakpointId?: string, state?: any) => Record<string, any>;
   setSelectedInstanceId: (id: string | null) => void;
   setHoveredInstanceId: (id: string | null) => void;
   handleContextMenu: (e: React.MouseEvent, instance: ComponentInstance) => void;
   renderInstance?: (instance: ComponentInstance, parent?: ComponentInstance, index?: number) => React.ReactNode;
-}> = ({ instance, tabs, defaultTab, isPreviewMode, getComputedStyles, setSelectedInstanceId, setHoveredInstanceId, handleContextMenu, renderInstance }) => {
+}> = ({ instance, tabs, defaultTab, isPreviewMode, setSelectedInstanceId, setHoveredInstanceId, handleContextMenu, renderInstance }) => {
   // Get TabPanel children only - no fallback to props.tabs
   const tabPanels = instance.children.filter(c => c.type === 'TabPanel');
   
@@ -184,7 +184,7 @@ const TabsComponent: React.FC<{
       data-instance-id={instance.id}
       className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
       style={{
-        ...getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties,
+        ...getCanvasComputedStyles(instance.id, instance.styleSourceIds || []) as React.CSSProperties,
         display: 'flex',
         flexDirection: isVertical 
           ? (isReversed ? 'row-reverse' : 'row') 
@@ -307,7 +307,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
   const addInstance = useBuilderStore((state) => state.addInstance);
   const updateInstance = useBuilderStore((state) => state.updateInstance);
   const { findInstance } = useBuilderStore();
-  const { getComputedStyles, styleSources } = useStyleStore();
+  const { styleSources } = useStyleStore();
   
   // Global components from page store
   const { getGlobalComponents, shouldShowGlobalComponent, currentPageId } = usePageStore();
@@ -738,7 +738,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
             controls={instance.props.controls}
             isSelected={isSelected}
             className=""
-            style={getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties}
+            style={getCanvasComputedStyles(instance.id, instance.styleSourceIds || []) as React.CSSProperties}
           />
         );
       case 'Youtube':
@@ -753,7 +753,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
             controls={instance.props.controls}
             isSelected={isSelected}
             className=""
-            style={getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties}
+            style={getCanvasComputedStyles(instance.id, instance.styleSourceIds || []) as React.CSSProperties}
           />
         );
       case 'Lottie':
@@ -766,7 +766,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
             loop={instance.props.loop}
             isSelected={isSelected}
             className=""
-            style={getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties}
+            style={getCanvasComputedStyles(instance.id, instance.styleSourceIds || []) as React.CSSProperties}
           />
         );
       case 'Icon':
@@ -777,7 +777,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
             size={instance.props?.size || 24}
             color={instance.props?.color}
             strokeWidth={instance.props?.strokeWidth}
-            style={getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties}
+            style={getCanvasComputedStyles(instance.id, instance.styleSourceIds || []) as React.CSSProperties}
           />
         );
       case 'Link': {
@@ -814,7 +814,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
             data-instance-id={instance.id}
             className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
             style={{
-              ...getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties,
+              ...getCanvasComputedStyles(instance.id, instance.styleSourceIds || []) as React.CSSProperties,
               backgroundColor: tableStyles.tableBackground || 'transparent',
               borderRadius: `${tableStyles.outerBorderRadius || 8}px`,
               boxShadow: getShadowClass(tableStyles.tableShadow),
@@ -876,7 +876,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
             fields={instance.props.fields}
             buttonText={instance.props.buttonText}
             className=""
-            style={getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties}
+            style={getCanvasComputedStyles(instance.id, instance.styleSourceIds || []) as React.CSSProperties}
           />
         );
       }
@@ -889,7 +889,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
             type={instance.props.type}
             disabled={instance.props.disabled}
             className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
-            style={getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties}
+            style={getCanvasComputedStyles(instance.id, instance.styleSourceIds || []) as React.CSSProperties}
           />
         );
       case 'InputLabel':
@@ -901,7 +901,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
             htmlFor={instance.props.htmlFor}
             required={instance.props.required}
             className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
-            style={getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties}
+            style={getCanvasComputedStyles(instance.id, instance.styleSourceIds || []) as React.CSSProperties}
           />
         );
       case 'TextInput':
@@ -914,7 +914,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
             required={instance.props.required}
             disabled={instance.props.disabled}
             className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
-            style={getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties}
+            style={getCanvasComputedStyles(instance.id, instance.styleSourceIds || []) as React.CSSProperties}
           />
         );
       case 'TextArea':
@@ -927,7 +927,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
             required={instance.props.required}
             disabled={instance.props.disabled}
             className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
-            style={getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties}
+            style={getCanvasComputedStyles(instance.id, instance.styleSourceIds || []) as React.CSSProperties}
           />
         );
       case 'Select':
@@ -940,7 +940,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
             required={instance.props.required}
             disabled={instance.props.disabled}
             className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
-            style={getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties}
+            style={getCanvasComputedStyles(instance.id, instance.styleSourceIds || []) as React.CSSProperties}
           />
         );
       case 'RadioGroup':
@@ -954,7 +954,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
             disabled={instance.props.disabled}
             orientation={instance.props.orientation}
             className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
-            style={getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties}
+            style={getCanvasComputedStyles(instance.id, instance.styleSourceIds || []) as React.CSSProperties}
           />
         );
       case 'CheckboxField':
@@ -966,7 +966,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
             required={instance.props.required}
             disabled={instance.props.disabled}
             className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
-            style={getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties}
+            style={getCanvasComputedStyles(instance.id, instance.styleSourceIds || []) as React.CSSProperties}
           />
         );
       case 'Cell':
@@ -1032,7 +1032,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
             isPreviewMode={isPreviewMode}
             currentBreakpoint={currentBreakpoint}
             className=""
-            style={getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties}
+            style={getCanvasComputedStyles(instance.id, instance.styleSourceIds || []) as React.CSSProperties}
           >
             {instance.children.map((child, idx) => renderInstance(child, instance, idx, true))}
           </NavigationPrimitive>
@@ -1121,7 +1121,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
                 .map((id) => useStyleStore.getState().styleSources[id]?.name)
                 .filter(Boolean)
                 .join(' ')}`}
-              style={getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties}
+              style={getCanvasComputedStyles(instance.id, instance.styleSourceIds || []) as React.CSSProperties}
             >
               <style>{accordionCss}</style>
               {collapseMode === 'multiple' ? (
@@ -1190,7 +1190,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
               .filter(Boolean)
               .join(' ')}`}
             style={{
-              ...getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties,
+              ...getCanvasComputedStyles(instance.id, instance.styleSourceIds || []) as React.CSSProperties,
               borderRadius: `${outerBorderRadius}px`,
               overflow: 'hidden',
             }}
@@ -1244,7 +1244,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
               data-instance-id={instance.id}
               className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
               style={{
-                ...getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties,
+                ...getCanvasComputedStyles(instance.id, instance.styleSourceIds || []) as React.CSSProperties,
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '8px',
@@ -1283,7 +1283,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
           <div
             data-instance-id={instance.id}
             className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
-            style={getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties}
+            style={getCanvasComputedStyles(instance.id, instance.styleSourceIds || []) as React.CSSProperties}
             onClick={isPreviewMode ? undefined : () => setSelectedInstanceId(instance.id)}
             onMouseEnter={isPreviewMode ? undefined : () => setHoveredInstanceId(instance.id)}
             onMouseLeave={isPreviewMode ? undefined : () => setHoveredInstanceId(null)}
@@ -1336,7 +1336,6 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
             tabs={tabs}
             defaultTab={defaultTab}
             isPreviewMode={isPreviewMode}
-            getComputedStyles={getComputedStyles}
             setSelectedInstanceId={setSelectedInstanceId}
             setHoveredInstanceId={setHoveredInstanceId}
             handleContextMenu={handleContextMenu}
@@ -1356,7 +1355,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
           <div
             data-instance-id={instance.id}
             className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
-            style={getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties}
+            style={getCanvasComputedStyles(instance.id, instance.styleSourceIds || []) as React.CSSProperties}
             onClick={isPreviewMode ? undefined : () => setSelectedInstanceId(instance.id)}
             onMouseEnter={isPreviewMode ? undefined : () => setHoveredInstanceId(instance.id)}
             onMouseLeave={isPreviewMode ? undefined : () => setHoveredInstanceId(null)}
@@ -1386,7 +1385,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
             data-instance-id={instance.id}
             className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
             style={{
-              ...getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties,
+              ...getCanvasComputedStyles(instance.id, instance.styleSourceIds || []) as React.CSSProperties,
               width: sizeMap[size],
               height: sizeMap[size],
               borderRadius: '50%',
@@ -1441,7 +1440,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
             data-instance-id={instance.id}
             className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
             style={{
-              ...getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties,
+              ...getCanvasComputedStyles(instance.id, instance.styleSourceIds || []) as React.CSSProperties,
               display: 'inline-flex',
               alignItems: 'center',
               gap: IconComponent ? '4px' : '0',
@@ -1477,7 +1476,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
           <div
             data-instance-id={instance.id}
             className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
-            style={getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties}
+            style={getCanvasComputedStyles(instance.id, instance.styleSourceIds || []) as React.CSSProperties}
             onClick={isPreviewMode ? undefined : () => setSelectedInstanceId(instance.id)}
             onMouseEnter={isPreviewMode ? undefined : () => setHoveredInstanceId(instance.id)}
             onMouseLeave={isPreviewMode ? undefined : () => setHoveredInstanceId(null)}
@@ -1506,7 +1505,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
             data-instance-id={instance.id}
             className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
             style={{
-              ...getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties,
+              ...getCanvasComputedStyles(instance.id, instance.styleSourceIds || []) as React.CSSProperties,
               position: 'relative',
               display: 'flex',
               alignItems: 'center',
@@ -1537,7 +1536,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
             data-instance-id={instance.id}
             className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
             style={{
-              ...getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties,
+              ...getCanvasComputedStyles(instance.id, instance.styleSourceIds || []) as React.CSSProperties,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
@@ -1568,7 +1567,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
             data-instance-id={instance.id}
             className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
             style={{
-              ...getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties,
+              ...getCanvasComputedStyles(instance.id, instance.styleSourceIds || []) as React.CSSProperties,
               position: 'relative',
               display: 'inline-block',
             }}
@@ -1594,7 +1593,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
             data-instance-id={instance.id}
             className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
             style={{
-              ...getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties,
+              ...getCanvasComputedStyles(instance.id, instance.styleSourceIds || []) as React.CSSProperties,
               position: 'relative',
               display: 'inline-block',
             }}
@@ -1621,7 +1620,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
             data-instance-id={instance.id}
             className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
             style={{
-              ...getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties,
+              ...getCanvasComputedStyles(instance.id, instance.styleSourceIds || []) as React.CSSProperties,
               display: 'flex',
               gap: '12px',
               padding: '16px',
@@ -1701,7 +1700,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
             data-instance-id={instance.id}
             className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
             style={{
-              ...getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties,
+              ...getCanvasComputedStyles(instance.id, instance.styleSourceIds || []) as React.CSSProperties,
               display: 'flex',
               flexDirection: styles.orientation === 'vertical' ? 'column' : 'row',
               alignItems: styles.orientation === 'vertical' ? 'flex-start' : 'center',
@@ -1788,7 +1787,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
               .filter(Boolean)
               .join(' ')}
             style={{
-              ...getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties,
+              ...getCanvasComputedStyles(instance.id, instance.styleSourceIds || []) as React.CSSProperties,
             }}
             onClick={isPreviewMode ? undefined : (e) => { e.stopPropagation(); setSelectedInstanceId(instance.id); }}
             onMouseEnter={isPreviewMode ? undefined : () => setHoveredInstanceId(instance.id)}
@@ -1813,7 +1812,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
               .filter(Boolean)
               .join(' ')}
             style={{
-              ...getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties,
+              ...getCanvasComputedStyles(instance.id, instance.styleSourceIds || []) as React.CSSProperties,
             }}
             onClick={isPreviewMode ? undefined : (e) => { e.stopPropagation(); setSelectedInstanceId(instance.id); }}
             onMouseEnter={isPreviewMode ? undefined : () => setHoveredInstanceId(instance.id)}
@@ -1895,7 +1894,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
               .filter(Boolean)
               .join(' ')}
             style={{
-              ...getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties,
+              ...getCanvasComputedStyles(instance.id, instance.styleSourceIds || []) as React.CSSProperties,
             }}
             onClick={isPreviewMode ? undefined : (e) => { e.stopPropagation(); setSelectedInstanceId(instance.id); }}
             onMouseEnter={isPreviewMode ? undefined : () => setHoveredInstanceId(instance.id)}
@@ -1937,7 +1936,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
               .filter(Boolean)
               .join(' ')}
             style={{
-              ...getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties,
+              ...getCanvasComputedStyles(instance.id, instance.styleSourceIds || []) as React.CSSProperties,
             }}
             onClick={isPreviewMode ? undefined : (e) => { e.stopPropagation(); setSelectedInstanceId(instance.id); }}
             onMouseEnter={isPreviewMode ? undefined : () => setHoveredInstanceId(instance.id)}
@@ -1970,7 +1969,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
             data-instance-id={instance.id}
             className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
             style={{
-              ...getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties,
+              ...getCanvasComputedStyles(instance.id, instance.styleSourceIds || []) as React.CSSProperties,
               padding: '16px',
               border: '1px dashed hsl(var(--border))',
               borderRadius: '8px',
@@ -1997,7 +1996,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
         const decorative = settings.decorative !== false;
         
         // Get computed styles from style system - this includes color, border-style, dimensions from style panel
-        const computedStyles = getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties;
+        const computedStyles = getCanvasComputedStyles(instance.id, instance.styleSourceIds || []) as React.CSSProperties;
 
         const content = (
           <div
@@ -2034,7 +2033,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
             instance={instance}
             parentInstance={parentInstance}
             isPreviewMode={isPreviewMode}
-            getComputedStyles={getComputedStyles}
+            getComputedStyles={getCanvasComputedStyles.bind(null, instance.id)}
             renderInstance={renderInstance}
             setSelectedInstanceId={setSelectedInstanceId}
             setHoveredInstanceId={setHoveredInstanceId}
@@ -2049,7 +2048,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
             instance={instance}
             parentInstance={parentInstance}
             isPreviewMode={isPreviewMode}
-            getComputedStyles={getComputedStyles}
+            getComputedStyles={getCanvasComputedStyles.bind(null, instance.id)}
             renderInstance={renderInstance}
             setSelectedInstanceId={setSelectedInstanceId}
             setHoveredInstanceId={setHoveredInstanceId}
@@ -2064,7 +2063,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
             instance={instance}
             parentInstance={parentInstance}
             isPreviewMode={isPreviewMode}
-            getComputedStyles={getComputedStyles}
+            getComputedStyles={getCanvasComputedStyles.bind(null, instance.id)}
             renderInstance={renderInstance}
             setSelectedInstanceId={setSelectedInstanceId}
             setHoveredInstanceId={setHoveredInstanceId}
@@ -2079,7 +2078,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
             data-instance-id={instance.id}
             className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
             style={{
-              ...getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties,
+              ...getCanvasComputedStyles(instance.id, instance.styleSourceIds || []) as React.CSSProperties,
               width: '100%',
               minHeight: '100px',
               padding: '16px',
@@ -2126,7 +2125,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
             data-instance-id={instance.id}
             className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
             style={{
-              ...getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties,
+              ...getCanvasComputedStyles(instance.id, instance.styleSourceIds || []) as React.CSSProperties,
               borderBottom: '1px solid hsl(var(--border))',
             }}
             onClick={isPreviewMode ? undefined : (e) => { e.stopPropagation(); setSelectedInstanceId(instance.id); }}
@@ -2189,7 +2188,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
           <span
             data-instance-id={instance.id}
             style={{
-              ...getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties,
+              ...getCanvasComputedStyles(instance.id, instance.styleSourceIds || []) as React.CSSProperties,
               color: isCurrentPage ? 'hsl(var(--foreground))' : 'hsl(var(--muted-foreground))',
               fontWeight: isCurrentPage ? '500' : '400',
               cursor: isPreviewMode && href && !isCurrentPage ? 'pointer' : 'default',
@@ -2220,7 +2219,7 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
             data-instance-id={instance.id}
             className={(instance.styleSourceIds || []).map((id) => useStyleStore.getState().styleSources[id]?.name).filter(Boolean).join(' ')}
             style={{
-              ...getComputedStyles(instance.styleSourceIds || []) as React.CSSProperties,
+              ...getCanvasComputedStyles(instance.id, instance.styleSourceIds || []) as React.CSSProperties,
               width: '100%',
               minHeight: '200px',
               position: 'relative',
@@ -2276,8 +2275,8 @@ export const Canvas: React.FC<CanvasProps> = ({ zoom, onZoomChange, currentBreak
     }
   };
 
-  // Get root instance styles for page body
-  const rootStyles = rootInstance ? getComputedStyles(rootInstance.styleSourceIds || []) : {};
+  // Get root instance styles for page body - use 'default' state for page root
+  const rootStyles = rootInstance ? getCanvasComputedStyles('root', rootInstance.styleSourceIds || []) : {};
 
   // Helper to check if a page contains Webflow-imported content
   const hasWebflowContent = (pageInstance: ComponentInstance | undefined): boolean => {
