@@ -477,7 +477,7 @@ export const useComponentInstanceStore = create<ComponentInstanceStore>()(
 
               for (const [styleKey, styleValue] of Object.entries(styleData.styleValues)) {
                 const keyParts = styleKey.replace(`${oldStyleId}:`, '').split(':');
-                const breakpoint = keyParts[0] || 'base';
+                const breakpoint = keyParts[0] || 'desktop';
                 const state = keyParts[1] || 'default';
                 const property = keyParts[2] || '';
 

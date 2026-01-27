@@ -148,6 +148,42 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
         fontSize: '16px',
       }),
     },
+    tabletStyles: {
+      'style-hero-section': createStyleEntry({
+        padding: '60px 24px',
+        minHeight: '500px',
+      }),
+      'style-hero-heading': createStyleEntry({
+        fontSize: '44px',
+      }),
+      'style-hero-text': createStyleEntry({
+        fontSize: '18px',
+      }),
+    },
+    mobileStyles: {
+      'style-hero-section': createStyleEntry({
+        padding: '48px 16px',
+        minHeight: '400px',
+      }),
+      'style-hero-heading': createStyleEntry({
+        fontSize: '32px',
+      }),
+      'style-hero-text': createStyleEntry({
+        fontSize: '16px',
+      }),
+      'style-hero-buttons': createStyleEntry({
+        flexDirection: 'column',
+        width: '100%',
+      }),
+      'style-hero-btn-primary': createStyleEntry({
+        width: '100%',
+        textAlign: 'center',
+      }),
+      'style-hero-btn-secondary': createStyleEntry({
+        width: '100%',
+        textAlign: 'center',
+      }),
+    },
   });
 
   // ---------------------------------------------------------------------------
@@ -221,6 +257,25 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
         fontSize: '16px',
         lineHeight: '1.6',
         color: 'hsl(var(--muted-foreground))',
+      }),
+    },
+    tabletStyles: {
+      'style-feature-card': createStyleEntry({
+        padding: '24px',
+      }),
+      'style-card-heading': createStyleEntry({
+        fontSize: '18px',
+      }),
+    },
+    mobileStyles: {
+      'style-feature-card': createStyleEntry({
+        padding: '20px',
+      }),
+      'style-card-heading': createStyleEntry({
+        fontSize: '16px',
+      }),
+      'style-card-text': createStyleEntry({
+        fontSize: '14px',
       }),
     },
   });
@@ -316,6 +371,32 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
         fontWeight: '600',
         fontSize: '16px',
         marginTop: '8px',
+      }),
+    },
+    tabletStyles: {
+      'style-cta-section': createStyleEntry({
+        padding: '60px 24px',
+      }),
+      'style-cta-heading': createStyleEntry({
+        fontSize: '32px',
+      }),
+      'style-cta-text': createStyleEntry({
+        fontSize: '16px',
+      }),
+    },
+    mobileStyles: {
+      'style-cta-section': createStyleEntry({
+        padding: '48px 16px',
+      }),
+      'style-cta-heading': createStyleEntry({
+        fontSize: '28px',
+      }),
+      'style-cta-text': createStyleEntry({
+        fontSize: '15px',
+      }),
+      'style-cta-button': createStyleEntry({
+        width: '100%',
+        textAlign: 'center',
       }),
     },
   });
@@ -464,6 +545,30 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
         color: 'hsl(var(--muted-foreground))',
       }),
     },
+    tabletStyles: {
+      'style-testimonial-card': createStyleEntry({
+        padding: '24px',
+        gap: '20px',
+      }),
+      'style-testimonial-quote': createStyleEntry({
+        fontSize: '16px',
+      }),
+    },
+    mobileStyles: {
+      'style-testimonial-card': createStyleEntry({
+        padding: '20px',
+        gap: '16px',
+      }),
+      'style-testimonial-quote': createStyleEntry({
+        fontSize: '15px',
+      }),
+      'style-testimonial-name': createStyleEntry({
+        fontSize: '14px',
+      }),
+      'style-testimonial-role': createStyleEntry({
+        fontSize: '13px',
+      }),
+    },
   });
 
   // ---------------------------------------------------------------------------
@@ -590,6 +695,33 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
       'style-footer-copyright': createStyleEntry({
         fontSize: '14px',
         color: 'hsl(var(--muted-foreground))',
+      }),
+    },
+    tabletStyles: {
+      'style-footer-section': createStyleEntry({
+        padding: '40px 24px',
+      }),
+      'style-footer-links': createStyleEntry({
+        gap: '24px',
+      }),
+    },
+    mobileStyles: {
+      'style-footer-section': createStyleEntry({
+        padding: '32px 16px',
+      }),
+      'style-footer-container': createStyleEntry({
+        gap: '20px',
+      }),
+      'style-footer-links': createStyleEntry({
+        flexDirection: 'column',
+        gap: '16px',
+        alignItems: 'center',
+      }),
+      'style-footer-logo': createStyleEntry({
+        fontSize: '18px',
+      }),
+      'style-footer-copyright': createStyleEntry({
+        fontSize: '12px',
       }),
     },
   });
@@ -754,6 +886,27 @@ export const createSystemPrebuilts = (): SystemPrebuiltDefinition[] => {
         fontWeight: '600',
         fontSize: '14px',
         textAlign: 'center',
+      }),
+    },
+    tabletStyles: {
+      'style-pricing-card': createStyleEntry({
+        padding: '24px',
+        gap: '20px',
+      }),
+      'style-pricing-price': createStyleEntry({
+        fontSize: '32px',
+      }),
+    },
+    mobileStyles: {
+      'style-pricing-card': createStyleEntry({
+        padding: '20px',
+        gap: '16px',
+      }),
+      'style-pricing-price': createStyleEntry({
+        fontSize: '28px',
+      }),
+      'style-pricing-title': createStyleEntry({
+        fontSize: '18px',
       }),
     },
   });

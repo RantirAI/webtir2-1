@@ -164,7 +164,7 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
 
     const lastClassIndex = styleSourceIds.length - 1;
     const lastClassId = styleSourceIds[lastClassIndex];
-    const breakpoint = currentBreakpointId || 'base';
+    const breakpoint = currentBreakpointId || 'desktop';
     const state = currentPseudoState || 'default';
     
     // Check if property is defined in the active (last) class
@@ -192,7 +192,7 @@ export const SpacingControl: React.FC<SpacingControlProps> = ({
 
     const lastClassIndex = styleSourceIds.length - 1;
     const lastClassId = styleSourceIds[lastClassIndex];
-    const breakpoint = currentBreakpointId || 'base';
+    const breakpoint = currentBreakpointId || 'desktop';
     const state = currentPseudoState || 'default';
     
     // Check if property is defined in the active (last) class

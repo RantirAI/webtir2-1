@@ -656,7 +656,7 @@ Add what's missing: Features, Testimonials, Pricing, CTA, Footer, etc.`;
                   });
                   
                   for (const [property, value] of Object.entries(styles)) {
-                    setStyle(styleSourceId, property, value, 'base', 'default');
+                    setStyle(styleSourceId, property, value, 'desktop', 'default');
                   }
                   updatesApplied++;
                   
