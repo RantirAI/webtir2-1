@@ -1,118 +1,195 @@
 
-# Plan: Fix Canvas Typography Re-rendering on Breakpoint Change
+# Plan: Add Visual Breakpoint Indicators for Typography Responsive Scaling
 
-## Problem Summary
+## Overview
 
-The responsive typography changes (48px desktop → 40px tablet → 32px mobile) are correctly stored in the style system, but the canvas preview doesn't update visually when switching breakpoints. The Heading and Text components continue showing the desktop font size.
+This plan addresses two issues:
+1. Missing `mobile-landscape` breakpoint in responsive typography defaults
+2. Adding enhanced visual breakpoint indicators in the Typography section to show font sizes at each breakpoint
 
-## Root Cause
+## Problem Analysis
 
-The issue is a **React reactivity problem** - the components don't re-render when the breakpoint changes:
+### Issue 1: Missing Breakpoint
+The `applyResponsiveHeadingTypography` function currently applies styles to only three breakpoints:
+- `desktop` (48px for H1)
+- `tablet` (40px for H1)  
+- `mobile` (32px for H1)
 
-1. `getCanvasComputedStyles` uses `useStyleStore.getState()` which is a one-time synchronous read (not reactive)
-2. `Heading.tsx` and `Text.tsx` don't subscribe to `currentBreakpointId` changes via the Zustand hook
-3. Even though `getComputedStyles` correctly uses `currentBreakpointId`, the component never knows to re-compute because it's not subscribed to that state
+However, the system has **four** breakpoints:
+- `desktop` (base)
+- `tablet` (991px)
+- `mobile-landscape` (767px) ← **Missing!**
+- `mobile` (479px)
+
+When switching to `mobile-landscape`, the cascade finds `tablet` (40px), not `mobile` (32px), causing unexpected behavior.
+
+### Issue 2: No Visual Breakpoint Preview
+Currently, the Typography section shows a single font size input with a small colored dot indicator. Users cannot quickly see what font sizes are set at other breakpoints without manually switching.
 
 ## Solution
 
-Subscribe to `currentBreakpointId` in the primitives using the Zustand hook pattern. This ensures the component re-renders when the user switches breakpoints, triggering a fresh computation of styles.
+### Part 1: Add `mobile-landscape` Breakpoint to Typography Map
+
+Update `src/builder/utils/headingTypography.ts`:
+- Extend `ResponsiveTypography` interface to include `mobileLandscape`
+- Add `mobile-landscape` values to `responsiveHeadingMap` (intermediate between tablet and mobile)
+- Update `applyResponsiveHeadingTypography` to set styles for `mobile-landscape` breakpoint
+
+### Part 2: Add Breakpoint Value Badges in Typography Section
+
+Create a new component `BreakpointValueBadges` that displays small pills showing font size values at each breakpoint:
+
+```
+Size [32px]  📱 32px  📱L 36px  📱 40px  🖥️ 48px
+```
+
+Each badge shows:
+- Breakpoint icon (desktop/tablet/mobile)
+- The value at that breakpoint
+- Color coding: blue (explicit), green (inherited from larger), gray (not set)
 
 ## Files to Modify
 
-### 1. `src/builder/primitives/Heading.tsx`
+### 1. `src/builder/utils/headingTypography.ts`
 
-Add subscription to `currentBreakpointId`:
+**Changes:**
+- Add `mobileLandscape` to `ResponsiveTypography` interface
+- Add `mobile-landscape` values to all heading levels in `responsiveHeadingMap`
+- Update `applyResponsiveHeadingTypography` to set `mobile-landscape` font sizes
 
-**Current code (line 69):**
+**New values for H1:**
 ```typescript
-// Compute breakpoint-aware styles for canvas preview
-const computedStyles = getCanvasComputedStyles(instance.id, instance.styleSourceIds || []);
+h1: {
+  desktop: { fontSize: '48px', ... },
+  tablet: { fontSize: '40px', ... },
+  mobileLandscape: { fontSize: '36px', ... },  // NEW
+  mobile: { fontSize: '32px', ... },
+}
 ```
 
-**Updated code:**
+### 2. `src/builder/components/StylePanel.tsx`
+
+**Changes:**
+- Create new `BreakpointValueBadges` component showing font sizes at all breakpoints
+- Add this component below the "Size" input in the Typography section
+- Each badge is clickable to jump to that breakpoint
+
+**New UI Component (approximately 50 lines):**
+```tsx
+const BreakpointValueBadges: React.FC<{ property: string }> = ({ property }) => {
+  // Get values at each breakpoint
+  const breakpoints = ['desktop', 'tablet', 'mobile-landscape', 'mobile'];
+  const values = breakpoints.map(bp => ({
+    id: bp,
+    value: getValueAtBreakpoint(bp, property),
+    isExplicit: isExplicitAtBreakpoint(bp, property),
+    isCurrent: bp === currentBreakpointId,
+  }));
+  
+  return (
+    <div className="flex gap-1 mt-1">
+      {values.map(({ id, value, isExplicit, isCurrent }) => (
+        <button
+          key={id}
+          onClick={() => setCurrentBreakpoint(id)}
+          className={cn(
+            "px-1.5 py-0.5 rounded text-[9px] font-mono",
+            isCurrent && "ring-2 ring-primary",
+            isExplicit ? "bg-blue-100 text-blue-700" : "bg-muted text-muted-foreground"
+          )}
+          title={`${id}: ${value || 'not set'}`}
+        >
+          <span className="mr-0.5">{getBreakpointIcon(id)}</span>
+          {value || '—'}
+        </button>
+      ))}
+    </div>
+  );
+};
+```
+
+## Visual Design
+
+### Current UI (Font Size Row):
+```
+┌──────────────────────────────────────────────────┐
+│ Size●  [48px    ]   Height  [1.2     ]          │
+└──────────────────────────────────────────────────┘
+```
+
+### New UI (with Breakpoint Badges):
+```
+┌──────────────────────────────────────────────────┐
+│ Size●  [48px    ]   Height  [1.2     ]          │
+│ 🖥️48px  📱40px  📱L36px  📱32px                  │
+│ ──────  ──────  ──────   ──────                 │
+│ current  ↑set    ↑set     ↑set                  │
+└──────────────────────────────────────────────────┘
+```
+
+Badge states:
+- **Blue background**: Value explicitly set at this breakpoint
+- **Green border**: Currently viewing this breakpoint
+- **Gray background**: Value inherited from larger breakpoint (shows inherited value)
+- **Clickable**: Clicking a badge switches to that breakpoint
+
+## Technical Details
+
+### New Helper Functions in StylePanel
+
 ```typescript
-// Subscribe to breakpoint changes to trigger re-render
-const currentBreakpointId = useStyleStore((state) => state.currentBreakpointId);
+// Get the explicit or inherited value for a property at a specific breakpoint
+const getValueAtBreakpoint = (breakpointId: string, property: string): string | undefined => {
+  const { getPropertySourceForBreakpoint } = useStyleStore.getState();
+  const sourceInfo = getPropertySourceForBreakpoint(activeStyleSourceId, property, breakpointId);
+  return sourceInfo.value;
+};
 
-// Compute breakpoint-aware styles for canvas preview (will re-run when breakpoint changes)
-const computedStyles = getCanvasComputedStyles(instance.id, instance.styleSourceIds || [], currentBreakpointId);
+// Check if a value is explicitly set at a breakpoint (vs inherited)
+const isExplicitAtBreakpoint = (breakpointId: string, property: string): boolean => {
+  const { getPropertySourceForBreakpoint } = useStyleStore.getState();
+  const sourceInfo = getPropertySourceForBreakpoint(activeStyleSourceId, property, breakpointId);
+  return sourceInfo.source === 'explicit';
+};
 ```
 
-### 2. `src/builder/primitives/Text.tsx`
+### Breakpoint Icon Mapping
 
-Add subscription to `currentBreakpointId`:
-
-**Current code (line 42):**
 ```typescript
-// Compute breakpoint-aware styles for canvas preview
-const computedStyles = getCanvasComputedStyles(instance.id, instance.styleSourceIds || []);
+const breakpointIcons: Record<string, string> = {
+  'desktop': '🖥️',
+  'tablet': '📱',
+  'mobile-landscape': '📱L',
+  'mobile': '📱',
+};
 ```
 
-**Updated code:**
-```typescript
-// Subscribe to breakpoint changes to trigger re-render
-const currentBreakpointId = useStyleStore((state) => state.currentBreakpointId);
+## Implementation Order
 
-// Compute breakpoint-aware styles for canvas preview (will re-run when breakpoint changes)
-const computedStyles = getCanvasComputedStyles(instance.id, instance.styleSourceIds || [], currentBreakpointId);
-```
+1. **Fix typography map** - Add `mobile-landscape` to ensure responsive scaling works correctly at all breakpoints
+2. **Add helper functions** - Create utilities to query values at specific breakpoints
+3. **Create BreakpointValueBadges component** - Build the visual indicator UI
+4. **Integrate into Typography section** - Add badges below the font size input
 
-## Technical Explanation
+## Expected Behavior After Implementation
 
-```text
-Before (broken):
-┌─────────────────────────────────────────────────────────────┐
-│  User switches to Mobile breakpoint                         │
-│                          ↓                                   │
-│  currentBreakpointId = 'mobile' (store updated)             │
-│                          ↓                                   │
-│  Heading component: NOT subscribed → NO re-render           │
-│                          ↓                                   │
-│  getCanvasComputedStyles never called again                 │
-│                          ↓                                   │
-│  Canvas still shows 48px (stale desktop value)              │
-└─────────────────────────────────────────────────────────────┘
+1. **Creating H1 heading**: Automatically applies:
+   - Desktop: 48px
+   - Tablet: 40px
+   - Mobile Landscape: 36px (NEW)
+   - Mobile: 32px
 
-After (fixed):
-┌─────────────────────────────────────────────────────────────┐
-│  User switches to Mobile breakpoint                         │
-│                          ↓                                   │
-│  currentBreakpointId = 'mobile' (store updated)             │
-│                          ↓                                   │
-│  Heading component: SUBSCRIBED → RE-RENDERS                 │
-│                          ↓                                   │
-│  getCanvasComputedStyles called with 'mobile' breakpoint    │
-│                          ↓                                   │
-│  Canvas shows 32px (correct mobile value)                   │
-└─────────────────────────────────────────────────────────────┘
-```
+2. **Visual indicators**: Below font size input, see all breakpoint values at a glance:
+   - Blue badges = explicitly set
+   - Gray badges = inherited
+   - Ring around current breakpoint
+   - Click any badge to switch breakpoints
+
+3. **Canvas preview**: Correctly shows 36px at mobile-landscape, 32px at mobile
 
 ## Files Summary
 
 | File | Change |
 |------|--------|
-| `src/builder/primitives/Heading.tsx` | Add `useStyleStore` subscription to `currentBreakpointId` |
-| `src/builder/primitives/Text.tsx` | Add `useStyleStore` subscription to `currentBreakpointId` |
-
-## Expected Behavior After Fix
-
-1. **H1 at Desktop**: Shows 48px font size
-2. **Switch to Tablet**: Component re-renders, shows 40px font size
-3. **Switch to Mobile**: Component re-renders, shows 32px font size
-4. **Switch back to Desktop**: Component re-renders, shows 48px again
-
-## Testing Plan
-
-1. Create a new Heading (H1) in the builder
-2. Verify desktop shows 48px in canvas
-3. Click Tablet breakpoint → verify heading immediately updates to 40px
-4. Click Mobile breakpoint → verify heading immediately updates to 32px
-5. Repeat with Text component
-
-## Risk Assessment
-
-**Very Low Risk**:
-- Adding a subscription is a minimal, targeted change
-- Pattern is already used elsewhere in the codebase (StylePanel, SpacingControl)
-- Does not affect exported code behavior
-- Backward compatible with existing functionality
+| `src/builder/utils/headingTypography.ts` | Add `mobile-landscape` breakpoint to typography map and apply function |
+| `src/builder/components/StylePanel.tsx` | Add `BreakpointValueBadges` component and integrate into Typography section |
