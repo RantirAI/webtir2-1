@@ -87,19 +87,16 @@ export const DraggableInstance: React.FC<DraggableInstanceProps> = ({
     ? {
         // For containers, use block display to allow proper sizing
         // No position:relative - let CSS classes control containing blocks
+        // No isolation - page-level stacking context (.builder-page) handles z-index
         display: 'block',
         width: '100%',
-        // For Webflow containers, add isolation for stacking context without containing block
-        isolation: hasWebflowStyles ? 'isolate' : undefined,
       }
     : needsStackingContext
     ? {
-        // For Webflow imports that contain positioned children, create stacking context
-        // but DON'T set position to allow CSS classes to control positioning
+        // For Webflow imports that contain positioned children
+        // No isolation - page-level stacking context handles z-index ordering
         display: 'block',
         width: '100%',
-        isolation: 'isolate',
-        // NO position: relative - this is the key fix for decorative elements visibility
       }
     : hasAbsolutePosition
     ? {

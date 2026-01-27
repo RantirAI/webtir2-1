@@ -92,9 +92,7 @@ export const DroppableContainer: React.FC<DroppableContainerProps> = ({
         // For Webflow imports, don't set position - let CSS classes control containing blocks
         // For native builder containers, set position:relative for proper dnd-kit behavior
         position: hasWebflowImport ? undefined : 'relative' as const,
-        // Use isolation for stacking context (needed for z-index:-1 children)
-        // This creates stacking context WITHOUT becoming a containing block
-        isolation: 'isolate',
+        // NOTE: No isolation:isolate here - page-level stacking context (.builder-page) handles z-index
         // Add prominent blue visual feedback when dragging over this container
         outline: isValidDropTarget ? '2px dashed #3b82f6' : undefined,
         outlineOffset: isValidDropTarget ? '-2px' : undefined,
@@ -104,11 +102,9 @@ export const DroppableContainer: React.FC<DroppableContainerProps> = ({
       }
     : hasWebflowImport && !hasAbsolutePosition
     ? {
-        // Webflow non-container elements that need stacking context
+        // Webflow non-container elements - no isolation needed, page-level stacking context handles z-index
         display: 'block',
         width: '100%',
-        isolation: 'isolate',
-        // NO position: relative - let CSS classes control positioning hierarchy
       }
     : hasWebflowImport && hasAbsolutePosition
     ? {
