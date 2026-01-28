@@ -98,7 +98,7 @@ export const HoverOverlay: React.FC<HoverOverlayProps> = ({ element, instanceId 
       {/* Global component badge on the right */}
       {globalLabel && (
         <div 
-          className="absolute -top-7 right-0 bg-green-500 text-white px-2 py-0.5 rounded text-[10px] font-medium pointer-events-none"
+          className="absolute -top-7 right-0 bg-green-500 text-white p-1 rounded text-[10px] font-medium pointer-events-none"
           style={{ whiteSpace: 'nowrap' }}
         >
           {globalLabel}

@@ -243,7 +243,7 @@ export const SelectionOverlay: React.FC<SelectionOverlayProps> = ({ instance, el
       
       {/* Label badge with arrows and settings */}
       <div className="absolute -top-7 left-0 flex items-center gap-0.5 pointer-events-auto">
-        <div className={`${bgColor} text-white px-2 py-0.5 rounded text-[10px] font-medium flex items-center gap-1`}>
+        <div className={`${bgColor} text-white p-1 rounded text-[10px] font-medium flex items-center gap-1`}>
           {label}
           {isPrebuilt && <span className="text-[9px] opacity-80">●</span>}
           {isHeading && (
@@ -289,7 +289,7 @@ export const SelectionOverlay: React.FC<SelectionOverlayProps> = ({ instance, el
       {/* Global component badge on the right */}
       {globalLabel && (
         <div className="absolute -top-7 right-0 pointer-events-none">
-          <div className="bg-green-500 text-white px-2 py-0.5 rounded text-[10px] font-medium whitespace-nowrap">
+          <div className="bg-green-500 text-white p-1 rounded text-[10px] font-medium whitespace-nowrap">
             {globalLabel}
           </div>
         </div>

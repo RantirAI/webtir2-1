@@ -8,6 +8,7 @@
   flex-wrap: wrap;
   align-items: flex-start;
   position: relative;
+  padding: 0;
 }
 
 /* Default direction for ALL inline editable text */
@@ -22,10 +23,11 @@
   width: 100%;
 }
 
-/* Container defaults */
+/* Container defaults - no default padding */
 .builder-container {
   width: 100%;
   min-height: 100px;
+  padding: 0;
 }
 
 /* Section defaults */
