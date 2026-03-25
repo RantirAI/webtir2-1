@@ -35,6 +35,8 @@ interface FileNode {
   path: string;
   isComponent?: boolean;
   isLinked?: boolean;
+  componentInstanceId?: string;
+  componentPrebuiltId?: string;
   isMedia?: boolean;
   isMediaFolder?: boolean;
   isCodeFile?: boolean;
@@ -56,6 +58,11 @@ interface FileTreeProps {
   onUploadCodeFiles?: (files: File[], targetPath: string) => void;
   onRenameCodeItem?: (oldPath: string, newName: string) => void;
   onDeleteCodeItem?: (path: string) => void;
+  onRenameComponent?: (instanceId: string, prebuiltId: string | undefined, newName: string) => void;
+  onRenameMediaFolder?: (folderId: string, newName: string) => void;
+  onRenameMediaAsset?: (assetId: string, newName: string) => void;
+  onDeleteMediaFolder?: (folderId: string) => void;
+  onDeleteMediaAsset?: (assetId: string) => void;
 }
 
 const normalizePath = (path: string) => {
@@ -157,6 +164,11 @@ export const FileTree: React.FC<FileTreeProps> = ({
   onUploadCodeFiles,
   onRenameCodeItem,
   onDeleteCodeItem,
+  onRenameComponent,
+  onRenameMediaFolder,
+  onRenameMediaAsset,
+  onDeleteMediaFolder,
+  onDeleteMediaAsset,
 }) => {
   const rootInstance = useBuilderStore((state) => state.rootInstance);
   const { assets, folders, getFoldersInParent, getAssetsInFolder } = useMediaStore();
@@ -182,6 +194,8 @@ export const FileTree: React.FC<FileTreeProps> = ({
       path: entry.path,
       isComponent: true,
       isLinked: entry.isLinked,
+      componentInstanceId: entry.instanceId,
+      componentPrebuiltId: entry.prebuiltId,
       children: entry.children.length > 0 ? componentNodesToFileNodes(entry.children) : undefined,
     }));
   };
@@ -389,6 +403,68 @@ export const FileTree: React.FC<FileTreeProps> = ({
             </button>
           )}
 
+          {isCodeFolder && node.path !== '/files' && onRenameCodeItem && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                const newName = window.prompt('Rename folder', node.name);
+                if (newName && newName.trim() && newName.trim() !== node.name) {
+                  onRenameCodeItem(node.path, newName.trim());
+                }
+              }}
+              className="p-0.5 rounded opacity-0 group-hover:opacity-100 hover:bg-primary/20 hover:text-primary transition-opacity"
+              title={`Rename ${node.name}`}
+            >
+              <Pencil className="w-3 h-3" />
+            </button>
+          )}
+
+          {isCodeFolder && node.path !== '/files' && onDeleteCodeItem && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                if (window.confirm(`Delete folder "${node.name}" and all its contents?`)) {
+                  onDeleteCodeItem(node.path);
+                }
+              }}
+              className="p-0.5 rounded opacity-0 group-hover:opacity-100 hover:bg-destructive/20 hover:text-destructive transition-opacity"
+              title={`Delete ${node.name}`}
+            >
+              <Trash2 className="w-3 h-3" />
+            </button>
+          )}
+
+          {node.isMediaFolder && node.mediaFolder && onRenameMediaFolder && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                const newName = window.prompt('Rename media folder', node.mediaFolder?.name || node.name);
+                if (newName && newName.trim() && newName.trim() !== node.name) {
+                  onRenameMediaFolder(node.mediaFolder.id, newName.trim());
+                }
+              }}
+              className="p-0.5 rounded opacity-0 group-hover:opacity-100 hover:bg-primary/20 hover:text-primary transition-opacity"
+              title={`Rename ${node.name}`}
+            >
+              <Pencil className="w-3 h-3" />
+            </button>
+          )}
+
+          {node.isMediaFolder && node.mediaFolder && onDeleteMediaFolder && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                if (window.confirm(`Delete folder "${node.name}"?`)) {
+                  onDeleteMediaFolder(node.mediaFolder.id);
+                }
+              }}
+              className="p-0.5 rounded opacity-0 group-hover:opacity-100 hover:bg-destructive/20 hover:text-destructive transition-opacity"
+              title={`Delete ${node.name}`}
+            >
+              <Trash2 className="w-3 h-3" />
+            </button>
+          )}
+
           {addHandler && (
             <button
               onClick={(e) => {
@@ -481,7 +557,7 @@ export const FileTree: React.FC<FileTreeProps> = ({
 
     const fileRow = (
       <div
-        className={`flex items-center gap-1 px-2 py-1.5 cursor-pointer hover:bg-muted/50 text-xs ${
+        className={`group flex items-center gap-1 px-2 py-1.5 cursor-pointer hover:bg-muted/50 text-xs ${
           isSelected ? 'bg-muted' : ''
         }`}
         style={{ paddingLeft: `${depth * 12 + 20}px` }}
@@ -494,9 +570,57 @@ export const FileTree: React.FC<FileTreeProps> = ({
         ) : (
           <FileCode className="w-3 h-3 flex-shrink-0 text-muted-foreground" />
         )}
-        <span className="truncate">{node.name}</span>
+        <span className="truncate flex-1">{node.name}</span>
+
+        {isComponentFile && onRenameComponent && node.componentInstanceId && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              const newName = window.prompt('Rename component', node.name.replace(/\.html$/i, ''));
+              if (newName && newName.trim()) {
+                onRenameComponent(node.componentInstanceId, node.componentPrebuiltId, newName.trim());
+              }
+            }}
+            className="p-0.5 rounded opacity-0 group-hover:opacity-100 hover:bg-primary/20 hover:text-primary transition-opacity"
+            title={`Rename ${node.name}`}
+          >
+            <Pencil className="w-3 h-3" />
+          </button>
+        )}
+
+        {isMediaFile && node.mediaAsset && onRenameMediaAsset && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              const newName = window.prompt('Rename media', node.mediaAsset?.name || node.name);
+              if (newName && newName.trim()) {
+                onRenameMediaAsset(node.mediaAsset.id, newName.trim());
+              }
+            }}
+            className="p-0.5 rounded opacity-0 group-hover:opacity-100 hover:bg-primary/20 hover:text-primary transition-opacity"
+            title={`Rename ${node.name}`}
+          >
+            <Pencil className="w-3 h-3" />
+          </button>
+        )}
+
+        {isMediaFile && node.mediaAsset && onDeleteMediaAsset && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              if (window.confirm(`Delete "${node.name}"?`)) {
+                onDeleteMediaAsset(node.mediaAsset.id);
+              }
+            }}
+            className="p-0.5 rounded opacity-0 group-hover:opacity-100 hover:bg-destructive/20 hover:text-destructive transition-opacity"
+            title={`Delete ${node.name}`}
+          >
+            <Trash2 className="w-3 h-3" />
+          </button>
+        )}
+
         {node.isLinked && (
-          <span className="ml-auto text-[8px] px-1 py-0.5 bg-green-500/20 text-green-500 rounded">linked</span>
+          <span className="text-[8px] px-1 py-0.5 bg-green-500/20 text-green-500 rounded">linked</span>
         )}
       </div>
     );
