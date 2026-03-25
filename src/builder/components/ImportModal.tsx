@@ -12,6 +12,7 @@ import { translateWebflowToWebtir, getWebflowDataSummary, extractWebflowAssets }
 import { translateFigmaToWebtir, getFigmaDataSummary, isFigmaData } from '../utils/figmaTranslator';
 import { downloadAssets } from '../utils/assetDownloader';
 import { rewriteAllUrls } from '../utils/urlRewriter';
+import { processZipFile } from '../utils/zipImport';
 import { useBuilderStore } from '../store/useBuilderStore';
 
 // Import platform icons
