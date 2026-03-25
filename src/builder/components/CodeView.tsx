@@ -171,6 +171,12 @@ const resolveExternalReference = (
 export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames }) => {
   const rootInstance = useBuilderStore((state) => state.rootInstance);
   const updateInstance = useBuilderStore((state) => state.updateInstance);
+  const renamePrebuilt = useComponentInstanceStore((state) => state.renamePrebuilt);
+  const getInstanceLink = useComponentInstanceStore((state) => state.getInstanceLink);
+  const renameMediaFolder = useMediaStore((state) => state.renameFolder);
+  const removeMediaFolder = useMediaStore((state) => state.removeFolder);
+  const updateMediaAsset = useMediaStore((state) => state.updateAsset);
+  const removeMediaAsset = useMediaStore((state) => state.removeAsset);
   const { getCurrentPage, getPageCustomCode, getAllPages, getGlobalComponents } = usePageStore();
   const currentPage = getCurrentPage();
   const customCode = currentPage ? getPageCustomCode(currentPage.id) : { header: '', body: '', footer: '' };
