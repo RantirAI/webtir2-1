@@ -229,7 +229,7 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
     astro: false,
   });
   const [externalFiles, setExternalFiles] = useState<Record<string, ExternalCodeFile>>({});
-  const [externalFolders, setExternalFolders] = useState<string[]>(['/files']);
+  const [externalFolders, setExternalFolders] = useState<string[]>([]);
 
   // Discover components from canvas
   const componentEntries = useMemo(() => {
@@ -254,7 +254,7 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
 
       const usedPaths = new Set(Object.keys(externalFiles));
       const nextFiles: Record<string, ExternalCodeFile> = { ...externalFiles };
-      const nextFolders = new Set(['/files', ...externalFolders]);
+      const nextFolders = new Set([...externalFolders]);
       let firstImportedHtmlPath: string | null = null;
 
       for (const incoming of incomingFiles) {
@@ -404,11 +404,11 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
     const sanitizedFolderName = sanitizeExternalName(folderName || fallbackName);
     if (!sanitizedFolderName) return;
 
-    const basePath = normalizeExternalPath(parentPath || '/files');
+    const basePath = normalizeExternalPath(parentPath === '/' ? '/files' : parentPath);
     const existing = new Set(externalFolders);
     const candidatePath = normalizeExternalPath(`${basePath}/${normalizeImportedRelativePath(sanitizedFolderName)}`);
     const uniquePath = makeUniqueExternalPath(candidatePath, existing);
-    setExternalFolders((prev) => Array.from(new Set([...prev, '/files', uniquePath])).sort((a, b) => a.localeCompare(b)));
+    setExternalFolders((prev) => Array.from(new Set([...prev, uniquePath])).sort((a, b) => a.localeCompare(b)));
   }, [externalFolders]);
 
   const handleRenameCodeItem = useCallback((oldPath: string, newName: string) => {
@@ -892,7 +892,7 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
                     onClick={() => {
                       const folderName = window.prompt('New folder name:', 'new-folder');
                       if (folderName?.trim()) {
-                        handleAddCodeFolder('/files', folderName.trim());
+                        handleAddCodeFolder('/', folderName.trim());
                       }
                     }}
                     className="h-6 w-6 p-0"
