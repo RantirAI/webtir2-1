@@ -279,19 +279,27 @@ export const ImportModal: React.FC<ImportModalProps> = ({ open, onOpenChange, on
       
       if (pagesWithInstances.length > 0) {
         const allImportedChildren: any[] = [];
+        const seenNodeSignatures = new Set<string>();
         
         for (const page of pagesWithInstances) {
           if (page.instance) {
             const children = page.instance.children?.length
               ? page.instance.children
               : [page.instance];
-            allImportedChildren.push(...children);
+
+            for (const child of children) {
+              const signature = `${child.type}|${(child.styleSourceIds || []).join(',')}|${child.props?.children || ''}|${child.children?.length || 0}`;
+              if (seenNodeSignatures.has(signature)) continue;
+              seenNodeSignatures.add(signature);
+              allImportedChildren.push(child);
+            }
           }
         }
 
         if (allImportedChildren.length > 0) {
           updateInstance(rootInstance.id, {
-            children: [...(rootInstance.children || []), ...allImportedChildren],
+            // Replace current canvas with imported content to prevent compounding duplicates
+            children: allImportedChildren,
           });
         }
       }
