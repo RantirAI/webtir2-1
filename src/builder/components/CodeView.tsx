@@ -88,8 +88,10 @@ const sanitizeExternalName = (name: string) => name.trim().replace(/[\\/]+/g, '-
 const getExternalFileTypeFromPath = (path: string): ExternalCodeFileType | null => {
   const lower = path.toLowerCase();
   if (lower.endsWith('.html') || lower.endsWith('.htm')) return 'html';
-  if (lower.endsWith('.css')) return 'css';
-  if (lower.endsWith('.js') || lower.endsWith('.mjs')) return 'js';
+  if (lower.endsWith('.css') || lower.endsWith('.scss') || lower.endsWith('.sass') || lower.endsWith('.less')) return 'css';
+  if (lower.endsWith('.js') || lower.endsWith('.mjs') || lower.endsWith('.ts') || lower.endsWith('.tsx') || lower.endsWith('.jsx')) return 'js';
+  // Treat all other recognized files as 'js' type for editing purposes
+  if (lower.endsWith('.json') || lower.endsWith('.xml') || lower.endsWith('.svg') || lower.endsWith('.md') || lower.endsWith('.txt') || lower.endsWith('.csv') || lower.endsWith('.yaml') || lower.endsWith('.yml') || lower.endsWith('.toml') || lower.endsWith('.env') || lower.endsWith('.map')) return 'js';
   return null;
 };
 

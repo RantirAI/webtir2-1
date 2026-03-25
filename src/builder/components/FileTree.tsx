@@ -898,7 +898,7 @@ export const FileTree: React.FC<FileTreeProps> = ({
         ref={fileUploadRef}
         type="file"
         multiple
-        accept=".html,.htm,.css,.js,.mjs"
+        accept="*"
         className="hidden"
         onChange={(e) => {
           handleUploadSelection(e.target.files);
