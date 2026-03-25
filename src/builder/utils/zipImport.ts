@@ -245,10 +245,32 @@ export async function processZipFile(file: File): Promise<ZipImportResult> {
   }
 
   const mergedCss = cssChunks.filter(Boolean).join('\n\n');
+  let cssClassesCreated = 0;
+  let cssPropertiesSet = 0;
+
   if (mergedCss.trim()) {
-    const { rawCssOverrides, setRawCssOverrides } = useStyleStore.getState();
-    const nextCss = [rawCssOverrides, '/* ZIP Import */', mergedCss].filter(Boolean).join('\n\n');
-    setRawCssOverrides(nextCss);
+    // First, parse class-based CSS rules into style sources for editability
+    try {
+      const { supportedCSS, unsupportedCSS } = extractCSSRules(mergedCss);
+      
+      if (supportedCSS.trim()) {
+        const parseResult = parseCSSToStyleStore(supportedCSS);
+        cssClassesCreated = parseResult.classesCreated;
+        cssPropertiesSet = parseResult.propertiesSet;
+      }
+      
+      // Put ALL CSS (including unsupported selectors, :root vars, etc.) into rawCssOverrides
+      // This ensures complex selectors, CSS variables, and element selectors still work
+      const { rawCssOverrides, setRawCssOverrides } = useStyleStore.getState();
+      const nextCss = [rawCssOverrides, '/* ZIP Import */', mergedCss].filter(Boolean).join('\n\n');
+      setRawCssOverrides(nextCss);
+    } catch (e) {
+      // Fallback: just inject raw CSS if parsing fails
+      console.warn('CSS parsing failed, injecting raw CSS:', e);
+      const { rawCssOverrides, setRawCssOverrides } = useStyleStore.getState();
+      const nextCss = [rawCssOverrides, '/* ZIP Import */', mergedCss].filter(Boolean).join('\n\n');
+      setRawCssOverrides(nextCss);
+    }
   }
 
   return {
@@ -262,8 +284,8 @@ export async function processZipFile(file: File): Promise<ZipImportResult> {
       cssCount: cssEntries.length,
       jsCount: jsEntries.length,
       assetCount: storedAssets.length,
-      cssClassesCreated: 0,
-      cssPropertiesSet: 0,
+      cssClassesCreated,
+      cssPropertiesSet,
     },
   };
 }
