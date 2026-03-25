@@ -381,6 +381,75 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
     const uniquePath = makeUniqueExternalPath(candidatePath, existing);
     setExternalFolders((prev) => Array.from(new Set([...prev, '/files', uniquePath])).sort((a, b) => a.localeCompare(b)));
   }, [externalFolders]);
+
+  const handleRenameCodeItem = useCallback((oldPath: string, newName: string) => {
+    const normalized = normalizeExternalPath(oldPath);
+    const parentPath = getExternalParentPath(normalized);
+    const newPath = normalizeExternalPath(`${parentPath}/${newName}`);
+
+    // Rename folder — update folder list and all files/folders under it
+    const isFolder = externalFolders.includes(normalized);
+    if (isFolder) {
+      setExternalFolders((prev) =>
+        prev.map((f) => {
+          if (f === normalized) return newPath;
+          if (f.startsWith(normalized + '/')) return newPath + f.slice(normalized.length);
+          return f;
+        }).sort((a, b) => a.localeCompare(b))
+      );
+      setExternalFiles((prev) => {
+        const next: Record<string, ExternalCodeFile> = {};
+        for (const [path, file] of Object.entries(prev)) {
+          if (path.startsWith(normalized + '/')) {
+            const updatedPath = newPath + path.slice(normalized.length);
+            next[updatedPath] = { ...file, path: updatedPath, name: updatedPath.split('/').pop() || file.name };
+          } else {
+            next[path] = file;
+          }
+        }
+        return next;
+      });
+      return;
+    }
+
+    // Rename file
+    setExternalFiles((prev) => {
+      const file = prev[normalized];
+      if (!file) return prev;
+      const next = { ...prev };
+      delete next[normalized];
+      next[newPath] = { ...file, path: newPath, name: newName };
+      return next;
+    });
+    if (selectedFile === normalized) setSelectedFile(newPath);
+  }, [externalFolders, externalFiles, selectedFile]);
+
+  const handleDeleteCodeItem = useCallback((path: string) => {
+    const normalized = normalizeExternalPath(path);
+
+    // Delete folder and everything inside
+    const isFolder = externalFolders.includes(normalized);
+    if (isFolder) {
+      setExternalFolders((prev) => prev.filter((f) => f !== normalized && !f.startsWith(normalized + '/')));
+      setExternalFiles((prev) => {
+        const next: Record<string, ExternalCodeFile> = {};
+        for (const [p, file] of Object.entries(prev)) {
+          if (!p.startsWith(normalized + '/')) next[p] = file;
+        }
+        return next;
+      });
+      if (selectedFile.startsWith(normalized)) setSelectedFile('/files');
+      return;
+    }
+
+    // Delete single file
+    setExternalFiles((prev) => {
+      const next = { ...prev };
+      delete next[normalized];
+      return next;
+    });
+    if (selectedFile === normalized) setSelectedFile('/files');
+  }, [externalFolders, selectedFile]);
   
   const componentCode = useMemo(() => {
     if (!isComponentFile) return null;
