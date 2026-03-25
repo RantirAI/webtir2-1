@@ -401,7 +401,7 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
 
     const basePath = normalizeExternalPath(parentPath || '/files');
     const existing = new Set(externalFolders);
-    const candidatePath = normalizeExternalPath(`${basePath}/${normalizedImportedRelativePath(sanitizedFolderName)}`);
+    const candidatePath = normalizeExternalPath(`${basePath}/${normalizeImportedRelativePath(sanitizedFolderName)}`);
     const uniquePath = makeUniqueExternalPath(candidatePath, existing);
     setExternalFolders((prev) => Array.from(new Set([...prev, '/files', uniquePath])).sort((a, b) => a.localeCompare(b)));
   }, [externalFolders]);
