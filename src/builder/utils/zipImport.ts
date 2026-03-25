@@ -27,12 +27,16 @@ export interface ZipImportResult {
 
 const IMPORT_LIMITS = {
   maxFiles: 2000,
+  maxHtmlPages: 25,
   maxAssets: 250,
   maxAssetBytesPerFile: 5 * 1024 * 1024,
   maxAssetBytesTotal: 30 * 1024 * 1024,
   maxCssBytes: 1_500_000,
   maxJsBytesPerFile: 500_000,
 };
+
+const ZIP_IMPORT_START = '/* ZIP_IMPORT_START */';
+const ZIP_IMPORT_END = '/* ZIP_IMPORT_END */';
 
 const imageMimeTypes: Record<string, string> = {
   '.png': 'image/png',
@@ -195,6 +199,8 @@ export async function processZipFile(file: File): Promise<ZipImportResult> {
   }
 
   const pages: ZipImportResult['pages'] = [];
+  const seenPageSignatures = new Set<string>();
+  const fontImportsSet = new Set<string>();
   htmlEntries.sort((a, b) => {
     if (a.path.toLowerCase().includes('index')) return -1;
     if (b.path.toLowerCase().includes('index')) return 1;
@@ -205,11 +211,10 @@ export async function processZipFile(file: File): Promise<ZipImportResult> {
     const htmlEntry = htmlEntries[i];
     const htmlText = await htmlEntry.entry.async('string');
 
-    // Extract font links from <head> and convert to @import rules
+    // Extract font links from <head> and keep only unique imports
     const fontImports = extractFontLinks(htmlText);
-    if (fontImports && cssBytes < IMPORT_LIMITS.maxCssBytes) {
-      cssChunks.unshift(fontImports); // fonts go first
-      cssBytes += fontImports.length;
+    for (const fontImport of fontImports) {
+      fontImportsSet.add(fontImport);
     }
 
     const { cleanedHTML, extractedCSS } = extractInlineStyles(htmlText);
@@ -221,6 +226,18 @@ export async function processZipFile(file: File): Promise<ZipImportResult> {
     }
 
     const rewrittenHTML = rewriteUrlsInHTML(cleanedHTML, assetUrlMap);
+
+    // Avoid importing duplicate pages with identical body markup
+    const pageSignature = createPageSignature(rewrittenHTML);
+    if (seenPageSignatures.has(pageSignature)) {
+      continue;
+    }
+    seenPageSignatures.add(pageSignature);
+
+    if (pages.length >= IMPORT_LIMITS.maxHtmlPages) {
+      break;
+    }
+
     // Parse ALL HTML pages into instances, not just the first
     const instance = parseHTMLToInstance(rewrittenHTML);
 
@@ -231,6 +248,13 @@ export async function processZipFile(file: File): Promise<ZipImportResult> {
     });
 
     if (i % 3 === 0) await yieldToMainThread();
+  }
+
+  if (fontImportsSet.size > 0 && cssBytes < IMPORT_LIMITS.maxCssBytes) {
+    const uniqueFontImports = Array.from(fontImportsSet).join('\n');
+    const allowed = Math.max(0, IMPORT_LIMITS.maxCssBytes - cssBytes);
+    cssChunks.unshift(uniqueFontImports.slice(0, allowed));
+    cssBytes += Math.min(uniqueFontImports.length, allowed);
   }
 
   const jsFiles: ZipImportResult['jsFiles'] = [];
@@ -263,13 +287,29 @@ export async function processZipFile(file: File): Promise<ZipImportResult> {
       // Put ALL CSS (including unsupported selectors, :root vars, etc.) into rawCssOverrides
       // This ensures complex selectors, CSS variables, and element selectors still work
       const { rawCssOverrides, setRawCssOverrides } = useStyleStore.getState();
-      const nextCss = [rawCssOverrides, '/* ZIP Import */', mergedCss].filter(Boolean).join('\n\n');
+      const cleanedRawCss = removePreviousZipImportBlock(rawCssOverrides);
+      const nextCss = [
+        cleanedRawCss,
+        ZIP_IMPORT_START,
+        mergedCss,
+        ZIP_IMPORT_END,
+      ]
+        .filter(Boolean)
+        .join('\n\n');
       setRawCssOverrides(nextCss);
     } catch (e) {
       // Fallback: just inject raw CSS if parsing fails
       console.warn('CSS parsing failed, injecting raw CSS:', e);
       const { rawCssOverrides, setRawCssOverrides } = useStyleStore.getState();
-      const nextCss = [rawCssOverrides, '/* ZIP Import */', mergedCss].filter(Boolean).join('\n\n');
+      const cleanedRawCss = removePreviousZipImportBlock(rawCssOverrides);
+      const nextCss = [
+        cleanedRawCss,
+        ZIP_IMPORT_START,
+        mergedCss,
+        ZIP_IMPORT_END,
+      ]
+        .filter(Boolean)
+        .join('\n\n');
       setRawCssOverrides(nextCss);
     }
   }
@@ -281,7 +321,7 @@ export async function processZipFile(file: File): Promise<ZipImportResult> {
     assets: storedAssets,
     summary: {
       totalFiles: allPaths.length,
-      htmlCount: htmlEntries.length,
+      htmlCount: pages.length,
       cssCount: cssEntries.length,
       jsCount: jsEntries.length,
       assetCount: storedAssets.length,
@@ -389,11 +429,28 @@ function extractInlineStyles(html: string): { cleanedHTML: string; extractedCSS:
   return { cleanedHTML, extractedCSS };
 }
 
+function createPageSignature(html: string): string {
+  const bodyMatch = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+  const body = bodyMatch ? bodyMatch[1] : html;
+
+  return body
+    .replace(/<!--[\s\S]*?-->/g, '')
+    .replace(/>\s+</g, '><')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function removePreviousZipImportBlock(css: string): string {
+  if (!css) return '';
+  const zipBlockRegex = /\/\* ZIP_IMPORT_START \*\/[\s\S]*?\/\* ZIP_IMPORT_END \*\//g;
+  return css.replace(zipBlockRegex, '').trim();
+}
+
 /**
  * Extract Google Font and other external font <link> tags from HTML <head>
  * and convert them to @import rules for CSS injection.
  */
-function extractFontLinks(html: string): string {
+function extractFontLinks(html: string): string[] {
   const imports: string[] = [];
   
   // Match <link> tags with stylesheet rel that point to font services
@@ -417,5 +474,5 @@ function extractFontLinks(html: string): string {
     }
   }
   
-  return imports.length > 0 ? imports.join('\n') : '';
+  return imports;
 }
