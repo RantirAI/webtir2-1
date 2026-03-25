@@ -150,9 +150,24 @@ function domNodeToInstancePreserving(
       type = 'Div';
       break;
     case 'section':
+    case 'header':
+    case 'footer':
+    case 'main':
+    case 'article':
+    case 'aside':
       type = 'Section';
       break;
     case 'div':
+    case 'span':
+    case 'figure':
+    case 'figcaption':
+    case 'i':
+    case 'em':
+    case 'strong':
+    case 'b':
+    case 'small':
+    case 'sup':
+    case 'sub':
       type = 'Div';
       break;
     case 'p':
@@ -174,6 +189,18 @@ function domNodeToInstancePreserving(
       break;
     case 'img':
       type = 'Image';
+      break;
+    case 'video':
+      type = 'Video';
+      break;
+    case 'ul':
+      type = 'UnorderedList';
+      break;
+    case 'ol':
+      type = 'OrderedList';
+      break;
+    case 'li':
+      type = 'Div';
       break;
     case 'input':
       if (node.getAttribute('type') === 'checkbox') {
@@ -199,11 +226,23 @@ function domNodeToInstancePreserving(
     case 'form':
       type = 'Form';
       break;
-    case 'header':
-      type = 'Section';
+    case 'hr':
+      type = 'Separator';
       break;
-    case 'footer':
-      type = 'Section';
+    case 'svg':
+    case 'path':
+    case 'circle':
+    case 'rect':
+    case 'line':
+    case 'polygon':
+    case 'polyline':
+    case 'g':
+    case 'defs':
+    case 'use':
+    case 'symbol':
+    case 'clippath':
+    case 'mask':
+      type = 'Div';
       break;
   }
   
