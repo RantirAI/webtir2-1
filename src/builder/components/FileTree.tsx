@@ -446,7 +446,7 @@ export const FileTree: React.FC<FileTreeProps> = ({
     const getAddHandler = (path: string) => {
       if (path === '/pages') return onAddPage;
       if (path === '/components') return onAddComponent;
-      if (path === '/media') return onAddMedia;
+      if (path === '/assets') return onAddMedia;
       return undefined;
     };
 
