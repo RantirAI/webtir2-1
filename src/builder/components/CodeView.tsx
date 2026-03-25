@@ -98,7 +98,7 @@ const getExternalFileTypeFromPath = (path: string): ExternalCodeFileType | null 
 const getExternalParentPath = (path: string) => {
   const normalized = normalizeExternalPath(path);
   const parts = normalized.split('/').filter(Boolean);
-  if (parts.length <= 1) return '/files';
+  if (parts.length <= 1) return '/';
   return `/${parts.slice(0, -1).join('/')}`;
 };
 
