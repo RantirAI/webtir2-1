@@ -15,7 +15,7 @@ import { parseHTMLToInstance, parseHTMLPreservingLinks } from '../utils/codeImpo
 import { parseCSSToStyleStore, validateCSS, extractCSSRules } from '../utils/cssImport';
 import { getHeadingTypography } from '../utils/headingTypography';
 import { ComponentInstance } from '../store/types';
-import { Copy, Check, Monitor, Tablet, Smartphone, Upload, Lock, Sparkles } from 'lucide-react';
+import { Copy, Check, Monitor, Tablet, Smartphone, Upload, Lock, Sparkles, FolderPlus } from 'lucide-react';
 import { ImportModal } from './ImportModal';
 import { FileTree } from './FileTree';
 import { CreateComponentDialog } from './CreateComponentDialog';
@@ -88,8 +88,10 @@ const sanitizeExternalName = (name: string) => name.trim().replace(/[\\/]+/g, '-
 const getExternalFileTypeFromPath = (path: string): ExternalCodeFileType | null => {
   const lower = path.toLowerCase();
   if (lower.endsWith('.html') || lower.endsWith('.htm')) return 'html';
-  if (lower.endsWith('.css')) return 'css';
-  if (lower.endsWith('.js') || lower.endsWith('.mjs')) return 'js';
+  if (lower.endsWith('.css') || lower.endsWith('.scss') || lower.endsWith('.sass') || lower.endsWith('.less')) return 'css';
+  if (lower.endsWith('.js') || lower.endsWith('.mjs') || lower.endsWith('.ts') || lower.endsWith('.tsx') || lower.endsWith('.jsx')) return 'js';
+  // Treat all other recognized files as 'js' type for editing purposes
+  if (lower.endsWith('.json') || lower.endsWith('.xml') || lower.endsWith('.svg') || lower.endsWith('.md') || lower.endsWith('.txt') || lower.endsWith('.csv') || lower.endsWith('.yaml') || lower.endsWith('.yml') || lower.endsWith('.toml') || lower.endsWith('.env') || lower.endsWith('.map')) return 'js';
   return null;
 };
 
@@ -241,7 +243,7 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
   // Check if selected file is a component file, page file, or media
   const isComponentFile = selectedFile.startsWith('/components/');
   const isPageFile = selectedFile.startsWith('/pages/');
-  const isMediaFile = selectedFile.startsWith('/media');
+  const isMediaFile = selectedFile.startsWith('/assets');
   const isExternalFile = selectedFile.startsWith('/files/');
   const isExternalHtmlFile = selectedExternalFile?.type === 'html';
   const isCoreFile = selectedFile.includes('.core.') || selectedFile.includes('/core/');
@@ -339,7 +341,15 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
       if (!files.length) return;
 
       const targetFolderPath = normalizeExternalPath(targetPath || '/files');
-      const allowedExtensions = new Set(['html', 'htm', 'css', 'js', 'mjs']);
+      const allowedExtensions = new Set([
+        'html', 'htm', 'css', 'js', 'mjs', 'ts', 'tsx', 'jsx',
+        'json', 'xml', 'svg', 'md', 'txt', 'csv',
+        'png', 'jpg', 'jpeg', 'gif', 'webp', 'ico', 'avif',
+        'woff', 'woff2', 'ttf', 'otf', 'eot',
+        'mp4', 'webm', 'ogg', 'mp3', 'wav',
+        'pdf', 'zip', 'yaml', 'yml', 'toml', 'env',
+        'scss', 'sass', 'less', 'map',
+      ]);
       let skippedFiles = 0;
 
       const prepared = files
@@ -352,19 +362,16 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
             skippedFiles += 1;
             return null;
           }
-          const type = getExternalFileTypeFromPath(candidatePath);
-          if (!type) {
-            skippedFiles += 1;
-            return null;
-          }
-          return { file, path: candidatePath, type };
+          // For binary asset files, we'll store them but still need a type for the virtual FS
+          const type = getExternalFileTypeFromPath(candidatePath) || 'js';
+          return { file, path: candidatePath, type, extension };
         })
-        .filter((item): item is { file: File; path: string; type: ExternalCodeFileType } => Boolean(item));
+        .filter((item): item is { file: File; path: string; type: ExternalCodeFileType; extension: string } => Boolean(item));
 
       if (prepared.length === 0) {
         toast({
           title: 'No supported files',
-          description: 'Upload .html, .css, .js, or .mjs files.',
+          description: 'No supported file types found in selection.',
           variant: 'destructive',
         });
         return;
@@ -877,15 +884,33 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
               <h3 className="text-xs font-semibold text-muted-foreground uppercase">
                 {showAIChat ? 'AI Chat' : 'Files'}
               </h3>
-              <Button
-                variant={showAIChat ? 'secondary' : 'ghost'}
-                size="sm"
-                onClick={() => setShowAIChat(!showAIChat)}
-                className="h-6 w-6 p-0"
-                title={showAIChat ? 'Show Files' : 'Show AI Chat'}
-              >
-                <Sparkles className="h-3.5 w-3.5" />
-              </Button>
+              <div className="flex items-center gap-1">
+                {!showAIChat && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      const folderName = window.prompt('New folder name:', 'new-folder');
+                      if (folderName?.trim()) {
+                        handleAddCodeFolder('/files', folderName.trim());
+                      }
+                    }}
+                    className="h-6 w-6 p-0"
+                    title="Create new folder"
+                  >
+                    <FolderPlus className="h-3.5 w-3.5" />
+                  </Button>
+                )}
+                <Button
+                  variant={showAIChat ? 'secondary' : 'ghost'}
+                  size="sm"
+                  onClick={() => setShowAIChat(!showAIChat)}
+                  className="h-6 w-6 p-0"
+                  title={showAIChat ? 'Show Files' : 'Show AI Chat'}
+                >
+                  <Sparkles className="h-3.5 w-3.5" />
+                </Button>
+              </div>
             </div>
             {showAIChat ? (
               <div className="flex-1 overflow-hidden">

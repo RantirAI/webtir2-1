@@ -243,7 +243,7 @@ export const FileTree: React.FC<FileTreeProps> = ({
   const rootInstance = useBuilderStore((state) => state.rootInstance);
   const { assets, folders, getFoldersInParent, getAssetsInFolder } = useMediaStore();
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(
-    new Set(['/', '/pages', '/components', '/files', '/media'])
+    new Set(['/', '/pages', '/components', '/files', '/assets'])
   );
   const [dropTargetPath, setDropTargetPath] = useState<string | null>(null);
   const [uploadTargetPath, setUploadTargetPath] = useState('/files');
@@ -333,20 +333,20 @@ export const FileTree: React.FC<FileTreeProps> = ({
     structure.push(codeFilesRoot);
 
     const mediaChildren: FileNode[] = [
-      ...buildMediaFolderTree(null, '/media'),
+      ...buildMediaFolderTree(null, '/assets'),
       ...rootAssets.map((asset) => ({
         name: asset.name,
         type: 'file' as const,
-        path: `/media/${asset.name}__${asset.id}`,
+        path: `/assets/${asset.name}__${asset.id}`,
         isMedia: true,
         mediaAsset: asset,
       })),
     ];
 
     structure.push({
-      name: 'media',
+      name: 'assets',
       type: 'folder',
-      path: '/media',
+      path: '/assets',
       children: mediaChildren,
     });
 
@@ -446,14 +446,14 @@ export const FileTree: React.FC<FileTreeProps> = ({
     const getAddHandler = (path: string) => {
       if (path === '/pages') return onAddPage;
       if (path === '/components') return onAddComponent;
-      if (path === '/media') return onAddMedia;
+      if (path === '/assets') return onAddMedia;
       return undefined;
     };
 
     if (node.type === 'folder') {
       const hasChildren = node.children && node.children.length > 0;
       const addHandler = getAddHandler(node.path);
-      const isMediaFolder = node.path === '/media' || node.isMediaFolder;
+      const isMediaFolder = node.path === '/assets' || node.isMediaFolder;
       const isCodeFolder = node.path.startsWith('/files') || node.isCodeFolder;
       const isDropTarget = dropTargetPath === node.path;
       const isRootCodeFolder = node.path === '/files';
@@ -660,7 +660,7 @@ export const FileTree: React.FC<FileTreeProps> = ({
             </button>
           )}
 
-          {(node.path === '/components' || node.path === '/media' || node.path === '/files') && hasChildren && (
+          {(node.path === '/components' || node.path === '/assets' || node.path === '/files') && hasChildren && (
             <span className="text-[10px] text-muted-foreground">{node.children?.length}</span>
           )}
         </div>
@@ -898,7 +898,7 @@ export const FileTree: React.FC<FileTreeProps> = ({
         ref={fileUploadRef}
         type="file"
         multiple
-        accept=".html,.htm,.css,.js,.mjs"
+        accept="*"
         className="hidden"
         onChange={(e) => {
           handleUploadSelection(e.target.files);
