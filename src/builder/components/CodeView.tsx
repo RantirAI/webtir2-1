@@ -392,11 +392,9 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
     [upsertExternalFiles]
   );
 
-  const handleAddCodeFolder = useCallback((parentPath: string) => {
-    const folderName = window.prompt('Folder name');
-    if (!folderName) return;
-
-    const sanitizedFolderName = sanitizeExternalName(folderName);
+  const handleAddCodeFolder = useCallback((parentPath: string, folderName?: string) => {
+    const fallbackName = 'new-folder';
+    const sanitizedFolderName = sanitizeExternalName(folderName || fallbackName);
     if (!sanitizedFolderName) return;
 
     const basePath = normalizeExternalPath(parentPath || '/files');
@@ -496,6 +494,81 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
     });
     if (selectedFile === normalized) setSelectedFile('/files');
   }, [externalFolders, selectedFile]);
+
+  const handleMoveCodeItem = useCallback((sourcePath: string, destinationFolderPath: string) => {
+    const source = normalizeExternalPath(sourcePath);
+    const destination = normalizeExternalPath(destinationFolderPath || '/files');
+    if (source === '/files' || source === destination || !destination.startsWith('/files')) return;
+
+    const isSourceFolder = externalFolders.includes(source);
+
+    if (isSourceFolder) {
+      if (destination.startsWith(`${source}/`)) return;
+
+      const folderName = source.split('/').pop() || 'folder';
+      const siblingFolders = new Set(
+        externalFolders.filter((path) => path !== source && getExternalParentPath(path) === destination)
+      );
+      const movedRootPath = makeUniqueExternalPath(`${destination}/${folderName}`, siblingFolders);
+      if (movedRootPath === source) return;
+
+      setExternalFolders((prev) =>
+        prev
+          .map((folderPath) => {
+            if (folderPath === source) return movedRootPath;
+            if (folderPath.startsWith(`${source}/`)) return movedRootPath + folderPath.slice(source.length);
+            return folderPath;
+          })
+          .sort((a, b) => a.localeCompare(b))
+      );
+
+      setExternalFiles((prev) => {
+        const next: Record<string, ExternalCodeFile> = {};
+        for (const [path, file] of Object.entries(prev)) {
+          if (path.startsWith(`${source}/`)) {
+            const updatedPath = movedRootPath + path.slice(source.length);
+            next[updatedPath] = { ...file, path: updatedPath, name: updatedPath.split('/').pop() || file.name };
+          } else {
+            next[path] = file;
+          }
+        }
+        return next;
+      });
+
+      if (selectedFile === source || selectedFile.startsWith(`${source}/`)) {
+        setSelectedFile(movedRootPath + selectedFile.slice(source.length));
+      }
+      return;
+    }
+
+    const sourceFile = externalFiles[source];
+    if (!sourceFile) return;
+
+    const fileName = source.split('/').pop() || sourceFile.name;
+    const siblingFiles = new Set(
+      Object.keys(externalFiles).filter((path) => path !== source && getExternalParentPath(path) === destination)
+    );
+    const movedFilePath = makeUniqueExternalPath(`${destination}/${fileName}`, siblingFiles);
+    if (movedFilePath === source) return;
+
+    setExternalFiles((prev) => {
+      const existingFile = prev[source];
+      if (!existingFile) return prev;
+
+      const next = { ...prev };
+      delete next[source];
+      next[movedFilePath] = {
+        ...existingFile,
+        path: movedFilePath,
+        name: movedFilePath.split('/').pop() || existingFile.name,
+      };
+      return next;
+    });
+
+    if (selectedFile === source) {
+      setSelectedFile(movedFilePath);
+    }
+  }, [externalFiles, externalFolders, selectedFile]);
 
   const handleRenameComponentItem = useCallback((instanceId: string, prebuiltId: string | undefined, newName: string) => {
     const sanitizedName = newName.trim();
@@ -852,6 +925,7 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
                 onUploadCodeFiles={handleCodeFilesUpload}
                 onRenameCodeItem={handleRenameCodeItem}
                 onDeleteCodeItem={handleDeleteCodeItem}
+                onMoveCodeItem={handleMoveCodeItem}
                 onRenameComponent={handleRenameComponentItem}
                 onRenameMediaFolder={handleRenameMediaFolder}
                 onRenameMediaAsset={handleRenameMediaAsset}

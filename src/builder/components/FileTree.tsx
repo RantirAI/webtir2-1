@@ -16,6 +16,16 @@ import {
   Pencil,
   Trash2,
 } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   ContextMenu,
@@ -54,10 +64,11 @@ interface FileTreeProps {
   onAddMedia?: () => void;
   codeFilePaths?: string[];
   codeFolderPaths?: string[];
-  onAddCodeFolder?: (parentPath: string) => void;
+  onAddCodeFolder?: (parentPath: string, folderName?: string) => void;
   onUploadCodeFiles?: (files: File[], targetPath: string) => void;
   onRenameCodeItem?: (oldPath: string, newName: string) => void;
   onDeleteCodeItem?: (path: string) => void;
+  onMoveCodeItem?: (sourcePath: string, destinationFolderPath: string) => void;
   onRenameComponent?: (instanceId: string, prebuiltId: string | undefined, newName: string) => void;
   onRenameMediaFolder?: (folderId: string, newName: string) => void;
   onRenameMediaAsset?: (assetId: string, newName: string) => void;
@@ -151,6 +162,64 @@ const buildCodeFilesTree = (codeFolderPaths: string[], codeFilePaths: string[]):
   return root;
 };
 
+type NameDialogState =
+  | {
+      mode: 'add-folder';
+      title: string;
+      description?: string;
+      initialValue: string;
+      parentPath: string;
+    }
+  | {
+      mode: 'rename-code';
+      title: string;
+      description?: string;
+      initialValue: string;
+      path: string;
+    }
+  | {
+      mode: 'rename-component';
+      title: string;
+      description?: string;
+      initialValue: string;
+      instanceId: string;
+      prebuiltId?: string;
+    }
+  | {
+      mode: 'rename-media-folder';
+      title: string;
+      description?: string;
+      initialValue: string;
+      folderId: string;
+    }
+  | {
+      mode: 'rename-media-asset';
+      title: string;
+      description?: string;
+      initialValue: string;
+      assetId: string;
+    };
+
+type DeleteDialogState =
+  | {
+      mode: 'delete-code';
+      title: string;
+      description: string;
+      path: string;
+    }
+  | {
+      mode: 'delete-media-folder';
+      title: string;
+      description: string;
+      folderId: string;
+    }
+  | {
+      mode: 'delete-media-asset';
+      title: string;
+      description: string;
+      assetId: string;
+    };
+
 export const FileTree: React.FC<FileTreeProps> = ({
   onFileSelect,
   selectedFile,
@@ -164,6 +233,7 @@ export const FileTree: React.FC<FileTreeProps> = ({
   onUploadCodeFiles,
   onRenameCodeItem,
   onDeleteCodeItem,
+  onMoveCodeItem,
   onRenameComponent,
   onRenameMediaFolder,
   onRenameMediaAsset,
@@ -177,6 +247,10 @@ export const FileTree: React.FC<FileTreeProps> = ({
   );
   const [dropTargetPath, setDropTargetPath] = useState<string | null>(null);
   const [uploadTargetPath, setUploadTargetPath] = useState('/files');
+  const [draggedCodePath, setDraggedCodePath] = useState<string | null>(null);
+  const [nameDialogState, setNameDialogState] = useState<NameDialogState | null>(null);
+  const [nameDialogValue, setNameDialogValue] = useState('');
+  const [deleteDialogState, setDeleteDialogState] = useState<DeleteDialogState | null>(null);
   const fileUploadRef = useRef<HTMLInputElement>(null);
   const folderUploadRef = useRef<HTMLInputElement>(null);
 
@@ -303,6 +377,68 @@ export const FileTree: React.FC<FileTreeProps> = ({
     onUploadCodeFiles(Array.from(fileList), uploadTargetPath);
   };
 
+  const openNameDialog = (state: NameDialogState) => {
+    setNameDialogState(state);
+    setNameDialogValue(state.initialValue);
+  };
+
+  const openDeleteDialog = (state: DeleteDialogState) => {
+    setDeleteDialogState(state);
+  };
+
+  const closeNameDialog = () => {
+    setNameDialogState(null);
+    setNameDialogValue('');
+  };
+
+  const closeDeleteDialog = () => {
+    setDeleteDialogState(null);
+  };
+
+  const submitNameDialog = () => {
+    if (!nameDialogState) return;
+    const trimmedName = nameDialogValue.trim();
+    if (!trimmedName) return;
+
+    switch (nameDialogState.mode) {
+      case 'add-folder':
+        onAddCodeFolder?.(nameDialogState.parentPath, trimmedName);
+        break;
+      case 'rename-code':
+        onRenameCodeItem?.(nameDialogState.path, trimmedName);
+        break;
+      case 'rename-component':
+        onRenameComponent?.(nameDialogState.instanceId, nameDialogState.prebuiltId, trimmedName);
+        break;
+      case 'rename-media-folder':
+        onRenameMediaFolder?.(nameDialogState.folderId, trimmedName);
+        break;
+      case 'rename-media-asset':
+        onRenameMediaAsset?.(nameDialogState.assetId, trimmedName);
+        break;
+    }
+
+    closeNameDialog();
+  };
+
+  const submitDeleteDialog = () => {
+    if (!deleteDialogState) return;
+
+    switch (deleteDialogState.mode) {
+      case 'delete-code':
+        onDeleteCodeItem?.(deleteDialogState.path);
+        break;
+      case 'delete-media-folder':
+        onDeleteMediaFolder?.(deleteDialogState.folderId);
+        break;
+      case 'delete-media-asset':
+        onDeleteMediaAsset?.(deleteDialogState.assetId);
+        break;
+    }
+
+    closeDeleteDialog();
+  };
+
   const renderNode = (node: FileNode, depth: number = 0): React.ReactNode => {
     const isExpanded = expandedFolders.has(node.path);
     const isSelected = selectedFile === node.path;
@@ -321,9 +457,11 @@ export const FileTree: React.FC<FileTreeProps> = ({
       const isCodeFolder = node.path.startsWith('/files') || node.isCodeFolder;
       const isDropTarget = dropTargetPath === node.path;
       const isRootCodeFolder = node.path === '/files';
+      const isDraggableCodeFolder = isCodeFolder && !isRootCodeFolder;
 
       const folderRow = (
         <div
+          draggable={isDraggableCodeFolder}
           className={`group flex items-center gap-1 px-2 py-1.5 cursor-pointer hover:bg-muted/50 text-xs ${
             isSelected ? 'bg-muted' : ''
           } ${isDropTarget ? 'bg-muted/70' : ''}`}
@@ -334,19 +472,45 @@ export const FileTree: React.FC<FileTreeProps> = ({
               onFileSelect(node.path);
             }
           }}
+          onDragStart={(e) => {
+            if (!isDraggableCodeFolder) return;
+            setDraggedCodePath(node.path);
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('application/x-builder-code-path', node.path);
+          }}
+          onDragEnd={() => {
+            setDraggedCodePath(null);
+            setDropTargetPath(null);
+          }}
           onDragOver={(e) => {
-            if (!isCodeFolder || !onUploadCodeFiles) return;
+            if (!isCodeFolder) return;
+            const internalPath = e.dataTransfer.getData('application/x-builder-code-path') || draggedCodePath;
+            const hasInternalMove = Boolean(onMoveCodeItem && internalPath);
+            const hasExternalUpload = Boolean(onUploadCodeFiles && e.dataTransfer.files && e.dataTransfer.files.length > 0);
+            if (!hasInternalMove && !hasExternalUpload) return;
             e.preventDefault();
             setDropTargetPath(node.path);
           }}
           onDragLeave={() => {
-            if (!isCodeFolder || !onUploadCodeFiles) return;
+            if (!isCodeFolder) return;
             setDropTargetPath((current) => (current === node.path ? null : current));
           }}
           onDrop={(e) => {
-            if (!isCodeFolder || !onUploadCodeFiles) return;
+            if (!isCodeFolder) return;
             e.preventDefault();
             setDropTargetPath(null);
+            const internalPath = e.dataTransfer.getData('application/x-builder-code-path') || draggedCodePath;
+            if (
+              internalPath &&
+              onMoveCodeItem &&
+              internalPath !== node.path &&
+              !node.path.startsWith(`${internalPath}/`)
+            ) {
+              onMoveCodeItem(internalPath, node.path);
+              setDraggedCodePath(null);
+              return;
+            }
+            if (!onUploadCodeFiles) return;
             const files = Array.from(e.dataTransfer.files || []);
             if (files.length > 0) {
               onUploadCodeFiles(files, node.path);
@@ -394,7 +558,13 @@ export const FileTree: React.FC<FileTreeProps> = ({
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                onAddCodeFolder(node.path);
+                openNameDialog({
+                  mode: 'add-folder',
+                  title: 'Create folder',
+                  description: `Add a new folder inside ${node.name}.`,
+                  initialValue: 'new-folder',
+                  parentPath: node.path,
+                });
               }}
               className="p-0.5 rounded opacity-0 group-hover:opacity-100 hover:bg-primary/20 hover:text-primary transition-opacity"
               title={`Add folder in ${node.name}`}
@@ -407,10 +577,13 @@ export const FileTree: React.FC<FileTreeProps> = ({
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                const newName = window.prompt('Rename folder', node.name);
-                if (newName && newName.trim() && newName.trim() !== node.name) {
-                  onRenameCodeItem(node.path, newName.trim());
-                }
+                openNameDialog({
+                  mode: 'rename-code',
+                  title: 'Rename folder',
+                  description: `Update folder name for ${node.name}.`,
+                  initialValue: node.name,
+                  path: node.path,
+                });
               }}
               className="p-0.5 rounded opacity-0 group-hover:opacity-100 hover:bg-primary/20 hover:text-primary transition-opacity"
               title={`Rename ${node.name}`}
@@ -423,9 +596,12 @@ export const FileTree: React.FC<FileTreeProps> = ({
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                if (window.confirm(`Delete folder "${node.name}" and all its contents?`)) {
-                  onDeleteCodeItem(node.path);
-                }
+                openDeleteDialog({
+                  mode: 'delete-code',
+                  title: 'Delete folder',
+                  description: `Delete "${node.name}" and all of its contents?`,
+                  path: node.path,
+                });
               }}
               className="p-0.5 rounded opacity-0 group-hover:opacity-100 hover:bg-destructive/20 hover:text-destructive transition-opacity"
               title={`Delete ${node.name}`}
@@ -438,10 +614,13 @@ export const FileTree: React.FC<FileTreeProps> = ({
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                const newName = window.prompt('Rename media folder', node.mediaFolder?.name || node.name);
-                if (newName && newName.trim() && newName.trim() !== node.name) {
-                  onRenameMediaFolder(node.mediaFolder.id, newName.trim());
-                }
+                openNameDialog({
+                  mode: 'rename-media-folder',
+                  title: 'Rename media folder',
+                  description: `Update folder name for ${node.name}.`,
+                  initialValue: node.mediaFolder?.name || node.name,
+                  folderId: node.mediaFolder.id,
+                });
               }}
               className="p-0.5 rounded opacity-0 group-hover:opacity-100 hover:bg-primary/20 hover:text-primary transition-opacity"
               title={`Rename ${node.name}`}
@@ -454,9 +633,12 @@ export const FileTree: React.FC<FileTreeProps> = ({
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                if (window.confirm(`Delete folder "${node.name}"?`)) {
-                  onDeleteMediaFolder(node.mediaFolder.id);
-                }
+                openDeleteDialog({
+                  mode: 'delete-media-folder',
+                  title: 'Delete media folder',
+                  description: `Delete media folder "${node.name}"?`,
+                  folderId: node.mediaFolder.id,
+                });
               }}
               className="p-0.5 rounded opacity-0 group-hover:opacity-100 hover:bg-destructive/20 hover:text-destructive transition-opacity"
               title={`Delete ${node.name}`}
@@ -486,12 +668,22 @@ export const FileTree: React.FC<FileTreeProps> = ({
 
       const folderContent = (
         <div key={node.path}>
-          {isCodeFolder && !isRootCodeFolder && (onRenameCodeItem || onDeleteCodeItem) ? (
+          {isCodeFolder && (onAddCodeFolder || onUploadCodeFiles || (!isRootCodeFolder && (onRenameCodeItem || onDeleteCodeItem))) ? (
             <ContextMenu>
               <ContextMenuTrigger asChild>{folderRow}</ContextMenuTrigger>
               <ContextMenuContent>
                 {onAddCodeFolder && (
-                  <ContextMenuItem onClick={() => onAddCodeFolder(node.path)}>
+                  <ContextMenuItem
+                    onClick={() =>
+                      openNameDialog({
+                        mode: 'add-folder',
+                        title: 'Create folder',
+                        description: `Add a new folder inside ${node.name}.`,
+                        initialValue: 'new-folder',
+                        parentPath: node.path,
+                      })
+                    }
+                  >
                     <FolderPlus className="w-3.5 h-3.5 mr-2" /> New Folder
                   </ContextMenuItem>
                 )}
@@ -500,25 +692,36 @@ export const FileTree: React.FC<FileTreeProps> = ({
                     <Upload className="w-3.5 h-3.5 mr-2" /> Upload Files
                   </ContextMenuItem>
                 )}
-                {(onAddCodeFolder || onUploadCodeFiles) && (onRenameCodeItem || onDeleteCodeItem) && (
+                {(onAddCodeFolder || onUploadCodeFiles) && !isRootCodeFolder && (onRenameCodeItem || onDeleteCodeItem) && (
                   <ContextMenuSeparator />
                 )}
-                {onRenameCodeItem && (
-                  <ContextMenuItem onClick={() => {
-                    const newName = window.prompt('Rename folder', node.name);
-                    if (newName && newName.trim() && newName.trim() !== node.name) {
-                      onRenameCodeItem(node.path, newName.trim());
+                {!isRootCodeFolder && onRenameCodeItem && (
+                  <ContextMenuItem
+                    onClick={() =>
+                      openNameDialog({
+                        mode: 'rename-code',
+                        title: 'Rename folder',
+                        description: `Update folder name for ${node.name}.`,
+                        initialValue: node.name,
+                        path: node.path,
+                      })
                     }
-                  }}>
+                  >
                     <Pencil className="w-3.5 h-3.5 mr-2" /> Rename
                   </ContextMenuItem>
                 )}
-                {onDeleteCodeItem && (
-                  <ContextMenuItem className="text-destructive" onClick={() => {
-                    if (window.confirm(`Delete folder "${node.name}" and all its contents?`)) {
-                      onDeleteCodeItem(node.path);
+                {!isRootCodeFolder && onDeleteCodeItem && (
+                  <ContextMenuItem
+                    className="text-destructive"
+                    onClick={() =>
+                      openDeleteDialog({
+                        mode: 'delete-code',
+                        title: 'Delete folder',
+                        description: `Delete "${node.name}" and all of its contents?`,
+                        path: node.path,
+                      })
                     }
-                  }}>
+                  >
                     <Trash2 className="w-3.5 h-3.5 mr-2" /> Delete
                   </ContextMenuItem>
                 )}
@@ -557,11 +760,22 @@ export const FileTree: React.FC<FileTreeProps> = ({
 
     const fileRow = (
       <div
+        draggable={isCodeFile}
         className={`group flex items-center gap-1 px-2 py-1.5 cursor-pointer hover:bg-muted/50 text-xs ${
           isSelected ? 'bg-muted' : ''
         }`}
         style={{ paddingLeft: `${depth * 12 + 20}px` }}
         onClick={() => onFileSelect(node.path)}
+        onDragStart={(e) => {
+          if (!isCodeFile) return;
+          setDraggedCodePath(node.path);
+          e.dataTransfer.effectAllowed = 'move';
+          e.dataTransfer.setData('application/x-builder-code-path', node.path);
+        }}
+        onDragEnd={() => {
+          setDraggedCodePath(null);
+          setDropTargetPath(null);
+        }}
       >
         {isComponentFile ? (
           <Component className={`w-3 h-3 flex-shrink-0 ${node.isLinked ? 'text-green-500' : 'text-purple-500'}`} />
@@ -576,10 +790,14 @@ export const FileTree: React.FC<FileTreeProps> = ({
           <button
             onClick={(e) => {
               e.stopPropagation();
-              const newName = window.prompt('Rename component', node.name.replace(/\.html$/i, ''));
-              if (newName && newName.trim()) {
-                onRenameComponent(node.componentInstanceId, node.componentPrebuiltId, newName.trim());
-              }
+              openNameDialog({
+                mode: 'rename-component',
+                title: 'Rename component',
+                description: `Update name for ${node.name.replace(/\.html$/i, '')}.`,
+                initialValue: node.name.replace(/\.html$/i, ''),
+                instanceId: node.componentInstanceId,
+                prebuiltId: node.componentPrebuiltId,
+              });
             }}
             className="p-0.5 rounded opacity-0 group-hover:opacity-100 hover:bg-primary/20 hover:text-primary transition-opacity"
             title={`Rename ${node.name}`}
@@ -592,10 +810,13 @@ export const FileTree: React.FC<FileTreeProps> = ({
           <button
             onClick={(e) => {
               e.stopPropagation();
-              const newName = window.prompt('Rename media', node.mediaAsset?.name || node.name);
-              if (newName && newName.trim()) {
-                onRenameMediaAsset(node.mediaAsset.id, newName.trim());
-              }
+              openNameDialog({
+                mode: 'rename-media-asset',
+                title: 'Rename media',
+                description: `Update name for ${node.name}.`,
+                initialValue: node.mediaAsset?.name || node.name,
+                assetId: node.mediaAsset.id,
+              });
             }}
             className="p-0.5 rounded opacity-0 group-hover:opacity-100 hover:bg-primary/20 hover:text-primary transition-opacity"
             title={`Rename ${node.name}`}
@@ -608,9 +829,12 @@ export const FileTree: React.FC<FileTreeProps> = ({
           <button
             onClick={(e) => {
               e.stopPropagation();
-              if (window.confirm(`Delete "${node.name}"?`)) {
-                onDeleteMediaAsset(node.mediaAsset.id);
-              }
+              openDeleteDialog({
+                mode: 'delete-media-asset',
+                title: 'Delete media',
+                description: `Delete "${node.name}"?`,
+                assetId: node.mediaAsset.id,
+              });
             }}
             className="p-0.5 rounded opacity-0 group-hover:opacity-100 hover:bg-destructive/20 hover:text-destructive transition-opacity"
             title={`Delete ${node.name}`}
@@ -631,21 +855,32 @@ export const FileTree: React.FC<FileTreeProps> = ({
           <ContextMenuTrigger asChild>{fileRow}</ContextMenuTrigger>
           <ContextMenuContent>
             {onRenameCodeItem && (
-              <ContextMenuItem onClick={() => {
-                const newName = window.prompt('Rename file', node.name);
-                if (newName && newName.trim() && newName.trim() !== node.name) {
-                  onRenameCodeItem(node.path, newName.trim());
+              <ContextMenuItem
+                onClick={() =>
+                  openNameDialog({
+                    mode: 'rename-code',
+                    title: 'Rename file',
+                    description: `Update file name for ${node.name}.`,
+                    initialValue: node.name,
+                    path: node.path,
+                  })
                 }
-              }}>
+              >
                 <Pencil className="w-3.5 h-3.5 mr-2" /> Rename
               </ContextMenuItem>
             )}
             {onDeleteCodeItem && (
-              <ContextMenuItem className="text-destructive" onClick={() => {
-                if (window.confirm(`Delete "${node.name}"?`)) {
-                  onDeleteCodeItem(node.path);
+              <ContextMenuItem
+                className="text-destructive"
+                onClick={() =>
+                  openDeleteDialog({
+                    mode: 'delete-code',
+                    title: 'Delete file',
+                    description: `Delete "${node.name}"?`,
+                    path: node.path,
+                  })
                 }
-              }}>
+              >
                 <Trash2 className="w-3.5 h-3.5 mr-2" /> Delete
               </ContextMenuItem>
             )}
@@ -682,6 +917,53 @@ export const FileTree: React.FC<FileTreeProps> = ({
         {...({ webkitdirectory: 'true', directory: 'true' } as Record<string, string>)}
       />
       <div className="py-2">{fileStructure.map((node) => renderNode(node))}</div>
+
+      <Dialog
+        open={Boolean(nameDialogState)}
+        onOpenChange={(open) => {
+          if (!open) closeNameDialog();
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{nameDialogState?.title || 'Edit name'}</DialogTitle>
+            {nameDialogState?.description && <DialogDescription>{nameDialogState.description}</DialogDescription>}
+          </DialogHeader>
+          <Input
+            value={nameDialogValue}
+            onChange={(e) => setNameDialogValue(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                submitNameDialog();
+              }
+            }}
+            autoFocus
+          />
+          <DialogFooter>
+            <Button variant="outline" onClick={closeNameDialog}>Cancel</Button>
+            <Button onClick={submitNameDialog}>Save</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={Boolean(deleteDialogState)}
+        onOpenChange={(open) => {
+          if (!open) closeDeleteDialog();
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{deleteDialogState?.title || 'Delete item'}</DialogTitle>
+            <DialogDescription>{deleteDialogState?.description}</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={closeDeleteDialog}>Cancel</Button>
+            <Button variant="destructive" onClick={submitDeleteDialog}>Delete</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </ScrollArea>
   );
 };
