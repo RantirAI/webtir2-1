@@ -362,19 +362,16 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
             skippedFiles += 1;
             return null;
           }
-          const type = getExternalFileTypeFromPath(candidatePath);
-          if (!type) {
-            skippedFiles += 1;
-            return null;
-          }
-          return { file, path: candidatePath, type };
+          // For binary asset files, we'll store them but still need a type for the virtual FS
+          const type = getExternalFileTypeFromPath(candidatePath) || 'js';
+          return { file, path: candidatePath, type, extension };
         })
-        .filter((item): item is { file: File; path: string; type: ExternalCodeFileType } => Boolean(item));
+        .filter((item): item is { file: File; path: string; type: ExternalCodeFileType; extension: string } => Boolean(item));
 
       if (prepared.length === 0) {
         toast({
           title: 'No supported files',
-          description: 'Upload .html, .css, .js, or .mjs files.',
+          description: 'No supported file types found in selection.',
           variant: 'destructive',
         });
         return;
