@@ -126,20 +126,34 @@ const getExternalRefCandidates = (ref: string, currentFilePath?: string) => {
 
   const candidates = [
     normalizeExternalPath(cleanedRef),
+    normalizeExternalPath(`/${normalizedRef}`),
     normalizeExternalPath(`/files/${normalizedRef}`),
     normalizeExternalPath(`${currentDir}/${normalizedRef}`),
     normalizeExternalPath(`/files/${baseName}`),
+    normalizeExternalPath(`/${baseName}`),
   ];
+
+  // Also try going up from current file dir
+  if (currentFilePath) {
+    const parentDir = getExternalParentPath(currentFilePath);
+    const grandParentDir = getExternalParentPath(parentDir);
+    candidates.push(normalizeExternalPath(`${grandParentDir}/${normalizedRef}`));
+  }
 
   return Array.from(new Set(candidates));
 };
 
 const extractStylesheetRefs = (html: string) => {
   const refs: string[] = [];
-  const regex = /<link[^>]*rel=["']stylesheet["'][^>]*href=["']([^"']+)["'][^>]*>/gi;
+  // Match <link> tags with rel="stylesheet" - handle href before or after rel
+  const regex1 = /<link[^>]*rel=["']stylesheet["'][^>]*href=["']([^"']+)["'][^>]*>/gi;
+  const regex2 = /<link[^>]*href=["']([^"']+)["'][^>]*rel=["']stylesheet["'][^>]*>/gi;
   let match: RegExpExecArray | null;
-  while ((match = regex.exec(html)) !== null) {
+  while ((match = regex1.exec(html)) !== null) {
     refs.push(match[1]);
+  }
+  while ((match = regex2.exec(html)) !== null) {
+    if (!refs.includes(match[1])) refs.push(match[1]);
   }
   return refs;
 };
@@ -160,10 +174,18 @@ const resolveExternalReference = (
   expectedType: ExternalCodeFileType,
   currentFilePath?: string
 ) => {
+  // Try exact candidates first
   const candidates = getExternalRefCandidates(ref, currentFilePath);
   for (const candidate of candidates) {
     const file = externalFiles[candidate];
     if (file && file.type === expectedType) {
+      return file.content;
+    }
+  }
+  // Fallback: search all files for one whose path ends with the ref
+  const cleanedRef = ref.split('?')[0].split('#')[0].replace(/\\/g, '/').replace(/^\.\//, '').replace(/^\//, '');
+  for (const [path, file] of Object.entries(externalFiles)) {
+    if (file.type === expectedType && path.endsWith(`/${cleanedRef}`)) {
       return file.content;
     }
   }
@@ -248,6 +270,18 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
   useEffect(() => {
     try { sessionStorage.setItem('builder_external_folders', JSON.stringify(externalFolders)); } catch {}
   }, [externalFolders]);
+
+  // Auto-inject external CSS files into canvas via raw CSS overrides
+  useEffect(() => {
+    const cssFiles = Object.values(externalFiles).filter(f => f.type === 'css');
+    if (cssFiles.length > 0) {
+      const allExternalCSS = cssFiles
+        .map(f => `/* ${f.name} */\n${f.content}`)
+        .join('\n\n');
+      const { setRawCssOverrides } = useStyleStore.getState();
+      setRawCssOverrides(allExternalCSS);
+    }
+  }, [externalFiles]);
 
   // Discover components from canvas
   const componentEntries = useMemo(() => {
@@ -776,23 +810,21 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
           console.warn('CSS validation warnings:', validation.errors);
         }
         
-        // Extract supported (class selectors) and unsupported (element/id/complex) rules
-        const { supportedCSS, unsupportedCSS } = extractCSSRules(cssCode);
+        // Collect all external CSS content to inject alongside the edited CSS
+        const allExternalCSS = Object.values(externalFiles)
+          .filter(f => f.type === 'css')
+          .map(f => `/* ${f.name} */\n${f.content}`)
+          .join('\n\n');
         
-        // Parse and apply class-based CSS to style store
-        const result = parseCSSToStyleStore(supportedCSS);
-        
-        // Store unsupported CSS as raw overrides
+        // Inject ALL CSS (edited + external) as raw overrides for full fidelity
+        // This avoids breaking the canvas by trying to parse complex template CSS
+        const fullCSS = [cssCode, allExternalCSS].filter(Boolean).join('\n\n');
         const { setRawCssOverrides } = useStyleStore.getState();
-        setRawCssOverrides(unsupportedCSS);
+        setRawCssOverrides(fullCSS);
         
-        const classDesc = `Updated ${result.classesUpdated} classes, created ${result.classesCreated} new classes, set ${result.propertiesSet} properties.`;
-        const rawDesc = unsupportedCSS.trim() ? ` Injected raw CSS for element/complex selectors.` : '';
         toast({
           title: 'CSS applied',
-          description: !validation.valid 
-            ? `${classDesc}${rawDesc} (Some rules may have been skipped)`
-            : `${classDesc}${rawDesc}`,
+          description: `Injected CSS to canvas${allExternalCSS ? ' (including external CSS files)' : ''}.${!validation.valid ? ' Some rules may have warnings.' : ''}`,
         });
       }
       
