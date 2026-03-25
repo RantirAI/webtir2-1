@@ -13,8 +13,17 @@ import {
   File,
   Upload,
   FolderPlus,
+  Pencil,
+  Trash2,
 } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuTrigger,
+} from '@/components/ui/context-menu';
 import { useBuilderStore } from '../store/useBuilderStore';
 import { discoverComponents, ComponentCodeEntry } from '../utils/componentCodeExport';
 import { useMediaStore, MediaAsset, MediaFolder } from '../store/useMediaStore';
@@ -45,6 +54,8 @@ interface FileTreeProps {
   codeFolderPaths?: string[];
   onAddCodeFolder?: (parentPath: string) => void;
   onUploadCodeFiles?: (files: File[], targetPath: string) => void;
+  onRenameCodeItem?: (oldPath: string, newName: string) => void;
+  onDeleteCodeItem?: (path: string) => void;
 }
 
 const normalizePath = (path: string) => {
@@ -144,6 +155,8 @@ export const FileTree: React.FC<FileTreeProps> = ({
   codeFolderPaths = ['/files'],
   onAddCodeFolder,
   onUploadCodeFiles,
+  onRenameCodeItem,
+  onDeleteCodeItem,
 }) => {
   const rootInstance = useBuilderStore((state) => state.rootInstance);
   const { assets, folders, getFoldersInParent, getAssetsInFolder } = useMediaStore();
@@ -293,109 +306,156 @@ export const FileTree: React.FC<FileTreeProps> = ({
       const isMediaFolder = node.path === '/media' || node.isMediaFolder;
       const isCodeFolder = node.path.startsWith('/files') || node.isCodeFolder;
       const isDropTarget = dropTargetPath === node.path;
+      const isRootCodeFolder = node.path === '/files';
 
-      return (
+      const folderRow = (
+        <div
+          className={`group flex items-center gap-1 px-2 py-1.5 cursor-pointer hover:bg-muted/50 text-xs ${
+            isSelected ? 'bg-muted' : ''
+          } ${isDropTarget ? 'bg-muted/70' : ''}`}
+          style={{ paddingLeft: `${depth * 12 + 8}px` }}
+          onClick={() => {
+            toggleFolder(node.path);
+            if (isMediaFolder || isCodeFolder) {
+              onFileSelect(node.path);
+            }
+          }}
+          onDragOver={(e) => {
+            if (!isCodeFolder || !onUploadCodeFiles) return;
+            e.preventDefault();
+            setDropTargetPath(node.path);
+          }}
+          onDragLeave={() => {
+            if (!isCodeFolder || !onUploadCodeFiles) return;
+            setDropTargetPath((current) => (current === node.path ? null : current));
+          }}
+          onDrop={(e) => {
+            if (!isCodeFolder || !onUploadCodeFiles) return;
+            e.preventDefault();
+            setDropTargetPath(null);
+            const files = Array.from(e.dataTransfer.files || []);
+            if (files.length > 0) {
+              onUploadCodeFiles(files, node.path);
+            }
+          }}
+        >
+          {isExpanded ? (
+            <ChevronDown className="w-3 h-3 flex-shrink-0" />
+          ) : (
+            <ChevronRight className="w-3 h-3 flex-shrink-0" />
+          )}
+          {isExpanded ? (
+            <FolderOpen className="w-3 h-3 flex-shrink-0 text-blue-500" />
+          ) : (
+            <Folder className="w-3 h-3 flex-shrink-0 text-blue-500" />
+          )}
+          <span className="truncate flex-1">{node.name}</span>
+
+          {isCodeFolder && onUploadCodeFiles && (
+            <>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openFileUpload(node.path, 'files');
+                }}
+                className="p-0.5 rounded opacity-0 group-hover:opacity-100 hover:bg-primary/20 hover:text-primary transition-opacity"
+                title={`Upload files into ${node.name}`}
+              >
+                <Upload className="w-3 h-3" />
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openFileUpload(node.path, 'folder');
+                }}
+                className="p-0.5 rounded opacity-0 group-hover:opacity-100 hover:bg-primary/20 hover:text-primary transition-opacity"
+                title={`Upload folder into ${node.name}`}
+              >
+                <FolderOpen className="w-3 h-3" />
+              </button>
+            </>
+          )}
+
+          {isCodeFolder && onAddCodeFolder && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onAddCodeFolder(node.path);
+              }}
+              className="p-0.5 rounded opacity-0 group-hover:opacity-100 hover:bg-primary/20 hover:text-primary transition-opacity"
+              title={`Add folder in ${node.name}`}
+            >
+              <FolderPlus className="w-3 h-3" />
+            </button>
+          )}
+
+          {addHandler && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                addHandler();
+              }}
+              className="p-0.5 rounded opacity-0 group-hover:opacity-100 hover:bg-primary/20 hover:text-primary transition-opacity"
+              title={`Add to ${node.name}`}
+            >
+              <Plus className="w-3 h-3" />
+            </button>
+          )}
+
+          {(node.path === '/components' || node.path === '/media' || node.path === '/files') && hasChildren && (
+            <span className="text-[10px] text-muted-foreground">{node.children?.length}</span>
+          )}
+        </div>
+      );
+
+      const folderContent = (
         <div key={node.path}>
-          <div
-            className={`group flex items-center gap-1 px-2 py-1.5 cursor-pointer hover:bg-muted/50 text-xs ${
-              isSelected ? 'bg-muted' : ''
-            } ${isDropTarget ? 'bg-muted/70' : ''}`}
-            style={{ paddingLeft: `${depth * 12 + 8}px` }}
-            onClick={() => {
-              toggleFolder(node.path);
-              if (isMediaFolder || isCodeFolder) {
-                onFileSelect(node.path);
-              }
-            }}
-            onDragOver={(e) => {
-              if (!isCodeFolder || !onUploadCodeFiles) return;
-              e.preventDefault();
-              setDropTargetPath(node.path);
-            }}
-            onDragLeave={() => {
-              if (!isCodeFolder || !onUploadCodeFiles) return;
-              setDropTargetPath((current) => (current === node.path ? null : current));
-            }}
-            onDrop={(e) => {
-              if (!isCodeFolder || !onUploadCodeFiles) return;
-              e.preventDefault();
-              setDropTargetPath(null);
-              const files = Array.from(e.dataTransfer.files || []);
-              if (files.length > 0) {
-                onUploadCodeFiles(files, node.path);
-              }
-            }}
-          >
-            {isExpanded ? (
-              <ChevronDown className="w-3 h-3 flex-shrink-0" />
-            ) : (
-              <ChevronRight className="w-3 h-3 flex-shrink-0" />
-            )}
-            {isExpanded ? (
-              <FolderOpen className="w-3 h-3 flex-shrink-0 text-blue-500" />
-            ) : (
-              <Folder className="w-3 h-3 flex-shrink-0 text-blue-500" />
-            )}
-            <span className="truncate flex-1">{node.name}</span>
-
-            {isCodeFolder && onUploadCodeFiles && (
-              <>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    openFileUpload(node.path, 'files');
-                  }}
-                  className="p-0.5 rounded opacity-0 group-hover:opacity-100 hover:bg-primary/20 hover:text-primary transition-opacity"
-                  title={`Upload files into ${node.name}`}
-                >
-                  <Upload className="w-3 h-3" />
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    openFileUpload(node.path, 'folder');
-                  }}
-                  className="p-0.5 rounded opacity-0 group-hover:opacity-100 hover:bg-primary/20 hover:text-primary transition-opacity"
-                  title={`Upload folder into ${node.name}`}
-                >
-                  <FolderOpen className="w-3 h-3" />
-                </button>
-              </>
-            )}
-
-            {isCodeFolder && onAddCodeFolder && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onAddCodeFolder(node.path);
-                }}
-                className="p-0.5 rounded opacity-0 group-hover:opacity-100 hover:bg-primary/20 hover:text-primary transition-opacity"
-                title={`Add folder in ${node.name}`}
-              >
-                <FolderPlus className="w-3 h-3" />
-              </button>
-            )}
-
-            {addHandler && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  addHandler();
-                }}
-                className="p-0.5 rounded opacity-0 group-hover:opacity-100 hover:bg-primary/20 hover:text-primary transition-opacity"
-                title={`Add to ${node.name}`}
-              >
-                <Plus className="w-3 h-3" />
-              </button>
-            )}
-
-            {(node.path === '/components' || node.path === '/media' || node.path === '/files') && hasChildren && (
-              <span className="text-[10px] text-muted-foreground">{node.children?.length}</span>
-            )}
-          </div>
+          {isCodeFolder && !isRootCodeFolder && (onRenameCodeItem || onDeleteCodeItem) ? (
+            <ContextMenu>
+              <ContextMenuTrigger asChild>{folderRow}</ContextMenuTrigger>
+              <ContextMenuContent>
+                {onAddCodeFolder && (
+                  <ContextMenuItem onClick={() => onAddCodeFolder(node.path)}>
+                    <FolderPlus className="w-3.5 h-3.5 mr-2" /> New Folder
+                  </ContextMenuItem>
+                )}
+                {onUploadCodeFiles && (
+                  <ContextMenuItem onClick={() => openFileUpload(node.path, 'files')}>
+                    <Upload className="w-3.5 h-3.5 mr-2" /> Upload Files
+                  </ContextMenuItem>
+                )}
+                {(onAddCodeFolder || onUploadCodeFiles) && (onRenameCodeItem || onDeleteCodeItem) && (
+                  <ContextMenuSeparator />
+                )}
+                {onRenameCodeItem && (
+                  <ContextMenuItem onClick={() => {
+                    const newName = window.prompt('Rename folder', node.name);
+                    if (newName && newName.trim() && newName.trim() !== node.name) {
+                      onRenameCodeItem(node.path, newName.trim());
+                    }
+                  }}>
+                    <Pencil className="w-3.5 h-3.5 mr-2" /> Rename
+                  </ContextMenuItem>
+                )}
+                {onDeleteCodeItem && (
+                  <ContextMenuItem className="text-destructive" onClick={() => {
+                    if (window.confirm(`Delete folder "${node.name}" and all its contents?`)) {
+                      onDeleteCodeItem(node.path);
+                    }
+                  }}>
+                    <Trash2 className="w-3.5 h-3.5 mr-2" /> Delete
+                  </ContextMenuItem>
+                )}
+              </ContextMenuContent>
+            </ContextMenu>
+          ) : (
+            folderRow
+          )}
           {isExpanded && node.children && <div>{node.children.map((child) => renderNode(child, depth + 1))}</div>}
         </div>
       );
+
+      return folderContent;
     }
 
     const isComponentFile = node.isComponent;
@@ -417,9 +477,10 @@ export const FileTree: React.FC<FileTreeProps> = ({
 
     const MediaIcon = isMediaFile ? getMediaIcon(node.mediaAsset) : null;
 
-    return (
+    const isCodeFile = node.isCodeFile || node.path.startsWith('/files/');
+
+    const fileRow = (
       <div
-        key={node.path}
         className={`flex items-center gap-1 px-2 py-1.5 cursor-pointer hover:bg-muted/50 text-xs ${
           isSelected ? 'bg-muted' : ''
         }`}
@@ -439,6 +500,37 @@ export const FileTree: React.FC<FileTreeProps> = ({
         )}
       </div>
     );
+
+    if (isCodeFile && (onRenameCodeItem || onDeleteCodeItem)) {
+      return (
+        <ContextMenu key={node.path}>
+          <ContextMenuTrigger asChild>{fileRow}</ContextMenuTrigger>
+          <ContextMenuContent>
+            {onRenameCodeItem && (
+              <ContextMenuItem onClick={() => {
+                const newName = window.prompt('Rename file', node.name);
+                if (newName && newName.trim() && newName.trim() !== node.name) {
+                  onRenameCodeItem(node.path, newName.trim());
+                }
+              }}>
+                <Pencil className="w-3.5 h-3.5 mr-2" /> Rename
+              </ContextMenuItem>
+            )}
+            {onDeleteCodeItem && (
+              <ContextMenuItem className="text-destructive" onClick={() => {
+                if (window.confirm(`Delete "${node.name}"?`)) {
+                  onDeleteCodeItem(node.path);
+                }
+              }}>
+                <Trash2 className="w-3.5 h-3.5 mr-2" /> Delete
+              </ContextMenuItem>
+            )}
+          </ContextMenuContent>
+        </ContextMenu>
+      );
+    }
+
+    return <React.Fragment key={node.path}>{fileRow}</React.Fragment>;
   };
 
   return (
