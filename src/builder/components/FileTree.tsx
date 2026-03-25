@@ -477,9 +477,10 @@ export const FileTree: React.FC<FileTreeProps> = ({
 
     const MediaIcon = isMediaFile ? getMediaIcon(node.mediaAsset) : null;
 
-    return (
+    const isCodeFile = node.isCodeFile || node.path.startsWith('/files/');
+
+    const fileRow = (
       <div
-        key={node.path}
         className={`flex items-center gap-1 px-2 py-1.5 cursor-pointer hover:bg-muted/50 text-xs ${
           isSelected ? 'bg-muted' : ''
         }`}
@@ -499,6 +500,37 @@ export const FileTree: React.FC<FileTreeProps> = ({
         )}
       </div>
     );
+
+    if (isCodeFile && (onRenameCodeItem || onDeleteCodeItem)) {
+      return (
+        <ContextMenu key={node.path}>
+          <ContextMenuTrigger asChild>{fileRow}</ContextMenuTrigger>
+          <ContextMenuContent>
+            {onRenameCodeItem && (
+              <ContextMenuItem onClick={() => {
+                const newName = window.prompt('Rename file', node.name);
+                if (newName && newName.trim() && newName.trim() !== node.name) {
+                  onRenameCodeItem(node.path, newName.trim());
+                }
+              }}>
+                <Pencil className="w-3.5 h-3.5 mr-2" /> Rename
+              </ContextMenuItem>
+            )}
+            {onDeleteCodeItem && (
+              <ContextMenuItem className="text-destructive" onClick={() => {
+                if (window.confirm(`Delete "${node.name}"?`)) {
+                  onDeleteCodeItem(node.path);
+                }
+              }}>
+                <Trash2 className="w-3.5 h-3.5 mr-2" /> Delete
+              </ContextMenuItem>
+            )}
+          </ContextMenuContent>
+        </ContextMenu>
+      );
+    }
+
+    return <React.Fragment key={node.path}>{fileRow}</React.Fragment>;
   };
 
   return (
