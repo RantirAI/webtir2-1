@@ -54,6 +54,8 @@ interface FileTreeProps {
   codeFolderPaths?: string[];
   onAddCodeFolder?: (parentPath: string) => void;
   onUploadCodeFiles?: (files: File[], targetPath: string) => void;
+  onRenameCodeItem?: (oldPath: string, newName: string) => void;
+  onDeleteCodeItem?: (path: string) => void;
 }
 
 const normalizePath = (path: string) => {
