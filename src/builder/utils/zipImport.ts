@@ -139,7 +139,7 @@ export async function processZipFile(file: File): Promise<ZipImportResult> {
   const importFolderId = addFolder(`Import: ${file.name.replace('.zip', '')}`, null);
   
   for (const asset of assetFiles) {
-    const blob = new Blob([asset.data], { type: asset.mimeType });
+    const blob = new Blob([asset.data.buffer as ArrayBuffer], { type: asset.mimeType });
     const dataUrl = await blobToDataUrl(blob);
     const filename = asset.path.split('/').pop() || asset.path;
     
