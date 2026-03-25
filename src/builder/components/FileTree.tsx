@@ -155,6 +155,8 @@ export const FileTree: React.FC<FileTreeProps> = ({
   codeFolderPaths = ['/files'],
   onAddCodeFolder,
   onUploadCodeFiles,
+  onRenameCodeItem,
+  onDeleteCodeItem,
 }) => {
   const rootInstance = useBuilderStore((state) => state.rootInstance);
   const { assets, folders, getFoldersInParent, getAssetsInFolder } = useMediaStore();
