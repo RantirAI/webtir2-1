@@ -852,6 +852,11 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
                 onUploadCodeFiles={handleCodeFilesUpload}
                 onRenameCodeItem={handleRenameCodeItem}
                 onDeleteCodeItem={handleDeleteCodeItem}
+                onRenameComponent={handleRenameComponentItem}
+                onRenameMediaFolder={handleRenameMediaFolder}
+                onRenameMediaAsset={handleRenameMediaAsset}
+                onDeleteMediaFolder={handleDeleteMediaFolder}
+                onDeleteMediaAsset={handleDeleteMediaAsset}
               />
             )}
           </div>
