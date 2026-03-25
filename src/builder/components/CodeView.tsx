@@ -271,6 +271,18 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
     try { sessionStorage.setItem('builder_external_folders', JSON.stringify(externalFolders)); } catch {}
   }, [externalFolders]);
 
+  // Auto-inject external CSS files into canvas via raw CSS overrides
+  useEffect(() => {
+    const cssFiles = Object.values(externalFiles).filter(f => f.type === 'css');
+    if (cssFiles.length > 0) {
+      const allExternalCSS = cssFiles
+        .map(f => `/* ${f.name} */\n${f.content}`)
+        .join('\n\n');
+      const { setRawCssOverrides } = useStyleStore.getState();
+      setRawCssOverrides(allExternalCSS);
+    }
+  }, [externalFiles]);
+
   // Discover components from canvas
   const componentEntries = useMemo(() => {
     if (!rootInstance) return [];
