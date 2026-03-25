@@ -493,7 +493,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({ open, onOpenChange, on
                   <div className="text-[10px] text-muted-foreground mb-2">
                     Supported: .zip files containing HTML, CSS, and JS
                   </div>
-                  <Button variant="outline" size="sm" type="button" className="h-7 text-xs px-3">
+                  <Button variant="outline" size="sm" type="button" className="h-7 text-xs px-3 pointer-events-none">
                     Browse Files
                   </Button>
                 </Label>
