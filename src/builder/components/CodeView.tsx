@@ -126,10 +126,19 @@ const getExternalRefCandidates = (ref: string, currentFilePath?: string) => {
 
   const candidates = [
     normalizeExternalPath(cleanedRef),
+    normalizeExternalPath(`/${normalizedRef}`),
     normalizeExternalPath(`/files/${normalizedRef}`),
     normalizeExternalPath(`${currentDir}/${normalizedRef}`),
     normalizeExternalPath(`/files/${baseName}`),
+    normalizeExternalPath(`/${baseName}`),
   ];
+
+  // Also try going up from current file dir
+  if (currentFilePath) {
+    const parentDir = getExternalParentPath(currentFilePath);
+    const grandParentDir = getExternalParentPath(parentDir);
+    candidates.push(normalizeExternalPath(`${grandParentDir}/${normalizedRef}`));
+  }
 
   return Array.from(new Set(candidates));
 };
