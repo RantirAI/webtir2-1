@@ -254,7 +254,7 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
 
       const usedPaths = new Set(Object.keys(externalFiles));
       const nextFiles: Record<string, ExternalCodeFile> = { ...externalFiles };
-      const nextFolders = new Set(['/files', ...externalFolders]);
+      const nextFolders = new Set([...externalFolders]);
       let firstImportedHtmlPath: string | null = null;
 
       for (const incoming of incomingFiles) {
