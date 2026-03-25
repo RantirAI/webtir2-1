@@ -55,7 +55,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({ open, onOpenChange, on
   const [convertPreview, setConvertPreview] = useState<{ nodes: number; styles: number } | null>(null);
   const [isImporting, setIsImporting] = useState(false);
   const { toast } = useToast();
-  const { addInstance, rootInstance } = useBuilderStore();
+  const { updateInstance, rootInstance } = useBuilderStore();
 
   // Check if current platform supports paste (only design tools)
   const isDesignTool = designToolSources.some(p => p.id === activePlatform);
