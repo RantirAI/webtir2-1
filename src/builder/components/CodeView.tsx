@@ -15,7 +15,7 @@ import { parseHTMLToInstance, parseHTMLPreservingLinks } from '../utils/codeImpo
 import { parseCSSToStyleStore, validateCSS, extractCSSRules } from '../utils/cssImport';
 import { getHeadingTypography } from '../utils/headingTypography';
 import { ComponentInstance } from '../store/types';
-import { Copy, Check, Monitor, Tablet, Smartphone, Upload, Lock, Sparkles } from 'lucide-react';
+import { Copy, Check, Monitor, Tablet, Smartphone, Upload, Lock, Sparkles, FolderPlus } from 'lucide-react';
 import { ImportModal } from './ImportModal';
 import { FileTree } from './FileTree';
 import { CreateComponentDialog } from './CreateComponentDialog';
