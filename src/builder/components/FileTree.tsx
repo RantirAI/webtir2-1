@@ -333,20 +333,20 @@ export const FileTree: React.FC<FileTreeProps> = ({
     structure.push(codeFilesRoot);
 
     const mediaChildren: FileNode[] = [
-      ...buildMediaFolderTree(null, '/media'),
+      ...buildMediaFolderTree(null, '/assets'),
       ...rootAssets.map((asset) => ({
         name: asset.name,
         type: 'file' as const,
-        path: `/media/${asset.name}__${asset.id}`,
+        path: `/assets/${asset.name}__${asset.id}`,
         isMedia: true,
         mediaAsset: asset,
       })),
     ];
 
     structure.push({
-      name: 'media',
+      name: 'assets',
       type: 'folder',
-      path: '/media',
+      path: '/assets',
       children: mediaChildren,
     });
 
