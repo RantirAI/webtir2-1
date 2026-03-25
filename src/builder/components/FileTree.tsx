@@ -58,6 +58,11 @@ interface FileTreeProps {
   onUploadCodeFiles?: (files: File[], targetPath: string) => void;
   onRenameCodeItem?: (oldPath: string, newName: string) => void;
   onDeleteCodeItem?: (path: string) => void;
+  onRenameComponent?: (instanceId: string, prebuiltId: string | undefined, newName: string) => void;
+  onRenameMediaFolder?: (folderId: string, newName: string) => void;
+  onRenameMediaAsset?: (assetId: string, newName: string) => void;
+  onDeleteMediaFolder?: (folderId: string) => void;
+  onDeleteMediaAsset?: (assetId: string) => void;
 }
 
 const normalizePath = (path: string) => {
