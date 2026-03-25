@@ -453,7 +453,7 @@ export const FileTree: React.FC<FileTreeProps> = ({
     if (node.type === 'folder') {
       const hasChildren = node.children && node.children.length > 0;
       const addHandler = getAddHandler(node.path);
-      const isMediaFolder = node.path === '/media' || node.isMediaFolder;
+      const isMediaFolder = node.path === '/assets' || node.isMediaFolder;
       const isCodeFolder = node.path.startsWith('/files') || node.isCodeFolder;
       const isDropTarget = dropTargetPath === node.path;
       const isRootCodeFolder = node.path === '/files';
