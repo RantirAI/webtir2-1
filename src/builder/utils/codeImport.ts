@@ -298,7 +298,7 @@ function domNodeToInstance(node: Element): ComponentInstance {
   const { createStyleSource, setStyle } = useStyleStore.getState();
   
   // Get or create style sources for classes
-  const classNames = node.className.split(' ').filter(Boolean);
+  const classNames = (typeof node.className === 'string' ? node.className : node.getAttribute('class') || '').split(' ').filter(Boolean);
   const styleSourceIds = classNames.map(className => {
     // Check if style source already exists
     const { styleSources } = useStyleStore.getState();
