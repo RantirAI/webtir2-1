@@ -535,15 +535,22 @@ export const ImportModal: React.FC<ImportModalProps> = ({ open, onOpenChange, on
 
               {/* Upload Button */}
               <div className="flex justify-end gap-1.5">
-                <Button variant="outline" onClick={resetAndClose} className="h-8 text-xs px-3">
+                <Button variant="outline" onClick={resetAndClose} className="h-8 text-xs px-3" disabled={isImporting}>
                   Cancel
                 </Button>
                 <Button 
                   onClick={handleUpload} 
-                  className="h-8 text-xs px-3"
-                  disabled={!selectedFile}
+                  className="h-8 text-xs px-3 gap-2"
+                  disabled={!selectedFile || isImporting}
                 >
-                  Import and Convert
+                  {isImporting ? (
+                    <>
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                      Extracting...
+                    </>
+                  ) : (
+                    'Import and Convert'
+                  )}
                 </Button>
               </div>
             </TabsContent>
