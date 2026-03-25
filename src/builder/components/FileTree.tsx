@@ -243,7 +243,7 @@ export const FileTree: React.FC<FileTreeProps> = ({
   const rootInstance = useBuilderStore((state) => state.rootInstance);
   const { assets, folders, getFoldersInParent, getAssetsInFolder } = useMediaStore();
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(
-    new Set(['/', '/pages', '/components', '/files', '/media'])
+    new Set(['/', '/pages', '/components', '/files', '/assets'])
   );
   const [dropTargetPath, setDropTargetPath] = useState<string | null>(null);
   const [uploadTargetPath, setUploadTargetPath] = useState('/files');
