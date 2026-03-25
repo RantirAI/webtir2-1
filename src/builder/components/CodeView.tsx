@@ -885,6 +885,32 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
         </Tabs>
         
         <div className="flex items-center gap-2">
+          {isCodeEdited && isExternalFile && (
+            <Button
+              variant="default"
+              size="sm"
+              onClick={() => {
+                setIsCodeEdited(false);
+                setEditedTabs(prev => ({ ...prev, [activeTab]: false }));
+                // Re-inject external CSS into canvas
+                const cssFiles = Object.values(externalFiles).filter(f => f.type === 'css');
+                if (cssFiles.length > 0) {
+                  const allExternalCSS = cssFiles
+                    .map(f => `/* ${f.name} */\n${f.content}`)
+                    .join('\n\n');
+                  const { setRawCssOverrides } = useStyleStore.getState();
+                  setRawCssOverrides(allExternalCSS);
+                }
+                toast({
+                  title: 'File saved',
+                  description: `${selectedExternalFile?.name || 'File'} saved to project.`,
+                });
+              }}
+              className="gap-2"
+            >
+              Save File
+            </Button>
+          )}
           {isCodeEdited && !isExternalFile && (activeTab === 'html' || activeTab === 'css') && (
             <Button
               variant="default"
