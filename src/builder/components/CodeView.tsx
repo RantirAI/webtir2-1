@@ -228,8 +228,26 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
     react: false,
     astro: false,
   });
-  const [externalFiles, setExternalFiles] = useState<Record<string, ExternalCodeFile>>({});
-  const [externalFolders, setExternalFolders] = useState<string[]>([]);
+  const [externalFiles, setExternalFiles] = useState<Record<string, ExternalCodeFile>>(() => {
+    try {
+      const saved = sessionStorage.getItem('builder_external_files');
+      return saved ? JSON.parse(saved) : {};
+    } catch { return {}; }
+  });
+  const [externalFolders, setExternalFolders] = useState<string[]>(() => {
+    try {
+      const saved = sessionStorage.getItem('builder_external_folders');
+      return saved ? JSON.parse(saved) : [];
+    } catch { return []; }
+  });
+
+  // Persist external files & folders to sessionStorage
+  useEffect(() => {
+    try { sessionStorage.setItem('builder_external_files', JSON.stringify(externalFiles)); } catch {}
+  }, [externalFiles]);
+  useEffect(() => {
+    try { sessionStorage.setItem('builder_external_folders', JSON.stringify(externalFolders)); } catch {}
+  }, [externalFolders]);
 
   // Discover components from canvas
   const componentEntries = useMemo(() => {
