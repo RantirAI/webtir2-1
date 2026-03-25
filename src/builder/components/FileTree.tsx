@@ -13,8 +13,17 @@ import {
   File,
   Upload,
   FolderPlus,
+  Pencil,
+  Trash2,
 } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuTrigger,
+} from '@/components/ui/context-menu';
 import { useBuilderStore } from '../store/useBuilderStore';
 import { discoverComponents, ComponentCodeEntry } from '../utils/componentCodeExport';
 import { useMediaStore, MediaAsset, MediaFolder } from '../store/useMediaStore';
