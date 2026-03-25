@@ -296,7 +296,7 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
   const isComponentFile = selectedFile.startsWith('/components/');
   const isPageFile = selectedFile.startsWith('/pages/');
   const isMediaFile = selectedFile.startsWith('/assets');
-  const isExternalFile = selectedFile.startsWith('/files/');
+  const isExternalFile = !isComponentFile && !isPageFile && !isMediaFile && selectedFile !== '/pages' && selectedExternalFile !== null;
   const isExternalHtmlFile = selectedExternalFile?.type === 'html';
   const isCoreFile = selectedFile.includes('.core.') || selectedFile.includes('/core/');
 
