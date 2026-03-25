@@ -387,3 +387,34 @@ function extractInlineStyles(html: string): { cleanedHTML: string; extractedCSS:
 
   return { cleanedHTML, extractedCSS };
 }
+
+/**
+ * Extract Google Font and other external font <link> tags from HTML <head>
+ * and convert them to @import rules for CSS injection.
+ */
+function extractFontLinks(html: string): string {
+  const imports: string[] = [];
+  
+  // Match <link> tags with stylesheet rel that point to font services
+  const linkRegex = /<link[^>]*href=["']([^"']+)["'][^>]*>/gi;
+  let match;
+  
+  while ((match = linkRegex.exec(html)) !== null) {
+    const fullTag = match[0];
+    const href = match[1];
+    
+    // Only process stylesheet links to font services
+    if (!fullTag.includes('stylesheet')) continue;
+    
+    if (
+      href.includes('fonts.googleapis.com') ||
+      href.includes('fonts.gstatic.com') ||
+      href.includes('fonts.bunny.net') ||
+      href.includes('use.typekit.net')
+    ) {
+      imports.push(`@import url("${href}");`);
+    }
+  }
+  
+  return imports.length > 0 ? imports.join('\n') : '';
+}
