@@ -339,7 +339,15 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
       if (!files.length) return;
 
       const targetFolderPath = normalizeExternalPath(targetPath || '/files');
-      const allowedExtensions = new Set(['html', 'htm', 'css', 'js', 'mjs']);
+      const allowedExtensions = new Set([
+        'html', 'htm', 'css', 'js', 'mjs', 'ts', 'tsx', 'jsx',
+        'json', 'xml', 'svg', 'md', 'txt', 'csv',
+        'png', 'jpg', 'jpeg', 'gif', 'webp', 'ico', 'avif',
+        'woff', 'woff2', 'ttf', 'otf', 'eot',
+        'mp4', 'webm', 'ogg', 'mp3', 'wav',
+        'pdf', 'zip', 'yaml', 'yml', 'toml', 'env',
+        'scss', 'sass', 'less', 'map',
+      ]);
       let skippedFiles = 0;
 
       const prepared = files
