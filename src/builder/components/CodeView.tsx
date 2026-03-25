@@ -766,6 +766,8 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
                 codeFolderPaths={externalFolders}
                 onAddCodeFolder={handleAddCodeFolder}
                 onUploadCodeFiles={handleCodeFilesUpload}
+                onRenameCodeItem={handleRenameCodeItem}
+                onDeleteCodeItem={handleDeleteCodeItem}
               />
             )}
           </div>
