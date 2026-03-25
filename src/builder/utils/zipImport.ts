@@ -204,6 +204,13 @@ export async function processZipFile(file: File): Promise<ZipImportResult> {
     const htmlEntry = htmlEntries[i];
     const htmlText = await htmlEntry.entry.async('string');
 
+    // Extract font links from <head> and convert to @import rules
+    const fontImports = extractFontLinks(htmlText);
+    if (fontImports && cssBytes < IMPORT_LIMITS.maxCssBytes) {
+      cssChunks.unshift(fontImports); // fonts go first
+      cssBytes += fontImports.length;
+    }
+
     const { cleanedHTML, extractedCSS } = extractInlineStyles(htmlText);
     if (extractedCSS && cssBytes < IMPORT_LIMITS.maxCssBytes) {
       const rewrittenInlineCSS = rewriteUrlsInCSS(extractedCSS, assetUrlMap);
@@ -213,7 +220,8 @@ export async function processZipFile(file: File): Promise<ZipImportResult> {
     }
 
     const rewrittenHTML = rewriteUrlsInHTML(cleanedHTML, assetUrlMap);
-    const instance = i === 0 ? parseHTMLToInstance(rewrittenHTML) : null;
+    // Parse ALL HTML pages into instances, not just the first
+    const instance = parseHTMLToInstance(rewrittenHTML);
 
     pages.push({
       name: getDisplayName(htmlEntry.path),
