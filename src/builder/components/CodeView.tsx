@@ -391,7 +391,7 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
     async (files: File[], targetPath: string) => {
       if (!files.length) return;
 
-      const targetFolderPath = normalizeExternalPath(targetPath || '/files');
+      const targetFolderPath = normalizeExternalPath(targetPath || '/');
       const allowedExtensions = new Set([
         'html', 'htm', 'css', 'js', 'mjs', 'ts', 'tsx', 'jsx',
         'json', 'xml', 'svg', 'md', 'txt', 'csv',
