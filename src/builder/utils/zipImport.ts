@@ -3,6 +3,7 @@ import { ComponentInstance } from '../store/types';
 import { useStyleStore } from '../store/useStyleStore';
 import { useMediaStore } from '../store/useMediaStore';
 import { parseHTMLToInstance } from './codeImport';
+import { parseCSSToStyleStore, extractCSSRules } from './cssImport';
 
 export interface ZipImportResult {
   pages: Array<{
