@@ -98,7 +98,7 @@ const getExternalFileTypeFromPath = (path: string): ExternalCodeFileType | null 
 const getExternalParentPath = (path: string) => {
   const normalized = normalizeExternalPath(path);
   const parts = normalized.split('/').filter(Boolean);
-  if (parts.length <= 1) return '/files';
+  if (parts.length <= 1) return '/';
   return `/${parts.slice(0, -1).join('/')}`;
 };
 
@@ -296,7 +296,7 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
   const isComponentFile = selectedFile.startsWith('/components/');
   const isPageFile = selectedFile.startsWith('/pages/');
   const isMediaFile = selectedFile.startsWith('/assets');
-  const isExternalFile = selectedFile.startsWith('/files/');
+  const isExternalFile = !isComponentFile && !isPageFile && !isMediaFile && selectedFile !== '/pages' && selectedExternalFile !== null;
   const isExternalHtmlFile = selectedExternalFile?.type === 'html';
   const isCoreFile = selectedFile.includes('.core.') || selectedFile.includes('/core/');
 
@@ -330,9 +330,8 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
         }
 
         let currentFolder = getExternalParentPath(uniquePath);
-        while (currentFolder.startsWith('/files')) {
+        while (currentFolder && currentFolder !== '/') {
           nextFolders.add(currentFolder);
-          if (currentFolder === '/files') break;
           currentFolder = getExternalParentPath(currentFolder);
         }
       }
@@ -392,7 +391,7 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
     async (files: File[], targetPath: string) => {
       if (!files.length) return;
 
-      const targetFolderPath = normalizeExternalPath(targetPath || '/files');
+      const targetFolderPath = normalizeExternalPath(targetPath || '/');
       const allowedExtensions = new Set([
         'html', 'htm', 'css', 'js', 'mjs', 'ts', 'tsx', 'jsx',
         'json', 'xml', 'svg', 'md', 'txt', 'csv',
@@ -456,7 +455,7 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
     const sanitizedFolderName = sanitizeExternalName(folderName || fallbackName);
     if (!sanitizedFolderName) return;
 
-    const basePath = normalizeExternalPath(parentPath === '/' ? '/files' : parentPath);
+    const basePath = parentPath === '/' ? '' : normalizeExternalPath(parentPath);
     const existing = new Set(externalFolders);
     const candidatePath = normalizeExternalPath(`${basePath}/${normalizeImportedRelativePath(sanitizedFolderName)}`);
     const uniquePath = makeUniqueExternalPath(candidatePath, existing);
@@ -465,7 +464,7 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
 
   const handleRenameCodeItem = useCallback((oldPath: string, newName: string) => {
     const normalized = normalizeExternalPath(oldPath);
-    if (normalized === '/files') return;
+    if (normalized === '/') return;
 
     const sanitizedName = sanitizeExternalName(newName);
     if (!sanitizedName) return;
@@ -885,6 +884,32 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
         </Tabs>
         
         <div className="flex items-center gap-2">
+          {isCodeEdited && isExternalFile && (
+            <Button
+              variant="default"
+              size="sm"
+              onClick={() => {
+                setIsCodeEdited(false);
+                setEditedTabs(prev => ({ ...prev, [activeTab]: false }));
+                // Re-inject external CSS into canvas
+                const cssFiles = Object.values(externalFiles).filter(f => f.type === 'css');
+                if (cssFiles.length > 0) {
+                  const allExternalCSS = cssFiles
+                    .map(f => `/* ${f.name} */\n${f.content}`)
+                    .join('\n\n');
+                  const { setRawCssOverrides } = useStyleStore.getState();
+                  setRawCssOverrides(allExternalCSS);
+                }
+                toast({
+                  title: 'File saved',
+                  description: `${selectedExternalFile?.name || 'File'} saved to project.`,
+                });
+              }}
+              className="gap-2"
+            >
+              Save File
+            </Button>
+          )}
           {isCodeEdited && !isExternalFile && (activeTab === 'html' || activeTab === 'css') && (
             <Button
               variant="default"
