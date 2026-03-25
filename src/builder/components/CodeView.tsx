@@ -299,24 +299,33 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
   const handleZipImported = useCallback(
     (result: ZipImportResult) => {
       const importedFiles: ExternalCodeFile[] = [
-        ...result.pages.map((page) => ({
-          path: `/files/${page.path}`,
-          name: page.path.split('/').pop() || page.name,
-          content: page.html,
-          type: 'html' as const,
-        })),
-        ...result.cssFiles.map((file) => ({
-          path: `/files/${file.path}`,
-          name: file.name,
-          content: file.content,
-          type: 'css' as const,
-        })),
-        ...result.jsFiles.map((file) => ({
-          path: `/files/${file.path}`,
-          name: file.name,
-          content: file.content,
-          type: 'js' as const,
-        })),
+        ...result.pages.map((page) => {
+          const relativePath = normalizeImportedRelativePath(page.path);
+          return {
+            path: `/files/${relativePath}`,
+            name: relativePath.split('/').pop() || page.name,
+            content: page.html,
+            type: 'html' as const,
+          };
+        }),
+        ...result.cssFiles.map((file) => {
+          const relativePath = normalizeImportedRelativePath(file.path);
+          return {
+            path: `/files/${relativePath}`,
+            name: relativePath.split('/').pop() || file.name,
+            content: file.content,
+            type: 'css' as const,
+          };
+        }),
+        ...result.jsFiles.map((file) => {
+          const relativePath = normalizeImportedRelativePath(file.path);
+          return {
+            path: `/files/${relativePath}`,
+            name: relativePath.split('/').pop() || file.name,
+            content: file.content,
+            type: 'js' as const,
+          };
+        }),
       ];
 
       upsertExternalFiles(importedFiles, { selectFirstHtml: true });
@@ -336,7 +345,7 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
       const prepared = files
         .map((file) => {
           const relativePath = file.webkitRelativePath || file.name;
-          const normalizedRelativePath = relativePath.replace(/\\/g, '/').replace(/^\//, '');
+          const normalizedRelativePath = normalizeImportedRelativePath(relativePath);
           const candidatePath = normalizeExternalPath(`${targetFolderPath}/${normalizedRelativePath}`);
           const extension = (candidatePath.split('.').pop() || '').toLowerCase();
           if (!allowedExtensions.has(extension)) {
@@ -387,36 +396,48 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
     const folderName = window.prompt('Folder name');
     if (!folderName) return;
 
-    const sanitizedFolderName = folderName.trim().replace(/[\\/]+/g, '-');
+    const sanitizedFolderName = sanitizeExternalName(folderName);
     if (!sanitizedFolderName) return;
 
     const basePath = normalizeExternalPath(parentPath || '/files');
     const existing = new Set(externalFolders);
-    const candidatePath = normalizeExternalPath(`${basePath}/${sanitizedFolderName}`);
+    const candidatePath = normalizeExternalPath(`${basePath}/${normalizedImportedRelativePath(sanitizedFolderName)}`);
     const uniquePath = makeUniqueExternalPath(candidatePath, existing);
     setExternalFolders((prev) => Array.from(new Set([...prev, '/files', uniquePath])).sort((a, b) => a.localeCompare(b)));
   }, [externalFolders]);
 
   const handleRenameCodeItem = useCallback((oldPath: string, newName: string) => {
     const normalized = normalizeExternalPath(oldPath);
-    const parentPath = getExternalParentPath(normalized);
-    const newPath = normalizeExternalPath(`${parentPath}/${newName}`);
+    if (normalized === '/files') return;
 
-    // Rename folder — update folder list and all files/folders under it
+    const sanitizedName = sanitizeExternalName(newName);
+    if (!sanitizedName) return;
+
+    const parentPath = getExternalParentPath(normalized);
     const isFolder = externalFolders.includes(normalized);
+
     if (isFolder) {
-      setExternalFolders((prev) =>
-        prev.map((f) => {
-          if (f === normalized) return newPath;
-          if (f.startsWith(normalized + '/')) return newPath + f.slice(normalized.length);
-          return f;
-        }).sort((a, b) => a.localeCompare(b))
+      const siblings = new Set(
+        externalFolders.filter((path) => path !== normalized && getExternalParentPath(path) === parentPath)
       );
+      const candidatePath = normalizeExternalPath(`${parentPath}/${sanitizedName}`);
+      const uniquePath = makeUniqueExternalPath(candidatePath, siblings);
+
+      setExternalFolders((prev) =>
+        prev
+          .map((folderPath) => {
+            if (folderPath === normalized) return uniquePath;
+            if (folderPath.startsWith(normalized + '/')) return uniquePath + folderPath.slice(normalized.length);
+            return folderPath;
+          })
+          .sort((a, b) => a.localeCompare(b))
+      );
+
       setExternalFiles((prev) => {
         const next: Record<string, ExternalCodeFile> = {};
         for (const [path, file] of Object.entries(prev)) {
           if (path.startsWith(normalized + '/')) {
-            const updatedPath = newPath + path.slice(normalized.length);
+            const updatedPath = uniquePath + path.slice(normalized.length);
             next[updatedPath] = { ...file, path: updatedPath, name: updatedPath.split('/').pop() || file.name };
           } else {
             next[path] = file;
@@ -424,25 +445,36 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
         }
         return next;
       });
+
+      if (selectedFile.startsWith(normalized)) {
+        setSelectedFile(uniquePath + selectedFile.slice(normalized.length));
+      }
       return;
     }
 
-    // Rename file
     setExternalFiles((prev) => {
-      const file = prev[normalized];
-      if (!file) return prev;
+      const existingFile = prev[normalized];
+      if (!existingFile) return prev;
+
+      const siblingPaths = new Set(
+        Object.keys(prev).filter((path) => path !== normalized && getExternalParentPath(path) === parentPath)
+      );
+      const candidatePath = normalizeExternalPath(`${parentPath}/${sanitizedName}`);
+      const uniquePath = makeUniqueExternalPath(candidatePath, siblingPaths);
+
       const next = { ...prev };
       delete next[normalized];
-      next[newPath] = { ...file, path: newPath, name: newName };
+      next[uniquePath] = { ...existingFile, path: uniquePath, name: uniquePath.split('/').pop() || sanitizedName };
+
+      if (selectedFile === normalized) setSelectedFile(uniquePath);
       return next;
     });
-    if (selectedFile === normalized) setSelectedFile(newPath);
-  }, [externalFolders, externalFiles, selectedFile]);
+  }, [externalFolders, selectedFile]);
 
   const handleDeleteCodeItem = useCallback((path: string) => {
     const normalized = normalizeExternalPath(path);
+    if (normalized === '/files') return;
 
-    // Delete folder and everything inside
     const isFolder = externalFolders.includes(normalized);
     if (isFolder) {
       setExternalFolders((prev) => prev.filter((f) => f !== normalized && !f.startsWith(normalized + '/')));
@@ -457,7 +489,6 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
       return;
     }
 
-    // Delete single file
     setExternalFiles((prev) => {
       const next = { ...prev };
       delete next[normalized];
@@ -465,6 +496,44 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
     });
     if (selectedFile === normalized) setSelectedFile('/files');
   }, [externalFolders, selectedFile]);
+
+  const handleRenameComponentItem = useCallback((instanceId: string, prebuiltId: string | undefined, newName: string) => {
+    const sanitizedName = newName.trim();
+    if (!sanitizedName) return;
+
+    if (prebuiltId) {
+      renamePrebuilt(prebuiltId, sanitizedName);
+      return;
+    }
+
+    const link = getInstanceLink(instanceId);
+    if (link?.prebuiltId) {
+      renamePrebuilt(link.prebuiltId, sanitizedName);
+      return;
+    }
+
+    updateInstance(instanceId, { label: sanitizedName });
+  }, [getInstanceLink, renamePrebuilt, updateInstance]);
+
+  const handleRenameMediaFolder = useCallback((folderId: string, newName: string) => {
+    const sanitizedName = newName.trim();
+    if (!sanitizedName) return;
+    renameMediaFolder(folderId, sanitizedName);
+  }, [renameMediaFolder]);
+
+  const handleRenameMediaAsset = useCallback((assetId: string, newName: string) => {
+    const sanitizedName = newName.trim();
+    if (!sanitizedName) return;
+    updateMediaAsset(assetId, { name: sanitizedName });
+  }, [updateMediaAsset]);
+
+  const handleDeleteMediaFolder = useCallback((folderId: string) => {
+    removeMediaFolder(folderId);
+  }, [removeMediaFolder]);
+
+  const handleDeleteMediaAsset = useCallback((assetId: string) => {
+    removeMediaAsset(assetId);
+  }, [removeMediaAsset]);
   
   const componentCode = useMemo(() => {
     if (!isComponentFile) return null;
