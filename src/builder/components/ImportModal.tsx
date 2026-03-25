@@ -274,21 +274,32 @@ export const ImportModal: React.FC<ImportModalProps> = ({ open, onOpenChange, on
     try {
       const result = await processZipFile(selectedFile);
 
-      const firstPage = result.pages.find((p) => p.instance);
-      if (firstPage?.instance) {
-        const importedChildren = firstPage.instance.children?.length
-          ? firstPage.instance.children
-          : [firstPage.instance];
+      // Import ALL pages that have parsed instances
+      const pagesWithInstances = result.pages.filter((p) => p.instance);
+      
+      if (pagesWithInstances.length > 0) {
+        const allImportedChildren: any[] = [];
+        
+        for (const page of pagesWithInstances) {
+          if (page.instance) {
+            const children = page.instance.children?.length
+              ? page.instance.children
+              : [page.instance];
+            allImportedChildren.push(...children);
+          }
+        }
 
-        updateInstance(rootInstance.id, {
-          children: [...(rootInstance.children || []), ...importedChildren],
-        });
+        if (allImportedChildren.length > 0) {
+          updateInstance(rootInstance.id, {
+            children: [...(rootInstance.children || []), ...allImportedChildren],
+          });
+        }
       }
 
       const { summary } = result;
       toast({
         title: 'ZIP Import Success',
-        description: `Imported ${summary.htmlCount} HTML page(s), ${summary.cssCount} CSS file(s), ${summary.assetCount} asset(s). Rendering styles were applied in stable mode to prevent browser crashes.`,
+        description: `Imported ${summary.htmlCount} page(s), ${summary.cssCount} CSS file(s), ${summary.assetCount} asset(s). ${summary.cssClassesCreated} style classes created with ${summary.cssPropertiesSet} properties.`,
       });
 
       onImportComplete?.();
