@@ -194,6 +194,8 @@ export const FileTree: React.FC<FileTreeProps> = ({
       path: entry.path,
       isComponent: true,
       isLinked: entry.isLinked,
+      componentInstanceId: entry.instanceId,
+      componentPrebuiltId: entry.prebuiltId,
       children: entry.children.length > 0 ? componentNodesToFileNodes(entry.children) : undefined,
     }));
   };
