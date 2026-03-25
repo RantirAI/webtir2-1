@@ -46,12 +46,8 @@ function parseAndApplyInlineStyles(
       // Convert to camelCase
       const camelCaseProp = property.replace(/-([a-z])/g, (_, letter: string) => letter.toUpperCase());
       
-      // Apply important styles like background-image to the style store
-      if (property === 'background-image' || property === 'background' || 
-          property === 'background-size' || property === 'background-position' ||
-          property === 'background-repeat') {
-        setStyle(styleSourceId, camelCaseProp, value, 'desktop', 'default');
-      }
+      // Apply ALL inline styles to the style store (not just backgrounds)
+      setStyle(styleSourceId, camelCaseProp, value, 'desktop', 'default');
     }
   }
 }
