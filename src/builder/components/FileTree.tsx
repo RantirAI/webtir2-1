@@ -660,7 +660,7 @@ export const FileTree: React.FC<FileTreeProps> = ({
             </button>
           )}
 
-          {(node.path === '/components' || node.path === '/media' || node.path === '/files') && hasChildren && (
+          {(node.path === '/components' || node.path === '/assets' || node.path === '/files') && hasChildren && (
             <span className="text-[10px] text-muted-foreground">{node.children?.length}</span>
           )}
         </div>
