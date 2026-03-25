@@ -96,22 +96,23 @@ const getPathName = (path: string) => {
 
 const buildCodeFilesTree = (codeFolderPaths: string[], codeFilePaths: string[]): FileNode => {
   const root: FileNode = {
-    name: 'files',
+    name: 'project-root',
     type: 'folder',
-    path: '/files',
+    path: '/',
     isCodeFolder: true,
     children: [],
   };
 
-  const folderNodeMap = new Map<string, FileNode>([['/files', root]]);
+  const folderNodeMap = new Map<string, FileNode>([['/', root]]);
 
   const ensureFolderNode = (folderPath: string): FileNode => {
     const normalizedFolderPath = normalizePath(folderPath);
+    if (normalizedFolderPath === '/') return root;
     const existing = folderNodeMap.get(normalizedFolderPath);
     if (existing) return existing;
 
     const parentPath = getParentPath(normalizedFolderPath);
-    const parentNode = ensureFolderNode(parentPath === '/' ? '/files' : parentPath);
+    const parentNode = ensureFolderNode(parentPath);
     const folderNode: FileNode = {
       name: getPathName(normalizedFolderPath),
       type: 'folder',
@@ -126,16 +127,14 @@ const buildCodeFilesTree = (codeFolderPaths: string[], codeFilePaths: string[]):
   };
 
   const normalizedFolders = Array.from(
-    new Set(['/files', ...codeFolderPaths.map(normalizePath).filter((path) => path.startsWith('/files'))])
+    new Set(codeFolderPaths.map(normalizePath).filter(p => p !== '/'))
   ).sort((a, b) => a.split('/').length - b.split('/').length || a.localeCompare(b));
 
   normalizedFolders.forEach((folderPath) => {
-    if (folderPath !== '/files') ensureFolderNode(folderPath);
+    ensureFolderNode(folderPath);
   });
 
-  const normalizedFiles = Array.from(new Set(codeFilePaths.map(normalizePath))).filter((path) =>
-    path.startsWith('/files/')
-  );
+  const normalizedFiles = Array.from(new Set(codeFilePaths.map(normalizePath)));
 
   normalizedFiles.forEach((filePath) => {
     const parentPath = getParentPath(filePath);
