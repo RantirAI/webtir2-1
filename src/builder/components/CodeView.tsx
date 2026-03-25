@@ -330,9 +330,8 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
         }
 
         let currentFolder = getExternalParentPath(uniquePath);
-        while (currentFolder.startsWith('/files')) {
+        while (currentFolder && currentFolder !== '/') {
           nextFolders.add(currentFolder);
-          if (currentFolder === '/files') break;
           currentFolder = getExternalParentPath(currentFolder);
         }
       }
