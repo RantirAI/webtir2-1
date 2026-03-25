@@ -136,10 +136,15 @@ const getExternalRefCandidates = (ref: string, currentFilePath?: string) => {
 
 const extractStylesheetRefs = (html: string) => {
   const refs: string[] = [];
-  const regex = /<link[^>]*rel=["']stylesheet["'][^>]*href=["']([^"']+)["'][^>]*>/gi;
+  // Match <link> tags with rel="stylesheet" - handle href before or after rel
+  const regex1 = /<link[^>]*rel=["']stylesheet["'][^>]*href=["']([^"']+)["'][^>]*>/gi;
+  const regex2 = /<link[^>]*href=["']([^"']+)["'][^>]*rel=["']stylesheet["'][^>]*>/gi;
   let match: RegExpExecArray | null;
-  while ((match = regex.exec(html)) !== null) {
+  while ((match = regex1.exec(html)) !== null) {
     refs.push(match[1]);
+  }
+  while ((match = regex2.exec(html)) !== null) {
+    if (!refs.includes(match[1])) refs.push(match[1]);
   }
   return refs;
 };
