@@ -877,15 +877,33 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
               <h3 className="text-xs font-semibold text-muted-foreground uppercase">
                 {showAIChat ? 'AI Chat' : 'Files'}
               </h3>
-              <Button
-                variant={showAIChat ? 'secondary' : 'ghost'}
-                size="sm"
-                onClick={() => setShowAIChat(!showAIChat)}
-                className="h-6 w-6 p-0"
-                title={showAIChat ? 'Show Files' : 'Show AI Chat'}
-              >
-                <Sparkles className="h-3.5 w-3.5" />
-              </Button>
+              <div className="flex items-center gap-1">
+                {!showAIChat && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      const folderName = window.prompt('New folder name:', 'new-folder');
+                      if (folderName?.trim()) {
+                        handleAddCodeFolder('/files', folderName.trim());
+                      }
+                    }}
+                    className="h-6 w-6 p-0"
+                    title="Create new folder"
+                  >
+                    <FolderPlus className="h-3.5 w-3.5" />
+                  </Button>
+                )}
+                <Button
+                  variant={showAIChat ? 'secondary' : 'ghost'}
+                  size="sm"
+                  onClick={() => setShowAIChat(!showAIChat)}
+                  className="h-6 w-6 p-0"
+                  title={showAIChat ? 'Show Files' : 'Show AI Chat'}
+                >
+                  <Sparkles className="h-3.5 w-3.5" />
+                </Button>
+              </div>
             </div>
             {showAIChat ? (
               <div className="flex-1 overflow-hidden">
