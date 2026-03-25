@@ -464,7 +464,7 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
 
   const handleRenameCodeItem = useCallback((oldPath: string, newName: string) => {
     const normalized = normalizeExternalPath(oldPath);
-    if (normalized === '/files') return;
+    if (normalized === '/') return;
 
     const sanitizedName = sanitizeExternalName(newName);
     if (!sanitizedName) return;
