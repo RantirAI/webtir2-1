@@ -798,23 +798,21 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
           console.warn('CSS validation warnings:', validation.errors);
         }
         
-        // Extract supported (class selectors) and unsupported (element/id/complex) rules
-        const { supportedCSS, unsupportedCSS } = extractCSSRules(cssCode);
+        // Collect all external CSS content to inject alongside the edited CSS
+        const allExternalCSS = Object.values(externalFiles)
+          .filter(f => f.type === 'css')
+          .map(f => `/* ${f.name} */\n${f.content}`)
+          .join('\n\n');
         
-        // Parse and apply class-based CSS to style store
-        const result = parseCSSToStyleStore(supportedCSS);
-        
-        // Store unsupported CSS as raw overrides
+        // Inject ALL CSS (edited + external) as raw overrides for full fidelity
+        // This avoids breaking the canvas by trying to parse complex template CSS
+        const fullCSS = [cssCode, allExternalCSS].filter(Boolean).join('\n\n');
         const { setRawCssOverrides } = useStyleStore.getState();
-        setRawCssOverrides(unsupportedCSS);
+        setRawCssOverrides(fullCSS);
         
-        const classDesc = `Updated ${result.classesUpdated} classes, created ${result.classesCreated} new classes, set ${result.propertiesSet} properties.`;
-        const rawDesc = unsupportedCSS.trim() ? ` Injected raw CSS for element/complex selectors.` : '';
         toast({
           title: 'CSS applied',
-          description: !validation.valid 
-            ? `${classDesc}${rawDesc} (Some rules may have been skipped)`
-            : `${classDesc}${rawDesc}`,
+          description: `Injected CSS to canvas${allExternalCSS ? ' (including external CSS files)' : ''}.${!validation.valid ? ' Some rules may have warnings.' : ''}`,
         });
       }
       
