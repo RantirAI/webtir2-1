@@ -174,10 +174,18 @@ const resolveExternalReference = (
   expectedType: ExternalCodeFileType,
   currentFilePath?: string
 ) => {
+  // Try exact candidates first
   const candidates = getExternalRefCandidates(ref, currentFilePath);
   for (const candidate of candidates) {
     const file = externalFiles[candidate];
     if (file && file.type === expectedType) {
+      return file.content;
+    }
+  }
+  // Fallback: search all files for one whose path ends with the ref
+  const cleanedRef = ref.split('?')[0].split('#')[0].replace(/\\/g, '/').replace(/^\.\//, '').replace(/^\//, '');
+  for (const [path, file] of Object.entries(externalFiles)) {
+    if (file.type === expectedType && path.endsWith(`/${cleanedRef}`)) {
       return file.content;
     }
   }
