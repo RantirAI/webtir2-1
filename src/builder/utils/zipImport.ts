@@ -124,7 +124,8 @@ export async function processZipFile(file: File): Promise<ZipImportResult> {
   const { addFolder, addAsset } = useMediaStore.getState();
   const assetUrlMap = new Map<string, string>();
   const storedAssets: ZipImportResult['assets'] = [];
-  const importFolderId = addFolder(`Import: ${file.name.replace('.zip', '')}`, null);
+  const importFolderName = `Import: ${file.name.replace('.zip', '')} - ${new Date().toISOString().replace(/[:.]/g, '-')}`;
+  const importFolderId = addFolder(importFolderName, null);
 
   let totalAssetBytes = 0;
   for (let i = 0; i < assetEntries.length && i < IMPORT_LIMITS.maxAssets; i++) {
