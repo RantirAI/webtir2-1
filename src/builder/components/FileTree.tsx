@@ -59,7 +59,8 @@ export const FileTree: React.FC<FileTreeProps> = ({ onFileSelect, selectedFile, 
     // Get folders in this parent
     const childFolders = getFoldersInParent(parentId);
     childFolders.forEach(folder => {
-      const folderPath = `${basePath}/${folder.name}`;
+      // Include folder ID in path to guarantee unique React keys even when names repeat
+      const folderPath = `${basePath}/${folder.name}__${folder.id}`;
       nodes.push({
         name: folder.name,
         type: 'folder',
@@ -71,7 +72,8 @@ export const FileTree: React.FC<FileTreeProps> = ({ onFileSelect, selectedFile, 
           ...getAssetsInFolder(folder.id).map(asset => ({
             name: asset.name,
             type: 'file' as const,
-            path: `${folderPath}/${asset.name}`,
+            // Include asset ID for uniqueness when filenames repeat
+            path: `${folderPath}/${asset.name}__${asset.id}`,
             isMedia: true,
             mediaAsset: asset,
           })),
@@ -117,7 +119,7 @@ export const FileTree: React.FC<FileTreeProps> = ({ onFileSelect, selectedFile, 
       ...rootAssets.map(asset => ({
         name: asset.name,
         type: 'file' as const,
-        path: `/media/${asset.name}`,
+        path: `/media/${asset.name}__${asset.id}`,
         isMedia: true,
         mediaAsset: asset,
       })),
