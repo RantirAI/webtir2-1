@@ -1,9 +1,8 @@
-import JSZip from 'jszip';
+import JSZip, { JSZipObject } from 'jszip';
 import { ComponentInstance } from '../store/types';
 import { useStyleStore } from '../store/useStyleStore';
 import { useMediaStore } from '../store/useMediaStore';
 import { parseHTMLToInstance } from './codeImport';
-import { parseCSSToStyleStore } from './cssImport';
 
 export interface ZipImportResult {
   pages: Array<{
@@ -25,7 +24,15 @@ export interface ZipImportResult {
   };
 }
 
-// MIME types for common web assets
+const IMPORT_LIMITS = {
+  maxFiles: 2000,
+  maxAssets: 250,
+  maxAssetBytesPerFile: 5 * 1024 * 1024,
+  maxAssetBytesTotal: 30 * 1024 * 1024,
+  maxCssBytes: 1_500_000,
+  maxJsBytesPerFile: 500_000,
+};
+
 const imageMimeTypes: Record<string, string> = {
   '.png': 'image/png',
   '.jpg': 'image/jpeg',
@@ -73,190 +80,193 @@ function isJSFile(filename: string): boolean {
   return /\.(js|mjs)$/i.test(filename);
 }
 
-// Get a clean display name from a file path
 function getDisplayName(filepath: string): string {
   const parts = filepath.split('/');
   const filename = parts[parts.length - 1];
   return filename.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 }
 
-/**
- * Extract and process a ZIP file containing a website project.
- * 
- * - HTML files → parsed into ComponentInstances
- * - CSS files → applied to the style store
- * - JS files → stored for reference
- * - Images/fonts/videos → stored in Media Library
- * 
- * Asset URLs in HTML/CSS are rewritten to point to Data URL versions in the Media Library.
- */
+const yieldToMainThread = () => new Promise<void>((resolve) => setTimeout(resolve, 0));
+
 export async function processZipFile(file: File): Promise<ZipImportResult> {
   const zip = await JSZip.loadAsync(file);
-  
-  // Collect all files by type
-  const htmlFiles: Array<{ path: string; content: string }> = [];
-  const cssFiles: Array<{ path: string; content: string }> = [];
-  const jsFiles: Array<{ path: string; content: string }> = [];
-  const assetFiles: Array<{ path: string; data: Uint8Array; mimeType: string }> = [];
-  
-  // Detect if ZIP has a single root folder (common pattern)
-  const allPaths = Object.keys(zip.files).filter(p => !zip.files[p].dir);
+
+  const allPaths = Object.keys(zip.files).filter((p) => !zip.files[p].dir);
+  if (allPaths.length > IMPORT_LIMITS.maxFiles) {
+    throw new Error(`ZIP has too many files (${allPaths.length}). Limit is ${IMPORT_LIMITS.maxFiles}.`);
+  }
+
   const rootPrefix = detectRootFolder(allPaths);
 
-  // First pass: categorize all files
+  const htmlEntries: Array<{ path: string; entry: JSZipObject }> = [];
+  const cssEntries: Array<{ path: string; entry: JSZipObject }> = [];
+  const jsEntries: Array<{ path: string; entry: JSZipObject }> = [];
+  const assetEntries: Array<{ path: string; entry: JSZipObject; mimeType: string }> = [];
+
   for (const [relativePath, zipEntry] of Object.entries(zip.files)) {
     if (zipEntry.dir) continue;
-    
-    // Strip common root folder prefix
+
     const cleanPath = rootPrefix ? relativePath.replace(rootPrefix, '') : relativePath;
-    if (!cleanPath) continue;
-    
-    // Skip hidden files, OS files, and build artifacts
-    if (shouldSkipFile(cleanPath)) continue;
-    
+    if (!cleanPath || shouldSkipFile(cleanPath)) continue;
+
     if (isHTMLFile(cleanPath)) {
-      const content = await zipEntry.async('string');
-      htmlFiles.push({ path: cleanPath, content });
+      htmlEntries.push({ path: cleanPath, entry: zipEntry });
     } else if (isCSSFile(cleanPath)) {
-      const content = await zipEntry.async('string');
-      cssFiles.push({ path: cleanPath, content });
+      cssEntries.push({ path: cleanPath, entry: zipEntry });
     } else if (isJSFile(cleanPath)) {
-      const content = await zipEntry.async('string');
-      jsFiles.push({ path: cleanPath, content });
+      jsEntries.push({ path: cleanPath, entry: zipEntry });
     } else if (isAssetFile(cleanPath)) {
-      const data = await zipEntry.async('uint8array');
-      assetFiles.push({ path: cleanPath, data, mimeType: getMimeType(cleanPath) });
+      assetEntries.push({ path: cleanPath, entry: zipEntry, mimeType: getMimeType(cleanPath) });
     }
   }
 
-  // Step 1: Process assets → create Data URLs and store in Media Library
-  const assetUrlMap = new Map<string, string>(); // original path → data URL
-  const storedAssets: ZipImportResult['assets'] = [];
-  
   const { addFolder, addAsset } = useMediaStore.getState();
-  
-  // Create an "imports" folder for this ZIP
+  const assetUrlMap = new Map<string, string>();
+  const storedAssets: ZipImportResult['assets'] = [];
   const importFolderId = addFolder(`Import: ${file.name.replace('.zip', '')}`, null);
-  
-  for (const asset of assetFiles) {
-    const blob = new Blob([asset.data.buffer as ArrayBuffer], { type: asset.mimeType });
-    const dataUrl = await blobToDataUrl(blob);
+
+  let totalAssetBytes = 0;
+  for (let i = 0; i < assetEntries.length && i < IMPORT_LIMITS.maxAssets; i++) {
+    const asset = assetEntries[i];
+    const buffer = await asset.entry.async('arraybuffer');
+    const size = buffer.byteLength;
+
+    if (size > IMPORT_LIMITS.maxAssetBytesPerFile) continue;
+    if (totalAssetBytes + size > IMPORT_LIMITS.maxAssetBytesTotal) break;
+
+    const blob = new Blob([buffer], { type: asset.mimeType });
+    const objectUrl = URL.createObjectURL(blob);
     const filename = asset.path.split('/').pop() || asset.path;
-    
-    // Store in media library
+
     addAsset({
       name: filename,
-      type: asset.mimeType.startsWith('image/') ? 'image' : 
-            asset.mimeType.startsWith('font/') ? 'font' : 
-            asset.mimeType.startsWith('video/') ? 'video' : 'other',
-      url: dataUrl,
-      size: asset.data.length,
+      type: asset.mimeType.startsWith('image/')
+        ? 'image'
+        : asset.mimeType.startsWith('font/')
+          ? 'font'
+          : asset.mimeType.startsWith('video/')
+            ? 'video'
+            : 'other',
+      url: objectUrl,
+      size,
       mimeType: asset.mimeType,
       altText: '',
       folderId: importFolderId,
     });
-    
-    // Map all possible path references to this data URL
-    // e.g. "images/logo.png", "./images/logo.png", "../images/logo.png", "/images/logo.png"
+
+    totalAssetBytes += size;
+
     const pathVariants = getPathVariants(asset.path);
     for (const variant of pathVariants) {
-      assetUrlMap.set(variant, dataUrl);
+      assetUrlMap.set(variant, objectUrl);
     }
-    
+
     storedAssets.push({
       name: filename,
-      url: dataUrl,
+      url: objectUrl,
       mimeType: asset.mimeType,
-      size: asset.data.length,
+      size,
     });
+
+    if (i % 15 === 0) await yieldToMainThread();
   }
 
-  // Step 2: Process CSS files → rewrite asset URLs then apply to style store
-  let totalClassesCreated = 0;
-  let totalPropertiesSet = 0;
   const processedCss: ZipImportResult['cssFiles'] = [];
-  
-  for (const css of cssFiles) {
-    // Rewrite asset URLs in CSS (url(...) references)
-    const rewrittenCSS = rewriteUrlsInCSS(css.content, assetUrlMap);
-    
-    // Apply to style store
-    const result = parseCSSToStyleStore(rewrittenCSS);
-    totalClassesCreated += result.classesCreated;
-    totalPropertiesSet += result.propertiesSet;
-    
+  const cssChunks: string[] = [];
+  let cssBytes = 0;
+
+  for (let i = 0; i < cssEntries.length; i++) {
+    const css = cssEntries[i];
+    const cssText = await css.entry.async('string');
+    const rewrittenCSS = rewriteUrlsInCSS(cssText, assetUrlMap);
+    const cssLength = rewrittenCSS.length;
+
     processedCss.push({ name: css.path.split('/').pop() || css.path, content: rewrittenCSS });
+
+    if (cssBytes < IMPORT_LIMITS.maxCssBytes) {
+      const allowed = Math.max(0, IMPORT_LIMITS.maxCssBytes - cssBytes);
+      cssChunks.push(rewrittenCSS.slice(0, allowed));
+      cssBytes += Math.min(cssLength, allowed);
+    }
+
+    if (i % 5 === 0) await yieldToMainThread();
   }
 
-  // Step 3: Process HTML files → rewrite asset URLs then parse to instances
   const pages: ZipImportResult['pages'] = [];
-  
-  // Sort: index.html first
-  htmlFiles.sort((a, b) => {
+  htmlEntries.sort((a, b) => {
     if (a.path.toLowerCase().includes('index')) return -1;
     if (b.path.toLowerCase().includes('index')) return 1;
     return a.path.localeCompare(b.path);
   });
-  
-  for (const html of htmlFiles) {
-    // Extract inline <style> blocks and process them
-    const { cleanedHTML, extractedCSS } = extractInlineStyles(html.content);
-    if (extractedCSS) {
+
+  for (let i = 0; i < htmlEntries.length; i++) {
+    const htmlEntry = htmlEntries[i];
+    const htmlText = await htmlEntry.entry.async('string');
+
+    const { cleanedHTML, extractedCSS } = extractInlineStyles(htmlText);
+    if (extractedCSS && cssBytes < IMPORT_LIMITS.maxCssBytes) {
       const rewrittenInlineCSS = rewriteUrlsInCSS(extractedCSS, assetUrlMap);
-      const inlineResult = parseCSSToStyleStore(rewrittenInlineCSS);
-      totalClassesCreated += inlineResult.classesCreated;
-      totalPropertiesSet += inlineResult.propertiesSet;
+      const allowed = Math.max(0, IMPORT_LIMITS.maxCssBytes - cssBytes);
+      cssChunks.push(rewrittenInlineCSS.slice(0, allowed));
+      cssBytes += Math.min(rewrittenInlineCSS.length, allowed);
     }
-    
-    // Extract <link> CSS references (already processed above, just note them)
-    
-    // Rewrite asset URLs in HTML (src, href attributes)
+
     const rewrittenHTML = rewriteUrlsInHTML(cleanedHTML, assetUrlMap);
-    
-    // Parse to component instance
-    const instance = parseHTMLToInstance(rewrittenHTML);
-    
+    const instance = i === 0 ? parseHTMLToInstance(rewrittenHTML) : null;
+
     pages.push({
-      name: getDisplayName(html.path),
+      name: getDisplayName(htmlEntry.path),
       html: rewrittenHTML,
       instance,
     });
+
+    if (i % 3 === 0) await yieldToMainThread();
   }
 
-  // Step 4: Process JS files
-  const processedJs: ZipImportResult['jsFiles'] = jsFiles.map(js => ({
-    name: js.path.split('/').pop() || js.path,
-    content: js.content,
-  }));
+  const jsFiles: ZipImportResult['jsFiles'] = [];
+  for (let i = 0; i < jsEntries.length; i++) {
+    const js = jsEntries[i];
+    const jsContent = await js.entry.async('string');
+    jsFiles.push({
+      name: js.path.split('/').pop() || js.path,
+      content: jsContent.slice(0, IMPORT_LIMITS.maxJsBytesPerFile),
+    });
+
+    if (i % 10 === 0) await yieldToMainThread();
+  }
+
+  const mergedCss = cssChunks.filter(Boolean).join('\n\n');
+  if (mergedCss.trim()) {
+    const { rawCssOverrides, setRawCssOverrides } = useStyleStore.getState();
+    const nextCss = [rawCssOverrides, '/* ZIP Import */', mergedCss].filter(Boolean).join('\n\n');
+    setRawCssOverrides(nextCss);
+  }
 
   return {
     pages,
     cssFiles: processedCss,
-    jsFiles: processedJs,
+    jsFiles,
     assets: storedAssets,
     summary: {
       totalFiles: allPaths.length,
-      htmlCount: htmlFiles.length,
-      cssCount: cssFiles.length,
-      jsCount: jsFiles.length,
-      assetCount: assetFiles.length,
-      cssClassesCreated: totalClassesCreated,
-      cssPropertiesSet: totalPropertiesSet,
+      htmlCount: htmlEntries.length,
+      cssCount: cssEntries.length,
+      jsCount: jsEntries.length,
+      assetCount: storedAssets.length,
+      cssClassesCreated: 0,
+      cssPropertiesSet: 0,
     },
   };
 }
 
-// --- Helper functions ---
-
 function detectRootFolder(paths: string[]): string {
   if (paths.length === 0) return '';
-  
-  // Check if all files share a common root folder
+
   const firstParts = paths[0].split('/');
   if (firstParts.length < 2) return '';
-  
+
   const candidate = firstParts[0] + '/';
-  const allMatch = paths.every(p => p.startsWith(candidate));
+  const allMatch = paths.every((p) => p.startsWith(candidate));
   return allMatch ? candidate : '';
 }
 
@@ -274,15 +284,6 @@ function shouldSkipFile(path: string): boolean {
   );
 }
 
-function blobToDataUrl(blob: Blob): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => resolve(reader.result as string);
-    reader.onerror = reject;
-    reader.readAsDataURL(blob);
-  });
-}
-
 function getPathVariants(path: string): string[] {
   const filename = path.split('/').pop() || path;
   const variants = [
@@ -293,70 +294,65 @@ function getPathVariants(path: string): string[] {
     filename,
     './' + filename,
   ];
-  
-  // Also add without leading folder segments (e.g. "css/style.css" → "style.css")
+
   const parts = path.split('/');
   for (let i = 1; i < parts.length; i++) {
     variants.push(parts.slice(i).join('/'));
   }
-  
+
   return [...new Set(variants)];
 }
 
 function rewriteUrlsInCSS(css: string, urlMap: Map<string, string>): string {
-  // Match url(...) references
   return css.replace(/url\(\s*['"]?([^'")\s]+)['"]?\s*\)/g, (match, url) => {
-    // Skip data URLs and absolute HTTP URLs
     if (url.startsWith('data:') || url.startsWith('http://') || url.startsWith('https://')) {
       return match;
     }
-    
-    // Try to find a matching asset
+
     const cleanUrl = url.replace(/^\.\//, '').replace(/^\//, '').replace(/\.\.\//g, '');
-    for (const [key, dataUrl] of urlMap) {
+    for (const [key, resolvedUrl] of urlMap) {
       if (key === url || key === cleanUrl || key.endsWith('/' + cleanUrl) || key === url.split('/').pop()) {
-        return `url("${dataUrl}")`;
+        return `url("${resolvedUrl}")`;
       }
     }
-    
+
     return match;
   });
 }
 
 function rewriteUrlsInHTML(html: string, urlMap: Map<string, string>): string {
-  // Rewrite src and href attributes pointing to local assets
   return html.replace(/(src|href)=["']([^"']+)["']/g, (match, attr, url) => {
-    // Skip anchors, data URLs, external URLs, and CSS/JS links
-    if (url.startsWith('#') || url.startsWith('data:') || 
-        url.startsWith('http://') || url.startsWith('https://') ||
-        url.startsWith('mailto:') || url.startsWith('tel:')) {
+    if (
+      url.startsWith('#') ||
+      url.startsWith('data:') ||
+      url.startsWith('http://') ||
+      url.startsWith('https://') ||
+      url.startsWith('mailto:') ||
+      url.startsWith('tel:') ||
+      isCSSFile(url) ||
+      isJSFile(url)
+    ) {
       return match;
     }
-    
-    // Skip CSS and JS file references (they're processed separately)
-    if (isCSSFile(url) || isJSFile(url)) {
-      return match;
-    }
-    
+
     const cleanUrl = url.replace(/^\.\//, '').replace(/^\//, '').replace(/\.\.\//g, '');
-    for (const [key, dataUrl] of urlMap) {
+    for (const [key, resolvedUrl] of urlMap) {
       if (key === url || key === cleanUrl || key.endsWith('/' + cleanUrl) || key === url.split('/').pop()) {
-        return `${attr}="${dataUrl}"`;
+        return `${attr}="${resolvedUrl}"`;
       }
     }
-    
+
     return match;
   });
 }
 
 function extractInlineStyles(html: string): { cleanedHTML: string; extractedCSS: string } {
   let extractedCSS = '';
-  
-  // Extract <style> blocks
+
   const cleanedHTML = html.replace(/<style[^>]*>([\s\S]*?)<\/style>/gi, (_, cssContent) => {
     extractedCSS += cssContent + '\n';
     return '';
   });
-  
+
   return { cleanedHTML, extractedCSS };
 }
