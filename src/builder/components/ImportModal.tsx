@@ -273,22 +273,24 @@ export const ImportModal: React.FC<ImportModalProps> = ({ open, onOpenChange, on
 
     try {
       const result = await processZipFile(selectedFile);
-      
-      // Add the first page's instance to the canvas
-      const firstPage = result.pages.find(p => p.instance);
+
+      const firstPage = result.pages.find((p) => p.instance);
       if (firstPage?.instance) {
-        // Add all children from the parsed body to the canvas root
-        for (const child of firstPage.instance.children || []) {
-          addInstance(child, rootInstance.id);
-        }
+        const importedChildren = firstPage.instance.children?.length
+          ? firstPage.instance.children
+          : [firstPage.instance];
+
+        updateInstance(rootInstance.id, {
+          children: [...(rootInstance.children || []), ...importedChildren],
+        });
       }
-      
+
       const { summary } = result;
       toast({
         title: 'ZIP Import Success',
-        description: `Imported ${summary.htmlCount} HTML page(s), ${summary.cssCount} CSS file(s), ${summary.assetCount} asset(s). Created ${summary.cssClassesCreated} classes with ${summary.cssPropertiesSet} style properties.`,
+        description: `Imported ${summary.htmlCount} HTML page(s), ${summary.cssCount} CSS file(s), ${summary.assetCount} asset(s). Rendering styles were applied in stable mode to prevent browser crashes.`,
       });
-      
+
       onImportComplete?.();
       resetAndClose();
     } catch (error) {
