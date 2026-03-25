@@ -78,6 +78,13 @@ const normalizeExternalPath = (path: string) => {
   return withLeadingSlash.replace(/\\/g, '/').replace(/\/+/g, '/').replace(/\/$/, '');
 };
 
+const normalizeImportedRelativePath = (path: string) => {
+  const cleaned = path.replace(/\\/g, '/').replace(/^\.\//, '').replace(/^\/+/, '');
+  return cleaned.replace(/^files\//i, '');
+};
+
+const sanitizeExternalName = (name: string) => name.trim().replace(/[\\/]+/g, '-');
+
 const getExternalFileTypeFromPath = (path: string): ExternalCodeFileType | null => {
   const lower = path.toLowerCase();
   if (lower.endsWith('.html') || lower.endsWith('.htm')) return 'html';
