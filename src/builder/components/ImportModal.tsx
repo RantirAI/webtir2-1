@@ -258,7 +258,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({ open, onOpenChange, on
     }
   };
 
-  const handleUpload = () => {
+  const handleUpload = async () => {
     if (!selectedFile) {
       toast({
         title: 'No File Selected',
@@ -268,12 +268,39 @@ export const ImportModal: React.FC<ImportModalProps> = ({ open, onOpenChange, on
       return;
     }
 
-    onImport(activePlatform, selectedFile);
-    toast({
-      title: 'Import Started',
-      description: `Processing ${getPlatformLabel()} package...`,
-    });
-    resetAndClose();
+    setIsImporting(true);
+    await new Promise(resolve => setTimeout(resolve, 50));
+
+    try {
+      const result = await processZipFile(selectedFile);
+      
+      // Add the first page's instance to the canvas
+      const firstPage = result.pages.find(p => p.instance);
+      if (firstPage?.instance) {
+        // Add all children from the parsed body to the canvas root
+        for (const child of firstPage.instance.children || []) {
+          addInstance(child, rootInstance.id);
+        }
+      }
+      
+      const { summary } = result;
+      toast({
+        title: 'ZIP Import Success',
+        description: `Imported ${summary.htmlCount} HTML page(s), ${summary.cssCount} CSS file(s), ${summary.assetCount} asset(s). Created ${summary.cssClassesCreated} classes with ${summary.cssPropertiesSet} style properties.`,
+      });
+      
+      onImportComplete?.();
+      resetAndClose();
+    } catch (error) {
+      console.error('ZIP import error:', error);
+      toast({
+        title: 'Import Failed',
+        description: error instanceof Error ? error.message : 'Failed to process ZIP file.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsImporting(false);
+    }
   };
 
   const resetAndClose = () => {
