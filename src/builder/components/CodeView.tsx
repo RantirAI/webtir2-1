@@ -892,7 +892,7 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
                     onClick={() => {
                       const folderName = window.prompt('New folder name:', 'new-folder');
                       if (folderName?.trim()) {
-                        handleAddCodeFolder('/files', folderName.trim());
+                        handleAddCodeFolder('/', folderName.trim());
                       }
                     }}
                     className="h-6 w-6 p-0"

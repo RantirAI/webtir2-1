@@ -331,7 +331,7 @@ export const FileTree: React.FC<FileTreeProps> = ({
 
     const codeFilesRoot = buildCodeFilesTree(codeFolderPaths, codeFilePaths);
     if (codeFilesRoot.children && codeFilesRoot.children.length > 0) {
-      structure.push(codeFilesRoot);
+      structure.push(...codeFilesRoot.children);
     }
 
     const mediaChildren: FileNode[] = [
