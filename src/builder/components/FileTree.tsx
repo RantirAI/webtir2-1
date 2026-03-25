@@ -35,6 +35,8 @@ interface FileNode {
   path: string;
   isComponent?: boolean;
   isLinked?: boolean;
+  componentInstanceId?: string;
+  componentPrebuiltId?: string;
   isMedia?: boolean;
   isMediaFolder?: boolean;
   isCodeFile?: boolean;
