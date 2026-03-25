@@ -404,11 +404,11 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
     const sanitizedFolderName = sanitizeExternalName(folderName || fallbackName);
     if (!sanitizedFolderName) return;
 
-    const basePath = normalizeExternalPath(parentPath || '/files');
+    const basePath = normalizeExternalPath(parentPath === '/' ? '/files' : parentPath);
     const existing = new Set(externalFolders);
     const candidatePath = normalizeExternalPath(`${basePath}/${normalizeImportedRelativePath(sanitizedFolderName)}`);
     const uniquePath = makeUniqueExternalPath(candidatePath, existing);
-    setExternalFolders((prev) => Array.from(new Set([...prev, '/files', uniquePath])).sort((a, b) => a.localeCompare(b)));
+    setExternalFolders((prev) => Array.from(new Set([...prev, uniquePath])).sort((a, b) => a.localeCompare(b)));
   }, [externalFolders]);
 
   const handleRenameCodeItem = useCallback((oldPath: string, newName: string) => {
