@@ -456,7 +456,7 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
     const sanitizedFolderName = sanitizeExternalName(folderName || fallbackName);
     if (!sanitizedFolderName) return;
 
-    const basePath = normalizeExternalPath(parentPath === '/' ? '/files' : parentPath);
+    const basePath = parentPath === '/' ? '' : normalizeExternalPath(parentPath);
     const existing = new Set(externalFolders);
     const candidatePath = normalizeExternalPath(`${basePath}/${normalizeImportedRelativePath(sanitizedFolderName)}`);
     const uniquePath = makeUniqueExternalPath(candidatePath, existing);
