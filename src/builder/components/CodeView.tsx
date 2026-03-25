@@ -229,7 +229,7 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
     astro: false,
   });
   const [externalFiles, setExternalFiles] = useState<Record<string, ExternalCodeFile>>({});
-  const [externalFolders, setExternalFolders] = useState<string[]>(['/files']);
+  const [externalFolders, setExternalFolders] = useState<string[]>([]);
 
   // Discover components from canvas
   const componentEntries = useMemo(() => {
