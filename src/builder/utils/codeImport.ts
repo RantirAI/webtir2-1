@@ -121,7 +121,7 @@ function domNodeToInstancePreserving(
   const { createStyleSource, styleSources, setStyle } = useStyleStore.getState();
   
   // Get or create style sources for classes
-  const classNames = node.className.split(' ').filter(Boolean);
+  const classNames = (typeof node.className === 'string' ? node.className : node.getAttribute('class') || '').split(' ').filter(Boolean);
   const styleSourceIds = classNames.map(className => {
     const existing = Object.entries(styleSources).find(
       ([_, source]) => source.name === className
