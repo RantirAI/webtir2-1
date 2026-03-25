@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { useBuilderStore } from '../store/useBuilderStore';
 import { usePageStore } from '../store/usePageStore';
 import { useStyleStore } from '../store/useStyleStore';
+import { useMediaStore } from '../store/useMediaStore';
+import { useComponentInstanceStore } from '../store/useComponentInstanceStore';
 import { useDebounce } from '@/hooks/useDebounce';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
