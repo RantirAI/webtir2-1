@@ -46,12 +46,8 @@ function parseAndApplyInlineStyles(
       // Convert to camelCase
       const camelCaseProp = property.replace(/-([a-z])/g, (_, letter: string) => letter.toUpperCase());
       
-      // Apply important styles like background-image to the style store
-      if (property === 'background-image' || property === 'background' || 
-          property === 'background-size' || property === 'background-position' ||
-          property === 'background-repeat') {
-        setStyle(styleSourceId, camelCaseProp, value, 'desktop', 'default');
-      }
+      // Apply ALL inline styles to the style store (not just backgrounds)
+      setStyle(styleSourceId, camelCaseProp, value, 'desktop', 'default');
     }
   }
 }
@@ -150,9 +146,24 @@ function domNodeToInstancePreserving(
       type = 'Div';
       break;
     case 'section':
+    case 'header':
+    case 'footer':
+    case 'main':
+    case 'article':
+    case 'aside':
       type = 'Section';
       break;
     case 'div':
+    case 'span':
+    case 'figure':
+    case 'figcaption':
+    case 'i':
+    case 'em':
+    case 'strong':
+    case 'b':
+    case 'small':
+    case 'sup':
+    case 'sub':
       type = 'Div';
       break;
     case 'p':
@@ -174,6 +185,18 @@ function domNodeToInstancePreserving(
       break;
     case 'img':
       type = 'Image';
+      break;
+    case 'video':
+      type = 'Video';
+      break;
+    case 'ul':
+      type = 'UnorderedList';
+      break;
+    case 'ol':
+      type = 'OrderedList';
+      break;
+    case 'li':
+      type = 'Div';
       break;
     case 'input':
       if (node.getAttribute('type') === 'checkbox') {
@@ -199,11 +222,23 @@ function domNodeToInstancePreserving(
     case 'form':
       type = 'Form';
       break;
-    case 'header':
-      type = 'Section';
+    case 'hr':
+      type = 'Separator';
       break;
-    case 'footer':
-      type = 'Section';
+    case 'svg':
+    case 'path':
+    case 'circle':
+    case 'rect':
+    case 'line':
+    case 'polygon':
+    case 'polyline':
+    case 'g':
+    case 'defs':
+    case 'use':
+    case 'symbol':
+    case 'clippath':
+    case 'mask':
+      type = 'Div';
       break;
   }
   
@@ -330,9 +365,24 @@ function domNodeToInstance(node: Element): ComponentInstance {
       type = 'Div';
       break;
     case 'section':
+    case 'header':
+    case 'footer':
+    case 'main':
+    case 'article':
+    case 'aside':
       type = 'Section';
       break;
     case 'div':
+    case 'span':
+    case 'figure':
+    case 'figcaption':
+    case 'i':
+    case 'em':
+    case 'strong':
+    case 'b':
+    case 'small':
+    case 'sup':
+    case 'sub':
       type = 'Div';
       break;
     case 'p':
@@ -355,6 +405,18 @@ function domNodeToInstance(node: Element): ComponentInstance {
     case 'img':
       type = 'Image';
       break;
+    case 'video':
+      type = 'Video';
+      break;
+    case 'ul':
+      type = 'UnorderedList';
+      break;
+    case 'ol':
+      type = 'OrderedList';
+      break;
+    case 'li':
+      type = 'Div';
+      break;
     case 'input':
       if (node.getAttribute('type') === 'checkbox') {
         type = 'CheckboxField';
@@ -375,6 +437,28 @@ function domNodeToInstance(node: Element): ComponentInstance {
       break;
     case 'nav':
       type = 'Navigation';
+      break;
+    case 'form':
+      type = 'Form';
+      break;
+    case 'hr':
+      type = 'Separator';
+      break;
+    case 'svg':
+    case 'path':
+    case 'circle':
+    case 'rect':
+    case 'line':
+    case 'polygon':
+    case 'polyline':
+    case 'g':
+    case 'defs':
+    case 'use':
+    case 'symbol':
+    case 'clippath':
+    case 'mask':
+      // SVG elements - wrap as Div to preserve structure
+      type = 'Div';
       break;
   }
   

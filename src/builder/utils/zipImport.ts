@@ -3,6 +3,7 @@ import { ComponentInstance } from '../store/types';
 import { useStyleStore } from '../store/useStyleStore';
 import { useMediaStore } from '../store/useMediaStore';
 import { parseHTMLToInstance } from './codeImport';
+import { parseCSSToStyleStore, extractCSSRules } from './cssImport';
 
 export interface ZipImportResult {
   pages: Array<{
@@ -203,6 +204,13 @@ export async function processZipFile(file: File): Promise<ZipImportResult> {
     const htmlEntry = htmlEntries[i];
     const htmlText = await htmlEntry.entry.async('string');
 
+    // Extract font links from <head> and convert to @import rules
+    const fontImports = extractFontLinks(htmlText);
+    if (fontImports && cssBytes < IMPORT_LIMITS.maxCssBytes) {
+      cssChunks.unshift(fontImports); // fonts go first
+      cssBytes += fontImports.length;
+    }
+
     const { cleanedHTML, extractedCSS } = extractInlineStyles(htmlText);
     if (extractedCSS && cssBytes < IMPORT_LIMITS.maxCssBytes) {
       const rewrittenInlineCSS = rewriteUrlsInCSS(extractedCSS, assetUrlMap);
@@ -212,7 +220,8 @@ export async function processZipFile(file: File): Promise<ZipImportResult> {
     }
 
     const rewrittenHTML = rewriteUrlsInHTML(cleanedHTML, assetUrlMap);
-    const instance = i === 0 ? parseHTMLToInstance(rewrittenHTML) : null;
+    // Parse ALL HTML pages into instances, not just the first
+    const instance = parseHTMLToInstance(rewrittenHTML);
 
     pages.push({
       name: getDisplayName(htmlEntry.path),
@@ -236,10 +245,32 @@ export async function processZipFile(file: File): Promise<ZipImportResult> {
   }
 
   const mergedCss = cssChunks.filter(Boolean).join('\n\n');
+  let cssClassesCreated = 0;
+  let cssPropertiesSet = 0;
+
   if (mergedCss.trim()) {
-    const { rawCssOverrides, setRawCssOverrides } = useStyleStore.getState();
-    const nextCss = [rawCssOverrides, '/* ZIP Import */', mergedCss].filter(Boolean).join('\n\n');
-    setRawCssOverrides(nextCss);
+    // First, parse class-based CSS rules into style sources for editability
+    try {
+      const { supportedCSS, unsupportedCSS } = extractCSSRules(mergedCss);
+      
+      if (supportedCSS.trim()) {
+        const parseResult = parseCSSToStyleStore(supportedCSS);
+        cssClassesCreated = parseResult.classesCreated;
+        cssPropertiesSet = parseResult.propertiesSet;
+      }
+      
+      // Put ALL CSS (including unsupported selectors, :root vars, etc.) into rawCssOverrides
+      // This ensures complex selectors, CSS variables, and element selectors still work
+      const { rawCssOverrides, setRawCssOverrides } = useStyleStore.getState();
+      const nextCss = [rawCssOverrides, '/* ZIP Import */', mergedCss].filter(Boolean).join('\n\n');
+      setRawCssOverrides(nextCss);
+    } catch (e) {
+      // Fallback: just inject raw CSS if parsing fails
+      console.warn('CSS parsing failed, injecting raw CSS:', e);
+      const { rawCssOverrides, setRawCssOverrides } = useStyleStore.getState();
+      const nextCss = [rawCssOverrides, '/* ZIP Import */', mergedCss].filter(Boolean).join('\n\n');
+      setRawCssOverrides(nextCss);
+    }
   }
 
   return {
@@ -253,8 +284,8 @@ export async function processZipFile(file: File): Promise<ZipImportResult> {
       cssCount: cssEntries.length,
       jsCount: jsEntries.length,
       assetCount: storedAssets.length,
-      cssClassesCreated: 0,
-      cssPropertiesSet: 0,
+      cssClassesCreated,
+      cssPropertiesSet,
     },
   };
 }
@@ -355,4 +386,35 @@ function extractInlineStyles(html: string): { cleanedHTML: string; extractedCSS:
   });
 
   return { cleanedHTML, extractedCSS };
+}
+
+/**
+ * Extract Google Font and other external font <link> tags from HTML <head>
+ * and convert them to @import rules for CSS injection.
+ */
+function extractFontLinks(html: string): string {
+  const imports: string[] = [];
+  
+  // Match <link> tags with stylesheet rel that point to font services
+  const linkRegex = /<link[^>]*href=["']([^"']+)["'][^>]*>/gi;
+  let match;
+  
+  while ((match = linkRegex.exec(html)) !== null) {
+    const fullTag = match[0];
+    const href = match[1];
+    
+    // Only process stylesheet links to font services
+    if (!fullTag.includes('stylesheet')) continue;
+    
+    if (
+      href.includes('fonts.googleapis.com') ||
+      href.includes('fonts.gstatic.com') ||
+      href.includes('fonts.bunny.net') ||
+      href.includes('use.typekit.net')
+    ) {
+      imports.push(`@import url("${href}");`);
+    }
+  }
+  
+  return imports.length > 0 ? imports.join('\n') : '';
 }
