@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useBuilderStore } from '../store/useBuilderStore';
 import { usePageStore } from '../store/usePageStore';
 import { useStyleStore } from '../store/useStyleStore';
@@ -22,6 +22,7 @@ import { LockedCodeEditor } from './LockedCodeEditor';
 import { AIChat } from './AIChat';
 import { LockRegion } from '../primitives/core/types';
 import { toast } from '@/hooks/use-toast';
+import { ZipImportResult } from '../utils/zipImport';
 import Prism from 'prismjs';
 import 'prismjs/themes/prism-tomorrow.css';
 import 'prismjs/components/prism-markup';
@@ -60,6 +61,103 @@ interface CodeViewProps {
   pages: string[];
   pageNames: Record<string, string>;
 }
+
+type ExternalCodeFileType = 'html' | 'css' | 'js';
+
+interface ExternalCodeFile {
+  path: string;
+  name: string;
+  content: string;
+  type: ExternalCodeFileType;
+}
+
+const normalizeExternalPath = (path: string) => {
+  const withLeadingSlash = path.startsWith('/') ? path : `/${path}`;
+  return withLeadingSlash.replace(/\\/g, '/').replace(/\/+/g, '/').replace(/\/$/, '');
+};
+
+const getExternalFileTypeFromPath = (path: string): ExternalCodeFileType | null => {
+  const lower = path.toLowerCase();
+  if (lower.endsWith('.html') || lower.endsWith('.htm')) return 'html';
+  if (lower.endsWith('.css')) return 'css';
+  if (lower.endsWith('.js') || lower.endsWith('.mjs')) return 'js';
+  return null;
+};
+
+const getExternalParentPath = (path: string) => {
+  const normalized = normalizeExternalPath(path);
+  const parts = normalized.split('/').filter(Boolean);
+  if (parts.length <= 1) return '/files';
+  return `/${parts.slice(0, -1).join('/')}`;
+};
+
+const makeUniqueExternalPath = (candidatePath: string, usedPaths: Set<string>) => {
+  const normalized = normalizeExternalPath(candidatePath);
+  if (!usedPaths.has(normalized)) return normalized;
+
+  const extMatch = normalized.match(/(\.[^.\/]+)$/);
+  const ext = extMatch ? extMatch[1] : '';
+  const base = ext ? normalized.slice(0, -ext.length) : normalized;
+  let index = 2;
+  while (usedPaths.has(`${base}-${index}${ext}`)) {
+    index += 1;
+  }
+  return `${base}-${index}${ext}`;
+};
+
+const getExternalRefCandidates = (ref: string, currentFilePath?: string) => {
+  const cleanedRef = ref.split('?')[0].split('#')[0].replace(/\\/g, '/').trim();
+  if (!cleanedRef) return [];
+
+  const normalizedRef = cleanedRef.replace(/^\.\//, '').replace(/^\//, '');
+  const baseName = normalizedRef.split('/').pop() || normalizedRef;
+  const currentDir = currentFilePath ? getExternalParentPath(currentFilePath) : '/files';
+
+  const candidates = [
+    normalizeExternalPath(cleanedRef),
+    normalizeExternalPath(`/files/${normalizedRef}`),
+    normalizeExternalPath(`${currentDir}/${normalizedRef}`),
+    normalizeExternalPath(`/files/${baseName}`),
+  ];
+
+  return Array.from(new Set(candidates));
+};
+
+const extractStylesheetRefs = (html: string) => {
+  const refs: string[] = [];
+  const regex = /<link[^>]*rel=["']stylesheet["'][^>]*href=["']([^"']+)["'][^>]*>/gi;
+  let match: RegExpExecArray | null;
+  while ((match = regex.exec(html)) !== null) {
+    refs.push(match[1]);
+  }
+  return refs;
+};
+
+const extractScriptRefs = (html: string) => {
+  const refs: string[] = [];
+  const regex = /<script[^>]*src=["']([^"']+)["'][^>]*><\/script>/gi;
+  let match: RegExpExecArray | null;
+  while ((match = regex.exec(html)) !== null) {
+    refs.push(match[1]);
+  }
+  return refs;
+};
+
+const resolveExternalReference = (
+  ref: string,
+  externalFiles: Record<string, ExternalCodeFile>,
+  expectedType: ExternalCodeFileType,
+  currentFilePath?: string
+) => {
+  const candidates = getExternalRefCandidates(ref, currentFilePath);
+  for (const candidate of candidates) {
+    const file = externalFiles[candidate];
+    if (file && file.type === expectedType) {
+      return file.content;
+    }
+  }
+  return null;
+};
 
 export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames }) => {
   const rootInstance = useBuilderStore((state) => state.rootInstance);
@@ -113,6 +211,8 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
     react: false,
     astro: false,
   });
+  const [externalFiles, setExternalFiles] = useState<Record<string, ExternalCodeFile>>({});
+  const [externalFolders, setExternalFolders] = useState<string[]>(['/files']);
 
   // Discover components from canvas
   const componentEntries = useMemo(() => {
@@ -120,11 +220,167 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
     return discoverComponents(rootInstance);
   }, [rootInstance]);
 
+  const externalFilePaths = useMemo(() => Object.keys(externalFiles).sort(), [externalFiles]);
+  const selectedExternalFile = useMemo(() => externalFiles[selectedFile] || null, [externalFiles, selectedFile]);
+
   // Check if selected file is a component file, page file, or media
   const isComponentFile = selectedFile.startsWith('/components/');
   const isPageFile = selectedFile.startsWith('/pages/');
   const isMediaFile = selectedFile.startsWith('/media');
+  const isExternalFile = selectedFile.startsWith('/files/');
+  const isExternalHtmlFile = selectedExternalFile?.type === 'html';
   const isCoreFile = selectedFile.includes('.core.') || selectedFile.includes('/core/');
+
+  const upsertExternalFiles = useCallback(
+    (incomingFiles: ExternalCodeFile[], options?: { selectFirstHtml?: boolean }) => {
+      if (incomingFiles.length === 0) return;
+
+      const usedPaths = new Set(Object.keys(externalFiles));
+      const nextFiles: Record<string, ExternalCodeFile> = { ...externalFiles };
+      const nextFolders = new Set(['/files', ...externalFolders]);
+      let firstImportedHtmlPath: string | null = null;
+
+      for (const incoming of incomingFiles) {
+        const candidatePath = normalizeExternalPath(incoming.path);
+        const uniquePath = makeUniqueExternalPath(candidatePath, usedPaths);
+        usedPaths.add(uniquePath);
+
+        const fileType = incoming.type || getExternalFileTypeFromPath(uniquePath);
+        if (!fileType) continue;
+
+        const name = uniquePath.split('/').pop() || incoming.name;
+        nextFiles[uniquePath] = {
+          path: uniquePath,
+          name,
+          content: incoming.content,
+          type: fileType,
+        };
+
+        if (!firstImportedHtmlPath && fileType === 'html') {
+          firstImportedHtmlPath = uniquePath;
+        }
+
+        let currentFolder = getExternalParentPath(uniquePath);
+        while (currentFolder.startsWith('/files')) {
+          nextFolders.add(currentFolder);
+          if (currentFolder === '/files') break;
+          currentFolder = getExternalParentPath(currentFolder);
+        }
+      }
+
+      setExternalFiles(nextFiles);
+      setExternalFolders(Array.from(nextFolders).sort((a, b) => a.localeCompare(b)));
+
+      if (options?.selectFirstHtml && firstImportedHtmlPath && nextFiles[firstImportedHtmlPath]) {
+        setSelectedFile(firstImportedHtmlPath);
+        setActiveTab('html');
+        setHtmlCode(nextFiles[firstImportedHtmlPath].content);
+        setEditedTabs((prev) => ({ ...prev, html: true }));
+      }
+    },
+    [externalFiles, externalFolders]
+  );
+
+  const handleZipImported = useCallback(
+    (result: ZipImportResult) => {
+      const importedFiles: ExternalCodeFile[] = [
+        ...result.pages.map((page) => ({
+          path: `/files/${page.path}`,
+          name: page.path.split('/').pop() || page.name,
+          content: page.html,
+          type: 'html' as const,
+        })),
+        ...result.cssFiles.map((file) => ({
+          path: `/files/${file.path}`,
+          name: file.name,
+          content: file.content,
+          type: 'css' as const,
+        })),
+        ...result.jsFiles.map((file) => ({
+          path: `/files/${file.path}`,
+          name: file.name,
+          content: file.content,
+          type: 'js' as const,
+        })),
+      ];
+
+      upsertExternalFiles(importedFiles, { selectFirstHtml: true });
+      setIsCodeEdited(false);
+    },
+    [upsertExternalFiles]
+  );
+
+  const handleCodeFilesUpload = useCallback(
+    async (files: File[], targetPath: string) => {
+      if (!files.length) return;
+
+      const targetFolderPath = normalizeExternalPath(targetPath || '/files');
+      const allowedExtensions = new Set(['html', 'htm', 'css', 'js', 'mjs']);
+      let skippedFiles = 0;
+
+      const prepared = files
+        .map((file) => {
+          const relativePath = file.webkitRelativePath || file.name;
+          const normalizedRelativePath = relativePath.replace(/\\/g, '/').replace(/^\//, '');
+          const candidatePath = normalizeExternalPath(`${targetFolderPath}/${normalizedRelativePath}`);
+          const extension = (candidatePath.split('.').pop() || '').toLowerCase();
+          if (!allowedExtensions.has(extension)) {
+            skippedFiles += 1;
+            return null;
+          }
+          const type = getExternalFileTypeFromPath(candidatePath);
+          if (!type) {
+            skippedFiles += 1;
+            return null;
+          }
+          return { file, path: candidatePath, type };
+        })
+        .filter((item): item is { file: File; path: string; type: ExternalCodeFileType } => Boolean(item));
+
+      if (prepared.length === 0) {
+        toast({
+          title: 'No supported files',
+          description: 'Upload .html, .css, .js, or .mjs files.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      const parsed = await Promise.all(
+        prepared.map(async ({ file, path, type }) => ({
+          path,
+          name: path.split('/').pop() || file.name,
+          content: await file.text(),
+          type,
+        }))
+      );
+
+      upsertExternalFiles(parsed, { selectFirstHtml: parsed.some((entry) => entry.type === 'html') });
+
+      toast({
+        title: 'Files uploaded',
+        description:
+          skippedFiles > 0
+            ? `Imported ${parsed.length} file(s). Skipped ${skippedFiles} unsupported file(s).`
+            : `Imported ${parsed.length} file(s).`,
+      });
+    },
+    [upsertExternalFiles]
+  );
+
+  const handleAddCodeFolder = useCallback((parentPath: string) => {
+    const folderName = window.prompt('Folder name');
+    if (!folderName) return;
+
+    const sanitizedFolderName = folderName.trim().replace(/[\\/]+/g, '-');
+    if (!sanitizedFolderName) return;
+
+    const basePath = normalizeExternalPath(parentPath || '/files');
+    const existing = new Set(externalFolders);
+    const candidatePath = normalizeExternalPath(`${basePath}/${sanitizedFolderName}`);
+    const uniquePath = makeUniqueExternalPath(candidatePath, existing);
+    setExternalFolders((prev) => Array.from(new Set([...prev, '/files', uniquePath])).sort((a, b) => a.localeCompare(b)));
+  }, [externalFolders]);
   
   const componentCode = useMemo(() => {
     if (!isComponentFile) return null;
@@ -209,6 +465,13 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
   useEffect(() => {
     // Generate code exports based on selected file
     // Only regenerate tabs that haven't been user-edited
+    if (selectedExternalFile) {
+      if (selectedExternalFile.type === 'html' && !editedTabs.html) setHtmlCode(selectedExternalFile.content);
+      if (selectedExternalFile.type === 'css' && !editedTabs.css) setCssCode(selectedExternalFile.content);
+      if (selectedExternalFile.type === 'js' && !editedTabs.react) setJsCode(selectedExternalFile.content);
+      return;
+    }
+
     if (isComponentFile && componentCode) {
       if (!editedTabs.html) setHtmlCode(componentCode.html);
       if (!editedTabs.css) setCssCode(componentCode.css);
@@ -219,7 +482,7 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
     if (!editedTabs.react) setJsCode(exportJS(rootInstance));
     if (!editedTabs.astro) setAstroCode(exportAstro(rootInstance));
     // Note: debouncedStyleVersion triggers CSS regeneration when styles change
-  }, [rootInstance, selectedFile, isComponentFile, componentCode, customCode, debouncedStyleVersion]);
+  }, [rootInstance, selectedFile, isComponentFile, componentCode, customCode, debouncedStyleVersion, selectedExternalFile]);
 
   const handleCopy = (code: string, tab: string) => {
     navigator.clipboard.writeText(code);
@@ -295,6 +558,10 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
   };
 
   const getCode = (tab: string) => {
+    if (selectedExternalFile) {
+      return selectedExternalFile.content;
+    }
+
     switch (tab) {
       case 'html': return htmlCode;
       case 'css': return cssCode;
@@ -335,7 +602,7 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
         </Tabs>
         
         <div className="flex items-center gap-2">
-          {isCodeEdited && (activeTab === 'html' || activeTab === 'css') && (
+          {isCodeEdited && !isExternalFile && (activeTab === 'html' || activeTab === 'css') && (
             <Button
               variant="default"
               size="sm"
@@ -403,11 +670,11 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
                 onFileSelect={(path) => {
                   setSelectedFile(path);
                   // Sync tab based on file type
-                  if (path === '/styles.css') {
+                  if (path.endsWith('.css')) {
                     setActiveTab('css');
-                  } else if (path === '/script.js') {
+                  } else if (path.endsWith('.js') || path.endsWith('.mjs')) {
                     setActiveTab('react');
-                  } else if (path.endsWith('.html')) {
+                  } else if (path.endsWith('.html') || path.endsWith('.htm')) {
                     setActiveTab('html');
                   }
                 }}
@@ -426,6 +693,10 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
                     description: 'Drag and drop media files onto the canvas to add them.',
                   });
                 }}
+                codeFilePaths={externalFilePaths}
+                codeFolderPaths={externalFolders}
+                onAddCodeFolder={handleAddCodeFolder}
+                onUploadCodeFiles={handleCodeFilesUpload}
               />
             )}
           </div>
@@ -468,6 +739,26 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
                     setIsCodeEdited(true);
                     // Mark this tab as edited so it won't be overwritten
                     setEditedTabs(prev => ({ ...prev, [activeTab]: true }));
+
+                    if (selectedExternalFile) {
+                      setExternalFiles((prev) => {
+                        const existing = prev[selectedExternalFile.path];
+                        if (!existing) return prev;
+                        return {
+                          ...prev,
+                          [selectedExternalFile.path]: {
+                            ...existing,
+                            content: newCode,
+                          },
+                        };
+                      });
+
+                      if (selectedExternalFile.type === 'html') setHtmlCode(newCode);
+                      if (selectedExternalFile.type === 'css') setCssCode(newCode);
+                      if (selectedExternalFile.type === 'js') setJsCode(newCode);
+                      return;
+                    }
+
                     switch (activeTab) {
                       case 'html': setHtmlCode(newCode); break;
                       case 'css': setCssCode(newCode); break;
@@ -475,7 +766,7 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
                       case 'astro': setAstroCode(newCode); break;
                     }
                   }}
-                  enforceLocking={activeTab === 'react' || isComponentFile}
+                  enforceLocking={!isExternalFile && (activeTab === 'react' || isComponentFile)}
                   onLockedEditAttempt={handleLockedEditAttempt}
                   allowUnlock={true}
                   filePath={selectedFile}
@@ -559,6 +850,9 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
                     currentPage={currentPreviewPage}
                     onNavigate={setCurrentPreviewPage}
                     globalComponents={globalComponents}
+                    externalFiles={externalFiles}
+                    currentFilePath={selectedExternalFile?.path}
+                    rawHtmlMode={Boolean(isExternalHtmlFile)}
                   />
                 </div>
               </div>
@@ -571,6 +865,7 @@ export const CodeView: React.FC<CodeViewProps> = ({ onClose, pages, pageNames })
         open={showImportModal}
         onOpenChange={setShowImportModal}
         onImport={handleImport}
+        onZipImported={handleZipImported}
         onImportComplete={() => {
           // After import, mark code as edited so user can review and apply changes
           setIsCodeEdited(true);
@@ -657,6 +952,9 @@ interface PreviewFrameProps {
   currentPage?: string;
   onNavigate?: (pagePath: string) => void;
   globalComponents?: { header: any; footer: any };
+  externalFiles?: Record<string, ExternalCodeFile>;
+  currentFilePath?: string;
+  rawHtmlMode?: boolean;
 }
 
 const PreviewFrame: React.FC<PreviewFrameProps> = ({ 
@@ -666,7 +964,10 @@ const PreviewFrame: React.FC<PreviewFrameProps> = ({
   allPages = [], 
   currentPage,
   onNavigate,
-  globalComponents 
+  globalComponents,
+  externalFiles = {},
+  currentFilePath,
+  rawHtmlMode = false,
 }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
@@ -689,6 +990,22 @@ const PreviewFrame: React.FC<PreviewFrameProps> = ({
         // Extract body content from full HTML
         const bodyMatch = htmlCode.match(/<body[^>]*>([\s\S]*)<\/body>/i);
         let bodyContent = bodyMatch ? bodyMatch[1] : htmlCode;
+
+        const stylesheetRefs = extractStylesheetRefs(htmlCode);
+        const scriptRefs = extractScriptRefs(htmlCode);
+
+        const referencedCss = Array.from(new Set(stylesheetRefs))
+          .map((ref) => resolveExternalReference(ref, externalFiles, 'css', currentFilePath))
+          .filter((content): content is string => Boolean(content))
+          .join('\n\n');
+
+        const referencedJs = Array.from(new Set(scriptRefs))
+          .map((ref) => resolveExternalReference(ref, externalFiles, 'js', currentFilePath))
+          .filter((content): content is string => Boolean(content))
+          .join('\n\n');
+
+        const effectiveCss = [rawHtmlMode ? '' : cssCode, referencedCss].filter(Boolean).join('\n\n');
+        const effectiveJs = [referencedJs, rawHtmlMode ? '' : jsCode].filter(Boolean).join('\n\n');
         
         // Remove external script and link tags (we inject CSS/JS inline)
         bodyContent = bodyContent
@@ -754,7 +1071,7 @@ const PreviewFrame: React.FC<PreviewFrameProps> = ({
       }
       /* Ensure Webflow imported parent containers maintain stacking context */
       /* Only set position: relative if not already positioned (absolute, fixed, etc.) */
-      ${cssCode}
+      ${effectiveCss}
     </style>
   </head>
   <body>
@@ -762,7 +1079,7 @@ const PreviewFrame: React.FC<PreviewFrameProps> = ({
     <script>
       try {
         ${navigationScript}
-        ${jsCode}
+        ${effectiveJs}
       } catch(e) {
         console.error('Preview script error:', e);
       }
@@ -775,7 +1092,7 @@ const PreviewFrame: React.FC<PreviewFrameProps> = ({
         doc.close();
       }
     }
-  }, [htmlCode, cssCode, jsCode, allPages]);
+  }, [htmlCode, cssCode, jsCode, allPages, externalFiles, currentFilePath, rawHtmlMode]);
 
   return (
     <iframe

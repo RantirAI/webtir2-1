@@ -12,7 +12,7 @@ import { translateWebflowToWebtir, getWebflowDataSummary, extractWebflowAssets }
 import { translateFigmaToWebtir, getFigmaDataSummary, isFigmaData } from '../utils/figmaTranslator';
 import { downloadAssets } from '../utils/assetDownloader';
 import { rewriteAllUrls } from '../utils/urlRewriter';
-import { processZipFile } from '../utils/zipImport';
+import { processZipFile, ZipImportResult } from '../utils/zipImport';
 import { useBuilderStore } from '../store/useBuilderStore';
 
 // Import platform icons
@@ -27,6 +27,7 @@ interface ImportModalProps {
   onOpenChange: (open: boolean) => void;
   onImport: (source: string, content: string | File) => void;
   onImportComplete?: () => void; // Called after successful import to signal CodeView
+  onZipImported?: (result: ZipImportResult) => void;
 }
 
 // Design Tools - support paste + ZIP upload
@@ -46,7 +47,7 @@ const packageSources = [
 // All platforms combined
 const allPlatforms = [...designToolSources, ...packageSources];
 
-export const ImportModal: React.FC<ImportModalProps> = ({ open, onOpenChange, onImport, onImportComplete }) => {
+export const ImportModal: React.FC<ImportModalProps> = ({ open, onOpenChange, onImport, onImportComplete, onZipImported }) => {
   const [activePlatform, setActivePlatform] = useState('webflow');
   const [activeTab, setActiveTab] = useState<'paste' | 'upload'>('paste');
   const [pastedCode, setPastedCode] = useState('');
@@ -55,7 +56,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({ open, onOpenChange, on
   const [convertPreview, setConvertPreview] = useState<{ nodes: number; styles: number } | null>(null);
   const [isImporting, setIsImporting] = useState(false);
   const { toast } = useToast();
-  const { addInstance, updateInstance, rootInstance } = useBuilderStore();
+  const { addInstance, rootInstance } = useBuilderStore();
 
   // Check if current platform supports paste (only design tools)
   const isDesignTool = designToolSources.some(p => p.id === activePlatform);
@@ -273,44 +274,14 @@ export const ImportModal: React.FC<ImportModalProps> = ({ open, onOpenChange, on
 
     try {
       const result = await processZipFile(selectedFile);
-
-      // Import ALL pages that have parsed instances
-      const pagesWithInstances = result.pages.filter((p) => p.instance);
-      
-      if (pagesWithInstances.length > 0) {
-        const allImportedChildren: any[] = [];
-        const seenNodeSignatures = new Set<string>();
-        
-        for (const page of pagesWithInstances) {
-          if (page.instance) {
-            const children = page.instance.children?.length
-              ? page.instance.children
-              : [page.instance];
-
-            for (const child of children) {
-              const signature = `${child.type}|${(child.styleSourceIds || []).join(',')}|${child.props?.children || ''}|${child.children?.length || 0}`;
-              if (seenNodeSignatures.has(signature)) continue;
-              seenNodeSignatures.add(signature);
-              allImportedChildren.push(child);
-            }
-          }
-        }
-
-        if (allImportedChildren.length > 0) {
-          updateInstance(rootInstance.id, {
-            // Replace current canvas with imported content to prevent compounding duplicates
-            children: allImportedChildren,
-          });
-        }
-      }
+      onZipImported?.(result);
 
       const { summary } = result;
       toast({
         title: 'ZIP Import Success',
-        description: `Imported ${summary.htmlCount} page(s), ${summary.cssCount} CSS file(s), ${summary.assetCount} asset(s). ${summary.cssClassesCreated} style classes created with ${summary.cssPropertiesSet} properties.`,
+        description: `Imported ${summary.htmlCount} HTML file(s), ${summary.cssCount} CSS file(s), ${summary.jsCount} JS file(s), ${summary.assetCount} asset(s).`,
       });
 
-      onImportComplete?.();
       resetAndClose();
     } catch (error) {
       console.error('ZIP import error:', error);
@@ -570,7 +541,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({ open, onOpenChange, on
                       Extracting...
                     </>
                   ) : (
-                    'Import and Convert'
+                    'Import Files'
                   )}
                 </Button>
               </div>

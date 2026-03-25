@@ -1,18 +1,16 @@
 import JSZip, { JSZipObject } from 'jszip';
 import { ComponentInstance } from '../store/types';
-import { useStyleStore } from '../store/useStyleStore';
 import { useMediaStore } from '../store/useMediaStore';
-import { parseHTMLToInstance } from './codeImport';
-import { parseCSSToStyleStore, extractCSSRules } from './cssImport';
 
 export interface ZipImportResult {
   pages: Array<{
+    path: string;
     name: string;
     html: string;
     instance: ComponentInstance | null;
   }>;
-  cssFiles: Array<{ name: string; content: string }>;
-  jsFiles: Array<{ name: string; content: string }>;
+  cssFiles: Array<{ path: string; name: string; content: string }>;
+  jsFiles: Array<{ path: string; name: string; content: string }>;
   assets: Array<{ name: string; url: string; mimeType: string; size: number }>;
   summary: {
     totalFiles: number;
@@ -34,9 +32,6 @@ const IMPORT_LIMITS = {
   maxCssBytes: 1_500_000,
   maxJsBytesPerFile: 500_000,
 };
-
-const ZIP_IMPORT_START = '/* ZIP_IMPORT_START */';
-const ZIP_IMPORT_END = '/* ZIP_IMPORT_END */';
 
 const imageMimeTypes: Record<string, string> = {
   '.png': 'image/png',
@@ -129,7 +124,7 @@ export async function processZipFile(file: File): Promise<ZipImportResult> {
   const assetUrlMap = new Map<string, string>();
   const storedAssets: ZipImportResult['assets'] = [];
   const importFolderName = `Import: ${file.name.replace('.zip', '')} - ${new Date().toISOString().replace(/[:.]/g, '-')}`;
-  const importFolderId = addFolder(importFolderName, null);
+  let importFolderId: string | null = null;
 
   let totalAssetBytes = 0;
   for (let i = 0; i < assetEntries.length && i < IMPORT_LIMITS.maxAssets; i++) {
@@ -143,6 +138,9 @@ export async function processZipFile(file: File): Promise<ZipImportResult> {
     const blob = new Blob([buffer], { type: asset.mimeType });
     const objectUrl = URL.createObjectURL(blob);
     const filename = asset.path.split('/').pop() || asset.path;
+    if (!importFolderId) {
+      importFolderId = addFolder(importFolderName, null);
+    }
 
     addAsset({
       name: filename,
@@ -178,29 +176,23 @@ export async function processZipFile(file: File): Promise<ZipImportResult> {
   }
 
   const processedCss: ZipImportResult['cssFiles'] = [];
-  const cssChunks: string[] = [];
-  let cssBytes = 0;
 
   for (let i = 0; i < cssEntries.length; i++) {
     const css = cssEntries[i];
     const cssText = await css.entry.async('string');
     const rewrittenCSS = rewriteUrlsInCSS(cssText, assetUrlMap);
-    const cssLength = rewrittenCSS.length;
 
-    processedCss.push({ name: css.path.split('/').pop() || css.path, content: rewrittenCSS });
-
-    if (cssBytes < IMPORT_LIMITS.maxCssBytes) {
-      const allowed = Math.max(0, IMPORT_LIMITS.maxCssBytes - cssBytes);
-      cssChunks.push(rewrittenCSS.slice(0, allowed));
-      cssBytes += Math.min(cssLength, allowed);
-    }
+    processedCss.push({
+      path: css.path,
+      name: css.path.split('/').pop() || css.path,
+      content: rewrittenCSS,
+    });
 
     if (i % 5 === 0) await yieldToMainThread();
   }
 
   const pages: ZipImportResult['pages'] = [];
   const seenPageSignatures = new Set<string>();
-  const fontImportsSet = new Set<string>();
   htmlEntries.sort((a, b) => {
     if (a.path.toLowerCase().includes('index')) return -1;
     if (b.path.toLowerCase().includes('index')) return 1;
@@ -210,22 +202,7 @@ export async function processZipFile(file: File): Promise<ZipImportResult> {
   for (let i = 0; i < htmlEntries.length; i++) {
     const htmlEntry = htmlEntries[i];
     const htmlText = await htmlEntry.entry.async('string');
-
-    // Extract font links from <head> and keep only unique imports
-    const fontImports = extractFontLinks(htmlText);
-    for (const fontImport of fontImports) {
-      fontImportsSet.add(fontImport);
-    }
-
-    const { cleanedHTML, extractedCSS } = extractInlineStyles(htmlText);
-    if (extractedCSS && cssBytes < IMPORT_LIMITS.maxCssBytes) {
-      const rewrittenInlineCSS = rewriteUrlsInCSS(extractedCSS, assetUrlMap);
-      const allowed = Math.max(0, IMPORT_LIMITS.maxCssBytes - cssBytes);
-      cssChunks.push(rewrittenInlineCSS.slice(0, allowed));
-      cssBytes += Math.min(rewrittenInlineCSS.length, allowed);
-    }
-
-    const rewrittenHTML = rewriteUrlsInHTML(cleanedHTML, assetUrlMap);
+    const rewrittenHTML = rewriteUrlsInHTML(htmlText, assetUrlMap);
 
     // Avoid importing duplicate pages with identical body markup
     const pageSignature = createPageSignature(rewrittenHTML);
@@ -238,23 +215,14 @@ export async function processZipFile(file: File): Promise<ZipImportResult> {
       break;
     }
 
-    // Parse ALL HTML pages into instances, not just the first
-    const instance = parseHTMLToInstance(rewrittenHTML);
-
     pages.push({
+      path: htmlEntry.path,
       name: getDisplayName(htmlEntry.path),
       html: rewrittenHTML,
-      instance,
+      instance: null,
     });
 
     if (i % 3 === 0) await yieldToMainThread();
-  }
-
-  if (fontImportsSet.size > 0 && cssBytes < IMPORT_LIMITS.maxCssBytes) {
-    const uniqueFontImports = Array.from(fontImportsSet).join('\n');
-    const allowed = Math.max(0, IMPORT_LIMITS.maxCssBytes - cssBytes);
-    cssChunks.unshift(uniqueFontImports.slice(0, allowed));
-    cssBytes += Math.min(uniqueFontImports.length, allowed);
   }
 
   const jsFiles: ZipImportResult['jsFiles'] = [];
@@ -262,56 +230,12 @@ export async function processZipFile(file: File): Promise<ZipImportResult> {
     const js = jsEntries[i];
     const jsContent = await js.entry.async('string');
     jsFiles.push({
+      path: js.path,
       name: js.path.split('/').pop() || js.path,
       content: jsContent.slice(0, IMPORT_LIMITS.maxJsBytesPerFile),
     });
 
     if (i % 10 === 0) await yieldToMainThread();
-  }
-
-  const mergedCss = cssChunks.filter(Boolean).join('\n\n');
-  let cssClassesCreated = 0;
-  let cssPropertiesSet = 0;
-
-  if (mergedCss.trim()) {
-    // First, parse class-based CSS rules into style sources for editability
-    try {
-      const { supportedCSS, unsupportedCSS } = extractCSSRules(mergedCss);
-      
-      if (supportedCSS.trim()) {
-        const parseResult = parseCSSToStyleStore(supportedCSS);
-        cssClassesCreated = parseResult.classesCreated;
-        cssPropertiesSet = parseResult.propertiesSet;
-      }
-      
-      // Put ALL CSS (including unsupported selectors, :root vars, etc.) into rawCssOverrides
-      // This ensures complex selectors, CSS variables, and element selectors still work
-      const { rawCssOverrides, setRawCssOverrides } = useStyleStore.getState();
-      const cleanedRawCss = removePreviousZipImportBlock(rawCssOverrides);
-      const nextCss = [
-        cleanedRawCss,
-        ZIP_IMPORT_START,
-        mergedCss,
-        ZIP_IMPORT_END,
-      ]
-        .filter(Boolean)
-        .join('\n\n');
-      setRawCssOverrides(nextCss);
-    } catch (e) {
-      // Fallback: just inject raw CSS if parsing fails
-      console.warn('CSS parsing failed, injecting raw CSS:', e);
-      const { rawCssOverrides, setRawCssOverrides } = useStyleStore.getState();
-      const cleanedRawCss = removePreviousZipImportBlock(rawCssOverrides);
-      const nextCss = [
-        cleanedRawCss,
-        ZIP_IMPORT_START,
-        mergedCss,
-        ZIP_IMPORT_END,
-      ]
-        .filter(Boolean)
-        .join('\n\n');
-      setRawCssOverrides(nextCss);
-    }
   }
 
   return {
@@ -325,8 +249,8 @@ export async function processZipFile(file: File): Promise<ZipImportResult> {
       cssCount: cssEntries.length,
       jsCount: jsEntries.length,
       assetCount: storedAssets.length,
-      cssClassesCreated,
-      cssPropertiesSet,
+      cssClassesCreated: 0,
+      cssPropertiesSet: 0,
     },
   };
 }
@@ -418,17 +342,6 @@ function rewriteUrlsInHTML(html: string, urlMap: Map<string, string>): string {
   });
 }
 
-function extractInlineStyles(html: string): { cleanedHTML: string; extractedCSS: string } {
-  let extractedCSS = '';
-
-  const cleanedHTML = html.replace(/<style[^>]*>([\s\S]*?)<\/style>/gi, (_, cssContent) => {
-    extractedCSS += cssContent + '\n';
-    return '';
-  });
-
-  return { cleanedHTML, extractedCSS };
-}
-
 function createPageSignature(html: string): string {
   const bodyMatch = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
   const body = bodyMatch ? bodyMatch[1] : html;
@@ -438,41 +351,4 @@ function createPageSignature(html: string): string {
     .replace(/>\s+</g, '><')
     .replace(/\s+/g, ' ')
     .trim();
-}
-
-function removePreviousZipImportBlock(css: string): string {
-  if (!css) return '';
-  const zipBlockRegex = /\/\* ZIP_IMPORT_START \*\/[\s\S]*?\/\* ZIP_IMPORT_END \*\//g;
-  return css.replace(zipBlockRegex, '').trim();
-}
-
-/**
- * Extract Google Font and other external font <link> tags from HTML <head>
- * and convert them to @import rules for CSS injection.
- */
-function extractFontLinks(html: string): string[] {
-  const imports: string[] = [];
-  
-  // Match <link> tags with stylesheet rel that point to font services
-  const linkRegex = /<link[^>]*href=["']([^"']+)["'][^>]*>/gi;
-  let match;
-  
-  while ((match = linkRegex.exec(html)) !== null) {
-    const fullTag = match[0];
-    const href = match[1];
-    
-    // Only process stylesheet links to font services
-    if (!fullTag.includes('stylesheet')) continue;
-    
-    if (
-      href.includes('fonts.googleapis.com') ||
-      href.includes('fonts.gstatic.com') ||
-      href.includes('fonts.bunny.net') ||
-      href.includes('use.typekit.net')
-    ) {
-      imports.push(`@import url("${href}");`);
-    }
-  }
-  
-  return imports;
 }
