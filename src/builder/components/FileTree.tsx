@@ -495,7 +495,7 @@ export const FileTree: React.FC<FileTreeProps> = ({
 
     const fileRow = (
       <div
-        className={`flex items-center gap-1 px-2 py-1.5 cursor-pointer hover:bg-muted/50 text-xs ${
+        className={`group flex items-center gap-1 px-2 py-1.5 cursor-pointer hover:bg-muted/50 text-xs ${
           isSelected ? 'bg-muted' : ''
         }`}
         style={{ paddingLeft: `${depth * 12 + 20}px` }}
@@ -508,9 +508,57 @@ export const FileTree: React.FC<FileTreeProps> = ({
         ) : (
           <FileCode className="w-3 h-3 flex-shrink-0 text-muted-foreground" />
         )}
-        <span className="truncate">{node.name}</span>
+        <span className="truncate flex-1">{node.name}</span>
+
+        {isComponentFile && onRenameComponent && node.componentInstanceId && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              const newName = window.prompt('Rename component', node.name.replace(/\.html$/i, ''));
+              if (newName && newName.trim()) {
+                onRenameComponent(node.componentInstanceId, node.componentPrebuiltId, newName.trim());
+              }
+            }}
+            className="p-0.5 rounded opacity-0 group-hover:opacity-100 hover:bg-primary/20 hover:text-primary transition-opacity"
+            title={`Rename ${node.name}`}
+          >
+            <Pencil className="w-3 h-3" />
+          </button>
+        )}
+
+        {isMediaFile && node.mediaAsset && onRenameMediaAsset && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              const newName = window.prompt('Rename media', node.mediaAsset?.name || node.name);
+              if (newName && newName.trim()) {
+                onRenameMediaAsset(node.mediaAsset.id, newName.trim());
+              }
+            }}
+            className="p-0.5 rounded opacity-0 group-hover:opacity-100 hover:bg-primary/20 hover:text-primary transition-opacity"
+            title={`Rename ${node.name}`}
+          >
+            <Pencil className="w-3 h-3" />
+          </button>
+        )}
+
+        {isMediaFile && node.mediaAsset && onDeleteMediaAsset && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              if (window.confirm(`Delete "${node.name}"?`)) {
+                onDeleteMediaAsset(node.mediaAsset.id);
+              }
+            }}
+            className="p-0.5 rounded opacity-0 group-hover:opacity-100 hover:bg-destructive/20 hover:text-destructive transition-opacity"
+            title={`Delete ${node.name}`}
+          >
+            <Trash2 className="w-3 h-3" />
+          </button>
+        )}
+
         {node.isLinked && (
-          <span className="ml-auto text-[8px] px-1 py-0.5 bg-green-500/20 text-green-500 rounded">linked</span>
+          <span className="text-[8px] px-1 py-0.5 bg-green-500/20 text-green-500 rounded">linked</span>
         )}
       </div>
     );
