@@ -403,6 +403,68 @@ export const FileTree: React.FC<FileTreeProps> = ({
             </button>
           )}
 
+          {isCodeFolder && node.path !== '/files' && onRenameCodeItem && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                const newName = window.prompt('Rename folder', node.name);
+                if (newName && newName.trim() && newName.trim() !== node.name) {
+                  onRenameCodeItem(node.path, newName.trim());
+                }
+              }}
+              className="p-0.5 rounded opacity-0 group-hover:opacity-100 hover:bg-primary/20 hover:text-primary transition-opacity"
+              title={`Rename ${node.name}`}
+            >
+              <Pencil className="w-3 h-3" />
+            </button>
+          )}
+
+          {isCodeFolder && node.path !== '/files' && onDeleteCodeItem && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                if (window.confirm(`Delete folder "${node.name}" and all its contents?`)) {
+                  onDeleteCodeItem(node.path);
+                }
+              }}
+              className="p-0.5 rounded opacity-0 group-hover:opacity-100 hover:bg-destructive/20 hover:text-destructive transition-opacity"
+              title={`Delete ${node.name}`}
+            >
+              <Trash2 className="w-3 h-3" />
+            </button>
+          )}
+
+          {node.isMediaFolder && node.mediaFolder && onRenameMediaFolder && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                const newName = window.prompt('Rename media folder', node.mediaFolder?.name || node.name);
+                if (newName && newName.trim() && newName.trim() !== node.name) {
+                  onRenameMediaFolder(node.mediaFolder.id, newName.trim());
+                }
+              }}
+              className="p-0.5 rounded opacity-0 group-hover:opacity-100 hover:bg-primary/20 hover:text-primary transition-opacity"
+              title={`Rename ${node.name}`}
+            >
+              <Pencil className="w-3 h-3" />
+            </button>
+          )}
+
+          {node.isMediaFolder && node.mediaFolder && onDeleteMediaFolder && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                if (window.confirm(`Delete folder "${node.name}"?`)) {
+                  onDeleteMediaFolder(node.mediaFolder.id);
+                }
+              }}
+              className="p-0.5 rounded opacity-0 group-hover:opacity-100 hover:bg-destructive/20 hover:text-destructive transition-opacity"
+              title={`Delete ${node.name}`}
+            >
+              <Trash2 className="w-3 h-3" />
+            </button>
+          )}
+
           {addHandler && (
             <button
               onClick={(e) => {
